@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, QrCode } from "lucide-react";
 import { NetworkBackground } from "@/components/network-background";
 
 export const Route = createFileRoute("/")({
@@ -84,12 +84,21 @@ function Welcome() {
             </span>
             <ArrowRight className="h-5 w-5 shrink-0" />
           </Link>
-          <Link
-            to="/map"
-            className="tap flex h-14 items-center justify-center rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
-          >
-            Explore the Power Map
-          </Link>
+          <div className="grid grid-cols-2 gap-3">
+            <Link
+              to="/map"
+              className="tap flex h-14 items-center justify-center rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
+            >
+              Power Map
+            </Link>
+            <Link
+              to="/qr"
+              className="tap flex h-14 items-center justify-center gap-2 rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
+            >
+              <QrCode className="h-4 w-4" />
+              Scan to Join
+            </Link>
+          </div>
           <p className="pt-1 text-center text-[11px] text-muted-foreground">
             Takes 1–2 minutes · ใช้เวลาไม่ถึง 2 นาที
           </p>
