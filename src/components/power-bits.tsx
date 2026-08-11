@@ -40,7 +40,7 @@ export function Avatar({
   user,
   size = 48,
 }: {
-  user: Pick<User, "avatar" | "name"> & { photo?: string };
+  user: Pick<User, "avatar" | "name"> & { photo?: string | undefined };
   size?: number;
 }) {
   if (user.photo) {
