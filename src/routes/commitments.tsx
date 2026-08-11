@@ -3,16 +3,17 @@ import { AppShell } from "@/components/app-shell";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
+import { STATUS_TH } from "@/lib/i18n";
 
 export const Route = createFileRoute("/commitments")({
   head: () => ({
     meta: [
-      { title: "What Happens Next? — Connecting Power" },
+      { title: "จะทำอะไรต่อดี? — Connecting Power" },
       {
         name: "description",
-        content: "Your connections and the commitments you made — from planning to completed.",
+        content: "รวมคอนเนกชันและคำมั่นสัญญาที่คุณสร้างไว้ ตั้งแต่วางแผนจนถึงทำสำเร็จ",
       },
-      { property: "og:title", content: "What Happens Next?" },
+      { property: "og:title", content: "จะทำอะไรต่อดี? — Connecting Power" },
       { property: "og:description", content: "รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?" },
     ],
   }),
@@ -50,18 +51,18 @@ function Commitments() {
   };
 
   return (
-    <AppShell title="What Happens Next?" subtitle="รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?">
+    <AppShell title="จะทำอะไรต่อดี?" subtitle="รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?">
       <div className="grid grid-cols-2 gap-3 px-5 py-4">
         <div className="card-soft p-4">
           <p className="text-3xl font-extrabold text-gradient">{shownConnections.length}</p>
           <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-            My Connections
+            คอนเนกชันของฉัน
           </p>
         </div>
         <div className="card-soft p-4">
           <p className="text-3xl font-extrabold text-gradient">{shown.length}</p>
           <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-            My Commitments
+            คำมั่นสัญญาของฉัน
           </p>
         </div>
       </div>
@@ -81,7 +82,7 @@ function Commitments() {
                 {first && <Avatar user={first} size={34} />}
                 {other && <Avatar user={other} size={34} />}
                 <p className="min-w-0 flex-1 truncate text-sm font-extrabold uppercase">
-                  {(first?.name ?? "You")} + {other?.name ?? "Partner"}
+                  {(first?.name ?? "คุณ")} + {other?.name ?? "พาร์ตเนอร์"}
                 </p>
               </div>
               <p className="mt-2 text-[15px] font-semibold leading-snug">"{m.description}"</p>
@@ -99,7 +100,7 @@ function Commitments() {
                         : "border-border bg-card text-muted-foreground"
                     }`}
                   >
-                    {DOT[s]} {s}
+                    {DOT[s]} {STATUS_TH[s]}
                   </button>
                 ))}
               </div>
@@ -111,7 +112,7 @@ function Commitments() {
           to="/matches"
           className="tap flex h-14 items-center justify-center rounded-2xl border border-dashed border-primary/50 text-sm font-extrabold text-primary"
         >
-          + Make one more connection
+          + สร้างคอนเนกชันเพิ่มอีกสักคน
         </Link>
       </div>
     </AppShell>

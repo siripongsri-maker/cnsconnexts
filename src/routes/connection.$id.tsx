@@ -5,32 +5,23 @@ import { toast } from "sonner";
 import { Avatar, Chip } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
+import { issueTh, powerTh, STATUS_TH, ACTION_TYPES_TH } from "@/lib/i18n";
 
 export const Route = createFileRoute("/connection/$id")({
   head: () => ({
     meta: [
-      { title: "What Could You Do Together? — Connecting Power" },
+      { title: "จะลุยด้วยกันแบบไหนดี? — Connecting Power" },
       {
         name: "description",
-        content: "Turn a new connection into a real next step: a commitment you both agree on.",
+        content: "แปลงคอนเนกชันใหม่ให้กลายเป็นก้าวต่อไปจริง ๆ ด้วยคำมั่นสัญญาที่ตกลงร่วมกัน",
       },
-      { property: "og:title", content: "Your Connection Card" },
+      { property: "og:title", content: "การ์ดคอนเนกชันของคุณ — Connecting Power" },
       { property: "og:description", content: "เจอกันแล้ว ทำอะไรต่อดี?" },
     ],
   }),
   component: ConnectionDetail,
-  notFoundComponent: () => <p className="p-8 text-center text-sm">Connection not found.</p>,
+  notFoundComponent: () => <p className="p-8 text-center text-sm">ไม่พบคอนเนกชันนี้</p>,
 });
-
-const ACTIONS = [
-  "Exchange knowledge",
-  "Share a resource",
-  "Introduce someone",
-  "Explore collaboration",
-  "Develop a project",
-  "Meet again",
-  "Create a campaign",
-];
 
 function ConnectionDetail() {
   const { id } = Route.useParams();
@@ -71,16 +62,16 @@ function ConnectionDetail() {
         <h1 className="mt-4 text-center text-2xl font-extrabold uppercase tracking-tight">
           {a.name} × {b.name}
         </h1>
-        <p className="mt-1 text-center text-sm opacity-90">{conn.match_score}% Power Match</p>
+        <p className="mt-1 text-center text-sm opacity-90">แมตช์กัน {conn.match_score}%</p>
       </div>
 
       <div className="mx-auto max-w-xl space-y-4 px-5 py-5">
         <div className="card-soft p-4">
           <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-            Shared power
+            พลังที่มีร่วมกัน
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {[...sharedIssues, ...sharedPower].map((s) => (
+            {[...sharedIssues.map(issueTh), ...sharedPower.map(powerTh)].map((s) => (
               <Chip key={s} tone="primary">
                 {s}
               </Chip>
@@ -92,10 +83,10 @@ function ConnectionDetail() {
         </div>
 
         <div>
-          <h2 className="text-xl font-extrabold">What could you do together?</h2>
+          <h2 className="text-xl font-extrabold">จะลุยด้วยกันแบบไหนดี?</h2>
           <p className="text-sm font-semibold text-primary">เราจะทำอะไรร่วมกันได้บ้าง?</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {ACTIONS.map((act) => (
+            {ACTION_TYPES_TH.map((act) => (
               <button
                 key={act}
                 onClick={() => setAction(act)}
@@ -113,13 +104,13 @@ function ConnectionDetail() {
 
         <div>
           <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-            Our next step
+            ก้าวต่อไปของเรา
           </p>
           <textarea
             rows={3}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="e.g. Run a youth digital campaign together before the end of the year."
+            placeholder="เช่น จัดแคมเปญดิจิทัลเพื่อเยาวชนร่วมกันก่อนสิ้นปีนี้"
             className="w-full rounded-2xl border border-border bg-card p-4 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -133,7 +124,7 @@ function ConnectionDetail() {
                 status === s ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
               }`}
             >
-              {s}
+              {STATUS_TH[s]}
             </button>
           ))}
         </div>
@@ -150,12 +141,12 @@ function ConnectionDetail() {
               status,
               follow_up_date: null,
             });
-            toast.success("Commitment created 🎉", { description: "It's on your What Happens Next list." });
+            toast.success("สร้างคำมั่นสัญญาแล้ว 🎉", { description: "ดูได้ในลิสต์ 'จะทำอะไรต่อดี?' ของคุณ" });
             navigate({ to: "/commitments" });
           }}
           className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground disabled:opacity-40"
         >
-          Create Commitment
+          สร้างคำมั่นสัญญา
         </button>
       </div>
     </div>

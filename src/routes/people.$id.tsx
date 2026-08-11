@@ -4,18 +4,19 @@ import { toast } from "sonner";
 import { Avatar, Chip, PowerChip } from "@/components/power-bits";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
+import { issueTh, provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
 
 export const Route = createFileRoute("/people/$id")({
   head: () => ({
     meta: [
-      { title: "Participant Profile — Connecting Power" },
-      { name: "description", content: "See what power this participant brings and needs." },
-      { property: "og:title", content: "Participant Profile" },
+      { title: "โปรไฟล์ผู้เข้าร่วม — Connecting Power" },
+      { name: "description", content: "ดูว่าคนนี้มีพลังอะไรมาแบ่งปัน และกำลังมองหาอะไรอยู่" },
+      { property: "og:title", content: "โปรไฟล์ผู้เข้าร่วม — Connecting Power" },
       { property: "og:description", content: "ดูว่าเขามีพลังอะไร และกำลังมองหาอะไร" },
     ],
   }),
   component: Person,
-  notFoundComponent: () => <p className="p-8 text-center text-sm">Participant not found.</p>,
+  notFoundComponent: () => <p className="p-8 text-center text-sm">ไม่พบผู้เข้าร่วมคนนี้</p>,
 });
 
 function Person() {
@@ -44,10 +45,10 @@ function Person() {
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-extrabold">{user.name}</h1>
             <p className="truncate text-sm opacity-90">
-              {user.province} · {user.region}
+              {provinceTh(user.province)} · {REGION_LABEL[user.region]}
             </p>
             <p className="truncate text-[12px] opacity-80">
-              {user.organization} · {user.generation}
+              {user.organization} · {GENERATION_TH[user.generation]}
             </p>
           </div>
         </div>
@@ -58,24 +59,24 @@ function Person() {
 
         {match && (
           <div className="card-soft p-4">
-            <p className="text-3xl font-extrabold text-gradient">{match.score}% POWER MATCH</p>
+            <p className="text-3xl font-extrabold text-gradient">แมตช์กัน {match.score}%</p>
             <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{match.reason}</p>
           </div>
         )}
 
-        <Block title="Cares about">
+        <Block title="ใส่ใจเรื่อง">
           {user.interests.map((i) => (
             <Chip key={i} tone="primary">
-              {i}
+              {issueTh(i)}
             </Chip>
           ))}
         </Block>
-        <Block title="Brings">
+        <Block title="มีพลังด้าน">
           {user.powers_have.map((p) => (
             <PowerChip key={p} name={p} tone="lime" />
           ))}
         </Block>
-        <Block title="Looking for">
+        <Block title="กำลังมองหา">
           {user.powers_need.map((p) => (
             <PowerChip key={p} name={p} tone="coral" />
           ))}
@@ -84,7 +85,7 @@ function Person() {
         {theirIdeas.length > 0 && (
           <div className="card-soft p-4">
             <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-              On the marketplace
+              ไอเดียในตลาดพลัง
             </p>
             {theirIdeas.map((i) => (
               <Link
@@ -106,18 +107,18 @@ function Person() {
             params={{ id: existing.id }}
             className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl bg-lime text-base font-extrabold text-lime-foreground"
           >
-            Open Connection Card
+            เปิดการ์ดคอนเนกชัน
           </Link>
         ) : (
           <button
             onClick={() => {
               if (!me || !match) return;
               connect(user.id, match.score, match.reason);
-              toast.success("New Connection Created ✨");
+              toast.success("เชื่อมต่อสำเร็จแล้ว! ✨");
             }}
             className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground"
           >
-            Connect with {user.name}
+            เชื่อมต่อกับ {user.name}
           </button>
         )}
       </div>
