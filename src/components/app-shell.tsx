@@ -3,11 +3,11 @@ import { Sparkles, Map, Store, CheckCircle2, Radio } from "lucide-react";
 import type { ReactNode } from "react";
 
 const NAV = [
-  { to: "/matches", label: "Matches", icon: Sparkles },
-  { to: "/map", label: "Power Map", icon: Map },
-  { to: "/marketplace", label: "Market", icon: Store },
-  { to: "/commitments", label: "Next", icon: CheckCircle2 },
-  { to: "/dashboard", label: "Live", icon: Radio },
+  { to: "/matches", label: "คู่เชื่อม", icon: Sparkles },
+  { to: "/map", label: "แผนที่พลัง", icon: Map },
+  { to: "/marketplace", label: "ตลาดนัด", icon: Store },
+  { to: "/commitments", label: "ก้าวต่อไป", icon: CheckCircle2 },
+  { to: "/dashboard", label: "สด", icon: Radio },
 ] as const;
 
 export function AppShell({

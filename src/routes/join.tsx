@@ -13,13 +13,13 @@ export const Route = createFileRoute("/join")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Join the Room — Connecting Power" },
+      { title: "เข้าร่วมห้อง — Connecting Power" },
       {
         name: "description",
         content:
-          "Scanned the QR code? You're in. We're setting up your participant session and taking you into your power profile.",
+          "สแกน QR แล้วใช่ไหม? คุณเข้ามาแล้ว! เรากำลังตั้งค่าเซสชันของคุณ แล้วพาไปสร้างโปรไฟล์พลัง",
       },
-      { property: "og:title", content: "Join Connecting Power" },
+      { property: "og:title", content: "เข้าร่วม Connecting Power" },
       {
         property: "og:description",
         content: "สแกนแล้วเข้าร่วมได้ทันที — สร้างโปรไฟล์พลังของคุณใน 2 นาที",
@@ -52,15 +52,15 @@ function Join() {
         <span className="mx-auto grid h-20 w-20 place-items-center rounded-3xl gradient-power text-primary-foreground glow">
           <QrCode className="h-9 w-9" />
         </span>
-        <h1 className="mt-6 text-2xl font-extrabold tracking-tight">You're in the room</h1>
+        <h1 className="mt-6 text-2xl font-extrabold tracking-tight">คุณเข้าห้องแล้ว</h1>
         <p className="mt-2 text-sm font-semibold text-primary">ยินดีต้อนรับสู่ Connecting Power</p>
         <p className="mt-3 flex items-center justify-center gap-2 text-[13px] text-muted-foreground">
           <Sparkles className="h-4 w-4 animate-pulse-node" />
-          Creating your participant session…
+          กำลังสร้างเซสชันของคุณ…
         </p>
         {code && (
           <p className="mt-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-            Session {code}
+            เซสชัน {code}
           </p>
         )}
       </div>

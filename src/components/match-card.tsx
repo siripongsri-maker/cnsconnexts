@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import type { MatchResult } from "@/lib/matching";
 import { useStore } from "@/lib/store";
+import { issueTh, powerTh, provinceTh } from "@/lib/i18n";
 import { Avatar, Chip, PowerChip, ScoreRing } from "./power-bits";
 
 export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: number }) {
@@ -23,12 +24,12 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-base font-extrabold">{u.name}</h3>
           <p className="truncate text-[12px] text-muted-foreground">
-            {u.province} · {u.organization}
+            {provinceTh(u.province)} · {u.organization}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {u.interests.slice(0, 3).map((i) => (
               <Chip key={i} tone="primary">
-                {i}
+                {issueTh(i)}
               </Chip>
             ))}
           </div>
@@ -43,21 +44,21 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
           <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-            They bring
+            เขามีให้
           </p>
           <div className="flex flex-wrap gap-1.5">
             {match.theyBring.map((p) => (
-              <PowerChip key={p} name={p} tone="lime" />
+              <PowerChip key={p} name={powerTh(p)} tone="lime" />
             ))}
           </div>
         </div>
         <div>
           <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
-            They need
+            เขากำลังหา
           </p>
           <div className="flex flex-wrap gap-1.5">
             {match.theyNeed.map((p) => (
-              <PowerChip key={p} name={p} tone="coral" />
+              <PowerChip key={p} name={powerTh(p)} tone="coral" />
             ))}
           </div>
         </div>
@@ -70,7 +71,7 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
             params={{ id: existing.id }}
             className="tap inline-flex h-11 items-center justify-center rounded-xl bg-lime px-4 text-sm font-bold text-lime-foreground"
           >
-            Connected ✨
+            เชื่อมกันแล้ว ✨
           </Link>
         ) : (
           <button
@@ -78,14 +79,14 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
               const c = connect(u.id, match.score, match.reason);
               setBurst(true);
               setTimeout(() => setBurst(false), 1200);
-              toast.success("New Connection Created ✨", {
-                description: `You and ${u.name} are now connected.`,
-                action: { label: "Next step", onClick: () => (window.location.href = `/connection/${c.id}`) },
+              toast.success("สร้างการเชื่อมต่อใหม่แล้ว ✨", {
+                description: `คุณกับ ${u.name} เชื่อมกันแล้วนะ`,
+                action: { label: "ก้าวต่อไป", onClick: () => (window.location.href = `/connection/${c.id}`) },
               });
             }}
             className="tap inline-flex h-11 items-center justify-center rounded-xl gradient-power px-4 text-sm font-bold text-primary-foreground"
           >
-            Connect
+            เชื่อมต่อ
           </button>
         )}
         <Link
@@ -93,7 +94,7 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
           params={{ id: u.id }}
           className="tap inline-flex h-11 items-center justify-center rounded-xl border border-border bg-card px-4 text-sm font-bold"
         >
-          View Profile
+          ดูโปรไฟล์
         </Link>
       </div>
 

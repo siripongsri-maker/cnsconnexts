@@ -5,16 +5,17 @@ import { MatchCard } from "@/components/match-card";
 import { rankMatches } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { ISSUES } from "@/lib/types";
+import { issueTh } from "@/lib/i18n";
 
 export const Route = createFileRoute("/matches")({
   head: () => ({
     meta: [
-      { title: "People You Should Meet — Connecting Power" },
+      { title: "คนที่คุณควรเจอ — Connecting Power" },
       {
         name: "description",
-        content: "Your power matches for today, ranked by shared issues and complementary power.",
+        content: "รายชื่อคนที่เข้ากับพลังของคุณวันนี้ เรียงตามประเด็นร่วมและพลังที่เติมเต็มกัน",
       },
-      { property: "og:title", content: "People You Should Meet Today" },
+      { property: "og:title", content: "คนที่คุณควรเจอวันนี้" },
       { property: "og:description", content: "คนที่คุณควรเจอวันนี้" },
     ],
   }),
@@ -38,16 +39,16 @@ function Matches() {
 
   if (!me) {
     return (
-      <AppShell title="My Power Matches">
-        <p className="p-6 text-sm text-muted-foreground">Loading your matches…</p>
+      <AppShell title="คู่เชื่อมพลังของฉัน">
+        <p className="p-6 text-sm text-muted-foreground">กำลังโหลดรายชื่อคู่เชื่อม…</p>
       </AppShell>
     );
   }
 
   return (
     <AppShell
-      title="People You Should Meet"
-      subtitle="คนที่คุณควรเจอวันนี้"
+      title="คนที่คุณควรเจอ"
+      subtitle="People You Should Meet"
       action={
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-accent text-xl">
           {me.avatar}
@@ -56,11 +57,11 @@ function Matches() {
     >
       <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-5 py-3">
         <FilterPill active={!issue} onClick={() => setIssue(null)}>
-          All
+          ทั้งหมด
         </FilterPill>
         {ISSUES.filter((i) => i !== "Other").map((i) => (
           <FilterPill key={i} active={issue === i} onClick={() => setIssue(i)}>
-            {i}
+            {issueTh(i)}
           </FilterPill>
         ))}
       </div>
@@ -68,7 +69,7 @@ function Matches() {
       <div className="space-y-3 px-5 pb-6">
         {matches.length === 0 && (
           <p className="card-soft p-6 text-center text-sm text-muted-foreground">
-            No one here yet under this filter. Try another issue.
+            ยังไม่มีใครในหมวดนี้ ลองเลือกประเด็นอื่นดูนะ
           </p>
         )}
         {matches.map((m, i) => (

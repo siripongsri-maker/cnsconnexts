@@ -6,13 +6,13 @@ import { makeJoinCode } from "@/lib/session";
 export const Route = createFileRoute("/qr")({
   head: () => ({
     meta: [
-      { title: "Scan to Join — Connecting Power" },
+      { title: "สแกนเพื่อเข้าร่วม — Connecting Power" },
       {
         name: "description",
         content:
-          "Display this QR code at the venue. Participants scan it and land straight in onboarding on their phone.",
+          "แสดง QR โค้ดนี้ที่หน้างาน ผู้เข้าร่วมสแกนแล้วเข้าสู่ขั้นตอนสร้างโปรไฟล์บนมือถือได้ทันที",
       },
-      { property: "og:title", content: "Scan to Join Connecting Power" },
+      { property: "og:title", content: "สแกนเพื่อเข้าร่วม Connecting Power" },
       { property: "og:description", content: "สแกนเพื่อเข้าร่วม แล้วสร้างโปรไฟล์พลังของคุณ" },
     ],
   }),
@@ -36,13 +36,13 @@ function QrPoster() {
       />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center text-center">
         <span className="rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
-          Scan to join · สแกนเพื่อเข้าร่วม
+          สแกนเพื่อเข้าร่วม · Scan to join
         </span>
         <h1 className="mt-5 text-[clamp(2rem,9vw,3rem)] font-extrabold leading-tight tracking-tighter">
           <span className="text-gradient">CONNECTING POWER</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Point your phone camera here — you'll go straight into your power profile.
+          ยกกล้องมือถือส่องตรงนี้ แล้วคุณจะเข้าสู่หน้าสร้างโปรไฟล์พลังของคุณทันที
         </p>
 
         <div className="card-soft mt-8 rounded-3xl bg-card p-6">
@@ -50,10 +50,10 @@ function QrPoster() {
         </div>
 
         <p className="mt-5 text-xs text-muted-foreground">
-          or open <span className="font-bold text-foreground">{url}</span>
+          หรือเปิดลิงก์ <span className="font-bold text-foreground">{url}</span>
         </p>
         <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-          Room code {joinCode}
+          รหัสห้อง {joinCode}
         </p>
 
         <Link
@@ -61,7 +61,7 @@ function QrPoster() {
           search={{ c: joinCode }}
           className="tap mt-8 flex h-14 w-full max-w-xs items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground"
         >
-          Join on this device
+          เข้าร่วมด้วยเครื่องนี้
         </Link>
       </div>
     </div>
