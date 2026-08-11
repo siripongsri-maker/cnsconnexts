@@ -1,0 +1,137 @@
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { Avatar, Chip, PowerChip } from "@/components/power-bits";
+import { scoreMatch } from "@/lib/matching";
+import { useStore } from "@/lib/store";
+
+export const Route = createFileRoute("/people/$id")({
+  head: () => ({
+    meta: [
+      { title: "Participant Profile — Connecting Power" },
+      { name: "description", content: "See what power this participant brings and needs." },
+      { property: "og:title", content: "Participant Profile" },
+      { property: "og:description", content: "ดูว่าเขามีพลังอะไร และกำลังมองหาอะไร" },
+    ],
+  }),
+  component: Person,
+  notFoundComponent: () => <p className="p-8 text-center text-sm">Participant not found.</p>,
+});
+
+function Person() {
+  const { id } = Route.useParams();
+  const { users, me, connect, connections, ideas } = useStore();
+  const user = users.find((u) => u.id === id);
+  if (!user) throw notFound();
+
+  const match = me ? scoreMatch(me, user) : null;
+  const existing = connections.find(
+    (c) => (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
+  );
+  const theirIdeas = ideas.filter((i) => i.owner_id === user.id);
+
+  return (
+    <div className="min-h-screen bg-background pb-32">
+      <div className="relative gradient-power px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-primary-foreground">
+        <Link
+          to="/matches"
+          className="tap mb-6 inline-grid h-9 w-9 place-items-center rounded-full bg-white/20"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div className="flex items-end gap-4">
+          <Avatar user={user} size={72} />
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-extrabold">{user.name}</h1>
+            <p className="truncate text-sm opacity-90">
+              {user.province} · {user.region}
+            </p>
+            <p className="truncate text-[12px] opacity-80">
+              {user.organization} · {user.generation}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-xl space-y-4 px-5 py-5">
+        {user.bio && <p className="card-soft p-4 text-[15px] leading-relaxed">"{user.bio}"</p>}
+
+        {match && (
+          <div className="card-soft p-4">
+            <p className="text-3xl font-extrabold text-gradient">{match.score}% POWER MATCH</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{match.reason}</p>
+          </div>
+        )}
+
+        <Block title="Cares about">
+          {user.interests.map((i) => (
+            <Chip key={i} tone="primary">
+              {i}
+            </Chip>
+          ))}
+        </Block>
+        <Block title="Brings">
+          {user.powers_have.map((p) => (
+            <PowerChip key={p} name={p} tone="lime" />
+          ))}
+        </Block>
+        <Block title="Looking for">
+          {user.powers_need.map((p) => (
+            <PowerChip key={p} name={p} tone="coral" />
+          ))}
+        </Block>
+
+        {theirIdeas.length > 0 && (
+          <div className="card-soft p-4">
+            <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+              On the marketplace
+            </p>
+            {theirIdeas.map((i) => (
+              <Link
+                key={i.id}
+                to="/marketplace"
+                className="block rounded-xl bg-accent/60 p-3 text-sm font-bold"
+              >
+                {i.title} →
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 border-t border-border/60 bg-background/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+        {existing ? (
+          <Link
+            to="/connection/$id"
+            params={{ id: existing.id }}
+            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl bg-lime text-base font-extrabold text-lime-foreground"
+          >
+            Open Connection Card
+          </Link>
+        ) : (
+          <button
+            onClick={() => {
+              if (!me || !match) return;
+              connect(user.id, match.score, match.reason);
+              toast.success("New Connection Created ✨");
+            }}
+            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground"
+          >
+            Connect with {user.name}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Block({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="card-soft p-4">
+      <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+        {title}
+      </p>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
