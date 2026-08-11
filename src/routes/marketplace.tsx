@@ -7,16 +7,17 @@ import { Avatar, Chip } from "@/components/power-bits";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { ISSUES, REGIONS, type Region } from "@/lib/types";
+import { issueTh, REGION_LABEL } from "@/lib/i18n";
 
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
     meta: [
-      { title: "Power Marketplace — Connecting Power" },
+      { title: "ตลาดพลัง — Connecting Power" },
       {
         name: "description",
-        content: "Shop for ideas: projects looking for partners, funding, reach and local knowledge.",
+        content: "จับคู่ไอเดียกับพลัง! เลือกโปรเจกต์ที่กำลังมองหาพาร์ตเนอร์ ทุน คอนเนกชัน หรือความรู้ท้องถิ่น",
       },
-      { property: "og:title", content: "Power Marketplace" },
+      { property: "og:title", content: "ตลาดพลัง — Connecting Power" },
       { property: "og:description", content: "ตลาดแลกเปลี่ยนพลังและไอเดีย" },
     ],
   }),
@@ -43,35 +44,35 @@ function Marketplace() {
   );
 
   return (
-    <AppShell title="Power Marketplace" subtitle="ตลาดแลกเปลี่ยนพลังและไอเดีย">
+    <AppShell title="ตลาดพลัง" subtitle="Power Marketplace · ตลาดแลกเปลี่ยนพลังและไอเดีย">
       <div className="space-y-2 px-5 py-3">
         <Row>
           <Pill active={!issue} onClick={() => setIssue(null)}>
-            All issues
+            ทุกประเด็น
           </Pill>
           {ISSUES.filter((i) => i !== "Other").map((i) => (
             <Pill key={i} active={issue === i} onClick={() => setIssue(i)}>
-              {i}
+              {issueTh(i)}
             </Pill>
           ))}
         </Row>
         <Row>
           <Pill active={!region} onClick={() => setRegion(null)}>
-            All regions
+            ทุกภูมิภาค
           </Pill>
           {REGIONS.map((r) => (
             <Pill key={r} active={region === r} onClick={() => setRegion(r)}>
-              {r}
+              {REGION_LABEL[r]}
             </Pill>
           ))}
         </Row>
         <Row>
           <Pill active={!need} onClick={() => setNeed(null)}>
-            Any need
+            ต้องการอะไรก็ได้
           </Pill>
           {needOptions.map((n) => (
             <Pill key={n} active={need === n} onClick={() => setNeed(n)}>
-              needs {n}
+              ต้องการ {n}
             </Pill>
           ))}
         </Row>
@@ -94,10 +95,10 @@ function Marketplace() {
                   {idea.description}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  <Chip tone="electric">📍 {idea.region}</Chip>
+                  <Chip tone="electric">📍 {REGION_LABEL[idea.region]}</Chip>
                   {idea.issues.map((i) => (
                     <Chip key={i} tone="primary">
-                      {i}
+                      {issueTh(i)}
                     </Chip>
                   ))}
                 </div>
@@ -114,7 +115,7 @@ function Marketplace() {
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div className="rounded-xl bg-lime/20 p-3">
                     <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-lime-foreground">
-                      We have
+                      มีให้
                     </p>
                     <ul className="space-y-0.5 text-[12px] font-semibold">
                       {idea.resources_have.map((r) => (
@@ -124,7 +125,7 @@ function Marketplace() {
                   </div>
                   <div className="rounded-xl bg-coral/10 p-3">
                     <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-coral">
-                      We need
+                      ต้องการ
                     </p>
                     <ul className="space-y-0.5 text-[12px] font-semibold">
                       {idea.resources_need.map((r) => (
@@ -148,18 +149,18 @@ function Marketplace() {
                       );
                       const m = scoreMatch(me, owner);
                       const conn = existing ?? connect(owner.id, m.score, m.reason);
-                      toast.success("New Connection Created ✨", {
-                        description: `Now decide what you'll do with ${owner.name}.`,
+                      toast.success("เชื่อมต่อสำเร็จแล้ว! ✨", {
+                        description: `ตอนนี้มาคิดกันว่าจะทำอะไรกับ ${owner.name} ดี`,
                       });
                       navigate({ to: "/connection/$id", params: { id: conn.id } });
                     }}
                     className="tap h-12 flex-1 rounded-xl gradient-power text-sm font-extrabold text-primary-foreground"
                   >
-                    I Want to Connect
+                    อยากเชื่อมต่อ
                   </button>
                   <button
                     onClick={() => toggleSaveIdea(idea.id)}
-                    aria-label="Save idea"
+                    aria-label="บันทึกไอเดีย"
                     className={`tap grid h-12 w-12 place-items-center rounded-xl border ${
                       saved ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
                     }`}

@@ -1,32 +1,25 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, X } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { ISSUES, POWERS, REGIONS, REGION_TH, type Generation, type Region } from "@/lib/types";
+import { ISSUES, POWERS, REGIONS, type Generation, type Region } from "@/lib/types";
+import { GENERATION_TH, issueTh, REGION_LABEL } from "@/lib/i18n";
+import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Create Your Power Profile — Connecting Power" },
+      { title: "สร้างโปรไฟล์พลังของคุณ — Connecting Power" },
       {
         name: "description",
-        content: "Tell us what power you bring and what you're looking for. Two minutes, tops.",
+        content: "บอกเราหน่อยว่าคุณมีพลังอะไร และกำลังมองหาพลังแบบไหน ใช้เวลาไม่ถึง 2 นาที",
       },
-      { property: "og:title", content: "Create Your Power Profile" },
+      { property: "og:title", content: "สร้างโปรไฟล์พลังของคุณ" },
       { property: "og:description", content: "คุณมีพลังอะไร และกำลังมองหาพลังแบบไหน" },
     ],
   }),
   component: Onboarding,
 });
-
-const PROVINCES: Record<Region, string[]> = {
-  North: ["Chiang Mai", "Chiang Rai", "Nan", "Phitsanulok", "Lampang"],
-  Northeast: ["Khon Kaen", "Ubon Ratchathani", "Roi Et", "Sakon Nakhon", "Nakhon Ratchasima"],
-  Central: ["Nakhon Pathom", "Rayong", "Chonburi", "Samut Prakan", "Ayutthaya"],
-  South: ["Songkhla", "Pattani", "Surat Thani", "Phuket", "Nakhon Si Thammarat"],
-  Bangkok: ["Bangkok"],
-  Nationwide: ["Working across Thailand"],
-};
 
 const GENERATIONS: Generation[] = ["Gen Z", "Millennial", "Gen X", "Boomer"];
 const AVATARS = ["✨", "🧑🏻‍🎤", "👩🏽‍🌾", "🧑🏽‍💼", "👩🏻‍💻", "🧕🏽", "👴🏽", "🏳️‍🌈", "🧑🏻‍🌾", "👩🏽‍⚕️"];
@@ -48,6 +41,7 @@ function Onboarding() {
   const [have, setHave] = useState<string[]>([]);
   const [need, setNeed] = useState<string[]>([]);
   const [bio, setBio] = useState("");
+  const [photo, setPhoto] = useState<string | undefined>(undefined);
 
   const toggle = (list: string[], set: (v: string[]) => void, v: string) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -63,9 +57,10 @@ function Onboarding() {
     saveProfile({
       name: name.trim(),
       avatar,
-      province: province || (region ? PROVINCES[region][0]! : "Thailand"),
+      photo,
+      province: province || (region ? (PROVINCES_BY_REGION(region)[0]?.en ?? "Bangkok") : "Bangkok"),
       region: region ?? "Nationwide",
-      organization: organization.trim() || "Independent",
+      organization: organization.trim() || "อิสระ",
       generation,
       bio: bio.trim(),
       interests,
@@ -87,7 +82,7 @@ function Onboarding() {
             <button
               onClick={() => setStep((s) => s - 1)}
               className="tap grid h-9 w-9 place-items-center rounded-full bg-muted"
-              aria-label="Back"
+              aria-label="ย้อนกลับ"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -106,12 +101,12 @@ function Onboarding() {
 
       <main className="mx-auto w-full max-w-xl px-5 pb-40 pt-4">
         {step === 0 && (
-          <Section title="What should we call you?" th="เรียกคุณว่าอะไรดี">
+          <Section title="เรียกคุณว่าอะไรดี" th="Tell us your name">
             <input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name or nickname"
+              placeholder="ชื่อหรือชื่อเล่นของคุณ"
               className="h-14 w-full rounded-2xl border border-border bg-card px-4 text-lg font-semibold outline-none focus:ring-2 focus:ring-ring"
             />
             <div className="flex flex-wrap gap-2">
@@ -127,16 +122,56 @@ function Onboarding() {
                 </button>
               ))}
             </div>
+            <div className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-card p-3">
+              {photo ? (
+                <img src={photo} alt="รูปโปรไฟล์" className="h-16 w-16 rounded-2xl object-cover" />
+              ) : (
+                <span className="grid h-16 w-16 place-items-center rounded-2xl bg-muted text-2xl" aria-hidden>
+                  {avatar}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-extrabold">แนบรูปโปรไฟล์ (ไม่บังคับ)</p>
+                <p className="text-[11px] text-muted-foreground">ถ้าไม่แนบ เราจะใช้อีโมจิที่คุณเลือก</p>
+                <div className="mt-2 flex gap-2">
+                  <label className="tap inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground">
+                    <Camera className="h-3.5 w-3.5" />
+                    เลือกรูป
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => setPhoto(String(reader.result));
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                  </label>
+                  {photo && (
+                    <button
+                      onClick={() => setPhoto(undefined)}
+                      className="tap inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-[11px] font-bold"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      ลบรูป
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
             <input
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
-              placeholder="Group / organisation (optional)"
+              placeholder="กลุ่ม / องค์กร (ไม่บังคับ)"
               className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
             <div className="flex flex-wrap gap-2">
               {GENERATIONS.map((g) => (
                 <Pill key={g} active={generation === g} onClick={() => setGeneration(g)}>
-                  {g}
+                  {GENERATION_TH[g]}
                 </Pill>
               ))}
             </div>
@@ -144,7 +179,7 @@ function Onboarding() {
         )}
 
         {step === 1 && (
-          <Section title="Where are you based?" th="คุณทำงานอยู่ที่ไหน">
+          <Section title="คุณทำงานอยู่ที่ไหน" th="เลือกภาคและจังหวัดของคุณ">
             <div className="grid grid-cols-2 gap-2">
               {REGIONS.map((r) => (
                 <button
@@ -157,25 +192,30 @@ function Onboarding() {
                     region === r ? "border-primary bg-primary/10" : "border-border bg-card"
                   }`}
                 >
-                  <span className="block text-sm font-extrabold">{r}</span>
-                  <span className="block text-[12px] text-muted-foreground">{REGION_TH[r]}</span>
+                  <span className="block text-sm font-extrabold">{REGION_LABEL[r]}</span>
+                  <span className="block text-[12px] text-muted-foreground">{r}</span>
                 </button>
               ))}
             </div>
             {region && (
-              <div className="animate-rise flex flex-wrap gap-2">
-                {PROVINCES[region].map((p) => (
-                  <Pill key={p} active={province === p} onClick={() => setProvince(p)}>
-                    {p}
-                  </Pill>
-                ))}
+              <div className="animate-rise max-h-64 overflow-y-auto rounded-2xl border border-border bg-card p-2">
+                <p className="px-2 pb-2 pt-1 text-[11px] font-bold text-muted-foreground">
+                  เลือกจังหวัดของคุณ
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {PROVINCES_BY_REGION(region).map((p) => (
+                    <Pill key={p.en} active={province === p.en} onClick={() => setProvince(p.en)}>
+                      {p.th}
+                    </Pill>
+                  ))}
+                </div>
               </div>
             )}
           </Section>
         )}
 
         {step === 2 && (
-          <Section title="What issues do you care about?" th="คุณสนใจเรื่องอะไร">
+          <Section title="คุณสนใจประเด็นอะไร" th="เลือกได้มากกว่า 1 ข้อ">
             <div className="grid grid-cols-2 gap-2">
               {ISSUES.map((i) => (
                 <button
@@ -187,7 +227,7 @@ function Onboarding() {
                       : "border-border bg-card"
                   }`}
                 >
-                  {i}
+                  {issueTh(i)}
                 </button>
               ))}
             </div>
@@ -195,19 +235,19 @@ function Onboarding() {
         )}
 
         {step === 3 && (
-          <Section title="What power do you bring?" th="คุณมีพลังอะไรมาแบ่งปัน">
+          <Section title="คุณมีพลังอะไรมาแบ่งปัน" th="สิ่งที่คุณให้คนอื่นได้">
             <PowerGrid selected={have} onToggle={(v) => toggle(have, setHave, v)} tone="lime" />
           </Section>
         )}
 
         {step === 4 && (
-          <Section title="What power are you looking for?" th="คุณกำลังมองหาพลังแบบไหน">
+          <Section title="คุณกำลังมองหาพลังแบบไหน" th="สิ่งที่คุณอยากได้จากคนอื่น">
             <PowerGrid selected={need} onToggle={(v) => toggle(need, setNeed, v)} tone="coral" />
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
-              placeholder="Tell us in one sentence what you are working on. e.g. I'm building a youth-friendly mental health support network in Chiang Mai."
+              placeholder="เล่าสั้น ๆ ว่าคุณกำลังทำอะไรอยู่ เช่น กำลังสร้างเครือข่ายดูแลสุขภาพจิตสำหรับเยาวชนในเชียงใหม่"
               className="w-full rounded-2xl border border-border bg-card p-4 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
           </Section>
@@ -220,7 +260,7 @@ function Onboarding() {
           onClick={() => (step === STEPS - 1 ? finish() : setStep((s) => s + 1))}
           className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center gap-2 rounded-2xl gradient-power text-base font-extrabold text-primary-foreground disabled:opacity-40"
         >
-          {step === STEPS - 1 ? "Find My Power Matches" : "Continue"}
+          {step === STEPS - 1 ? "ค้นหาคู่พลังของฉัน" : "ถัดไป"}
           <ArrowRight className="h-4 w-4" />
         </button>
       </div>
@@ -295,8 +335,8 @@ function PowerGrid({
             }`}
           >
             <span className="text-xl">{p.emoji}</span>
-            <span className="mt-1 block text-[13px] font-extrabold leading-tight">{p.key}</span>
-            <span className="block text-[11px] text-muted-foreground">{p.th}</span>
+            <span className="mt-1 block text-[13px] font-extrabold leading-tight">{p.th}</span>
+            <span className="block text-[11px] text-muted-foreground">{p.key}</span>
           </button>
         );
       })}

@@ -1,48 +1,47 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { Avatar, Chip, PowerChip } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { ISSUES, POWERS, REGIONS, type Region } from "@/lib/types";
+import { issueTh, powerTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
+import { MAP_VIEWBOX, PROVINCES, type ProvinceShape } from "@/lib/thailand-geo";
 
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "Power Map — Connecting Power" },
+      { title: "แผนที่พลัง — Connecting Power" },
       {
         name: "description",
-        content: "Browse participants across Thailand by region, issue and the power they bring.",
+        content:
+          "แผนที่ประเทศไทยแบ่งภาคและรายจังหวัด ดูว่าใครอยู่จังหวัดไหน และร่วมลงรายละเอียดของจังหวัดคุณได้",
       },
-      { property: "og:title", content: "The Power Map" },
-      { property: "og:description", content: "แผนที่พลังของผู้เข้าร่วมทั่วประเทศ" },
+      { property: "og:title", content: "แผนที่พลังประเทศไทย" },
+      { property: "og:description", content: "ดูคน ไอเดีย และเรื่องราวรายจังหวัดทั่วประเทศ" },
     ],
   }),
   component: PowerMap,
 });
 
-const REGION_POS: Record<Region, { x: number; y: number }> = {
-  North: { x: 34, y: 16 },
-  Northeast: { x: 68, y: 30 },
-  Central: { x: 40, y: 45 },
-  Bangkok: { x: 45, y: 56 },
-  South: { x: 38, y: 82 },
-  Nationwide: { x: 72, y: 66 },
+const REGION_FILL: Record<Region, string> = {
+  North: "var(--color-primary)",
+  Northeast: "var(--color-coral)",
+  Central: "var(--color-electric)",
+  Bangkok: "var(--color-primary)",
+  South: "var(--color-lime)",
+  Nationwide: "var(--color-primary)",
 };
 
-function hash(s: string) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 997;
-  return h / 997;
-}
-
 function PowerMap() {
-  const { users, ideas } = useStore();
+  const { users, ideas, provinceNotes, me, addProvinceNote } = useStore();
   const [view, setView] = useState<"map" | "people">("map");
   const [region, setRegion] = useState<Region | null>(null);
   const [issue, setIssue] = useState<string | null>(null);
   const [have, setHave] = useState<string | null>(null);
   const [need, setNeed] = useState<string | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [openProvince, setOpenProvince] = useState<ProvinceShape | null>(null);
 
   const filtered = useMemo(
     () =>
@@ -56,79 +55,83 @@ function PowerMap() {
     [users, region, issue, have, need],
   );
 
-  const nodes = filtered.map((u) => {
-    const base = REGION_POS[u.region];
-    return {
-      u,
-      x: base.x + (hash(u.id) - 0.5) * 26,
-      y: base.y + (hash(u.name) - 0.5) * 20,
-    };
-  });
+  const countByProvince = useMemo(() => {
+    const m = new Map<string, number>();
+    filtered.forEach((u) => m.set(u.province, (m.get(u.province) ?? 0) + 1));
+    return m;
+  }, [filtered]);
 
-  const sel = selected ? users.find((u) => u.id === selected) : null;
-  const clusters = ISSUES.slice(0, 6).map((i) => ({
-    issue: i,
-    count: users.filter((u) => u.interests.includes(i)).length,
-  }));
+  const notesByProvince = useMemo(() => {
+    const m = new Map<string, number>();
+    provinceNotes.forEach((n) => m.set(n.province, (m.get(n.province) ?? 0) + 1));
+    return m;
+  }, [provinceNotes]);
+
+  const maxCount = Math.max(1, ...countByProvince.values());
 
   return (
     <AppShell
-      title="Power Map"
-      subtitle={`${filtered.length} people · ${ideas.length} ideas`}
+      title="แผนที่พลัง"
+      subtitle={`${filtered.length} คน · ${ideas.length} ไอเดีย · ${provinceNotes.length} เรื่องเล่าจากจังหวัด`}
       action={
         <div className="flex shrink-0 rounded-full bg-muted p-1 text-[11px] font-bold">
-          {(["map", "people"] as const).map((v) => (
+          {(
+            [
+              ["map", "แผนที่"],
+              ["people", "รายชื่อ"],
+            ] as const
+          ).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`tap rounded-full px-3 py-1.5 capitalize ${
+              className={`tap rounded-full px-3 py-1.5 ${
                 view === v ? "bg-card shadow-sm" : "text-muted-foreground"
               }`}
             >
-              {v}
+              {label}
             </button>
           ))}
         </div>
       }
     >
       <div className="space-y-2 px-5 py-3">
-        <FilterRow label="Region">
+        <FilterRow label="ภาค">
           <Pill active={!region} onClick={() => setRegion(null)}>
-            All
+            ทั้งหมด
           </Pill>
           {REGIONS.map((r) => (
             <Pill key={r} active={region === r} onClick={() => setRegion(r)}>
-              {r}
+              {REGION_LABEL[r]}
             </Pill>
           ))}
         </FilterRow>
-        <FilterRow label="Issue">
+        <FilterRow label="ประเด็น">
           <Pill active={!issue} onClick={() => setIssue(null)}>
-            All
+            ทั้งหมด
           </Pill>
           {ISSUES.filter((i) => i !== "Other").map((i) => (
             <Pill key={i} active={issue === i} onClick={() => setIssue(i)}>
-              {i}
+              {issueTh(i)}
             </Pill>
           ))}
         </FilterRow>
-        <FilterRow label="I HAVE">
+        <FilterRow label="มีพลัง">
           <Pill active={!have} onClick={() => setHave(null)}>
-            Any
+            ทั้งหมด
           </Pill>
           {POWERS.map((p) => (
             <Pill key={p.key} active={have === p.key} onClick={() => setHave(p.key)}>
-              {p.emoji} {p.key}
+              {p.emoji} {p.th}
             </Pill>
           ))}
         </FilterRow>
-        <FilterRow label="I NEED">
+        <FilterRow label="ต้องการ">
           <Pill active={!need} onClick={() => setNeed(null)}>
-            Any
+            ทั้งหมด
           </Pill>
           {POWERS.map((p) => (
             <Pill key={p.key} active={need === p.key} onClick={() => setNeed(p.key)}>
-              {p.emoji} {p.key}
+              {p.emoji} {p.th}
             </Pill>
           ))}
         </FilterRow>
@@ -137,63 +140,90 @@ function PowerMap() {
       {view === "map" ? (
         <div className="px-5 pb-6">
           <div
-            className="relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-border"
+            className="relative overflow-hidden rounded-3xl border border-border p-2"
             style={{ backgroundImage: "var(--gradient-soft)" }}
           >
-            <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full text-primary">
-              {nodes.map((n, i) =>
-                nodes.slice(i + 1).map((m) =>
-                  Math.hypot(n.x - m.x, n.y - m.y) < 18 ? (
-                    <line
-                      key={`${n.u.id}-${m.u.id}`}
-                      x1={n.x}
-                      y1={n.y}
-                      x2={m.x}
-                      y2={m.y}
-                      stroke="currentColor"
-                      strokeWidth={0.25}
-                      opacity={0.3}
-                    />
-                  ) : null,
-                ),
-              )}
-            </svg>
-            {nodes.map((n) => (
-              <button
-                key={n.u.id}
-                onClick={() => setSelected(n.u.id)}
-                style={{ left: `${n.x}%`, top: `${n.y}%` }}
-                className="tap absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card bg-card text-lg shadow-md"
-                aria-label={n.u.name}
-              >
-                <span className="grid h-9 w-9 place-items-center">{n.u.avatar}</span>
-              </button>
-            ))}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap gap-1.5 bg-gradient-to-t from-background/90 to-transparent p-3">
-              {clusters.map((c) => (
-                <Chip key={c.issue} tone="primary">
-                  {c.issue} · {c.count}
-                </Chip>
+            <svg viewBox={MAP_VIEWBOX} className="h-auto w-full" role="img" aria-label="แผนที่ประเทศไทยรายจังหวัด">
+              {PROVINCES.map((p) => {
+                const count = countByProvince.get(p.en) ?? 0;
+                const dim = !!region && p.region !== region;
+                const intensity = count ? 0.25 + (count / maxCount) * 0.6 : 0.07;
+                return (
+                  <path
+                    key={p.en}
+                    d={p.d}
+                    onClick={() => setOpenProvince(p)}
+                    fill={REGION_FILL[p.region]}
+                    fillOpacity={dim ? 0.05 : intensity}
+                    stroke="var(--color-background)"
+                    strokeWidth={1.6}
+                    className="cursor-pointer transition-opacity"
+                    aria-label={p.th}
+                  >
+                    <title>{`${p.th} · ${count} คน`}</title>
+                  </path>
+                );
+              })}
+              {PROVINCES.filter((p) => (countByProvince.get(p.en) ?? 0) > 0).map((p) => (
+                <g key={`m-${p.en}`} onClick={() => setOpenProvince(p)} className="cursor-pointer">
+                  <circle
+                    cx={p.cx}
+                    cy={p.cy}
+                    r={13 + (countByProvince.get(p.en) ?? 0) * 2}
+                    fill="var(--color-primary)"
+                    fillOpacity={0.9}
+                  />
+                  <text
+                    x={p.cx}
+                    y={p.cy + 6}
+                    textAnchor="middle"
+                    fontSize={16}
+                    fontWeight={800}
+                    fill="var(--color-primary-foreground)"
+                  >
+                    {countByProvince.get(p.en)}
+                  </text>
+                </g>
               ))}
-            </div>
+              {PROVINCES.filter((p) => (notesByProvince.get(p.en) ?? 0) > 0).map((p) => (
+                <circle
+                  key={`n-${p.en}`}
+                  cx={p.cx + 16}
+                  cy={p.cy - 14}
+                  r={6}
+                  fill="var(--color-coral)"
+                />
+              ))}
+            </svg>
+            <p className="px-2 pb-1 pt-2 text-center text-[11px] text-muted-foreground">
+              แตะที่จังหวัดเพื่อดูรายละเอียดและร่วมเพิ่มข้อมูล
+            </p>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {REGIONS.filter((r) => r !== "Nationwide").map((r) => (
+              <Chip key={r} tone="muted">
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: REGION_FILL[r] }}
+                  aria-hidden
+                />
+                {REGION_LABEL[r]} · {filtered.filter((u) => u.region === r).length}
+              </Chip>
+            ))}
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 px-5 pb-6">
           {filtered.map((u) => (
-            <Link
-              key={u.id}
-              to="/people/$id"
-              params={{ id: u.id }}
-              className="card-soft tap p-3"
-            >
+            <Link key={u.id} to="/people/$id" params={{ id: u.id }} className="card-soft tap p-3">
               <Avatar user={u} size={44} />
               <p className="mt-2 truncate text-sm font-extrabold">{u.name}</p>
-              <p className="truncate text-[11px] text-muted-foreground">{u.province}</p>
+              <p className="truncate text-[11px] text-muted-foreground">{provinceTh(u.province)}</p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {u.interests.slice(0, 2).map((i) => (
                   <Chip key={i} tone="primary">
-                    {i}
+                    {issueTh(i)}
                   </Chip>
                 ))}
               </div>
@@ -202,51 +232,185 @@ function PowerMap() {
         </div>
       )}
 
-      {sel && (
-        <div
-          className="fixed inset-0 z-40 flex items-end bg-ink/40 backdrop-blur-sm"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="animate-rise w-full rounded-t-3xl bg-card p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
-            <div className="flex items-start gap-3">
-              <Avatar user={sel} size={56} />
-              <div className="min-w-0">
-                <h3 className="truncate text-lg font-extrabold">{sel.name}</h3>
-                <p className="truncate text-[12px] text-muted-foreground">
-                  {sel.province} · {sel.organization}
-                </p>
-              </div>
-            </div>
-            <p className="mt-3 text-[13px] text-muted-foreground">{sel.bio}</p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {sel.powers_have.map((p) => (
-                <PowerChip key={p} name={p} tone="lime" />
-              ))}
-            </div>
-            <Link
-              to="/people/$id"
-              params={{ id: sel.id }}
-              className="tap mt-4 flex h-12 items-center justify-center rounded-2xl gradient-power text-sm font-extrabold text-primary-foreground"
-            >
-              View Profile
-            </Link>
-          </div>
-        </div>
+      {openProvince && (
+        <ProvinceSheet
+          province={openProvince}
+          onClose={() => setOpenProvince(null)}
+          people={users.filter((u) => u.province === openProvince.en)}
+          notes={provinceNotes.filter((n) => n.province === openProvince.en)}
+          onAdd={(title, detail, issues) => {
+            addProvinceNote({
+              province: openProvince.en,
+              author_id: me?.id ?? "guest",
+              author_name: me?.name ?? "ผู้เข้าร่วม",
+              title,
+              detail,
+              issues,
+            });
+            toast.success("เพิ่มรายละเอียดจังหวัดแล้ว ✨", {
+              description: `${openProvince.th} · ขอบคุณที่ร่วมเติมข้อมูล`,
+            });
+          }}
+        />
       )}
     </AppShell>
+  );
+}
+
+function ProvinceSheet({
+  province,
+  people,
+  notes,
+  onClose,
+  onAdd,
+}: {
+  province: ProvinceShape;
+  people: ReturnType<typeof useStore>["users"];
+  notes: ReturnType<typeof useStore>["provinceNotes"];
+  onClose: () => void;
+  onAdd: (title: string, detail: string, issues: string[]) => void;
+}) {
+  const [form, setForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [detail, setDetail] = useState("");
+  const [issues, setIssues] = useState<string[]>([]);
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-end bg-ink/40 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="animate-rise max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-card p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" />
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-xl font-extrabold">{province.th}</h3>
+            <p className="text-[12px] text-muted-foreground">
+              {REGION_LABEL[province.region]} · {people.length} คน · {notes.length} รายละเอียด
+            </p>
+          </div>
+          <button onClick={onClose} className="tap grid h-9 w-9 place-items-center rounded-full bg-muted">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {people.length > 0 && (
+          <div className="mt-4">
+            <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+              คนในจังหวัดนี้
+            </p>
+            <div className="space-y-2">
+              {people.map((u) => (
+                <Link
+                  key={u.id}
+                  to="/people/$id"
+                  params={{ id: u.id }}
+                  className="tap flex items-center gap-3 rounded-2xl border border-border p-3"
+                >
+                  <Avatar user={u} size={40} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-extrabold">{u.name}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{u.organization}</p>
+                  </div>
+                  <div className="flex shrink-0 gap-1">
+                    {u.powers_have.slice(0, 1).map((p) => (
+                      <PowerChip key={p} name={p} tone="lime" />
+                    ))}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-5">
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+            รายละเอียดของจังหวัด
+          </p>
+          {notes.length === 0 && (
+            <p className="rounded-2xl bg-accent/60 p-3 text-[13px] text-muted-foreground">
+              ยังไม่มีใครลงรายละเอียดของ{province.th} — คุณเริ่มคนแรกได้เลย
+            </p>
+          )}
+          <div className="space-y-2">
+            {notes.map((n) => (
+              <article key={n.id} className="rounded-2xl border border-border p-3">
+                <p className="text-sm font-extrabold">{n.title}</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{n.detail}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {n.issues.map((i) => (
+                    <Chip key={i} tone="primary">
+                      {issueTh(i)}
+                    </Chip>
+                  ))}
+                  <span className="text-[11px] text-muted-foreground">โดย {n.author_name}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {form ? (
+          <div className="mt-4 space-y-2">
+            <input
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="หัวข้อ เช่น กลุ่มเยาวชนในอำเภอเมือง"
+              className="h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <textarea
+              rows={3}
+              value={detail}
+              onChange={(e) => setDetail(e.target.value)}
+              placeholder="เล่ารายละเอียด: มีใครทำอะไรอยู่ในจังหวัดนี้ ต้องการพลังแบบไหนเพิ่ม"
+              className="w-full rounded-2xl border border-border bg-background p-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+              {ISSUES.filter((i) => i !== "Other").map((i) => (
+                <Pill
+                  key={i}
+                  active={issues.includes(i)}
+                  onClick={() =>
+                    setIssues((s) => (s.includes(i) ? s.filter((x) => x !== i) : [...s, i]))
+                  }
+                >
+                  {issueTh(i)}
+                </Pill>
+              ))}
+            </div>
+            <button
+              disabled={!title.trim() || !detail.trim()}
+              onClick={() => {
+                onAdd(title.trim(), detail.trim(), issues);
+                setTitle("");
+                setDetail("");
+                setIssues([]);
+                setForm(false);
+              }}
+              className="tap flex h-13 w-full items-center justify-center rounded-2xl gradient-power py-4 text-sm font-extrabold text-primary-foreground disabled:opacity-40"
+            >
+              บันทึกรายละเอียด
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setForm(true)}
+            className="tap mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/60 py-4 text-sm font-extrabold text-primary"
+          >
+            <Plus className="h-4 w-4" />
+            เพิ่มรายละเอียดของ{province.th}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-14 shrink-0 text-[9px] font-extrabold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </span>
+      <span className="w-14 shrink-0 text-[10px] font-extrabold text-muted-foreground">{label}</span>
       <div className="no-scrollbar flex flex-1 gap-1.5 overflow-x-auto">{children}</div>
     </div>
   );

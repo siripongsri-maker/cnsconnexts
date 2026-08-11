@@ -1,6 +1,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { DEMO_COMMITMENTS, DEMO_CONNECTIONS, DEMO_IDEAS, DEMO_USERS } from "./demo-data";
-import type { Commitment, Connection, ConnectionStatus, Idea, User } from "./types";
+import { DEMO_PROVINCE_NOTES } from "./demo-province-notes";
+import type { Commitment, Connection, ConnectionStatus, Idea, ProvinceNote, User } from "./types";
 
 const KEY = "connecting-power-v1";
 
@@ -11,6 +12,7 @@ type State = {
   connections: Connection[];
   commitments: Commitment[];
   savedIdeas: string[];
+  provinceNotes: ProvinceNote[];
 };
 
 const initial: State = {
@@ -20,6 +22,7 @@ const initial: State = {
   connections: DEMO_CONNECTIONS,
   commitments: DEMO_COMMITMENTS,
   savedIdeas: [],
+  provinceNotes: DEMO_PROVINCE_NOTES,
 };
 
 type Store = State & {
@@ -29,6 +32,7 @@ type Store = State & {
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
   toggleSaveIdea: (id: string) => void;
+  addProvinceNote: (n: Omit<ProvinceNote, "id" | "created_at">) => ProvinceNote;
   reset: () => void;
 };
 
@@ -124,6 +128,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const addProvinceNote: Store["addProvinceNote"] = useCallback((n) => {
+    const note: ProvinceNote = { ...n, id: `pn-${Date.now()}`, created_at: new Date().toISOString() };
+    setState((s) => ({ ...s, provinceNotes: [note, ...s.provinceNotes] }));
+    return note;
+  }, []);
+
   const reset = useCallback(() => setState(initial), []);
 
   const value = useMemo<Store>(
@@ -135,9 +145,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addCommitment,
       setConnectionStatus,
       toggleSaveIdea,
+      addProvinceNote,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);

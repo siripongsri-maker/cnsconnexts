@@ -5,11 +5,11 @@ import { NetworkBackground } from "@/components/network-background";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Connecting Power — Connect People, Ideas & Power" },
+      { title: "Connecting Power — เชื่อมคน เชื่อมไอเดีย เชื่อมพลัง" },
       {
         name: "description",
         content:
-          "Everyone brings a different kind of power. Find who you should connect with today at Thailand's National Health Assembly.",
+          "ทุกคนมีพลังของตัวเอง มาค้นหาว่าวันนี้คุณควรเชื่อมกับใคร ในงานสมัชชาสุขภาพแห่งชาติ",
       },
       { property: "og:title", content: "Connecting Power" },
       {
@@ -22,10 +22,10 @@ export const Route = createFileRoute("/")({
 });
 
 const STATS = [
-  { n: "128", l: "People", th: "คน" },
-  { n: "42", l: "Ideas", th: "ไอเดีย" },
-  { n: "86", l: "Connections", th: "การเชื่อม" },
-  { n: "4", l: "Regions", th: "ภูมิภาค" },
+  { n: "128", l: "คน" },
+  { n: "42", l: "ไอเดีย" },
+  { n: "86", l: "การเชื่อม" },
+  { n: "4", l: "ภูมิภาค" },
 ];
 
 function Welcome() {
@@ -44,7 +44,7 @@ function Welcome() {
         <div className="animate-rise">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
             <span className="h-2 w-2 rounded-full bg-lime animate-pulse-node" />
-            National Health Assembly
+            สมัชชาสุขภาพแห่งชาติ
           </span>
         </div>
 
@@ -57,8 +57,7 @@ function Welcome() {
             เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ
           </p>
           <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
-            Everyone brings a different kind of power. Let's discover who you should connect with
-            today.
+            ทุกคนมีพลังไม่เหมือนกัน มาค้นหากันเถอะว่าวันนี้คุณควรเชื่อมต่อกับใคร
           </p>
         </div>
 
@@ -79,8 +78,8 @@ function Welcome() {
             className="tap glow flex h-16 items-center justify-between rounded-3xl gradient-power px-6 text-primary-foreground"
           >
             <span className="text-left">
-              <span className="block text-base font-extrabold">Find My Connections</span>
-              <span className="block text-[12px] opacity-90">ค้นหาคนที่ควรเชื่อมต่อ</span>
+              <span className="block text-base font-extrabold">ค้นหาคนที่ควรเชื่อมต่อ</span>
+              <span className="block text-[12px] opacity-90">Find My Connections</span>
             </span>
             <ArrowRight className="h-5 w-5 shrink-0" />
           </Link>
@@ -89,18 +88,18 @@ function Welcome() {
               to="/map"
               className="tap flex h-14 items-center justify-center rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
             >
-              Power Map
+              แผนที่พลัง
             </Link>
             <Link
               to="/qr"
               className="tap flex h-14 items-center justify-center gap-2 rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
             >
               <QrCode className="h-4 w-4" />
-              Scan to Join
+              สแกนเพื่อเข้าร่วม
             </Link>
           </div>
           <p className="pt-1 text-center text-[11px] text-muted-foreground">
-            Takes 1–2 minutes · ใช้เวลาไม่ถึง 2 นาที
+            ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
           </p>
         </div>
       </div>

@@ -4,16 +4,17 @@ import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
 import { useStore } from "@/lib/store";
 import { POWER_EMOJI, REGIONS } from "@/lib/types";
+import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Live Power Dashboard — Connecting Power" },
+      { title: "แดชบอร์ดสด — Connecting Power" },
       {
         name: "description",
-        content: "Live numbers from the floor: people, connections, ideas and commitments.",
+        content: "ตัวเลขสดจากงาน: จำนวนคน คอนเนกชัน ไอเดีย และคำมั่นสัญญา อัปเดตแบบเรียลไทม์",
       },
-      { property: "og:title", content: "Live Power Dashboard" },
+      { property: "og:title", content: "แดชบอร์ดสด — Connecting Power" },
       { property: "og:description", content: "วันนี้พลังของคุณจะไปเชื่อมกับใคร?" },
     ],
   }),
@@ -83,48 +84,48 @@ function Dashboard() {
   const message = MESSAGES[msg]!;
 
   return (
-    <AppShell title="Live Dashboard" subtitle="Connecting Power · on the floor right now">
+    <AppShell title="แดชบอร์ดสด" subtitle="Connecting Power · เกาะติดบรรยากาศงานแบบเรียลไทม์">
       <div className="relative overflow-hidden px-5 py-4">
         <div className="relative overflow-hidden rounded-3xl gradient-power p-5 text-primary-foreground">
           <div className="absolute inset-0 text-white/70">
             <NetworkBackground count={20} seed={12} />
           </div>
           <div className="relative grid grid-cols-2 gap-4">
-            <Big n={stats.people} label="People" />
-            <Big n={stats.connections} label="Connections" />
-            <Big n={stats.ideas} label="Ideas" />
-            <Big n={stats.commitments} label="Commitments" />
+            <Big n={stats.people} label="คน" />
+            <Big n={stats.connections} label="คอนเนกชัน" />
+            <Big n={stats.ideas} label="ไอเดีย" />
+            <Big n={stats.commitments} label="คำมั่นสัญญา" />
           </div>
           <div key={msg} className="animate-rise relative mt-5 border-t border-white/25 pt-4">
-            <p className="text-base font-extrabold">{message.en}</p>
-            <p className="text-sm opacity-90">{message.th}</p>
+            <p className="text-base font-extrabold">{message.th}</p>
+            <p className="text-sm opacity-90">{message.en}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-3 px-5 pb-6">
-        <Panel title="Top Issues">
+        <Panel title="ประเด็นยอดฮิต">
           {topIssues.map(([issue, count]) => (
-            <Bar key={issue} label={issue} value={count} max={topIssues[0]![1]} tone="primary" />
+            <Bar key={issue} label={issueTh(issue)} value={count} max={topIssues[0]![1]} tone="primary" />
           ))}
         </Panel>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Panel title="Most Needed Power">
+          <Panel title="พลังที่ต้องการมากที่สุด">
             {rank("powers_need").map(([p, c]) => (
-              <Bar key={p} label={`${POWER_EMOJI[p] ?? ""} ${p}`} value={c} max={rank("powers_need")[0]![1]} tone="coral" />
+              <Bar key={p} label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`} value={c} max={rank("powers_need")[0]![1]} tone="coral" />
             ))}
           </Panel>
-          <Panel title="Most Shared Power">
+          <Panel title="พลังที่แชร์กันมากที่สุด">
             {rank("powers_have").map(([p, c]) => (
-              <Bar key={p} label={`${POWER_EMOJI[p] ?? ""} ${p}`} value={c} max={rank("powers_have")[0]![1]} tone="lime" />
+              <Bar key={p} label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`} value={c} max={rank("powers_have")[0]![1]} tone="lime" />
             ))}
           </Panel>
         </div>
 
-        <Panel title="Connections by Region">
+        <Panel title="คอนเนกชันแยกตามภูมิภาค">
           {byRegion.map((r) => (
-            <Bar key={r.region} label={r.region} value={r.count} max={maxRegion} tone="electric" />
+            <Bar key={r.region} label={REGION_LABEL[r.region]} value={r.count} max={maxRegion} tone="electric" />
           ))}
         </Panel>
       </div>
