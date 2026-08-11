@@ -1,5 +1,6 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { DEMO_COMMITMENTS, DEMO_CONNECTIONS, DEMO_IDEAS, DEMO_PROVINCE_NOTES, DEMO_USERS } from "./demo-data";
+import { DEMO_COMMITMENTS, DEMO_CONNECTIONS, DEMO_IDEAS, DEMO_USERS } from "./demo-data";
+import { DEMO_PROVINCE_NOTES } from "./demo-province-notes";
 import type { Commitment, Connection, ConnectionStatus, Idea, ProvinceNote, User } from "./types";
 
 const KEY = "connecting-power-v1";
