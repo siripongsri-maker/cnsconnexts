@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CommitmentsRouteImport } from './routes/commitments'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as MatchesRouteImport } from './routes/matches'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
+import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommitmentsRoute = CommitmentsRouteImport.update({
+  id: '/commitments',
+  path: '/commitments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesRoute = MatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectionIdRoute = ConnectionIdRouteImport.update({
+  id: '/connection/$id',
+  path: '/connection/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeopleIdRoute = PeopleIdRouteImport.update({
+  id: '/people/$id',
+  path: '/people/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/commitments': typeof CommitmentsRoute
+  '/dashboard': typeof DashboardRoute
+  '/map': typeof MapRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/matches': typeof MatchesRoute
+  '/onboarding': typeof OnboardingRoute
+  '/connection/$id': typeof ConnectionIdRoute
+  '/people/$id': typeof PeopleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/commitments': typeof CommitmentsRoute
+  '/dashboard': typeof DashboardRoute
+  '/map': typeof MapRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/matches': typeof MatchesRoute
+  '/onboarding': typeof OnboardingRoute
+  '/connection/$id': typeof ConnectionIdRoute
+  '/people/$id': typeof PeopleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/commitments': typeof CommitmentsRoute
+  '/dashboard': typeof DashboardRoute
+  '/map': typeof MapRoute
+  '/marketplace': typeof MarketplaceRoute
+  '/matches': typeof MatchesRoute
+  '/onboarding': typeof OnboardingRoute
+  '/connection/$id': typeof ConnectionIdRoute
+  '/people/$id': typeof PeopleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/commitments'
+    | '/dashboard'
+    | '/map'
+    | '/marketplace'
+    | '/matches'
+    | '/onboarding'
+    | '/connection/$id'
+    | '/people/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/commitments'
+    | '/dashboard'
+    | '/map'
+    | '/marketplace'
+    | '/matches'
+    | '/onboarding'
+    | '/connection/$id'
+    | '/people/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/commitments'
+    | '/dashboard'
+    | '/map'
+    | '/marketplace'
+    | '/matches'
+    | '/onboarding'
+    | '/connection/$id'
+    | '/people/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CommitmentsRoute: typeof CommitmentsRoute
+  DashboardRoute: typeof DashboardRoute
+  MapRoute: typeof MapRoute
+  MarketplaceRoute: typeof MarketplaceRoute
+  MatchesRoute: typeof MatchesRoute
+  OnboardingRoute: typeof OnboardingRoute
+  ConnectionIdRoute: typeof ConnectionIdRoute
+  PeopleIdRoute: typeof PeopleIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +156,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/commitments': {
+      id: '/commitments'
+      path: '/commitments'
+      fullPath: '/commitments'
+      preLoaderRoute: typeof CommitmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches': {
+      id: '/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof MatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connection/$id': {
+      id: '/connection/$id'
+      path: '/connection/$id'
+      fullPath: '/connection/$id'
+      preLoaderRoute: typeof ConnectionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/people/$id': {
+      id: '/people/$id'
+      path: '/people/$id'
+      fullPath: '/people/$id'
+      preLoaderRoute: typeof PeopleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CommitmentsRoute: CommitmentsRoute,
+  DashboardRoute: DashboardRoute,
+  MapRoute: MapRoute,
+  MarketplaceRoute: MarketplaceRoute,
+  MatchesRoute: MatchesRoute,
+  OnboardingRoute: OnboardingRoute,
+  ConnectionIdRoute: ConnectionIdRoute,
+  PeopleIdRoute: PeopleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

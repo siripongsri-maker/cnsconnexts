@@ -1,0 +1,106 @@
+export type Region = "North" | "Northeast" | "Central" | "South" | "Bangkok" | "Nationwide";
+
+export const REGIONS: Region[] = [
+  "North",
+  "Northeast",
+  "Central",
+  "South",
+  "Bangkok",
+  "Nationwide",
+];
+
+export const REGION_TH: Record<Region, string> = {
+  North: "เหนือ",
+  Northeast: "อีสาน",
+  Central: "กลาง",
+  South: "ใต้",
+  Bangkok: "กรุงเทพฯ",
+  Nationwide: "ทั่วประเทศ",
+};
+
+export const ISSUES = [
+  "Youth",
+  "Mental Health",
+  "LGBTQ+",
+  "Gender Equality",
+  "Gender-Based Violence",
+  "Sexual Health",
+  "Silver Age",
+  "Economic Inequality",
+  "Community Health",
+  "Environment",
+  "Human Rights",
+  "Policy",
+  "Digital Innovation",
+  "Other",
+] as const;
+export type Issue = (typeof ISSUES)[number];
+
+export const POWERS = [
+  { key: "Ideas", emoji: "💡", th: "ไอเดีย" },
+  { key: "Community Network", emoji: "👥", th: "เครือข่ายชุมชน" },
+  { key: "Communication", emoji: "📣", th: "การสื่อสาร" },
+  { key: "Policy Connection", emoji: "🏛", th: "สายนโยบาย" },
+  { key: "Funding / Resources", emoji: "💰", th: "ทุน/ทรัพยากร" },
+  { key: "Knowledge", emoji: "🧠", th: "ความรู้" },
+  { key: "Creativity", emoji: "🎨", th: "ความคิดสร้างสรรค์" },
+  { key: "Technology", emoji: "💻", th: "เทคโนโลยี" },
+  { key: "Partnership", emoji: "🤝", th: "พาร์ตเนอร์" },
+  { key: "Local Knowledge", emoji: "📍", th: "ความรู้ท้องถิ่น" },
+] as const;
+export type Power = (typeof POWERS)[number]["key"];
+
+export const POWER_EMOJI: Record<string, string> = Object.fromEntries(
+  POWERS.map((p) => [p.key, p.emoji]),
+);
+
+export type Generation = "Gen Z" | "Millennial" | "Gen X" | "Boomer";
+
+export type User = {
+  id: string;
+  name: string;
+  avatar: string;
+  province: string;
+  region: Region;
+  organization: string;
+  generation: Generation;
+  bio: string;
+  interests: string[];
+  powers_have: string[];
+  powers_need: string[];
+  created_at: string;
+};
+
+export type Idea = {
+  id: string;
+  title: string;
+  description: string;
+  owner_id: string;
+  region: Region;
+  issues: string[];
+  resources_have: string[];
+  resources_need: string[];
+  created_at: string;
+};
+
+export type ConnectionStatus = "Connected" | "Planning" | "In Progress" | "Completed";
+
+export type Connection = {
+  id: string;
+  user_a: string;
+  user_b: string;
+  match_score: number;
+  match_reason: string;
+  status: ConnectionStatus;
+  created_at: string;
+};
+
+export type Commitment = {
+  id: string;
+  connection_id: string;
+  action_type: string;
+  description: string;
+  status: ConnectionStatus;
+  follow_up_date: string | null;
+  created_at: string;
+};
