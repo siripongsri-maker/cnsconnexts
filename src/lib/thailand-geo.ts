@@ -95,7 +95,3 @@ export const PROVINCES: ProvinceShape[] = [
 export const PROVINCE_TH = Object.fromEntries(PROVINCES.map((p) => [p.en, p.th])) as Record<string, string>;
 export const PROVINCE_BY_TH = Object.fromEntries(PROVINCES.map((p) => [p.th, p])) as Record<string, ProvinceShape>;
 export const PROVINCES_BY_REGION = (region: Region) => PROVINCES.filter((p) => p.region === region);
-
-export const PROVINCE_TH: Record<string, string> = Object.fromEntries(
-  PROVINCES.map((p) => [p.en, p.th]),
-);
