@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommitmentsRouteImport } from './routes/commitments'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as QrRouteImport } from './routes/qr'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
@@ -32,6 +34,11 @@ const CommitmentsRoute = CommitmentsRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -54,6 +61,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QrRoute = QrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConnectionIdRoute = ConnectionIdRouteImport.update({
   id: '/connection/$id',
   path: '/connection/$id',
@@ -69,10 +81,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/qr': typeof QrRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -80,10 +94,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/qr': typeof QrRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -92,10 +108,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/qr': typeof QrRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -105,10 +123,12 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/join'
     | '/map'
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/qr'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -116,10 +136,12 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/join'
     | '/map'
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/qr'
     | '/connection/$id'
     | '/people/$id'
   id:
@@ -127,10 +149,12 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/join'
     | '/map'
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/qr'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesById: FileRoutesById
@@ -139,10 +163,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CommitmentsRoute: typeof CommitmentsRoute
   DashboardRoute: typeof DashboardRoute
+  JoinRoute: typeof JoinRoute
   MapRoute: typeof MapRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
+  QrRoute: typeof QrRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
 }
@@ -168,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -198,6 +231,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/qr': {
+      id: '/qr'
+      path: '/qr'
+      fullPath: '/qr'
+      preLoaderRoute: typeof QrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/connection/$id': {
       id: '/connection/$id'
       path: '/connection/$id'
@@ -219,23 +259,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CommitmentsRoute: CommitmentsRoute,
   DashboardRoute: DashboardRoute,
+  JoinRoute: JoinRoute,
   MapRoute: MapRoute,
   MarketplaceRoute: MarketplaceRoute,
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
+  QrRoute: QrRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
