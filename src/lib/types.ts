@@ -61,7 +61,7 @@ export type User = {
   name: string;
   avatar: string;
   /** Optional profile photo as a data URL (uploaded in onboarding). */
-  photo?: string;
+  photo?: string | undefined;
   province: string;
   region: Region;
   organization: string;
