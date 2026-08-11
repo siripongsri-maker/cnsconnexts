@@ -1,4 +1,5 @@
 import type { User } from "./types";
+import { issueTh, powerTh, REGION_LABEL } from "./i18n";
 
 const overlap = (a: string[], b: string[]) => a.filter((x) => b.includes(x));
 
@@ -33,18 +34,18 @@ export function scoreMatch(me: User, other: User): MatchResult {
 
   const bits: string[] = [];
   if (sharedIssues.length)
-    bits.push(`you both care about ${sharedIssues.slice(0, 2).join(" and ").toLowerCase()}`);
-  if (theyGiveMe.length)
-    bits.push(`their ${theyGiveMe[0]!.toLowerCase()} matches what you're looking for`);
-  if (iGiveThem.length) bits.push(`your ${iGiveThem[0]!.toLowerCase()} is exactly what they need`);
-  if (!bits.length) bits.push("you're working in different worlds — that's often where new ideas start");
+    bits.push(`สนใจเรื่อง${sharedIssues.slice(0, 2).map(issueTh).join("และ")}เหมือนกัน`);
+  if (theyGiveMe.length) bits.push(`เขามี “${powerTh(theyGiveMe[0]!)}” ที่คุณกำลังมองหา`);
+  if (iGiveThem.length) bits.push(`คุณมี “${powerTh(iGiveThem[0]!)}” ที่เขาต้องการพอดี`);
+  if (!bits.length) bits.push("คุณสองคนทำงานคนละโลก — จุดเริ่มต้นของไอเดียใหม่มักอยู่ตรงนี้");
 
   const geoBit =
     me.region === other.region
-      ? ` You're both working in the ${me.region}.`
-      : ` A ${me.region} × ${other.region} link could travel far.`;
+      ? ` ทำงานอยู่${REGION_LABEL[me.region]}เหมือนกัน`
+      : ` การเชื่อม ${REGION_LABEL[me.region]} × ${REGION_LABEL[other.region]} ไปได้ไกล`;
 
-  const reason = bits.join(", ").replace(/^./, (c) => c.toUpperCase()) + "." + geoBit;
+  const reason = bits.join(" · ") + geoBit;
+
 
   return {
     user: other,
