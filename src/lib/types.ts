@@ -60,6 +60,8 @@ export type User = {
   id: string;
   name: string;
   avatar: string;
+  /** Optional profile photo as a data URL (uploaded in onboarding). */
+  photo?: string;
   province: string;
   region: Region;
   organization: string;
@@ -68,6 +70,18 @@ export type User = {
   interests: string[];
   powers_have: string[];
   powers_need: string[];
+  created_at: string;
+};
+
+/** A detail/update someone posts about a specific province on the Power Map. */
+export type ProvinceNote = {
+  id: string;
+  province: string;
+  author_id: string;
+  author_name: string;
+  title: string;
+  detail: string;
+  issues: string[];
   created_at: string;
 };
 

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { POWER_EMOJI, type User } from "@/lib/types";
+import { powerTh } from "@/lib/i18n";
 
 export function Chip({
   children,
@@ -30,12 +31,28 @@ export function PowerChip({ name, tone = "muted" }: { name: string; tone?: "mute
   return (
     <Chip tone={tone}>
       <span aria-hidden>{POWER_EMOJI[name] ?? "✨"}</span>
-      {name}
+      {powerTh(name)}
     </Chip>
   );
 }
 
-export function Avatar({ user, size = 48 }: { user: Pick<User, "avatar" | "name">; size?: number }) {
+export function Avatar({
+  user,
+  size = 48,
+}: {
+  user: Pick<User, "avatar" | "name"> & { photo?: string };
+  size?: number;
+}) {
+  if (user.photo) {
+    return (
+      <img
+        src={user.photo}
+        alt={user.name}
+        className="shrink-0 rounded-2xl border border-border object-cover"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
   return (
     <span
       className="grid shrink-0 place-items-center rounded-2xl border border-border bg-accent"
@@ -51,7 +68,7 @@ export function ScoreRing({ score }: { score: number }) {
   return (
     <div className="grid shrink-0 place-items-center rounded-2xl gradient-power px-3 py-2 text-primary-foreground">
       <span className="text-lg font-extrabold leading-none">{score}%</span>
-      <span className="text-[9px] font-bold uppercase tracking-widest opacity-90">match</span>
+      <span className="text-[9px] font-bold uppercase tracking-widest opacity-90">แมตช์</span>
     </div>
   );
 }
