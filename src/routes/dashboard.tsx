@@ -9,12 +9,12 @@ import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "แดชบอร์ดสด — Connecting Power" },
+      { title: "แดชบอร์ดสด — คนส. Connect" },
       {
         name: "description",
         content: "ตัวเลขสดจากงาน: จำนวนคน คอนเนกชัน ไอเดีย และคำมั่นสัญญา อัปเดตแบบเรียลไทม์",
       },
-      { property: "og:title", content: "แดชบอร์ดสด — Connecting Power" },
+      { property: "og:title", content: "แดชบอร์ดสด — คนส. Connect" },
       { property: "og:description", content: "วันนี้พลังของคุณจะไปเชื่อมกับใคร?" },
     ],
   }),
@@ -84,7 +84,7 @@ function Dashboard() {
   const message = MESSAGES[msg]!;
 
   return (
-    <AppShell title="แดชบอร์ดสด" subtitle="Connecting Power · เกาะติดบรรยากาศงานแบบเรียลไทม์">
+    <AppShell title="แดชบอร์ดสด" subtitle="คนส. Connect · เกาะติดบรรยากาศงานแบบเรียลไทม์">
       <div className="relative overflow-hidden px-5 py-4">
         <div className="relative overflow-hidden rounded-3xl gradient-power p-5 text-primary-foreground">
           <div className="absolute inset-0 text-white/70">

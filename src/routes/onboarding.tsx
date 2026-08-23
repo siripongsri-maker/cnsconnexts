@@ -9,7 +9,7 @@ import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "สร้างโปรไฟล์พลังของคุณ — Connecting Power" },
+      { title: "สร้างโปรไฟล์พลังของคุณ — คนส. Connect" },
       {
         name: "description",
         content: "บอกเราหน่อยว่าคุณมีพลังอะไร และกำลังมองหาพลังแบบไหน ใช้เวลาไม่ถึง 2 นาที",

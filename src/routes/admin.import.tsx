@@ -10,7 +10,7 @@ import { provinceTh, REGION_LABEL } from "@/lib/i18n";
 export const Route = createFileRoute("/admin/import")({
   head: () => ({
     meta: [
-      { title: "นำเข้ารายชื่อ CSV — Connecting Power" },
+      { title: "นำเข้ารายชื่อ CSV — คนส. Connect" },
       {
         name: "description",
         content: "อัปโหลดไฟล์ CSV รายชื่อสมาชิกจาก สช. แล้วขึ้นหมุดบนแผนที่พลังทันที",

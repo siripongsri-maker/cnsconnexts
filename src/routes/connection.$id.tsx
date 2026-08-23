@@ -10,12 +10,12 @@ import { issueTh, powerTh, STATUS_TH, ACTION_TYPES_TH } from "@/lib/i18n";
 export const Route = createFileRoute("/connection/$id")({
   head: () => ({
     meta: [
-      { title: "จะลุยด้วยกันแบบไหนดี? — Connecting Power" },
+      { title: "จะลุยด้วยกันแบบไหนดี? — คนส. Connect" },
       {
         name: "description",
         content: "แปลงคอนเนกชันใหม่ให้กลายเป็นก้าวต่อไปจริง ๆ ด้วยคำมั่นสัญญาที่ตกลงร่วมกัน",
       },
-      { property: "og:title", content: "การ์ดคอนเนกชันของคุณ — Connecting Power" },
+      { property: "og:title", content: "การ์ดคอนเนกชันของคุณ — คนส. Connect" },
       { property: "og:description", content: "เจอกันแล้ว ทำอะไรต่อดี?" },
     ],
   }),

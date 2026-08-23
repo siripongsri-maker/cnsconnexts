@@ -80,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Connecting Power — National Health Assembly" },
+      { title: "คนส. Connect — National Health Assembly" },
       {
         name: "description",
         content:

@@ -6,13 +6,13 @@ import { makeJoinCode } from "@/lib/session";
 export const Route = createFileRoute("/qr")({
   head: () => ({
     meta: [
-      { title: "สแกนเพื่อเข้าร่วม — Connecting Power" },
+      { title: "สแกนเพื่อเข้าร่วม — คนส. Connect" },
       {
         name: "description",
         content:
           "แสดง QR โค้ดนี้ที่หน้างาน ผู้เข้าร่วมสแกนแล้วเข้าสู่ขั้นตอนสร้างโปรไฟล์บนมือถือได้ทันที",
       },
-      { property: "og:title", content: "สแกนเพื่อเข้าร่วม Connecting Power" },
+      { property: "og:title", content: "สแกนเพื่อเข้าร่วม คนส. Connect" },
       { property: "og:description", content: "สแกนเพื่อเข้าร่วม แล้วสร้างโปรไฟล์พลังของคุณ" },
     ],
   }),
@@ -39,7 +39,7 @@ function QrPoster() {
           สแกนเพื่อเข้าร่วม · Scan to join
         </span>
         <h1 className="mt-5 text-[clamp(2rem,9vw,3rem)] font-extrabold leading-tight tracking-tighter">
-          <span className="text-gradient">CONNECTING POWER</span>
+          <span className="text-gradient">คนส. CONNECT</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           ยกกล้องมือถือส่องตรงนี้ แล้วคุณจะเข้าสู่หน้าสร้างโปรไฟล์พลังของคุณทันที
