@@ -3,6 +3,7 @@ import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut, Bell } 
 
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
+import { Wordmark } from "@/components/wordmark";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -36,15 +37,20 @@ export function AppShell({
           <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
             <Link
               to="/"
-              className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+              className="tap inline-grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-foreground"
               aria-label="กลับหน้าแรก"
             >
               <Home className="h-[18px] w-[18px]" strokeWidth={2.2} />
             </Link>
             <div className="min-w-0">
-              <h1 className="truncate text-xl font-extrabold tracking-tight">{title}</h1>
+              <Link to="/" className="block min-w-0" aria-label="คนส. Connexts">
+                <Wordmark size="xs" />
+              </Link>
+              <h1 className="truncate text-lg font-extrabold leading-tight tracking-tight sm:text-xl">
+                {title}
+              </h1>
               {subtitle && (
-                <p className="truncate text-[13px] text-muted-foreground">{subtitle}</p>
+                <p className="truncate text-[12.5px] text-muted-foreground">{subtitle}</p>
               )}
             </div>
             <div className="flex items-center gap-2">

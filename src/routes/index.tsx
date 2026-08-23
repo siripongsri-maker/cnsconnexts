@@ -86,7 +86,7 @@ function Welcome() {
         </div>
 
         <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
-          <h1 className="text-[clamp(2.75rem,14vw,4.5rem)] leading-[0.92] tracking-tighter">
+          <h1 className="min-w-0">
             <Wordmark size="hero" />
           </h1>
           <p className="mt-4 text-lg font-semibold text-primary">
@@ -143,7 +143,7 @@ function TopNav() {
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-xl items-center justify-between px-4 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))]">
-        <Link to="/" className="font-display text-[15px] leading-none tracking-tight">
+        <Link to="/" className="min-w-0 shrink" aria-label="คนส. Connexts หน้าแรก">
           <Wordmark size="sm" />
         </Link>
         <button

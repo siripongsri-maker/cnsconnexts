@@ -1,49 +1,66 @@
 /**
  * แบรนด์ "คนส. Connexts" — กิมมิค: ค-น-ส ↔ C-N-S
- * ตัวอักษรไทยแต่ละตัวมีคู่ละตินกำกับ และในคำ connexts ตัว C N S จะถูกเน้น
+ * ในคำ connexts ตัว C N S จะถูกเน้นให้เชื่อมโยงกับ "คนส."
  */
 
-const PAIRS = [
-  { th: "ค", en: "C" },
-  { th: "น", en: "N" },
-  { th: "ส", en: "S" },
-] as const;
-
-/** ตำแหน่งตัว C, N, S ในคำ connexts */
 const CONNEXTS = "connexts".split("");
 const HILITE = new Set([0, 2, 7]); // c, n, s
+
+type Size = "xs" | "sm" | "md" | "hero";
+
+/** ขนาดฟอนต์แบบ responsive ในตัวเอง (ไม่พึ่งขนาดจาก parent) */
+const SIZES: Record<Size, { th: string; en: string; gap: string }> = {
+  xs: {
+    th: "text-[13px] sm:text-sm",
+    en: "text-[15px] sm:text-base",
+    gap: "gap-x-1.5",
+  },
+  sm: {
+    th: "text-[15px] sm:text-base",
+    en: "text-[19px] sm:text-xl",
+    gap: "gap-x-2",
+  },
+  md: {
+    th: "text-[clamp(1.1rem,5vw,1.5rem)]",
+    en: "text-[clamp(1.75rem,9vw,2.5rem)]",
+    gap: "gap-y-0.5",
+  },
+  hero: {
+    th: "text-[clamp(2.1rem,11vw,3.25rem)]",
+    en: "text-[clamp(2.9rem,15.5vw,4.75rem)]",
+    gap: "gap-y-1",
+  },
+};
 
 export function Wordmark({
   size = "sm",
   className = "",
 }: {
-  size?: "sm" | "hero";
+  size?: Size;
   className?: string;
 }) {
-  const hero = size === "hero";
+  const s = SIZES[size];
+  const stacked = size === "md" || size === "hero";
 
   return (
-    <span className={`inline-flex flex-col ${hero ? "gap-1" : "gap-0"} ${className}`}>
-      <span className="flex items-end gap-[0.06em] leading-none">
-        {PAIRS.map((p) => (
-          <span key={p.en} className="relative inline-flex flex-col items-center leading-none">
-            <span className="text-gradient font-extrabold leading-[0.9]">{p.th}</span>
-          </span>
-        ))}
-        <span className="text-gradient font-extrabold leading-[0.9]">.</span>
-      </span>
-
+    <span
+      className={`inline-flex min-w-0 font-display leading-none ${
+        stacked ? `flex-col items-start ${s.gap}` : `flex-row items-baseline ${s.gap}`
+      } ${className}`}
+    >
       <span
-        className={`flex items-baseline leading-none ${
-          hero ? "tracking-tight" : "tracking-tight"
-        }`}
+        aria-hidden
+        className={`text-gradient font-extrabold leading-[1.15] tracking-tight ${s.th}`}
       >
+        คนส.
+      </span>
+      <span aria-hidden className={`flex items-baseline leading-[1.05] tracking-tight ${s.en}`}>
         {CONNEXTS.map((ch, i) =>
           HILITE.has(i) ? (
             <span
               key={`${ch}-${i}`}
               className="text-gradient font-extrabold uppercase"
-              style={{ fontSize: "1.12em" }}
+              style={{ fontSize: "1.1em" }}
             >
               {ch}
             </span>
@@ -54,7 +71,7 @@ export function Wordmark({
           ),
         )}
       </span>
-      <span className="sr-only">คนส. Connexts — CNS</span>
+      <span className="sr-only">คนส. Connexts</span>
     </span>
   );
 }
