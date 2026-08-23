@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Heart, Layers, List } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { MatchCard } from "@/components/match-card";
+import { ShareCardButton } from "@/components/share-card-button";
 import { DiscoverDeck } from "@/components/discover-deck";
 import { rankMatches } from "@/lib/matching";
 import { useStore } from "@/lib/store";
@@ -63,9 +64,7 @@ function Matches() {
       title="คนที่คุณควรเจอ"
       subtitle="ปัดเร็ว · ถูกใจ · ขอเชื่อมต่อ"
       action={
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-accent text-xl">
-          {me.avatar}
-        </span>
+        <ShareCardButton me={me} matches={all} kind="matches" label="แชร์" />
       }
     >
       <div className="px-5 pt-3">
@@ -80,6 +79,11 @@ function Matches() {
             ถูกใจ {liked.length > 0 ? `(${liked.length})` : ""}
           </ModeTab>
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 px-5 pt-3">
+        <ShareCardButton me={me} kind="profile" label="แชร์โปรไฟล์เป็นภาพ" />
+        <ShareCardButton me={me} matches={all} kind="matches" label="แชร์คู่เชื่อมเป็นภาพ" className="bg-secondary text-secondary-foreground" />
       </div>
 
       <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-5 py-3">
