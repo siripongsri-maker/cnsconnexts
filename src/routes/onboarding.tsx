@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
+import { getSession } from "@/lib/session";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
