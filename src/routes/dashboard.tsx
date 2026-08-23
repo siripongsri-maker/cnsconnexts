@@ -107,15 +107,15 @@ function Dashboard() {
   const userMap = useUserMap();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/dashboard" });
-  const [view, setView] = useState<"organizer" | "me">(search.view);
+  const [view, setView] = useState<"organizer" | "me">(search.view ?? "organizer");
   const [now, setNow] = useState(() => Date.now());
 
   // --- ฟิลเตอร์ขั้นสูง (ใช้ได้ทั้งมุมผู้จัดและมุมของฉัน) ---
-  const [q, setQ] = useState(search.q);
-  const [region, setRegion] = useState<string>(search.region);
-  const [issue, setIssue] = useState<string>(search.issue);
-  const [power, setPower] = useState<string>(search.power);
-  const [powerMode, setPowerMode] = useState<"any" | "have" | "need">(search.powerMode);
+  const [q, setQ] = useState(search.q ?? "");
+  const [region, setRegion] = useState<string>(search.region ?? "all");
+  const [issue, setIssue] = useState<string>(search.issue ?? "all");
+  const [power, setPower] = useState<string>(search.power ?? "all");
+  const [powerMode, setPowerMode] = useState<"any" | "have" | "need">(search.powerMode ?? "any");
   const [showFilters, setShowFilters] = useState(false);
 
   // --- ชุดตัวกรองที่บันทึกไว้ ---
