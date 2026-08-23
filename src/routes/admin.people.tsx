@@ -363,3 +363,24 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
+
+function SourceBadge({ source }: { source?: UserSource }) {
+  const label = source ? SOURCE_LABEL[source] : "เข้าตรง";
+  const color =
+    source === "qr"
+      ? "bg-lime/20 text-lime-foreground"
+      : source === "link"
+        ? "bg-coral/20 text-coral"
+        : source === "invite"
+          ? "bg-electric/20 text-electric"
+          : source === "auth"
+            ? "bg-primary/15 text-primary"
+            : source === "admin"
+              ? "bg-secondary text-secondary-foreground"
+              : source === "demo"
+                ? "bg-muted text-muted-foreground"
+                : "bg-accent text-accent-foreground";
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${color}`}>{label}</span>
+  );
+}
