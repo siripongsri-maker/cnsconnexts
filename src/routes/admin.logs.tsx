@@ -123,6 +123,18 @@ function AdminLogs() {
   ];
   const PIE_COLORS = ["var(--primary)", "var(--muted-foreground)"];
 
+  if (!canView) {
+    return (
+      <div className="card-soft rounded-2xl bg-card p-6 text-center">
+        <Lock className="mx-auto h-6 w-6 text-muted-foreground" />
+        <h1 className="mt-2 text-[16px] font-extrabold">ไม่มีสิทธิ์เข้าถึงบันทึกการใช้งาน</h1>
+        <p className="mt-1 text-[12px] text-muted-foreground">
+          บทบาทของคุณ ({role ? ROLE_TH[role] : "-"}) ไม่ได้รับสิทธิ์ดู Log · ติดต่อผู้ดูแลสูงสุด
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <section>
@@ -130,7 +142,15 @@ function AdminLogs() {
         <p className="text-[12px] text-muted-foreground">
           บันทึกจะเก็บเฉพาะเมื่อผู้ใช้กดยินยอม PDPA บนหน้าแรก · เก็บในเครื่องผู้ใช้ สูงสุด 1,000 รายการล่าสุด
         </p>
+        <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-extrabold text-primary">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          {adminUser ?? "-"} · {role ? ROLE_TH[role] : "-"} · สิทธิ์: ดู
+          {canSearch ? " · ค้นหา" : ""}
+          {canExport ? " · ส่งออก" : ""}
+          {canClear ? " · ล้างบันทึก" : ""}
+        </p>
       </section>
+
 
       <div className="grid grid-cols-3 gap-3">
         {[
