@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BrandPreviewRouteImport } from './routes/brand-preview'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as CommitmentsRouteImport } from './routes/commitments'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -40,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandPreviewRoute = BrandPreviewRouteImport.update({
+  id: '/brand-preview',
+  path: '/brand-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarRoute = CalendarRouteImport.update({
@@ -146,6 +152,7 @@ const PeopleIdRoute = PeopleIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/brand-preview'
     | '/calendar'
     | '/commitments'
     | '/dashboard'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/brand-preview'
     | '/calendar'
     | '/commitments'
     | '/dashboard'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/brand-preview'
     | '/calendar'
     | '/commitments'
     | '/dashboard'
@@ -294,6 +306,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  BrandPreviewRoute: typeof BrandPreviewRoute
   CalendarRoute: typeof CalendarRoute
   CommitmentsRoute: typeof CommitmentsRoute
   DashboardRoute: typeof DashboardRoute
@@ -330,6 +343,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brand-preview': {
+      id: '/brand-preview'
+      path: '/brand-preview'
+      fullPath: '/brand-preview'
+      preLoaderRoute: typeof BrandPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendar': {
@@ -478,6 +498,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  BrandPreviewRoute: BrandPreviewRoute,
   CalendarRoute: CalendarRoute,
   CommitmentsRoute: CommitmentsRoute,
   DashboardRoute: DashboardRoute,
