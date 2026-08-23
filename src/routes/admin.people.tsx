@@ -28,22 +28,49 @@ export const Route = createFileRoute("/admin/people")({
 
 type Draft = Pick<User, "name" | "organization" | "bio" | "province" | "interests">;
 
+/** รหัสสมาชิกชุดเดโม่ (u1–u20) */
+const DEMO_IDS = new Set(Array.from({ length: 20 }, (_, i) => `u${i + 1}`));
+const isDemo = (id: string) => DEMO_IDS.has(id);
+
+type SourceFilter = "all" | "real" | "demo";
+
+const SOURCE_LABEL: Record<SourceFilter, string> = {
+  all: "ทั้งหมด",
+  real: "ผู้ใช้จริง",
+  demo: "เดโม่",
+};
+
 function AdminPeoplePage() {
   const { users, updateUser, removeUser } = useStore();
   const [q, setQ] = useState("");
+  const [source, setSource] = useState<SourceFilter>("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
-    if (!t) return users;
-    return users.filter((u) =>
-      [u.name, u.organization, u.bio, provinceTh(u.province), ...u.interests.map(issueTh)]
+    const fromTs = from ? new Date(`${from}T00:00:00`).getTime() : null;
+    const toTs = to ? new Date(`${to}T23:59:59`).getTime() : null;
+    return users.filter((u) => {
+      if (source === "real" && isDemo(u.id)) return false;
+      if (source === "demo" && !isDemo(u.id)) return false;
+      if (fromTs !== null || toTs !== null) {
+        const ts = new Date(u.created_at).getTime();
+        if (Number.isNaN(ts)) return false;
+        if (fromTs !== null && ts < fromTs) return false;
+        if (toTs !== null && ts > toTs) return false;
+      }
+      if (!t) return true;
+      return [u.name, u.organization, u.bio, provinceTh(u.province), ...u.interests.map(issueTh)]
         .join(" ")
         .toLowerCase()
-        .includes(t),
-    );
-  }, [users, q]);
+        .includes(t);
+    });
+  }, [users, q, source, from, to]);
+
+  const realCount = users.filter((u) => !isDemo(u.id)).length;
 
   const open = (u: User) => {
     setOpenId(u.id);
@@ -93,6 +120,58 @@ function AdminPeoplePage() {
             placeholder="ค้นหาชื่อ องค์กร จังหวัด หรือประเด็น"
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-border bg-card p-3">
+          <div className="flex rounded-xl bg-muted p-0.5">
+            {(["all", "real", "demo"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSource(s)}
+                className={`tap flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                  source === s ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                {SOURCE_LABEL[s]}
+                {s === "real" ? ` (${realCount})` : s === "demo" ? ` (${users.length - realCount})` : ""}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block space-y-1">
+              <span className="text-[11px] font-medium text-muted-foreground">onboard ตั้งแต่</span>
+              <input
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-[11px] font-medium text-muted-foreground">ถึงวันที่</span>
+              <input
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none"
+              />
+            </label>
+          </div>
+          {(source !== "all" || from || to || q) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSource("all");
+                setFrom("");
+                setTo("");
+                setQ("");
+              }}
+              className="text-[11px] font-semibold text-primary"
+            >
+              ล้างตัวกรองทั้งหมด
+            </button>
+          )}
         </div>
 
         <Link
