@@ -125,7 +125,59 @@ export function getVisitorId(): string {
   }
 }
 
-export function getLogs(): UsageLog[] {
+/* ---------- นโยบายการเก็บรักษาข้อมูล (Retention) ---------- */
+
+const RETENTION_KEY = "connexts-log-retention-v1";
+export const RETENTION_EVENT = "connexts:log-retention";
+/** จำนวนวันที่เก็บบันทึกโดยปริยาย (0 = ไม่ลบอัตโนมัติ) */
+export const DEFAULT_RETENTION_DAYS = 90;
+
+export const RETENTION_OPTIONS: Array<{ days: number; label: string }> = [
+  { days: 7, label: "7 วัน" },
+  { days: 30, label: "30 วัน" },
+  { days: 90, label: "90 วัน (แนะนำ)" },
+  { days: 180, label: "180 วัน" },
+  { days: 365, label: "1 ปี" },
+  { days: 0, label: "ไม่ลบอัตโนมัติ" },
+];
+
+export function getRetentionDays(): number {
+  if (typeof window === "undefined") return DEFAULT_RETENTION_DAYS;
+  try {
+    const raw = localStorage.getItem(RETENTION_KEY);
+    if (raw === null) return DEFAULT_RETENTION_DAYS;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : DEFAULT_RETENTION_DAYS;
+  } catch {
+    return DEFAULT_RETENTION_DAYS;
+  }
+}
+
+export function setRetentionDays(days: number) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(RETENTION_KEY, String(Math.max(0, Math.floor(days))));
+  } catch {
+    /* ignore */
+  }
+  emit(RETENTION_EVENT);
+  purgeExpiredLogs();
+  emit(LOG_EVENT);
+}
+
+/** วันหมดอายุของบันทึกหนึ่งรายการ (null = ไม่หมดอายุ) */
+export function logExpiresAt(log: UsageLog, days = getRetentionDays()): Date | null {
+  if (!days) return null;
+  return new Date(new Date(log.at).getTime() + days * 86_400_000);
+}
+
+/** วันเก่าสุดที่ยังเก็บไว้ (null = ไม่ลบอัตโนมัติ) */
+export function retentionCutoff(days = getRetentionDays()): Date | null {
+  if (!days) return null;
+  return new Date(Date.now() - days * 86_400_000);
+}
+
+function readLogs(): UsageLog[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(LOG_KEY);
@@ -133,6 +185,28 @@ export function getLogs(): UsageLog[] {
   } catch {
     return [];
   }
+}
+
+/** ลบบันทึกที่เกินอายุการเก็บรักษาออกจากเครื่อง คืนค่าจำนวนที่ลบ */
+export function purgeExpiredLogs(): number {
+  if (typeof window === "undefined") return 0;
+  const cutoff = retentionCutoff();
+  if (!cutoff) return 0;
+  const logs = readLogs();
+  const kept = logs.filter((l) => new Date(l.at).getTime() >= cutoff.getTime());
+  if (kept.length === logs.length) return 0;
+  try {
+    localStorage.setItem(LOG_KEY, JSON.stringify(kept));
+  } catch {
+    /* ignore */
+  }
+  return logs.length - kept.length;
+}
+
+export function getLogs(): UsageLog[] {
+  if (typeof window === "undefined") return [];
+  purgeExpiredLogs();
+  return readLogs();
 }
 
 export function clearLogs() {
@@ -144,6 +218,31 @@ export function clearLogs() {
   }
   emit(LOG_EVENT);
 }
+
+/** อ่าน/ตั้งค่านโยบายการเก็บรักษาแบบเรียลไทม์ */
+export function useRetention() {
+  const [days, setDays] = useState(DEFAULT_RETENTION_DAYS);
+
+  useEffect(() => {
+    const sync = () => setDays(getRetentionDays());
+    sync();
+    purgeExpiredLogs();
+    window.addEventListener(RETENTION_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(RETENTION_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const update = useCallback((next: number) => {
+    setRetentionDays(next);
+    setDays(getRetentionDays());
+  }, []);
+
+  return { days, setDays: update, cutoff: retentionCutoff(days) };
+}
+
 
 /** Records an event only when the visitor has consented (consent events always record). */
 export function logUsage(
@@ -201,10 +300,17 @@ export function useUsageLogs() {
   useEffect(() => {
     const sync = () => setLogs(getLogs());
     sync();
+    // ลบบันทึกหมดอายุอัตโนมัติเป็นระยะ
+    const timer = window.setInterval(() => {
+      if (purgeExpiredLogs()) sync();
+    }, 60_000);
     window.addEventListener(LOG_EVENT, sync);
+    window.addEventListener(RETENTION_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
+      window.clearInterval(timer);
       window.removeEventListener(LOG_EVENT, sync);
+      window.removeEventListener(RETENTION_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
   }, []);
