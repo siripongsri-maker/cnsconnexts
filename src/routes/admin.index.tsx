@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, CalendarDays, Handshake, Lightbulb, MapPin, Users } from "lucide-react";
+import { BookOpen, CalendarDays, Handshake, Lightbulb, MapPin, UserCheck, Users } from "lucide-react";
 
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
@@ -12,8 +12,17 @@ function AdminOverview() {
   const { users, ideas, submissions, connections, commitments, provinceNotes } = useStore();
   const events = useLiveEvents(8);
 
+  const demoIds = new Set(Array.from({ length: 20 }, (_, i) => `u${i + 1}`));
+  const realUsers = users.filter((u) => !demoIds.has(u.id));
+
   const stats = [
     { label: "สมาชิก", value: users.length, icon: Users, to: "/admin/people" as const },
+    {
+      label: "ผู้ใช้จริง (ไม่ใช่เดโม่)",
+      value: realUsers.length,
+      icon: UserCheck,
+      to: "/admin/people" as const,
+    },
     { label: "ไอเดีย", value: ideas.length, icon: Lightbulb, to: "/admin/ideas" as const },
     { label: "ผลงานส่งเข้า", value: submissions.length, icon: BookOpen, to: "/admin/submissions" as const },
     { label: "คู่เชื่อม", value: connections.length, icon: Handshake, to: "/admin/connections" as const },
