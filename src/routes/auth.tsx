@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
+import { createSession } from "@/lib/session";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
