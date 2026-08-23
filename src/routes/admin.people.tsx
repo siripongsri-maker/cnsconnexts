@@ -62,6 +62,7 @@ function AdminPeoplePage() {
     return users.filter((u) => {
       if (source === "real" && isDemo(u.id)) return false;
       if (source === "demo" && !isDemo(u.id)) return false;
+      if (source !== "all" && source !== "real" && source !== "demo" && u.source !== source) return false;
       if (fromTs !== null || toTs !== null) {
         const ts = new Date(u.created_at).getTime();
         if (Number.isNaN(ts)) return false;
