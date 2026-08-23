@@ -15,12 +15,14 @@ import {
   YAxis,
 } from "recharts";
 
+import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
 import { downloadCSV, downloadJSON } from "@/lib/export";
 import {
   LOG_TYPE_LABEL,
   clearLogs,
   getConsent,
   getConsentStats,
+  logUsage,
   useUsageLogs,
   type UsageLog,
 } from "@/lib/usage-log";
