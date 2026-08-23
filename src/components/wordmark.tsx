@@ -104,7 +104,7 @@ export function Wordmark({
         loading="lazy"
         width={816}
         height={816}
-        className={`${MARK_SIZE[size]} shrink-0 object-contain`}
+        className={`${MARK_SIZE[size]} brand-mark shrink-0 object-contain`}
       />
       {text}
     </span>
