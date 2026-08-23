@@ -38,8 +38,8 @@ function QrPoster() {
         <span className="rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
           สแกนเพื่อเข้าร่วม · Scan to join
         </span>
-        <h1 className="mt-5 text-[clamp(2rem,9vw,3rem)] font-extrabold leading-tight tracking-tighter">
-          <span className="text-gradient">คนส. CONNECT</span>
+        <h1 className="mt-5 flex justify-center">
+          <Wordmark size="md" withMark />
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           ยกกล้องมือถือส่องตรงนี้ แล้วคุณจะเข้าสู่หน้าสร้างโปรไฟล์พลังของคุณทันที
