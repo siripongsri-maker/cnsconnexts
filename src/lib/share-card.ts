@@ -1,4 +1,6 @@
-import logoUrl from "@/assets/cns-logo.png";
+import logoAsset from "@/assets/cns-mark.png.asset.json";
+
+const logoUrl = logoAsset.url;
 import { issueTh, powerTh, REGION_LABEL } from "./i18n";
 import type { MatchResult } from "./matching";
 import type { User } from "./types";

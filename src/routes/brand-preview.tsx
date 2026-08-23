@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Home, Palette } from "lucide-react";
 
 import { Wordmark } from "@/components/wordmark";
-import cnsLogo from "@/assets/cns-logo.png";
+import cnsMarkAsset from "@/assets/cns-mark.png.asset.json";
+const cnsLogo = cnsMarkAsset.url;
 
 export const Route = createFileRoute("/brand-preview")({
   head: () => ({
