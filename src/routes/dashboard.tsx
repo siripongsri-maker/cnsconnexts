@@ -125,7 +125,12 @@ function Dashboard() {
   const activePresetId = presets.find((p) => sameFilters(p.filters, currentFilters))?.id ?? null;
 
   // --- sync filters + view to URL so the page is shareable ---
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
     const next = {
       q: q.trim() || undefined,
       region: region !== "all" ? region : undefined,
