@@ -119,6 +119,7 @@ function AuthPage() {
 
   function handleGuest() {
     enterGuest();
+    createSession("auth", null);
     toast.success("เข้าใช้แบบผู้เยี่ยมชมแล้ว");
     void navigate({ to: "/onboarding" });
   }
