@@ -6,7 +6,7 @@ import type { User } from "./types";
 const W = 1080;
 const H = 1350;
 
-const FONT = '"Prompt", "Noto Sans Thai", system-ui, sans-serif';
+const FONT = '"Prompt", "Noto Sans Thai", "Noto Color Emoji", system-ui, sans-serif';
 
 function loadImage(src: string) {
   return new Promise<HTMLImageElement | null>((resolve) => {
@@ -176,7 +176,7 @@ export async function renderShareCard(
 
   // Card
   const cardY = 220;
-  const cardH = kind === "profile" ? 700 : 900;
+  const cardH = kind === "profile" ? 640 : 900;
   ctx.fillStyle = "rgba(255,255,255,0.97)";
   roundRect(ctx, 64, cardY, W - 128, cardH, 48);
   ctx.fill();
@@ -258,7 +258,7 @@ export async function renderShareCard(
 
       ctx.fillStyle = "#12091f";
       ctx.font = `700 38px ${FONT}`;
-      ctx.fillText(wrap(ctx, `${m.user.avatar} ${m.user.name}`, 560, 1)[0] ?? m.user.name, px, y);
+      ctx.fillText(wrap(ctx, m.user.name, 560, 1)[0] ?? m.user.name, px, y);
 
       ctx.fillStyle = "#6b6480";
       ctx.font = `400 27px ${FONT}`;
