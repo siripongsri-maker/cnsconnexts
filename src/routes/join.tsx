@@ -3,10 +3,11 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { QrCode, Sparkles } from "lucide-react";
-import { createSession } from "@/lib/session";
+import { createSession, sourceFromSearch } from "@/lib/session";
 
 const searchSchema = z.object({
   c: fallback(z.string(), "").default(""),
+  source: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/join")({
