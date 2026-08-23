@@ -56,6 +56,8 @@ const NAV_LINKS = [
   { to: "/ebook", label: "รวมผลงาน", icon: BookOpen },
   { to: "/print", label: "ไฟล์พิมพ์", icon: Printer },
   { to: "/update", label: "อัปเดตข้อมูล", icon: UserCircle },
+  { to: "/scan", label: "สแกนเข้าร่วม", icon: QrCode },
+
 ] as const;
 
 function Welcome() {
