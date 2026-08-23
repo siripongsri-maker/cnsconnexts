@@ -274,6 +274,119 @@ function Dashboard() {
         </div>
       </div>
 
+      <div className="space-y-2 px-5 pt-3">
+        <div className="flex gap-2">
+          <label className="flex h-11 flex-1 items-center gap-2 rounded-2xl border border-border bg-card px-3">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="ค้นหาชื่อ องค์กร จังหวัด ประเด็น..."
+              className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
+            />
+            {q && (
+              <button type="button" aria-label="ล้างคำค้น" onClick={() => setQ("")} className="tap">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+          </label>
+          <button
+            type="button"
+            onClick={() => setShowFilters((v) => !v)}
+            aria-expanded={showFilters}
+            className={`tap flex h-11 items-center gap-1.5 rounded-2xl border border-border px-3 text-[13px] font-extrabold ${
+              activeCount ? "gradient-power text-primary-foreground" : "bg-card"
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {activeCount ? activeCount : "กรอง"}
+          </button>
+        </div>
+
+        {showFilters && (
+          <div className="card-soft space-y-2 p-3">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <select
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                aria-label="ภูมิภาค"
+                className="h-10 rounded-xl border border-border bg-background px-2 text-[13px]"
+              >
+                <option value="all">ทุกภูมิภาค</option>
+                {REGIONS.map((r) => (
+                  <option key={r} value={r}>
+                    {REGION_LABEL[r]}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={issue}
+                onChange={(e) => setIssue(e.target.value)}
+                aria-label="ประเด็น"
+                className="h-10 rounded-xl border border-border bg-background px-2 text-[13px]"
+              >
+                <option value="all">ทุกประเด็น</option>
+                {ISSUES.map((i) => (
+                  <option key={i} value={i}>
+                    {issueTh(i)}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={power}
+                onChange={(e) => setPower(e.target.value)}
+                aria-label="ประเภทพลัง"
+                className="h-10 rounded-xl border border-border bg-background px-2 text-[13px]"
+              >
+                <option value="all">ทุกประเภทพลัง</option>
+                {POWERS.map((p) => (
+                  <option key={p.key} value={p.key}>
+                    {p.emoji} {p.th}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex flex-1 rounded-xl border border-border bg-background p-1">
+                {(
+                  [
+                    { k: "any", l: "มี/ต้องการ" },
+                    { k: "have", l: "มีพลังนี้" },
+                    { k: "need", l: "ต้องการพลังนี้" },
+                  ] as const
+                ).map((m) => (
+                  <button
+                    key={m.k}
+                    type="button"
+                    onClick={() => setPowerMode(m.k)}
+                    className={`tap h-8 flex-1 rounded-lg text-[11px] font-extrabold ${
+                      powerMode === m.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    {m.l}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="tap h-10 rounded-xl border border-border px-3 text-[12px] font-extrabold text-muted-foreground"
+              >
+                ล้าง
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeCount > 0 && (
+          <p className="text-[11px] font-bold text-muted-foreground">
+            กำลังกรอง · {fUsers.length} คน · {fConnections.length} คอนเนกชัน ·{" "}
+            {fCommitments.length} คำมั่นสัญญา
+          </p>
+        )}
+      </div>
+
       <div className="px-5 py-4">
         <div className="relative overflow-hidden rounded-3xl gradient-power p-5 text-primary-foreground">
           <div className="absolute inset-0 text-white/70">
