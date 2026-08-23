@@ -80,6 +80,54 @@ function AdminOverview() {
     [realUsers, bucket],
   );
 
+  const logs = useUsageLogs();
+
+  /** Funnel: Welcome → Power Profile → Interests → Have/Need → Discover → Connect → Commitment */
+  const funnel = useMemo(() => {
+    const realIds = new Set(realUsers.map((u) => u.id));
+    const visitors = new Set(logs.map((l) => l.visitor));
+    const discoverVisitors = new Set(
+      logs
+        .filter((l) => /\/(matches|discover)/.test(l.path ?? "") || /แมตช์|match/i.test(l.label))
+        .map((l) => l.visitor),
+    );
+
+    const realConnections = connections.filter(
+      (c) => realIds.has(c.user_a) || realIds.has(c.user_b),
+    );
+    const connectedUsers = new Set<string>();
+    for (const c of realConnections) {
+      if (realIds.has(c.user_a)) connectedUsers.add(c.user_a);
+      if (realIds.has(c.user_b)) connectedUsers.add(c.user_b);
+    }
+    const connIds = new Set(realConnections.map((c) => c.id));
+    const committedConnections = new Set(
+      commitments.filter((m) => connIds.has(m.connection_id)).map((m) => m.connection_id),
+    );
+
+    const profile = realUsers.filter((u) => u.name.trim().length > 0).length;
+    const interests = realUsers.filter((u) => u.interests.length > 0).length;
+    const haveNeed = realUsers.filter(
+      (u) => u.powers_have.length > 0 || u.powers_need.length > 0,
+    ).length;
+    const welcome = Math.max(visitors.size, profile);
+    const discover = Math.max(discoverVisitors.size, connectedUsers.size);
+
+    return [
+      { step: "Welcome", th: "เข้าหน้าแรก", value: welcome },
+      { step: "Power Profile", th: "สร้างโปรไฟล์", value: profile },
+      { step: "Select Interests", th: "เลือกประเด็นสนใจ", value: interests },
+      { step: "Have / Need", th: "ระบุพลังที่มี/ต้องการ", value: haveNeed },
+      { step: "Discover Matches", th: "ดูคู่แมตช์", value: discover },
+      { step: "Connect", th: "กดเชื่อมต่อ", value: connectedUsers.size },
+      { step: "Make a Commitment", th: "ตั้งคำมั่นสัญญา", value: committedConnections.size },
+    ];
+  }, [realUsers, connections, commitments, logs]);
+
+  const funnelTop = funnel[0]?.value ?? 0;
+
+
+
   return (
     <div className="space-y-5">
       <section>
