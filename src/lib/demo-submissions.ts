@@ -5,7 +5,7 @@ const now = "2026-08-10T09:00:00.000Z";
 export const DEMO_SUBMISSIONS: Submission[] = [
   {
     id: "sb1",
-    name: "อาร์ม",
+    name: "อาร์ม ภูมิรพี",
     course: "คนส.",
     batch: "รุ่น 7",
     region: "North",
@@ -20,7 +20,7 @@ export const DEMO_SUBMISSIONS: Submission[] = [
   },
   {
     id: "sb2",
-    name: "เมย์",
+    name: "เมย์ ประไพ",
     course: "นนส.",
     batch: "รุ่น 4",
     region: "Northeast",
