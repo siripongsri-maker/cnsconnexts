@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Link2, Search, Share2, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, ArrowUpDown, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Link2, Search, Share2, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
@@ -20,6 +20,7 @@ import {
   type DashboardFilters,
   type FilterPreset,
 } from "@/lib/filter-presets";
+import { relevanceOf, sortScored, SORT_OPTIONS, type SortKey } from "@/lib/relevance";
 
 const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
@@ -28,6 +29,7 @@ const searchSchema = z.object({
   power: z.string().optional().catch(undefined),
   powerMode: z.enum(["any", "have", "need"]).optional().catch(undefined),
   view: z.enum(["organizer", "me"]).optional().catch(undefined),
+  sort: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/dashboard")({
@@ -117,6 +119,9 @@ function Dashboard() {
   const [power, setPower] = useState<string>(search.power ?? "all");
   const [powerMode, setPowerMode] = useState<"any" | "have" | "need">(search.powerMode ?? "any");
   const [showFilters, setShowFilters] = useState(false);
+  const [sort, setSort] = useState<SortKey>(
+    (SORT_OPTIONS.some((s) => s.key === search.sort) ? (search.sort as SortKey) : "relevance"),
+  );
 
   // --- ชุดตัวกรองที่บันทึกไว้ ---
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -138,10 +143,11 @@ function Dashboard() {
       power: power !== "all" ? power : undefined,
       powerMode: powerMode !== "any" ? powerMode : undefined,
       view: view !== "organizer" ? view : undefined,
+      sort: sort !== "relevance" ? sort : undefined,
     };
     navigate({ search: next, replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, region, issue, power, powerMode, view]);
+  }, [q, region, issue, power, powerMode, view, sort]);
 
   const describeFilters = (f: DashboardFilters) =>
     [
@@ -250,6 +256,18 @@ function Dashboard() {
   }, [q, region, issue, power, powerMode]);
 
   const fUsers = useMemo(() => users.filter(matchUser), [users, matchUser]);
+
+  // --- ผลการค้นหา: ให้คะแนนความเกี่ยวข้องตามตัวกรอง แล้วเรียงตามตัวเลือก ---
+  const results = useMemo(
+    () =>
+      sortScored(
+        fUsers.map((u) => relevanceOf(u, { q, region, issue, power, powerMode }, me ?? null)),
+        sort,
+      ),
+    [fUsers, q, region, issue, power, powerMode, me, sort],
+  );
+  const [resultLimit, setResultLimit] = useState(8);
+  useEffect(() => setResultLimit(8), [q, region, issue, power, powerMode, sort]);
   const fConnections = useMemo(
     () => connections.filter((c) => matchUser(userMap[c.user_a]) || matchUser(userMap[c.user_b])),
     [connections, userMap, matchUser],
@@ -620,6 +638,28 @@ function Dashboard() {
         )}
 
 
+
+        <div className="-mx-5 flex items-center gap-1.5 overflow-x-auto px-5 pb-0.5">
+          <span className="flex shrink-0 items-center gap-1 text-[11px] font-extrabold text-muted-foreground">
+            <ArrowUpDown className="h-3.5 w-3.5" /> เรียงโดย
+          </span>
+          {SORT_OPTIONS.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => setSort(s.key)}
+              aria-pressed={sort === s.key}
+              className={`tap shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${
+                sort === s.key
+                  ? "gradient-power border-transparent text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
         {activeCount > 0 && (
           <p className="text-[11px] font-bold text-muted-foreground">
             กำลังกรอง · {fUsers.length} คน · {fConnections.length} คอนเนกชัน ·{" "}
@@ -817,6 +857,76 @@ function Dashboard() {
             </Panel>
           </>
         )}
+        <Panel
+          title={`ผลการค้นหา · ${results.length} คน · เรียงตาม${
+            SORT_OPTIONS.find((s) => s.key === sort)?.label ?? ""
+          }`}
+        >
+          {results.length === 0 ? (
+            <p className="text-[12px] text-muted-foreground">
+              ไม่พบผู้เข้าร่วมที่ตรงตัวกรอง — ลองล้างตัวกรองหรือเปลี่ยนคำค้น
+            </p>
+          ) : (
+            <>
+              {results.slice(0, resultLimit).map((r) => (
+                <Link
+                  key={r.user.id}
+                  to="/people/$id"
+                  params={{ id: r.user.id }}
+                  className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-2.5"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted text-lg">
+                    {r.user.photo ? (
+                      <img
+                        src={r.user.photo}
+                        alt={r.user.name}
+                        className="h-10 w-10 rounded-xl object-cover"
+                      />
+                    ) : (
+                      r.user.avatar
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline gap-2">
+                      <span className="truncate text-[13px] font-extrabold">{r.user.name}</span>
+                      <span className="shrink-0 text-[10px] font-bold text-muted-foreground">
+                        {REGION_LABEL[r.user.region]}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 flex flex-wrap gap-1">
+                      {r.reasons.map((reason) => (
+                        <span
+                          key={reason}
+                          className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground"
+                        >
+                          {reason}
+                        </span>
+                      ))}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-sm font-extrabold tabular-nums text-primary">
+                      {r.relevance}%
+                    </span>
+                    <span className="block text-[10px] font-bold text-muted-foreground">
+                      {r.match != null ? `แมตช์ ${r.match}%` : "ความเกี่ยวข้อง"}
+                    </span>
+                  </span>
+                </Link>
+              ))}
+              {results.length > resultLimit && (
+                <button
+                  type="button"
+                  onClick={() => setResultLimit((n) => n + 12)}
+                  className="tap h-11 w-full rounded-2xl border border-border text-[12px] font-extrabold"
+                >
+                  ดูเพิ่ม ({results.length - resultLimit})
+                </button>
+              )}
+            </>
+          )}
+        </Panel>
+
         <Panel title="ส่งออกข้อมูลกิจกรรม">
           <p className="text-[12px] text-muted-foreground">
             ส่งออกตามฟิลเตอร์ปัจจุบัน · แมตช์ {matchRows.length} · คอนเนกชัน {connectionRows.length} ·
