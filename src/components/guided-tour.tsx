@@ -78,10 +78,9 @@ export function GuidedTour() {
     } catch {
       /* ignore */
     }
-    if (!seen) {
-      const t = window.setTimeout(() => setOpen(true), 700);
-      return () => window.clearTimeout(t);
-    }
+    if (seen) return;
+    const t = window.setTimeout(() => setOpen(true), 700);
+    return () => window.clearTimeout(t);
   }, [hidden]);
 
   useEffect(() => {
@@ -103,9 +102,8 @@ export function GuidedTour() {
     }
   }, []);
 
-  if (!open || hidden) return null;
-
   const step = STEPS[i];
+  if (!open || hidden || !step) return null;
   const Icon = step.icon;
   const last = i === STEPS.length - 1;
 
