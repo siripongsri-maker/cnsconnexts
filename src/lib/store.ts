@@ -1,4 +1,5 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { emitLive } from "./live";
 import { DEMO_COMMITMENTS, DEMO_CONNECTIONS, DEMO_IDEAS, DEMO_USERS } from "./demo-data";
 import { DEMO_PROVINCE_NOTES } from "./demo-province-notes";
 import { DEMO_SUBMISSIONS } from "./demo-submissions";
@@ -112,6 +113,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         users: [user, ...s.users.filter((u) => u.id !== "me")],
       };
     });
+    emitLive("match", "พบคู่แมตช์ใหม่", `${saved.name} เข้าร่วมและพร้อมจับคู่พลัง`);
     return saved;
   }, []);
 
@@ -180,7 +182,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           ],
           };
         });
+        emitLive("connect", `${name} ตอบรับการเชื่อมแล้ว`, "พร้อมกำหนดก้าวต่อไปร่วมกัน");
       }, 2600);
+      emitLive("connect", "เชื่อมต่อใหม่", `คุณ ↔ ${name} · แมตช์ ${score}%`);
       return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
     });
     return conn;
@@ -203,6 +207,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         read: false,
         created_at: new Date().toISOString(),
       };
+      emitLive("commitment", "คำมั่นสัญญาใหม่", `${c.action_type} กับ ${name}`);
       return {
       ...s,
       notifications: [note, ...s.notifications],
@@ -216,11 +221,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setConnectionStatus: Store["setConnectionStatus"] = useCallback((id, status) => {
-    setState((s) => ({
+    setState((s) => {
+      const conn = s.connections.find((c) => c.id === id);
+      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+      emitLive("commitment", "อัปเดตความคืบหน้า", `${name} · สถานะ: ${status}`);
+      return {
       ...s,
       connections: s.connections.map((c) => (c.id === id ? { ...c, status } : c)),
       commitments: s.commitments.map((m) => (m.connection_id === id ? { ...m, status } : m)),
-    }));
+      };
+    });
   }, []);
 
   const toggleSaveIdea: Store["toggleSaveIdea"] = useCallback((id) => {
@@ -236,6 +247,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     let liked = false;
     setState((s) => {
       liked = !s.likedUsers.includes(id);
+      if (liked) {
+        const name = s.users.find((u) => u.id === id)?.name ?? "เพื่อนใหม่";
+        emitLive("like", "กดถูกใจ", `คุณถูกใจโปรไฟล์ของ ${name}`);
+      }
       return {
         ...s,
         likedUsers: liked ? [...s.likedUsers, id] : s.likedUsers.filter((x) => x !== id),
