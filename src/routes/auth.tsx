@@ -129,8 +129,9 @@ function AuthPage() {
         </Link>
 
         <div className="mt-6">
-          <p className="text-[13px] font-bold uppercase tracking-[0.2em] text-primary">คนส.</p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight">Connexts</h1>
+          <h1 className="min-w-0">
+            <Wordmark size="md" />
+          </h1>
           <p className="mt-2 text-[14px] text-muted-foreground">
             เข้าสู่ระบบเพื่อเก็บข้อมูลของคุณไว้ข้ามอุปกรณ์ หรือเข้าใช้แบบผู้เยี่ยมชมได้ทันที
           </p>
