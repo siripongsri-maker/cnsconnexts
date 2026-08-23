@@ -10,7 +10,7 @@ import { issueTh, powerTh, provinceTh, REGION_LABEL, STATUS_TH, GENERATION_TH } 
 import { rankMatches } from "@/lib/matching";
 import { POWER_EMOJI } from "@/lib/types";
 import { downloadCSV, type Row } from "@/lib/export";
-import type { User } from "@/lib/types";
+import type { User, Connection, Commitment } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/people")({
   head: () => ({
@@ -506,4 +506,230 @@ function SourceBadge({ source }: { source?: UserSource | undefined }) {
   return (
     <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${color}`}>{label}</span>
   );
+}
+
+/** แผงรายละเอียดผู้ใช้: Power Profile · ความสนใจ · แมตช์ · การเชื่อมต่อ · commitment */
+function UserDetail({
+  user,
+  users,
+  connections,
+  commitments,
+  onClose,
+  onEdit,
+}: {
+  user: User;
+  users: User[];
+  connections: Connection[];
+  commitments: Commitment[];
+  onClose: () => void;
+  onEdit: () => void;
+}) {
+  const nameOf = (id: string) => users.find((u) => u.id === id)?.name ?? id;
+  const st = profileStatus(user);
+
+  const matches = useMemo(
+    () => rankMatches(user, users.filter((u) => u.id !== user.id), 5),
+    [user, users],
+  );
+  const myConnections = useMemo(
+    () => connections.filter((c) => c.user_a === user.id || c.user_b === user.id),
+    [connections, user.id],
+  );
+  const myCommitments = useMemo(() => {
+    const ids = new Set(myConnections.map((c) => c.id));
+    return commitments.filter((m) => ids.has(m.connection_id));
+  }, [commitments, myConnections]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-center bg-foreground/40 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="mt-10 w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card pb-24 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border bg-card px-5 py-3">
+          <span className="text-2xl leading-none">{user.avatar}</span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold">{user.name}</p>
+            <p className="truncate text-[11px] text-muted-foreground">
+              {user.organization} · {provinceTh(user.province)}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} className="tap rounded-lg p-1.5 text-muted-foreground">
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-5 py-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <SourceBadge source={user.source} />
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+              {GENERATION_TH[user.generation] ?? user.generation}
+            </span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+              {REGION_LABEL[user.region]}
+            </span>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                st.missing.length ? "bg-coral/20 text-coral" : "bg-lime/20 text-lime-foreground"
+              }`}
+            >
+              โปรไฟล์ {st.label} {st.percent}%
+            </span>
+          </div>
+
+          <Section icon={<Sparkles className="size-3.5" />} title="Power Profile">
+            <div className="grid gap-2">
+              <PowerList label="พลังที่มี" items={user.powers_have} tone="bg-lime/15" />
+              <PowerList label="พลังที่ต้องการ" items={user.powers_need} tone="bg-coral/15" />
+            </div>
+            {user.bio && <p className="mt-2 text-xs text-muted-foreground">{user.bio}</p>}
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              onboard {fmtDate(user.created_at)}
+              {user.updated_at ? ` · อัปเดต ${fmtDate(user.updated_at)}` : ""}
+              {user.linked_email ? ` · ${user.linked_email}` : ""}
+            </p>
+            {st.missing.length > 0 && (
+              <p className="mt-1 text-[11px] text-coral">ข้อมูลที่ยังขาด: {st.missing.join(" / ")}</p>
+            )}
+          </Section>
+
+          <Section icon={<Sparkles className="size-3.5" />} title="ความสนใจ">
+            <div className="flex flex-wrap gap-1.5">
+              {user.interests.length ? (
+                user.interests.map((i) => (
+                  <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-[11px]">
+                    {issueTh(i)}
+                  </span>
+                ))
+              ) : (
+                <Empty text="ยังไม่ได้เลือกความสนใจ" />
+              )}
+            </div>
+          </Section>
+
+          <Section icon={<Sparkles className="size-3.5" />} title={`คู่แมตช์แนะนำ (${matches.length})`}>
+            {matches.length ? (
+              <ul className="space-y-2">
+                {matches.map((m) => (
+                  <li key={m.user.id} className="rounded-xl border border-border p-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg leading-none">{m.user.avatar}</span>
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">{m.user.name}</span>
+                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                        {Math.round(m.score)}%
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{m.reason}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Empty text="ยังไม่มีคู่แมตช์" />
+            )}
+          </Section>
+
+          <Section icon={<Link2 className="size-3.5" />} title={`การเชื่อมต่อ (${myConnections.length})`}>
+            {myConnections.length ? (
+              <ul className="space-y-2">
+                {myConnections.map((c) => {
+                  const other = c.user_a === user.id ? c.user_b : c.user_a;
+                  return (
+                    <li key={c.id} className="rounded-xl border border-border p-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                          กับ {nameOf(other)}
+                        </span>
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+                          {STATUS_TH[c.status]}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        คะแนน {Math.round(c.match_score)}% · {c.match_reason}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <Empty text="ยังไม่มีการเชื่อมต่อ" />
+            )}
+          </Section>
+
+          <Section icon={<CalendarCheck className="size-3.5" />} title={`คำมั่นสัญญา (${myCommitments.length})`}>
+            {myCommitments.length ? (
+              <ul className="space-y-2">
+                {myCommitments.map((m) => (
+                  <li key={m.id} className="rounded-xl border border-border p-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">{m.action_type}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+                        {STATUS_TH[m.status]}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-muted-foreground">{m.description}</p>
+                    {m.follow_up_date && (
+                      <p className="mt-0.5 text-[11px] text-primary">นัดหมาย {fmtDate(m.follow_up_date)}</p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Empty text="ยังไม่มีคำมั่นสัญญา" />
+            )}
+          </Section>
+
+          <button
+            type="button"
+            onClick={onEdit}
+            className="tap w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground"
+          >
+            แก้ไขข้อมูลผู้ใช้นี้
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Section({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-border p-3">
+      <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+        {icon}
+        {title}
+      </h3>
+      {children}
+    </section>
+  );
+}
+
+function PowerList({ label, items, tone }: { label: string; items: string[]; tone: string }) {
+  return (
+    <div>
+      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <div className="mt-1 flex flex-wrap gap-1.5">
+        {items.length ? (
+          items.map((p) => (
+            <span key={p} className={`rounded-full px-2.5 py-1 text-[11px] ${tone}`}>
+              {POWER_EMOJI[p] ?? "✨"} {powerTh(p)}
+            </span>
+          ))
+        ) : (
+          <Empty text="—" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return <span className="text-[11px] text-muted-foreground">{text}</span>;
 }
