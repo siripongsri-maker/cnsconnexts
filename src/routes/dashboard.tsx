@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, CheckCircle2, Handshake, Sparkles, Users } from "lucide-react";
+import { Activity, CheckCircle2, Handshake, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
 import { useStore, useUserMap } from "@/lib/store";
-import { POWER_EMOJI, REGIONS, type ConnectionStatus } from "@/lib/types";
+import { ISSUES, POWER_EMOJI, POWERS, REGIONS, type ConnectionStatus, type User } from "@/lib/types";
 import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 
 export const Route = createFileRoute("/dashboard")({
@@ -86,35 +86,107 @@ function Dashboard() {
   const [view, setView] = useState<"organizer" | "me">("organizer");
   const [now, setNow] = useState(() => Date.now());
 
+  // --- ฟิลเตอร์ขั้นสูง (ใช้ได้ทั้งมุมผู้จัดและมุมของฉัน) ---
+  const [q, setQ] = useState("");
+  const [region, setRegion] = useState<string>("all");
+  const [issue, setIssue] = useState<string>("all");
+  const [power, setPower] = useState<string>("all");
+  const [powerMode, setPowerMode] = useState<"any" | "have" | "need">("any");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const activeCount =
+    (q.trim() ? 1 : 0) +
+    (region !== "all" ? 1 : 0) +
+    (issue !== "all" ? 1 : 0) +
+    (power !== "all" ? 1 : 0);
+  const clearFilters = () => {
+    setQ("");
+    setRegion("all");
+    setIssue("all");
+    setPower("all");
+    setPowerMode("any");
+  };
+
+  const matchUser = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return (u: User | undefined) => {
+      if (!u) return false;
+      if (region !== "all" && u.region !== region) return false;
+      if (issue !== "all" && !u.interests.includes(issue)) return false;
+      if (power !== "all") {
+        const inHave = u.powers_have.includes(power);
+        const inNeed = u.powers_need.includes(power);
+        const ok =
+          powerMode === "have" ? inHave : powerMode === "need" ? inNeed : inHave || inNeed;
+        if (!ok) return false;
+      }
+      if (needle) {
+        const hay = [
+          u.name,
+          u.organization,
+          u.province,
+          u.bio,
+          ...u.interests.map(issueTh),
+          ...u.powers_have.map(powerTh),
+          ...u.powers_need.map(powerTh),
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!hay.includes(needle)) return false;
+      }
+      return true;
+    };
+  }, [q, region, issue, power, powerMode]);
+
+  const fUsers = useMemo(() => users.filter(matchUser), [users, matchUser]);
+  const fConnections = useMemo(
+    () => connections.filter((c) => matchUser(userMap[c.user_a]) || matchUser(userMap[c.user_b])),
+    [connections, userMap, matchUser],
+  );
+  const fConnIds = useMemo(() => new Set(fConnections.map((c) => c.id)), [fConnections]);
+  const fCommitments = useMemo(
+    () => commitments.filter((m) => fConnIds.has(m.connection_id)),
+    [commitments, fConnIds],
+  );
+  const fIdeas = useMemo(
+    () =>
+      ideas.filter((i) => {
+        const owner = users.find((u) => u.id === (i as any).owner_id);
+        return activeCount === 0 ? true : matchUser(owner);
+      }),
+    [ideas, users, matchUser, activeCount],
+  );
+
   // live pulse: keeps relative times and "สด" indicator moving
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 15000);
     return () => clearInterval(t);
   }, []);
 
+  const base = activeCount ? 0 : 1;
   const stats = {
-    people: 136 + users.length,
-    connections: 83 + connections.length,
-    ideas: 33 + ideas.length,
-    commitments: 23 + commitments.length,
+    people: base * 136 + fUsers.length,
+    connections: base * 83 + fConnections.length,
+    ideas: base * 33 + fIdeas.length,
+    commitments: base * 23 + fCommitments.length,
   };
 
   const funnel = useMemo(
     () =>
       STATUS_ORDER.map((s) => ({
         status: s,
-        conn: connections.filter((c) => c.status === s).length,
-        commit: commitments.filter((c) => c.status === s).length,
+        conn: fConnections.filter((c) => c.status === s).length,
+        commit: fCommitments.filter((c) => c.status === s).length,
       })),
-    [connections, commitments],
+    [fConnections, fCommitments],
   );
   const maxFunnel = Math.max(1, ...funnel.map((f) => f.conn + f.commit));
-  const done = commitments.filter((c) => c.status === "Completed").length;
-  const completion = commitments.length ? Math.round((done / commitments.length) * 100) : 0;
+  const done = fCommitments.filter((c) => c.status === "Completed").length;
+  const completion = fCommitments.length ? Math.round((done / fCommitments.length) * 100) : 0;
 
   const feed = useMemo<Feed[]>(() => {
     const items: Feed[] = [];
-    connections.forEach((c) => {
+    fConnections.forEach((c) => {
       const a = userMap[c.user_a]?.name ?? "ผู้เข้าร่วม";
       const b = userMap[c.user_b]?.name ?? "ผู้เข้าร่วม";
       items.push({
@@ -125,7 +197,7 @@ function Dashboard() {
         created_at: c.created_at,
       });
     });
-    commitments.forEach((m) => {
+    fCommitments.forEach((m) => {
       const conn = connections.find((c) => c.id === m.connection_id);
       const pair = conn
         ? `${userMap[conn.user_a]?.name ?? "?"} × ${userMap[conn.user_b]?.name ?? "?"}`
@@ -141,36 +213,36 @@ function Dashboard() {
     return items
       .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
       .slice(0, 12);
-  }, [connections, commitments, userMap]);
+  }, [fConnections, fCommitments, userMap]);
 
   const mine = useMemo(() => {
     if (!me) return null;
-    const conns = connections.filter((c) => c.user_a === me.id || c.user_b === me.id);
+    const conns = fConnections.filter((c) => c.user_a === me.id || c.user_b === me.id);
     const ids = new Set(conns.map((c) => c.id));
-    const comms = commitments.filter((m) => ids.has(m.connection_id));
+    const comms = fCommitments.filter((m) => ids.has(m.connection_id));
     return {
       conns,
       comms,
       done: comms.filter((m) => m.status === "Completed").length,
       active: comms.filter((m) => m.status === "In Progress" || m.status === "Planning").length,
     };
-  }, [me, connections, commitments]);
+  }, [me, fConnections, fCommitments]);
 
   const topIssues = useMemo(() => {
     const map = new Map<string, number>();
-    users.forEach((u) => u.interests.forEach((i) => map.set(i, (map.get(i) ?? 0) + 1)));
+    fUsers.forEach((u) => u.interests.forEach((i) => map.set(i, (map.get(i) ?? 0) + 1)));
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
-  }, [users]);
+  }, [fUsers]);
 
   const rank = (key: "powers_have" | "powers_need") => {
     const map = new Map<string, number>();
-    users.forEach((u) => u[key].forEach((p) => map.set(p, (map.get(p) ?? 0) + 1)));
+    fUsers.forEach((u) => u[key].forEach((p) => map.set(p, (map.get(p) ?? 0) + 1)));
     return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
   };
 
   const byRegion = REGIONS.map((r) => ({
     region: r,
-    count: connections.filter((c) => {
+    count: fConnections.filter((c) => {
       const a = userMap[c.user_a];
       const b = userMap[c.user_b];
       return a?.region === r || b?.region === r;
@@ -251,7 +323,7 @@ function Dashboard() {
           <div className="mb-3 flex items-end justify-between">
             <p className="text-3xl font-extrabold text-gradient">{completion}%</p>
             <p className="text-[12px] font-bold text-muted-foreground">
-              สำเร็จ {done}/{commitments.length} รายการ
+              สำเร็จ {done}/{fCommitments.length} รายการ
             </p>
           </div>
           <div className="mb-3 h-2.5 overflow-hidden rounded-full bg-muted">
