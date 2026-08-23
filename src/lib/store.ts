@@ -11,6 +11,7 @@ import type {
   ConnectionStatus,
   Idea,
   ProvinceNote,
+  Rsvp,
   Submission,
   User,
 } from "./types";
@@ -57,6 +58,7 @@ type Store = State & {
     id: string,
     patch: { follow_up_date?: string | null; status?: ConnectionStatus; description?: string },
   ) => void;
+  setRsvp: (id: string, rsvp: Rsvp) => void;
   toggleSaveIdea: (id: string) => void;
   toggleLikeUser: (id: string) => boolean;
   skipUser: (id: string) => void;
@@ -285,6 +287,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const setRsvp: Store["setRsvp"] = useCallback((id, rsvp) => {
+    setState((s) => {
+      const target = s.commitments.find((m) => m.id === id);
+      if (!target) return s;
+      const conn = s.connections.find((c) => c.id === target.connection_id);
+      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+      emitLive(
+        "commitment",
+        rsvp === "accepted" ? "ตอบรับนัดหมาย ✅" : "แจ้งไม่สะดวก ❌",
+        `${name} · ${target.action_type}`,
+      );
+      return {
+        ...s,
+        commitments: s.commitments.map((m) => (m.id === id ? { ...m, rsvp } : m)),
+      };
+    });
+  }, []);
+
   const toggleSaveIdea: Store["toggleSaveIdea"] = useCallback((id) => {
     setState((s) => ({
       ...s,
@@ -447,6 +468,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addCommitment,
       setConnectionStatus,
       updateCommitment,
+      setRsvp,
       toggleSaveIdea,
       toggleLikeUser,
       skipUser,
@@ -463,7 +485,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);

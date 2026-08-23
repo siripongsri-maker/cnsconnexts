@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BellRing, CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { REMINDER_STAGES } from "@/components/commitment-reminders";
+import { RsvpButtons } from "@/components/rsvp-buttons";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { ACTION_TYPES_TH, STATUS_TH } from "@/lib/i18n";
@@ -268,6 +269,7 @@ function CommitmentRow({
             {timeTh(m.follow_up_date)} น.
           </p>
           <ReminderChip iso={m.follow_up_date} done={m.status === "Completed"} />
+          <RsvpButtons m={m} />
         </>
       )}
       <div className="mt-2 flex gap-2">
