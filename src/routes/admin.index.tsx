@@ -5,6 +5,8 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
+import { useUsageLogs } from "@/lib/usage-log";
+
 
 type Bucket = "day" | "week";
 
