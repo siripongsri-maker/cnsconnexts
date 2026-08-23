@@ -39,6 +39,7 @@ import { Route as AdminLiveRouteImport } from './routes/admin.live'
 import { Route as AdminMapRouteImport } from './routes/admin.map'
 import { Route as AdminPeopleRouteImport } from './routes/admin.people'
 import { Route as AdminQrRouteImport } from './routes/admin.qr'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminSubmissionsRouteImport } from './routes/admin.submissions'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
@@ -194,6 +195,11 @@ const AdminQrRoute = AdminQrRouteImport.update({
   path: '/qr',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSubmissionsRoute = AdminSubmissionsRouteImport.update({
   id: '/submissions',
   path: '/submissions',
@@ -245,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
   '/admin/qr': typeof AdminQrRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/submissions': typeof AdminSubmissionsRoute
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
   '/admin/qr': typeof AdminQrRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/submissions': typeof AdminSubmissionsRoute
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
   '/admin/qr': typeof AdminQrRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/submissions': typeof AdminSubmissionsRoute
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
     | '/admin/map'
     | '/admin/people'
     | '/admin/qr'
+    | '/admin/settings'
     | '/admin/submissions'
     | '/chat/$id'
     | '/connection/$id'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/admin/map'
     | '/admin/people'
     | '/admin/qr'
+    | '/admin/settings'
     | '/admin/submissions'
     | '/chat/$id'
     | '/connection/$id'
@@ -426,6 +437,7 @@ export interface FileRouteTypes {
     | '/admin/map'
     | '/admin/people'
     | '/admin/qr'
+    | '/admin/settings'
     | '/admin/submissions'
     | '/chat/$id'
     | '/connection/$id'
@@ -671,6 +683,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminQrRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/submissions': {
       id: '/admin/submissions'
       path: '/submissions'
@@ -712,6 +731,7 @@ interface AdminRouteChildren {
   AdminMapRoute: typeof AdminMapRoute
   AdminPeopleRoute: typeof AdminPeopleRoute
   AdminQrRoute: typeof AdminQrRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSubmissionsRoute: typeof AdminSubmissionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -726,6 +746,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMapRoute: AdminMapRoute,
   AdminPeopleRoute: AdminPeopleRoute,
   AdminQrRoute: AdminQrRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminSubmissionsRoute: AdminSubmissionsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
