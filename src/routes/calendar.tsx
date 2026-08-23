@@ -226,12 +226,19 @@ function PartnerHead({
   partner,
   label,
 }: {
-  partner: { id: string; name: string; photo_url?: string | null } | null;
+  partner: any;
   label: string;
 }) {
   return (
     <div className="flex items-center gap-2">
-      <Avatar name={partner?.name ?? "?"} src={partner?.photo_url ?? undefined} size={32} />
+      <Avatar
+        user={{
+          name: partner?.name ?? "?",
+          avatar: partner?.avatar ?? "🙂",
+          photo: partner?.photo ?? undefined,
+        }}
+        size={32}
+      />
       <div className="min-w-0">
         <p className="truncate text-sm font-bold">{partner?.name ?? "คอนเนกชัน"}</p>
         <p className="truncate text-[11px] text-muted-foreground">{label}</p>
@@ -313,7 +320,7 @@ function NewCommitmentRow({
   onCreate: ReturnType<typeof useStore>["addCommitment"];
   onCreated: (iso: string) => void;
 }) {
-  const [action, setAction] = useState(ACTION_TYPES_TH[0]);
+  const [action, setAction] = useState<string>(ACTION_TYPES_TH[0] ?? "นัดเจอกันอีกครั้ง");
   const [when, setWhen] = useState("");
   return (
     <div className="rounded-2xl bg-accent/50 p-3">
