@@ -256,6 +256,18 @@ function Dashboard() {
   }, [q, region, issue, power, powerMode]);
 
   const fUsers = useMemo(() => users.filter(matchUser), [users, matchUser]);
+
+  // --- ผลการค้นหา: ให้คะแนนความเกี่ยวข้องตามตัวกรอง แล้วเรียงตามตัวเลือก ---
+  const results = useMemo(
+    () =>
+      sortScored(
+        fUsers.map((u) => relevanceOf(u, { q, region, issue, power, powerMode }, me ?? null)),
+        sort,
+      ),
+    [fUsers, q, region, issue, power, powerMode, me, sort],
+  );
+  const [resultLimit, setResultLimit] = useState(8);
+  useEffect(() => setResultLimit(8), [q, region, issue, power, powerMode, sort]);
   const fConnections = useMemo(
     () => connections.filter((c) => matchUser(userMap[c.user_a]) || matchUser(userMap[c.user_b])),
     [connections, userMap, matchUser],
