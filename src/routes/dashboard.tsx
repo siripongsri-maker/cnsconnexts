@@ -22,12 +22,12 @@ import {
 } from "@/lib/filter-presets";
 
 const searchSchema = z.object({
-  q: fallback(z.string().optional(), undefined),
-  region: fallback(z.string().optional(), undefined),
-  issue: fallback(z.string().optional(), undefined),
-  power: fallback(z.string().optional(), undefined),
-  powerMode: fallback(z.enum(["any", "have", "need"]).optional(), undefined),
-  view: fallback(z.enum(["organizer", "me"]).optional(), undefined),
+  q: z.string().optional().catch(undefined),
+  region: z.string().optional().catch(undefined),
+  issue: z.string().optional().catch(undefined),
+  power: z.string().optional().catch(undefined),
+  powerMode: z.enum(["any", "have", "need"]).optional().catch(undefined),
+  view: z.enum(["organizer", "me"]).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/dashboard")({
