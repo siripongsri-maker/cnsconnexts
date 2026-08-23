@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Save, Trash2, Users, FileUp, Filter, Download } from "lucide-react";
+import { Search, Save, Trash2, Users, FileUp, Filter, Download, Eye, X, Sparkles, Link2, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
 import { PROVINCES } from "@/lib/thailand-geo";
 import { ISSUES, type Region, type UserSource } from "@/lib/types";
-import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
+import { issueTh, powerTh, provinceTh, REGION_LABEL, STATUS_TH, GENERATION_TH } from "@/lib/i18n";
+import { rankMatches } from "@/lib/matching";
+import { POWER_EMOJI } from "@/lib/types";
 import { downloadCSV, type Row } from "@/lib/export";
 import type { User } from "@/lib/types";
 
@@ -92,12 +94,13 @@ function toRows(list: User[]): Row[] {
 }
 
 function AdminPeoplePage() {
-  const { users, updateUser, removeUser } = useStore();
+  const { users, updateUser, removeUser, connections, commitments } = useStore();
   const [q, setQ] = useState("");
   const [source, setSource] = useState<SourceFilter>("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
 
   const filtered = useMemo(() => {
@@ -123,6 +126,7 @@ function AdminPeoplePage() {
   }, [users, q, source, from, to]);
 
   const realCount = users.filter((u) => !isDemo(u.id)).length;
+  const detailUser = useMemo(() => users.find((u) => u.id === detailId) ?? null, [users, detailId]);
 
   const open = (u: User) => {
     setOpenId(u.id);
@@ -456,6 +460,20 @@ function AdminPeoplePage() {
           <Users className="size-3.5" /> แสดง {filtered.length} จาก {users.length} คน
         </p>
       </div>
+
+      {detailUser && (
+        <UserDetail
+          user={detailUser}
+          users={users}
+          connections={connections}
+          commitments={commitments}
+          onClose={() => setDetailId(null)}
+          onEdit={() => {
+            setDetailId(null);
+            open(detailUser);
+          }}
+        />
+      )}
     </AppShell>
   );
 }
