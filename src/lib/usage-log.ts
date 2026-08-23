@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 const LOG_KEY = "connexts-usage-log-v1";
 const CONSENT_KEY = "connexts-pdpa-consent-v1";
 const VISITOR_KEY = "connexts-visitor-id";
+const CONSENT_STATS_KEY = "connexts-consent-stats-v1";
 const MAX_LOGS = 1000;
 
 export const CONSENT_VERSION = "1.0";
