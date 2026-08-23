@@ -29,6 +29,7 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as UpdateRouteImport } from './routes/update'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as AdminPeopleRouteImport } from './routes/admin.people'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
@@ -135,6 +136,11 @@ const UpdateRoute = UpdateRouteImport.update({
   path: '/update',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminImportRoute = AdminImportRouteImport.update({
   id: '/import',
   path: '/import',
@@ -187,10 +193,10 @@ export interface FileRoutesByFullPath {
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
@@ -214,6 +220,7 @@ export interface FileRoutesByTo {
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -242,6 +249,7 @@ export interface FileRoutesById {
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -271,10 +279,10 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/auth'
     | '/brand-preview'
     | '/calendar'
@@ -298,6 +306,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -495,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpdateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/import': {
       id: '/admin/import'
       path: '/import'
@@ -536,11 +553,13 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminImportRoute: typeof AdminImportRoute
   AdminPeopleRoute: typeof AdminPeopleRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminImportRoute: AdminImportRoute,
   AdminPeopleRoute: AdminPeopleRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
