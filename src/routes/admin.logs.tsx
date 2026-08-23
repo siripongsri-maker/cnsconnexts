@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Download, Lock, ShieldCheck, Trash2 } from "lucide-react";
+import { CalendarClock, Download, Lock, ShieldCheck, Trash2 } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -22,7 +22,11 @@ import {
   clearLogs,
   getConsent,
   getConsentStats,
+  RETENTION_OPTIONS,
+  logExpiresAt,
   logUsage,
+  purgeExpiredLogs,
+  useRetention,
   useUsageLogs,
   type UsageLog,
 } from "@/lib/usage-log";
@@ -55,6 +59,7 @@ function AdminLogs() {
   const canExport = can("logs:export");
   const canClear = can("logs:clear");
   const logs = useUsageLogs();
+  const { days: retentionDays, setDays: setRetentionDays, cutoff } = useRetention();
   const [type, setType] = useState<UsageLog["type"] | "all">("all");
   const [q, setQ] = useState("");
 
@@ -127,6 +132,18 @@ function AdminLogs() {
     { name: "ไม่ยินยอม", value: consentStats.declined },
   ];
   const PIE_COLORS = ["var(--primary)", "var(--muted-foreground)"];
+
+  /** วันหมดอายุของรายการเก่าสุด และจำนวนที่จะถูกลบใน 7 วัน */
+  const oldest = logs.length ? logs[logs.length - 1] : null;
+  const nextExpiry = oldest ? logExpiresAt(oldest, retentionDays) : null;
+  const expiringSoon = useMemo(() => {
+    if (!retentionDays) return 0;
+    const limit = Date.now() + 7 * 86_400_000;
+    return logs.filter((l) => {
+      const exp = logExpiresAt(l, retentionDays);
+      return exp ? exp.getTime() <= limit : false;
+    }).length;
+  }, [logs, retentionDays]);
 
   if (!canView) {
     return (
@@ -251,6 +268,74 @@ function AdminLogs() {
       </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
+        <div className="flex items-center gap-2">
+          <CalendarClock className="h-4 w-4 text-primary" />
+          <h2 className="text-[14px] font-extrabold">นโยบายการเก็บรักษาและลบข้อมูลอัตโนมัติ</h2>
+        </div>
+        <p className="mt-1 text-[12px] text-muted-foreground">
+          ระบบจะลบบันทึกที่เก่ากว่าระยะเวลาที่กำหนดโดยอัตโนมัติ (ตรวจสอบทุกนาทีและทุกครั้งที่เปิดหน้านี้)
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <label className="text-[12px] font-bold">เก็บบันทึกไว้</label>
+          <select
+            value={retentionDays}
+            disabled={!canClear}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              setRetentionDays(next);
+              logUsage(
+                "admin",
+                "ตั้งค่านโยบายการเก็บรักษา Log",
+                `${adminUser ?? "-"} · ${next === 0 ? "ไม่ลบอัตโนมัติ" : `${next} วัน`}`,
+              );
+            }}
+            className="rounded-xl border border-border bg-background px-3 py-2 text-[12px] disabled:opacity-50"
+          >
+            {RETENTION_OPTIONS.map((o) => (
+              <option key={o.days} value={o.days}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          {canClear ? (
+            <button
+              type="button"
+              onClick={() => {
+                const removed = purgeExpiredLogs();
+                logUsage("admin", "ลบบันทึกหมดอายุด้วยตนเอง", `${adminUser ?? "-"} · ${removed} รายการ`);
+                alert(removed ? `ลบบันทึกหมดอายุแล้ว ${removed} รายการ` : "ไม่มีบันทึกที่หมดอายุ");
+              }}
+              className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> ลบรายการหมดอายุตอนนี้
+            </button>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-xl border border-dashed border-border px-3 py-2 text-[12px] font-bold text-muted-foreground">
+              <Lock className="h-3.5 w-3.5" /> เฉพาะผู้ดูแลสูงสุด
+            </span>
+          )}
+        </div>
+
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="rounded-xl bg-muted/50 p-3">
+            <p className="text-[11px] font-bold text-muted-foreground">เก็บย้อนหลังถึง</p>
+            <p className="text-[12px] font-extrabold">{cutoff ? fmt(cutoff.toISOString()) : "ไม่จำกัด"}</p>
+          </div>
+          <div className="rounded-xl bg-muted/50 p-3">
+            <p className="text-[11px] font-bold text-muted-foreground">รายการเก่าสุดจะหมดอายุ</p>
+            <p className="text-[12px] font-extrabold">
+              {nextExpiry ? fmt(nextExpiry.toISOString()) : "ไม่มีกำหนด"}
+            </p>
+          </div>
+          <div className="rounded-xl bg-muted/50 p-3">
+            <p className="text-[11px] font-bold text-muted-foreground">จะถูกลบใน 7 วันข้างหน้า</p>
+            <p className="text-[12px] font-extrabold">{expiringSoon} รายการ</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="card-soft rounded-2xl bg-card p-4">
         <h2 className="text-[14px] font-extrabold">สถานะความยินยอมของเครื่องนี้</h2>
         <p className="mt-1 text-[12px] text-muted-foreground">
           {consent
@@ -307,6 +392,10 @@ function AdminLogs() {
                     รายละเอียด: l.detail ?? "",
                     หน้า: l.path ?? "",
                     ผู้ใช้: l.visitor,
+                    หมดอายุ: (() => {
+                      const exp = logExpiresAt(l, retentionDays);
+                      return exp ? fmt(exp.toISOString()) : "ไม่หมดอายุ";
+                    })(),
                   })),
                 );
                 logUsage("admin", "ส่งออกบันทึกการใช้งาน (CSV)", `${adminUser ?? "-"} · ${filtered.length} รายการ`);
@@ -361,12 +450,13 @@ function AdminLogs() {
               <th className="px-3 py-2">เหตุการณ์</th>
               <th className="px-3 py-2">หน้า</th>
               <th className="px-3 py-2">ผู้ใช้</th>
+              <th className="px-3 py-2">หมดอายุ</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-muted-foreground">
+                <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
                   ยังไม่มีบันทึกการใช้งาน
                 </td>
               </tr>
@@ -381,6 +471,12 @@ function AdminLogs() {
                   </td>
                   <td className="px-3 py-2">{l.path}</td>
                   <td className="px-3 py-2 text-muted-foreground">{l.visitor}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                    {(() => {
+                      const exp = logExpiresAt(l, retentionDays);
+                      return exp ? fmt(exp.toISOString()) : "ไม่หมดอายุ";
+                    })()}
+                  </td>
                 </tr>
               ))
             )}
