@@ -13,33 +13,34 @@ type Size = "xs" | "sm" | "md" | "hero";
 /** ขนาดฟอนต์แบบ responsive ในตัวเอง (ไม่พึ่งขนาดจาก parent) */
 const SIZES: Record<Size, { th: string; en: string; gap: string }> = {
   xs: {
-    th: "text-[12px] sm:text-[13px]",
-    en: "text-[14px] sm:text-[15px]",
-    gap: "gap-x-1.5",
+    th: "text-[clamp(10px,3.1vw,13px)]",
+    en: "text-[clamp(11.5px,3.7vw,15px)]",
+    gap: "gap-x-1 sm:gap-x-1.5",
   },
   sm: {
-    th: "text-[clamp(0.8rem,3.4vw,0.95rem)]",
-    en: "text-[clamp(0.95rem,4.2vw,1.2rem)]",
+    th: "text-[clamp(0.75rem,3.1vw,0.95rem)]",
+    en: "text-[clamp(0.88rem,3.8vw,1.2rem)]",
     gap: "gap-x-1.5 sm:gap-x-2",
   },
   md: {
-    th: "text-[clamp(0.95rem,3.8vw,1.35rem)]",
-    en: "text-[clamp(1.4rem,6.4vw,2.15rem)]",
+    th: "text-[clamp(0.9rem,3.4vw,1.35rem)]",
+    en: "text-[clamp(1.25rem,5.4vw,2.15rem)]",
     gap: "gap-y-0.5",
   },
   hero: {
-    th: "text-[clamp(1.5rem,6.2vw,2.75rem)]",
-    en: "text-[clamp(2.1rem,10.5vw,4.25rem)]",
+    th: "text-[clamp(1.25rem,5vw,2.75rem)]",
+    en: "text-[clamp(1.7rem,8.4vw,4.25rem)]",
     gap: "gap-y-0.5 sm:gap-y-1",
   },
 };
 
 const MARK_SIZE: Record<Size, string> = {
-  xs: "h-[18px] w-[18px]",
-  sm: "h-5 w-5 sm:h-6 sm:w-6",
-  md: "h-8 w-8 sm:h-9 sm:w-9",
-  hero: "h-10 w-10 sm:h-12 sm:w-12",
+  xs: "h-4 w-4 sm:h-[18px] sm:w-[18px]",
+  sm: "h-[18px] w-[18px] sm:h-6 sm:w-6",
+  md: "h-7 w-7 sm:h-9 sm:w-9",
+  hero: "h-9 w-9 sm:h-12 sm:w-12",
 };
+
 
 export function Wordmark({
   size = "sm",
