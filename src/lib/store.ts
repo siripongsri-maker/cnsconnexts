@@ -1,7 +1,16 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { DEMO_COMMITMENTS, DEMO_CONNECTIONS, DEMO_IDEAS, DEMO_USERS } from "./demo-data";
 import { DEMO_PROVINCE_NOTES } from "./demo-province-notes";
-import type { Commitment, Connection, ConnectionStatus, Idea, ProvinceNote, User } from "./types";
+import { DEMO_SUBMISSIONS } from "./demo-submissions";
+import type {
+  Commitment,
+  Connection,
+  ConnectionStatus,
+  Idea,
+  ProvinceNote,
+  Submission,
+  User,
+} from "./types";
 
 const KEY = "connecting-power-v1";
 
@@ -13,6 +22,7 @@ type State = {
   commitments: Commitment[];
   savedIdeas: string[];
   provinceNotes: ProvinceNote[];
+  submissions: Submission[];
 };
 
 const initial: State = {
@@ -23,6 +33,7 @@ const initial: State = {
   commitments: DEMO_COMMITMENTS,
   savedIdeas: [],
   provinceNotes: DEMO_PROVINCE_NOTES,
+  submissions: DEMO_SUBMISSIONS,
 };
 
 type Store = State & {
@@ -33,6 +44,9 @@ type Store = State & {
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
   toggleSaveIdea: (id: string) => void;
   addProvinceNote: (n: Omit<ProvinceNote, "id" | "created_at">) => ProvinceNote;
+  addSubmission: (s: Omit<Submission, "id" | "created_at" | "showcase">) => Submission;
+  toggleShowcase: (id: string) => void;
+  importUsers: (list: User[]) => number;
   reset: () => void;
 };
 
@@ -134,6 +148,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return note;
   }, []);
 
+  const addSubmission: Store["addSubmission"] = useCallback((data) => {
+    const item: Submission = {
+      ...data,
+      showcase: false,
+      id: `sb-${Date.now()}`,
+      created_at: new Date().toISOString(),
+    };
+    setState((s) => ({ ...s, submissions: [item, ...s.submissions] }));
+    return item;
+  }, []);
+
+  const toggleShowcase: Store["toggleShowcase"] = useCallback((id) => {
+    setState((s) => ({
+      ...s,
+      submissions: s.submissions.map((x) => (x.id === id ? { ...x, showcase: !x.showcase } : x)),
+    }));
+  }, []);
+
+  const importUsers: Store["importUsers"] = useCallback((list) => {
+    setState((s) => {
+      const existing = new Set(s.users.map((u) => u.id));
+      const fresh = list.filter((u) => !existing.has(u.id));
+      return { ...s, users: [...fresh, ...s.users] };
+    });
+    return list.length;
+  }, []);
+
   const reset = useCallback(() => setState(initial), []);
 
   const value = useMemo<Store>(
@@ -146,9 +187,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setConnectionStatus,
       toggleSaveIdea,
       addProvinceNote,
+      addSubmission,
+      toggleShowcase,
+      importUsers,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, addSubmission, toggleShowcase, importUsers, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);

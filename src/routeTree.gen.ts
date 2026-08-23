@@ -12,12 +12,16 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommitmentsRouteImport } from './routes/commitments'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as EbookRouteImport } from './routes/ebook'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PrintRouteImport } from './routes/print'
 import { Route as QrRouteImport } from './routes/qr'
+import { Route as SubmitRouteImport } from './routes/submit'
+import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
@@ -34,6 +38,11 @@ const CommitmentsRoute = CommitmentsRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EbookRoute = EbookRouteImport.update({
+  id: '/ebook',
+  path: '/ebook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -61,9 +70,24 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrintRoute = PrintRouteImport.update({
+  id: '/print',
+  path: '/print',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QrRoute = QrRouteImport.update({
   id: '/qr',
   path: '/qr',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SubmitRoute = SubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminImportRoute = AdminImportRouteImport.update({
+  id: '/admin/import',
+  path: '/admin/import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConnectionIdRoute = ConnectionIdRouteImport.update({
@@ -81,12 +105,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/ebook': typeof EbookRoute
   '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/print': typeof PrintRoute
   '/qr': typeof QrRoute
+  '/submit': typeof SubmitRoute
+  '/admin/import': typeof AdminImportRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -94,12 +122,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/ebook': typeof EbookRoute
   '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/print': typeof PrintRoute
   '/qr': typeof QrRoute
+  '/submit': typeof SubmitRoute
+  '/admin/import': typeof AdminImportRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -108,12 +140,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/ebook': typeof EbookRoute
   '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/print': typeof PrintRoute
   '/qr': typeof QrRoute
+  '/submit': typeof SubmitRoute
+  '/admin/import': typeof AdminImportRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -123,12 +159,16 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/ebook'
     | '/join'
     | '/map'
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/print'
     | '/qr'
+    | '/submit'
+    | '/admin/import'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -136,12 +176,16 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/ebook'
     | '/join'
     | '/map'
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/print'
     | '/qr'
+    | '/submit'
+    | '/admin/import'
     | '/connection/$id'
     | '/people/$id'
   id:
@@ -149,12 +193,16 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/ebook'
     | '/join'
     | '/map'
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/print'
     | '/qr'
+    | '/submit'
+    | '/admin/import'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesById: FileRoutesById
@@ -163,12 +211,16 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CommitmentsRoute: typeof CommitmentsRoute
   DashboardRoute: typeof DashboardRoute
+  EbookRoute: typeof EbookRoute
   JoinRoute: typeof JoinRoute
   MapRoute: typeof MapRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
+  PrintRoute: typeof PrintRoute
   QrRoute: typeof QrRoute
+  SubmitRoute: typeof SubmitRoute
+  AdminImportRoute: typeof AdminImportRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
 }
@@ -194,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ebook': {
+      id: '/ebook'
+      path: '/ebook'
+      fullPath: '/ebook'
+      preLoaderRoute: typeof EbookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -231,11 +290,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/print': {
+      id: '/print'
+      path: '/print'
+      fullPath: '/print'
+      preLoaderRoute: typeof PrintRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/qr': {
       id: '/qr'
       path: '/qr'
       fullPath: '/qr'
       preLoaderRoute: typeof QrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/submit': {
+      id: '/submit'
+      path: '/submit'
+      fullPath: '/submit'
+      preLoaderRoute: typeof SubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/import': {
+      id: '/admin/import'
+      path: '/admin/import'
+      fullPath: '/admin/import'
+      preLoaderRoute: typeof AdminImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/connection/$id': {
@@ -259,12 +339,16 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CommitmentsRoute: CommitmentsRoute,
   DashboardRoute: DashboardRoute,
+  EbookRoute: EbookRoute,
   JoinRoute: JoinRoute,
   MapRoute: MapRoute,
   MarketplaceRoute: MarketplaceRoute,
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
+  PrintRoute: PrintRoute,
   QrRoute: QrRoute,
+  SubmitRoute: SubmitRoute,
+  AdminImportRoute: AdminImportRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
 }

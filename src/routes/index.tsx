@@ -98,6 +98,21 @@ function Welcome() {
               สแกนเพื่อเข้าร่วม
             </Link>
           </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { to: "/submit" as const, label: "ส่งผลงาน" },
+              { to: "/ebook" as const, label: "รวมผลงาน" },
+              { to: "/print" as const, label: "ไฟล์พิมพ์" },
+            ].map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="tap flex h-12 items-center justify-center rounded-2xl border border-border bg-card/80 text-[13px] font-bold backdrop-blur"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
           <p className="pt-1 text-center text-[11px] text-muted-foreground">
             ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
           </p>

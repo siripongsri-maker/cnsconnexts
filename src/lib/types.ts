@@ -118,3 +118,27 @@ export type Commitment = {
   follow_up_date: string | null;
   created_at: string;
 };
+
+export const COURSES = ["คนส.", "นนส.", "คศน."] as const;
+export type Course = (typeof COURSES)[number];
+
+/** ผลงานที่สมาชิกส่งเข้ามา (สำหรับ e-book และบอร์ดนิทรรศการ) */
+export type Submission = {
+  id: string;
+  name: string;
+  course: Course;
+  batch: string;
+  region: Region;
+  /** province key (english, ตรงกับ thailand-geo) */
+  province: string;
+  policy_issues: string[];
+  summary: string;
+  highlight: string;
+  wanted: string;
+  photo?: string | undefined;
+  /** ยินดีขึ้นเวทีนำเสนอสั้น ๆ */
+  stage_ready: boolean;
+  /** ถูก mark เป็นกรณีศึกษาที่จะยกขึ้นเวที */
+  showcase: boolean;
+  created_at: string;
+};
