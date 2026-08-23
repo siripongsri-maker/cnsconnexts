@@ -1,7 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut } from "lucide-react";
+import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut, Bell } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
+import { useStore } from "@/lib/store";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -25,6 +26,8 @@ export function AppShell({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { mode, signOut } = useAuth();
+  const { notifications } = useStore();
+  const unread = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -46,6 +49,18 @@ export function AppShell({
             </div>
             <div className="flex items-center gap-2">
               {action}
+              <Link
+                to="/notifications"
+                className="tap relative inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+                aria-label="การแจ้งเตือน"
+              >
+                <Bell className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                {unread > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-coral px-1 text-[10px] font-extrabold text-coral-foreground">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </Link>
               {mode === "user" || mode === "guest" ? (
                 <button
                   type="button"

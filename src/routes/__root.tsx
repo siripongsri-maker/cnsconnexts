@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider } from "@/lib/store";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
+import { NotificationHost } from "@/components/notification-host";
 
 
 function NotFoundComponent() {
@@ -132,6 +133,7 @@ function RootComponent() {
       <StoreProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
+        <NotificationHost />
         <Toaster position="top-center" />
       </StoreProvider>
       </AuthProvider>

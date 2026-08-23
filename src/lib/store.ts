@@ -160,13 +160,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const addCommitment: Store["addCommitment"] = useCallback((c) => {
     const item: Commitment = { ...c, id: `m-${Date.now()}`, created_at: new Date().toISOString() };
-    setState((s) => ({
+    setState((s) => {
+      const conn = s.connections.find((x) => x.id === c.connection_id);
+      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+      const note: AppNotification = {
+        id: `n-${Date.now()}-c`,
+        kind: "commitment",
+        title: "ส่งก้าวต่อไปให้เพื่อนแล้ว 🚀",
+        body: `แจ้งเตือน ${name} เรื่อง “${c.action}”`,
+        from_id: otherId,
+        from_name: name,
+        connection_id: c.connection_id,
+        read: false,
+        created_at: new Date().toISOString(),
+      };
+      return {
       ...s,
+      notifications: [note, ...s.notifications],
       commitments: [item, ...s.commitments],
       connections: s.connections.map((x) =>
         x.id === c.connection_id ? { ...x, status: c.status } : x,
       ),
-    }));
+      };
+    });
     return item;
   }, []);
 
