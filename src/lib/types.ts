@@ -154,12 +154,14 @@ export type Submission = {
 /** In-app notification shown to the participant (client-side prototype). */
 export type AppNotification = {
   id: string;
-  kind: "connect_sent" | "connect_received" | "accepted" | "commitment";
+  kind: "connect_sent" | "connect_received" | "accepted" | "commitment" | "reminder";
   title: string;
   body: string;
   from_id: string;
   from_name: string;
   connection_id?: string | undefined;
+  /** ผูกกับรายการต้นทาง (เช่น commitment id) เพื่อกันแจ้งเตือนซ้ำ */
+  ref_id?: string | undefined;
   read: boolean;
   created_at: string;
 };
