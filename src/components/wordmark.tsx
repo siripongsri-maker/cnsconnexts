@@ -93,7 +93,9 @@ export function Wordmark({
   if (!withMark) return text;
 
   return (
-    <span className={`inline-flex min-w-0 items-center gap-2 ${className}`}>
+    <span
+      className={`inline-flex min-w-0 max-w-full items-center gap-1.5 sm:gap-2 ${className}`}
+    >
       <img
         src={cnsLogo}
         alt=""
