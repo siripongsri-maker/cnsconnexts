@@ -1,0 +1,131 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MessageCircle, Send } from "lucide-react";
+
+import { Avatar } from "@/components/power-bits";
+import { useStore } from "@/lib/store";
+
+const QUICK = [
+  "สวัสดีครับ ยินดีที่ได้เชื่อมกัน",
+  "นัดคุยสั้น ๆ 15 นาทีดีไหม",
+  "สะดวกเจอกันที่โซนเครือข่ายไหม",
+  "ขอข้อมูลโครงการเพิ่มได้ไหมครับ",
+];
+
+function clock(iso: string) {
+  return new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+}
+
+/** ห้องแชทสั้นแบบเรียลไทม์ของคู่เชื่อมต่อ */
+export function ChatRoom({ connectionId, compact = false }: { connectionId: string; compact?: boolean }) {
+  const { messages, connections, users, me, sendMessage, markRoomRead } = useStore();
+  const [text, setText] = useState("");
+  const endRef = useRef<HTMLDivElement | null>(null);
+
+  const conn = connections.find((c) => c.id === connectionId);
+  const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+  const other = users.find((u) => u.id === otherId);
+
+  const thread = useMemo(
+    () => messages.filter((m) => m.connection_id === connectionId),
+    [messages, connectionId],
+  );
+
+  useEffect(() => {
+    markRoomRead(connectionId);
+  }, [connectionId, markRoomRead, thread.length]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [thread.length]);
+
+  const send = (value: string) => {
+    if (!value.trim()) return;
+    sendMessage(connectionId, value);
+    setText("");
+  };
+
+  return (
+    <div className="card-soft rounded-3xl bg-card p-4">
+      <div className="flex items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/12 text-primary">
+          <MessageCircle className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="truncate text-[15px] font-extrabold">
+            แชทกับ {other?.name ?? "เพื่อนร่วมงาน"}
+          </h2>
+          <p className="text-[11.5px] text-muted-foreground">คุยสั้น ๆ แล้วนัดหมายการลงมือทำ</p>
+        </div>
+      </div>
+
+      <div
+        className={`mt-3 space-y-2 overflow-y-auto pr-1 ${compact ? "max-h-64" : "max-h-[52vh]"}`}
+      >
+        {thread.length === 0 && (
+          <p className="rounded-2xl bg-muted/60 px-4 py-3 text-[12.5px] text-muted-foreground">
+            เริ่มบทสนทนาแรกได้เลย — ทักทาย เล่าสิ่งที่อยากทำร่วมกัน แล้วนัดเวลาคุยต่อ
+          </p>
+        )}
+        {thread.map((m) => {
+          const mine = m.from_id === "me";
+          const author = mine ? me : other;
+          return (
+            <div key={m.id} className={`flex items-end gap-2 ${mine ? "justify-end" : ""}`}>
+              {!mine && author && <Avatar user={author} size={28} />}
+              <div
+                className={`max-w-[78%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                  mine
+                    ? "gradient-power text-primary-foreground"
+                    : "border border-border bg-background text-foreground"
+                }`}
+              >
+                <p className="whitespace-pre-wrap break-words">{m.text}</p>
+                <p className={`mt-1 text-[10px] ${mine ? "opacity-80" : "text-muted-foreground"}`}>
+                  {clock(m.created_at)}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={endRef} />
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {QUICK.map((q) => (
+          <button
+            key={q}
+            type="button"
+            onClick={() => send(q)}
+            className="tap rounded-full border border-border bg-background px-3 py-1.5 text-[11.5px] font-bold"
+          >
+            {q}
+          </button>
+        ))}
+      </div>
+
+      <form
+        className="mt-3 flex items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          send(text);
+        }}
+      >
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="พิมพ์ข้อความ…"
+          aria-label="ข้อความ"
+          className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-sm outline-none focus:border-primary"
+        />
+        <button
+          type="submit"
+          disabled={!text.trim()}
+          aria-label="ส่งข้อความ"
+          className="tap grid h-12 w-12 shrink-0 place-items-center rounded-2xl gradient-power text-primary-foreground disabled:opacity-40"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </form>
+    </div>
+  );
+}
