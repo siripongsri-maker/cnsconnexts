@@ -69,7 +69,7 @@ function BrandPreview() {
             </h2>
           </div>
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            หน้านี้แสดงว่า wordmark “คนส. Connexts” และโลโก้ CNS จะปรากฏอย่างไรบนพื้นหลังสีต่างๆ
+            หน้านี้แสดงว่า wordmark “คนส. Connexts” และโลโก้สัญลักษณ์จะปรากฏอย่างไรบนพื้นหลังสีต่างๆ
             ทั้งโหมดสว่าง มืด และสีแบรนด์
           </p>
         </section>
