@@ -91,6 +91,9 @@
   --lime: oklch(0.85 0.21 130);
   --lime-foreground: oklch(0.22 0.08 140);
   --gradient-power: linear-gradient(135deg, oklch(0.51 0.25 296), oklch(0.62 0.2 250) 55%, oklch(0.68 0.19 25));
+  /* เกรเดียนต์สำหรับตัวอักษรแบรนด์ (คอนทราสต์ ≥ 4.5:1 บนพื้นสว่าง) */
+  --gradient-brand-text: linear-gradient(135deg, oklch(0.45 0.24 296), oklch(0.5 0.19 250) 55%, oklch(0.52 0.19 25));
+  --brand-mark-shadow: none;
   --gradient-soft: linear-gradient(160deg, oklch(0.97 0.03 300), oklch(0.985 0.006 85));
   --shadow-card: 0 2px 4px -2px oklch(0.19 0.03 292 / 0.08), 0 12px 28px -12px oklch(0.19 0.03 292 / 0.18);
   --shadow-glow: 0 18px 50px -18px oklch(0.51 0.25 296 / 0.65);
