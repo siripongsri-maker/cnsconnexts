@@ -145,6 +145,27 @@ function AdminPeoplePage() {
               </button>
             ))}
           </div>
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium text-muted-foreground">แหล่งที่มา</span>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value as SourceFilter)}
+                className="w-full appearance-none rounded-xl border border-border bg-background py-2 pl-8 pr-3 text-xs outline-none"
+              >
+                <option value="all">ทั้งหมด</option>
+                <option value="real">ผู้ใช้จริง</option>
+                <option value="demo">เดโม่</option>
+                <option value="qr">QR</option>
+                <option value="link">ลิงก์</option>
+                <option value="invite">Invite</option>
+                <option value="direct">เข้าตรง</option>
+                <option value="auth">บัญชี</option>
+                <option value="admin">นำเข้า</option>
+              </select>
+            </div>
+          </label>
           <div className="grid grid-cols-2 gap-2">
             <label className="block space-y-1">
               <span className="text-[11px] font-medium text-muted-foreground">onboard ตั้งแต่</span>
