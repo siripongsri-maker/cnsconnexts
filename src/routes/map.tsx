@@ -12,7 +12,7 @@ import { MAP_VIEWBOX, PROVINCES, type ProvinceShape } from "@/lib/thailand-geo";
 export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
-      { title: "แผนที่พลัง — คนส. Connect" },
+      { title: "แผนที่พลัง — คนส. Connexts" },
       {
         name: "description",
         content:

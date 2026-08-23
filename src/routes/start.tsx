@@ -9,7 +9,7 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/start")({
   head: () => ({
     meta: [
-      { title: "เริ่มสร้าง Power Profile — คนส. Connext" },
+      { title: "เริ่มสร้าง Power Profile — คนส. Connexts" },
       {
         name: "description",
         content:

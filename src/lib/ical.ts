@@ -31,7 +31,7 @@ export function commitmentToEvent(m: Commitment, partnerName?: string): Calendar
   if (Number.isNaN(start.getTime())) return null;
   return {
     uid: `${m.id}@konsor-connect`,
-    title: `[คนส. Connect] ${m.action_type}${partnerName ? ` กับ ${partnerName}` : ""}`,
+    title: `[คนส. Connexts] ${m.action_type}${partnerName ? ` กับ ${partnerName}` : ""}`,
     description: m.description,
     start,
     end: new Date(start.getTime() + DURATION_MS),

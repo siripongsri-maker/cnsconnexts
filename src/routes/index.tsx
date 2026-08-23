@@ -24,13 +24,13 @@ import { Wordmark } from "@/components/wordmark";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "คนส. Connect — เชื่อมคน เชื่อมไอเดีย เชื่อมพลัง" },
+      { title: "คนส. Connexts — เชื่อมคน เชื่อมไอเดีย เชื่อมพลัง" },
       {
         name: "description",
         content:
           "ทุกคนมีพลังของตัวเอง มาค้นหาว่าวันนี้คุณควรเชื่อมกับใคร ในงานสมัชชาสุขภาพแห่งชาติ",
       },
-      { property: "og:title", content: "คนส. Connect" },
+      { property: "og:title", content: "คนส. Connexts" },
       {
         property: "og:description",
         content: "เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ",

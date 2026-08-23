@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/chat/$id")({
   head: () => ({
     meta: [
-      { title: "ห้องแชทคู่เชื่อมต่อ — คนส. Connext" },
+      { title: "ห้องแชทคู่เชื่อมต่อ — คนส. Connexts" },
       {
         name: "description",
         content: "คุยสั้น ๆ แบบเรียลไทม์กับคู่เชื่อมต่อของคุณ แล้วนัดหมายการลงมือทำร่วมกัน",

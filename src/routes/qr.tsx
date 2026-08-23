@@ -6,13 +6,13 @@ import { makeJoinCode } from "@/lib/session";
 export const Route = createFileRoute("/qr")({
   head: () => ({
     meta: [
-      { title: "สแกนเพื่อเข้าร่วม — คนส. Connect" },
+      { title: "สแกนเพื่อเข้าร่วม — คนส. Connexts" },
       {
         name: "description",
         content:
           "แสดง QR โค้ดนี้ที่หน้างาน ผู้เข้าร่วมสแกนแล้วเข้าสู่ขั้นตอนสร้างโปรไฟล์บนมือถือได้ทันที",
       },
-      { property: "og:title", content: "สแกนเพื่อเข้าร่วม คนส. Connect" },
+      { property: "og:title", content: "สแกนเพื่อเข้าร่วม คนส. Connexts" },
       { property: "og:description", content: "สแกนเพื่อเข้าร่วม แล้วสร้างโปรไฟล์พลังของคุณ" },
     ],
   }),

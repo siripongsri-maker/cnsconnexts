@@ -11,7 +11,7 @@ import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
 export const Route = createFileRoute("/submit")({
   head: () => ({
     meta: [
-      { title: "ส่งผลงาน — คนส. Connext" },
+      { title: "ส่งผลงาน — คนส. Connexts" },
       {
         name: "description",
         content:
