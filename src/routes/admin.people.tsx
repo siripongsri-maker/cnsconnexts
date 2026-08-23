@@ -355,7 +355,7 @@ function AdminPeoplePage() {
                     </button>
                   </div>
                 )}
-                {editing ? (
+                {editing && (
                   <div className="space-y-3">
                     <Field label="ชื่อ">
                       <input
