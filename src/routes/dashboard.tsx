@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
@@ -140,12 +140,16 @@ function Dashboard() {
       id: `fp_${Date.now()}`,
       name,
       filters: currentFilters,
+      alerts: true,
       created_at: new Date().toISOString(),
     };
     persist([next, ...presets.filter((p) => p.name !== name)].slice(0, 12));
   };
 
   const removePreset = (id: string) => persist(presets.filter((p) => p.id !== id));
+
+  const toggleAlerts = (id: string) =>
+    persist(presets.map((p) => (p.id === id ? { ...p, alerts: !p.alerts } : p)));
 
   const activeCount =
     (q.trim() ? 1 : 0) +
@@ -508,7 +512,7 @@ function Dashboard() {
             </div>
             {presets.length === 0 ? (
               <p className="text-[11px] text-muted-foreground">
-                ยังไม่มีชุดที่บันทึก — เลือกตัวกรองแล้วกด “บันทึกชุดนี้”
+                ยังไม่มีชุดที่บันทึก — เลือกตัวกรองแล้วกด “บันทึกชุดนี้” เพื่อรับแจ้งเตือนเมื่อมีแมตช์หรือคู่เชื่อมต่อใหม่ที่ตรงเงื่อนไข
               </p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
@@ -528,6 +532,15 @@ function Dashboard() {
                       className="tap"
                     >
                       {p.name}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={p.alerts ? `ปิดแจ้งเตือนชุด ${p.name}` : `เปิดแจ้งเตือนชุด ${p.name}`}
+                      title={p.alerts ? "แจ้งเตือนเปิดอยู่" : "แจ้งเตือนปิดอยู่"}
+                      onClick={() => toggleAlerts(p.id)}
+                      className="tap"
+                    >
+                      {p.alerts ? <Bell className="h-3 w-3" /> : <BellOff className="h-3 w-3 opacity-60" />}
                     </button>
                     <button
                       type="button"
