@@ -152,9 +152,21 @@
 }
 
 @utility text-gradient {
-  background-image: var(--gradient-power);
+  background-image: var(--gradient-brand-text, var(--gradient-power));
   background-clip: text;
   color: transparent;
+}
+
+/* โลโก้สัญลักษณ์: เรืองแสงเล็กน้อยในโหมดมืดให้ขอบไม่จมพื้นหลัง */
+@utility brand-mark {
+  filter: var(--brand-mark-shadow);
+}
+
+@media (forced-colors: active) {
+  .text-gradient {
+    background-image: none;
+    color: CanvasText;
+  }
 }
 
 @utility card-soft {
