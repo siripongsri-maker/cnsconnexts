@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Link2, Search, Share2, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
@@ -11,6 +14,7 @@ import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 import { rankMatches } from "@/lib/matching";
 import {
+  emptyFilters,
   loadPresets,
   savePresets,
   sameFilters,
@@ -18,7 +22,17 @@ import {
   type FilterPreset,
 } from "@/lib/filter-presets";
 
+const searchSchema = z.object({
+  q: fallback(z.string(), "").default(""),
+  region: fallback(z.string(), "all").default("all"),
+  issue: fallback(z.string(), "all").default("all"),
+  power: fallback(z.string(), "all").default("all"),
+  powerMode: fallback(z.enum(["any", "have", "need"]), "any").default("any"),
+  view: fallback(z.enum(["organizer", "me"]), "organizer").default("organizer"),
+});
+
 export const Route = createFileRoute("/dashboard")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: "แดชบอร์ดสด — คนส. Connect" },
