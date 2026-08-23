@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Lock, ShieldCheck, Trash2 } from "lucide-react";
 import {
   Area,
   AreaChart,
