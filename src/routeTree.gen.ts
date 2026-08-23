@@ -27,6 +27,7 @@ import { Route as StartRouteImport } from './routes/start'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as UpdateRouteImport } from './routes/update'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
+import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
@@ -120,6 +121,11 @@ const AdminImportRoute = AdminImportRouteImport.update({
   path: '/admin/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatIdRoute = ChatIdRouteImport.update({
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConnectionIdRoute = ConnectionIdRouteImport.update({
   id: '/connection/$id',
   path: '/connection/$id',
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
   '/admin/import': typeof AdminImportRoute
+  '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
   '/admin/import': typeof AdminImportRoute
+  '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
   '/admin/import': typeof AdminImportRoute
+  '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -219,6 +228,7 @@ export interface FileRouteTypes {
     | '/submit'
     | '/update'
     | '/admin/import'
+    | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/submit'
     | '/update'
     | '/admin/import'
+    | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
   id:
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/submit'
     | '/update'
     | '/admin/import'
+    | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesById: FileRoutesById
@@ -286,6 +298,7 @@ export interface RootRouteChildren {
   SubmitRoute: typeof SubmitRoute
   UpdateRoute: typeof UpdateRoute
   AdminImportRoute: typeof AdminImportRoute
+  ChatIdRoute: typeof ChatIdRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
 }
@@ -418,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/$id': {
+      id: '/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/chat/$id'
+      preLoaderRoute: typeof ChatIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/connection/$id': {
       id: '/connection/$id'
       path: '/connection/$id'
@@ -454,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   SubmitRoute: SubmitRoute,
   UpdateRoute: UpdateRoute,
   AdminImportRoute: AdminImportRoute,
+  ChatIdRoute: ChatIdRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
 }
