@@ -49,6 +49,11 @@ function fmt(at: string) {
 }
 
 function AdminLogs() {
+  const { can, role, user: adminUser } = useAdminAuth();
+  const canView = can("logs:view");
+  const canSearch = can("logs:search");
+  const canExport = can("logs:export");
+  const canClear = can("logs:clear");
   const logs = useUsageLogs();
   const [type, setType] = useState<UsageLog["type"] | "all">("all");
   const [q, setQ] = useState("");
