@@ -1,3 +1,4 @@
+import { Wordmark } from "@/components/wordmark";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { LogIn, UserPlus, Sparkles, Mail, Lock, User as UserIcon, Link2, ShieldCheck, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
