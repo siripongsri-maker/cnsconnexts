@@ -111,7 +111,7 @@ function Dashboard() {
   const [now, setNow] = useState(() => Date.now());
 
   // --- ฟิลเตอร์ขั้นสูง (ใช้ได้ทั้งมุมผู้จัดและมุมของฉัน) ---
-  const [q, setQ] = useState(search.q ?? "");
+  const [q, setQ] = useState<string>(search.q ?? "");
   const [region, setRegion] = useState<string>(search.region ?? "all");
   const [issue, setIssue] = useState<string>(search.issue ?? "all");
   const [power, setPower] = useState<string>(search.power ?? "all");
