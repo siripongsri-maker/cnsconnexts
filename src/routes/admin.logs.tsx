@@ -1,12 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Download, Trash2 } from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { downloadCSV, downloadJSON } from "@/lib/export";
 import {
   LOG_TYPE_LABEL,
   clearLogs,
   getConsent,
+  getConsentStats,
   useUsageLogs,
   type UsageLog,
 } from "@/lib/usage-log";
@@ -60,6 +74,53 @@ function AdminLogs() {
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [logs]);
 
+  /** การเข้าชมรายวัน 14 วันล่าสุด */
+  const daily = useMemo(() => {
+    const counts = new Map<string, number>();
+    logs
+      .filter((l) => l.type === "page_view")
+      .forEach((l) => {
+        const key = l.at.slice(0, 10);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      });
+    const out: Array<{ day: string; label: string; views: number }> = [];
+    for (let i = 13; i >= 0; i -= 1) {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      out.push({
+        day: key,
+        label: `${d.getDate()}/${d.getMonth() + 1}`,
+        views: counts.get(key) ?? 0,
+      });
+    }
+    return out;
+  }, [logs]);
+
+  /** แหล่งที่มาของผู้เข้าชม */
+  const sources = useMemo(() => {
+    const counts = new Map<string, number>();
+    logs.forEach((l) => {
+      const s = l.source ?? "direct";
+      counts.set(s, (counts.get(s) ?? 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, value]) => ({ name: name === "direct" ? "เข้าตรง" : name, value }));
+  }, [logs]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- รีเฟรชตามบันทึกล่าสุด
+  const consentStats = useMemo(() => getConsentStats(), [logs.length]);
+  const consentTotal = consentStats.accepted + consentStats.declined;
+  const consentRate = consentTotal ? Math.round((consentStats.accepted / consentTotal) * 100) : 0;
+  const consentPie = [
+    { name: "ยินยอม", value: consentStats.accepted },
+    { name: "ไม่ยินยอม", value: consentStats.declined },
+  ];
+  const PIE_COLORS = ["var(--primary)", "var(--muted-foreground)"];
+
   return (
     <div className="space-y-5">
       <section>
@@ -80,6 +141,86 @@ function AdminLogs() {
             <p className="text-[11px] font-bold text-muted-foreground">{s.l}</p>
           </div>
         ))}
+      </div>
+
+      <section className="card-soft rounded-2xl bg-card p-4">
+        <h2 className="text-[14px] font-extrabold">การเข้าชมรายวัน (14 วันล่าสุด)</h2>
+        <div className="mt-3 h-44 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={daily} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+              <defs>
+                <linearGradient id="viewsFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.45} />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={32} />
+              <Tooltip
+                contentStyle={{ fontSize: 12, borderRadius: 12 }}
+                formatter={(v: number) => [`${v} ครั้ง`, "เข้าชม"]}
+              />
+              <Area
+                type="monotone"
+                dataKey="views"
+                stroke="var(--primary)"
+                strokeWidth={2}
+                fill="url(#viewsFill)"
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <section className="card-soft rounded-2xl bg-card p-4">
+          <h2 className="text-[14px] font-extrabold">แหล่งที่มา</h2>
+          {sources.length === 0 ? (
+            <p className="mt-2 text-[12px] text-muted-foreground">ยังไม่มีข้อมูล</p>
+          ) : (
+            <div className="mt-3 h-44 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={sources} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 8 }}>
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} formatter={(v: number) => [`${v} เหตุการณ์`, "จำนวน"]} />
+                  <Bar dataKey="value" fill="var(--primary)" radius={[0, 6, 6, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </section>
+
+        <section className="card-soft rounded-2xl bg-card p-4">
+          <h2 className="text-[14px] font-extrabold">อัตราการยินยอม PDPA</h2>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="h-36 w-36 shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={consentTotal ? consentPie : [{ name: "ยังไม่มีข้อมูล", value: 1 }]}
+                    dataKey="value"
+                    innerRadius={38}
+                    outerRadius={60}
+                    paddingAngle={2}
+                    isAnimationActive={false}
+                  >
+                    {(consentTotal ? consentPie : [{ name: "-", value: 1 }]).map((entry, i) => (
+                      <Cell key={entry.name} fill={consentTotal ? PIE_COLORS[i] : "var(--muted)"} />
+                    ))}
+                  </Pie>
+                  {consentTotal > 0 && <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />}
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="text-[12px]">
+              <p className="text-3xl font-extrabold text-gradient">{consentRate}%</p>
+              <p className="text-muted-foreground">ยินยอม {consentStats.accepted} · ไม่ยินยอม {consentStats.declined}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">นับจากการตัดสินใจบนเครื่องนี้</p>
+            </div>
+          </div>
+        </section>
       </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
