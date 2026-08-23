@@ -91,6 +91,9 @@
   --lime: oklch(0.85 0.21 130);
   --lime-foreground: oklch(0.22 0.08 140);
   --gradient-power: linear-gradient(135deg, oklch(0.51 0.25 296), oklch(0.62 0.2 250) 55%, oklch(0.68 0.19 25));
+  /* เกรเดียนต์สำหรับตัวอักษรแบรนด์ (คอนทราสต์ ≥ 4.5:1 บนพื้นสว่าง) */
+  --gradient-brand-text: linear-gradient(135deg, oklch(0.45 0.24 296), oklch(0.5 0.19 250) 55%, oklch(0.52 0.19 25));
+  --brand-mark-shadow: none;
   --gradient-soft: linear-gradient(160deg, oklch(0.97 0.03 300), oklch(0.985 0.006 85));
   --shadow-card: 0 2px 4px -2px oklch(0.19 0.03 292 / 0.08), 0 12px 28px -12px oklch(0.19 0.03 292 / 0.18);
   --shadow-glow: 0 18px 50px -18px oklch(0.51 0.25 296 / 0.65);
@@ -115,6 +118,9 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
   --ring: oklch(0.68 0.2 296);
+  /* โหมดมืด: เพิ่มความสว่าง/ลดความอิ่มสี ให้อ่านชัดบนพื้นเข้ม (≥ 4.5:1) */
+  --gradient-brand-text: linear-gradient(135deg, oklch(0.82 0.15 300), oklch(0.85 0.12 250) 55%, oklch(0.84 0.13 40));
+  --brand-mark-shadow: drop-shadow(0 0 10px oklch(0.68 0.2 296 / 0.45));
 }
 
 @keyframes float {
@@ -146,9 +152,21 @@
 }
 
 @utility text-gradient {
-  background-image: var(--gradient-power);
+  background-image: var(--gradient-brand-text, var(--gradient-power));
   background-clip: text;
   color: transparent;
+}
+
+/* โลโก้สัญลักษณ์: เรืองแสงเล็กน้อยในโหมดมืดให้ขอบไม่จมพื้นหลัง */
+@utility brand-mark {
+  filter: var(--brand-mark-shadow);
+}
+
+@media (forced-colors: active) {
+  .text-gradient {
+    background-image: none;
+    color: CanvasText;
+  }
 }
 
 @utility card-soft {
