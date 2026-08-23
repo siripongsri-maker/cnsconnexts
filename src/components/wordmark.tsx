@@ -13,9 +13,9 @@ type Size = "xs" | "sm" | "md" | "hero";
 /** ขนาดฟอนต์แบบ responsive ในตัวเอง (ไม่พึ่งขนาดจาก parent) */
 const SIZES: Record<Size, { th: string; en: string; gap: string }> = {
   xs: {
-    th: "text-[clamp(10px,3.1vw,13px)]",
-    en: "text-[clamp(11.5px,3.7vw,15px)]",
-    gap: "gap-x-1 sm:gap-x-1.5",
+    th: "text-[clamp(9px,3vw,13px)]",
+    en: "text-[clamp(10.5px,3.5vw,15px)]",
+    gap: "gap-x-0.5 sm:gap-x-1.5",
   },
   sm: {
     th: "text-[clamp(0.75rem,3.1vw,0.95rem)]",
