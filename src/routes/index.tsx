@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
+import { Wordmark } from "@/components/wordmark";
 
 export const Route = createFileRoute("/")({
   head: () => ({
