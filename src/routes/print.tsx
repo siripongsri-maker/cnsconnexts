@@ -152,7 +152,8 @@ function PrintKit() {
 
       <div className="mx-auto max-w-5xl px-4 py-6">
         {sheet === "board" && (
-          <section className="print-sheet bg-card p-8 text-foreground">
+          <div className="board-scroll overflow-x-auto">
+          <section className="print-sheet board-sheet bg-card p-8 text-foreground">
             <header className="flex items-start justify-between gap-6 border-b-4 border-primary pb-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.3em] text-primary">
@@ -240,6 +241,7 @@ function PrintKit() {
               สแกน QR เพื่อเพิ่มหรืออัปเดตข้อมูลของคุณเอง · {url}
             </p>
           </section>
+          </div>
         )}
 
         {sheet === "cards" && (

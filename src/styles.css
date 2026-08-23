@@ -240,3 +240,15 @@ textarea.input-line {
     break-inside: avoid;
   }
 }
+
+.board-sheet {
+  min-width: 900px;
+}
+@media print {
+  .board-sheet {
+    min-width: 0;
+  }
+  .board-scroll {
+    overflow: visible;
+  }
+}
