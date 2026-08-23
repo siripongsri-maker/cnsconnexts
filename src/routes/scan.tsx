@@ -63,9 +63,7 @@ function ScanPage() {
     streamRef.current = null;
   }, []);
 
-  const defaultSource: UserSource = sourceFromSearch(
-    new URLSearchParams(typeof search === "object" && search ? (search as Record<string, unknown>) : {}),
-  );
+  const defaultSource: UserSource = sourceFromSearch(new URLSearchParams(window.location.search));
 
   const join = useCallback(
     (code: string, source: UserSource) => {
