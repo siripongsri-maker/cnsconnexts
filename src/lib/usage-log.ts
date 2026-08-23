@@ -52,6 +52,44 @@ export function getConsent(): ConsentRecord | null {
   }
 }
 
+export function getConsentStats(): ConsentStats {
+  if (typeof window === "undefined") return { accepted: 0, declined: 0 };
+  try {
+    const raw = localStorage.getItem(CONSENT_STATS_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Partial<ConsentStats>) : null;
+    return { accepted: Number(parsed?.accepted ?? 0), declined: Number(parsed?.declined ?? 0) };
+  } catch {
+    return { accepted: 0, declined: 0 };
+  }
+}
+
+function bumpConsentStats(value: ConsentValue) {
+  try {
+    const stats = getConsentStats();
+    const next: ConsentStats = {
+      accepted: stats.accepted + (value === "accepted" ? 1 : 0),
+      declined: stats.declined + (value === "declined" ? 1 : 0),
+    };
+    localStorage.setItem(CONSENT_STATS_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** hostname ของ referrer หรือ "direct" เมื่อเข้าตรง */
+export function getSource(): string {
+  if (typeof window === "undefined") return "direct";
+  try {
+    const ref = document.referrer;
+    if (!ref) return "direct";
+    const host = new URL(ref).hostname;
+    if (!host || host === window.location.hostname) return "direct";
+    return host.replace(/^www\./, "");
+  } catch {
+    return "direct";
+  }
+}
+
 export function setConsent(value: ConsentValue) {
   if (typeof window === "undefined") return;
   const record: ConsentRecord = {
