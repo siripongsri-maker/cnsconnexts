@@ -26,7 +26,11 @@ export type UsageLog = {
   label: string;
   detail?: string;
   path?: string;
+  /** แหล่งที่มาของผู้เข้าชม (hostname ของ referrer หรือ "direct") */
+  source?: string;
 };
+
+export type ConsentStats = { accepted: number; declined: number };
 
 export const CONSENT_EVENT = "connexts:consent-changed";
 export const LOG_EVENT = "connexts:usage-log";
