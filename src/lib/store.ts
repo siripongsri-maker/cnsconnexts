@@ -5,6 +5,7 @@ import { DEMO_PROVINCE_NOTES } from "./demo-province-notes";
 import { DEMO_SUBMISSIONS } from "./demo-submissions";
 import type {
   AppNotification,
+  ChatMessage,
   Commitment,
   Connection,
   ConnectionStatus,
@@ -28,6 +29,7 @@ type State = {
   provinceNotes: ProvinceNote[];
   submissions: Submission[];
   notifications: AppNotification[];
+  messages: ChatMessage[];
 };
 
 const initial: State = {
@@ -42,6 +44,7 @@ const initial: State = {
   provinceNotes: DEMO_PROVINCE_NOTES,
   submissions: DEMO_SUBMISSIONS,
   notifications: [],
+  messages: [],
 };
 
 type Store = State & {
@@ -59,6 +62,8 @@ type Store = State & {
   toggleShowcase: (id: string) => void;
   linkAccount: (email: string, userId: string) => void;
   importUsers: (list: User[]) => number;
+  sendMessage: (connectionId: string, text: string) => ChatMessage;
+  markRoomRead: (connectionId: string) => void;
   notify: (n: Omit<AppNotification, "id" | "created_at" | "read">) => AppNotification;
   markNotificationsRead: () => void;
   clearNotifications: () => void;
@@ -66,6 +71,20 @@ type Store = State & {
 };
 
 const scheduledReplies = new Set<string>();
+
+const REPLIES = [
+  "ดีเลยครับ นัดคุยกันสั้น ๆ 15 นาทีดีไหม",
+  "สนใจมากค่ะ ขอรายละเอียดเพิ่มนิดนึงได้ไหม",
+  "ผมว่าเรื่องนี้ทำร่วมกับพื้นที่ผมได้เลย",
+  "ว่างสัปดาห์หน้าครับ วันไหนสะดวก",
+  "ขอบคุณที่ทัก เดี๋ยวส่งข้อมูลโครงการให้นะครับ",
+];
+
+function pickReply(text: string) {
+  if (/เมื่อไหร่|วันไหน|นัด|เวลา/.test(text)) return "สะดวกช่วงบ่ายวันพุธครับ นัดที่โซนเครือข่ายได้เลย";
+  if (/\?|ไหม|มั้ย/.test(text)) return "ได้เลยครับ ผมพร้อมร่วมมือ";
+  return REPLIES[Math.floor(Math.random() * REPLIES.length)]!;
+}
 
 const Ctx = createContext<Store | null>(null);
 
@@ -305,7 +324,68 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return list.length;
   }, []);
 
-  const notify: Store["notify"] = useCallback((n) => {
+  const sendMessage: Store["sendMessage"] = useCallback((connectionId, text) => {
+    const body = text.trim();
+    const msg: ChatMessage = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+      connection_id: connectionId,
+      from_id: "me",
+      text: body,
+      created_at: new Date().toISOString(),
+    };
+    if (!body) return msg;
+    setState((s) => {
+      const conn = s.connections.find((c) => c.id === connectionId);
+      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+      emitLive("message", "ข้อความใหม่", `คุณ → ${name}: ${body.slice(0, 40)}`);
+      // จำลองการตอบกลับแบบเรียลไทม์ (ต้นแบบฝั่ง client)
+      window.setTimeout(() => {
+        const replyText = pickReply(body);
+        setState((cur) => ({
+          ...cur,
+          messages: [
+            ...cur.messages,
+            {
+              id: `msg-${Date.now()}-r`,
+              connection_id: connectionId,
+              from_id: otherId,
+              text: replyText,
+              created_at: new Date().toISOString(),
+            },
+          ],
+          notifications: [
+            {
+              id: `n-${Date.now()}-m`,
+              kind: "message",
+              title: `${name} ส่งข้อความถึงคุณ`,
+              body: replyText,
+              from_id: otherId,
+              from_name: name,
+              connection_id: connectionId,
+              read: false,
+              created_at: new Date().toISOString(),
+            },
+            ...cur.notifications,
+          ],
+        }));
+        emitLive("message", `${name} ตอบกลับแล้ว`, replyText.slice(0, 48), false);
+      }, 1400 + Math.floor(Math.random() * 1200));
+      return { ...s, messages: [...s.messages, msg] };
+    });
+    return msg;
+  }, []);
+
+  const markRoomRead: Store["markRoomRead"] = useCallback((connectionId) => {
+    setState((s) => ({
+      ...s,
+      notifications: s.notifications.map((n) =>
+        n.kind === "message" && n.connection_id === connectionId ? { ...n, read: true } : n,
+      ),
+    }));
+  }, []);
+
+  const notify: Store["notify"] = useCallback(((n) => {
     const item: AppNotification = {
       ...n,
       id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -343,12 +423,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleShowcase,
       linkAccount,
       importUsers,
+      sendMessage,
+      markRoomRead,
       notify,
       markNotificationsRead,
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
