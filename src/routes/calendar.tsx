@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BellRing, CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { toast } from "sonner";
+import { BellRing, CalendarDays, ChevronLeft, ChevronRight, Clock, MessageCircle, Send } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { REMINDER_STAGES } from "@/components/commitment-reminders";
 import { RsvpButtons } from "@/components/rsvp-buttons";
@@ -175,6 +176,7 @@ function CalendarPage() {
                     m={m}
                     partner={partnerOf(m.connection_id)}
                     onUpdate={updateCommitment}
+                    onSend={sendMessage}
                   />
                 </li>
               ))}
@@ -195,6 +197,7 @@ function CalendarPage() {
                     m={m}
                     partner={partnerOf(m.connection_id)}
                     onUpdate={updateCommitment}
+                    onSend={sendMessage}
                   />
                 </li>
               ))}
@@ -253,10 +256,12 @@ function CommitmentRow({
   m,
   partner,
   onUpdate,
+  onSend,
 }: {
   m: Commitment;
   partner: any;
   onUpdate: ReturnType<typeof useStore>["updateCommitment"];
+  onSend: ReturnType<typeof useStore>["sendMessage"];
 }) {
   const [when, setWhen] = useState(() => toLocalInput(m.follow_up_date));
   return (
@@ -309,6 +314,36 @@ function CommitmentRow({
           className="tap ml-auto rounded-full bg-background px-2.5 py-1 text-[11px] font-bold text-primary"
         >
           เปิดคอนเนกชัน
+        </Link>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            const whenText = m.follow_up_date
+              ? new Date(m.follow_up_date).toLocaleString("th-TH", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }) + " น."
+              : "ยังไม่ระบุวันเวลา";
+            onSend(
+              m.connection_id,
+              `📅 นัดหมาย: ${m.action_type}\n${m.description}\nเวลา: ${whenText}`,
+            );
+            toast.success("ส่งการนัดหมายเข้าห้องแชทแล้ว", {
+              description: partner?.name ?? undefined,
+            });
+          }}
+          className="tap inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground"
+        >
+          <Send className="h-3 w-3" /> ส่งเข้าห้องแชท
+        </button>
+        <Link
+          to="/chat/$id"
+          params={{ id: m.connection_id }}
+          className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-[11px] font-bold text-primary"
+        >
+          <MessageCircle className="h-3 w-3" /> เปิดแชท
         </Link>
       </div>
     </div>
