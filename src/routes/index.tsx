@@ -114,9 +114,11 @@ function Welcome() {
               </Link>
             ))}
           </div>
+          <AuthRow />
           <p className="pt-1 text-center text-[11px] text-muted-foreground">
             ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
           </p>
+
         </div>
       </div>
     </div>
