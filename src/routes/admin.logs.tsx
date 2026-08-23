@@ -111,7 +111,8 @@ function AdminLogs() {
       .map(([name, value]) => ({ name: name === "direct" ? "เข้าตรง" : name, value }));
   }, [logs]);
 
-  const consentStats = useMemo(() => (logs, getConsentStats()), [logs]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- รีเฟรชตามบันทึกล่าสุด
+  const consentStats = useMemo(() => getConsentStats(), [logs.length]);
   const consentTotal = consentStats.accepted + consentStats.declined;
   const consentRate = consentTotal ? Math.round((consentStats.accepted / consentTotal) * 100) : 0;
   const consentPie = [
