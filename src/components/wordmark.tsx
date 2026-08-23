@@ -66,7 +66,10 @@ export function Wordmark({
       >
         คนส.
       </span>
-      <span aria-hidden className={`flex items-baseline leading-[1.05] tracking-tight ${s.en}`}>
+      <span
+        aria-hidden
+        className={`flex items-baseline whitespace-nowrap leading-[1.05] tracking-[-0.02em] ${s.en}`}
+      >
         {CONNEXTS.map((ch, i) =>
           HILITE.has(i) ? (
             <span
