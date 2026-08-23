@@ -44,6 +44,15 @@ function Onboarding() {
       </header>
 
       <main className="mx-auto w-full max-w-xl px-5 pt-4">
+        {hydrated && !me && (
+          <p className="mb-4 rounded-2xl border border-border bg-card/80 px-4 py-3 text-[12px] leading-relaxed text-muted-foreground">
+            กำลังใช้งานแบบไม่ต้องล็อกอิน — ข้อมูลเก็บในเครื่องนี้ก่อน{" "}
+            <Link to="/auth" className="font-bold text-primary">
+              ผูกบัญชีทีหลัง
+            </Link>{" "}
+            ได้เมื่อพร้อม
+          </p>
+        )}
         {hydrated && (
           <ProfileForm
             initial={me}
