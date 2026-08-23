@@ -317,7 +317,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["เครือข่ายเยาวชน", "โครงการนำร่อง", "นักให้คำปรึกษาอาสาสมัคร"],
     resources_need: ["เงินทุน", "การเชื่อมโยงเชิงนโยบาย", "การสนับสนุนด้านการสื่อสาร"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i2",
@@ -330,7 +329,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["ทีมบรรณาธิการ", "ช่องทางเผยแพร่"],
     resources_need: ["นักเล่าเรื่องท้องถิ่น", "เครือข่ายภาคีชุมชน", "เงินทุน"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i3",
@@ -343,7 +341,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["เครือข่ายชุมชน", "สถานที่ฝึกอบรม", "การสนับสนุนจากท้องถิ่น"],
     resources_need: ["เทคโนโลยี", "การสนับสนุนด้านการสื่อสาร", "เงินทุน"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i4",
@@ -356,7 +353,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["เครือข่ายเยาวชน", "พื้นที่ชุมชน"],
     resources_need: ["เงินทุน", "วิทยากร", "ภาคีองค์ความรู้"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i5",
@@ -369,7 +365,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["อาสาสมัครเพื่อนคุยที่ผ่านการอบรม", "โครงการนำร่อง"],
     resources_need: ["เทคโนโลยี", "การเชื่อมโยงเชิงนโยบาย", "เงินทุน"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i6",
@@ -382,7 +377,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["ต้นแบบเซนเซอร์", "ทีมข้อมูล", "อาสาสมัครท้องถิ่น"],
     resources_need: ["การเชื่อมโยงเชิงนโยบาย", "การสนับสนุนด้านการสื่อสาร", "เงินทุน"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i7",
@@ -395,7 +389,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["เครือข่ายชุมชน", "พื้นที่ประชุมประจำสัปดาห์"],
     resources_need: ["เทคโนโลยี", "สื่อการอบรมที่เข้าใจง่าย", "เงินทุน"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i8",
@@ -408,7 +401,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["เครือข่ายเกษตรกร", "ภาคีโรงเรียน", "โครงการนำร่อง"],
     resources_need: ["เงินทุน", "การเชื่อมโยงเชิงนโยบาย", "การสนับสนุนด้านการสื่อสาร"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i9",
@@ -421,7 +413,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["กลุ่มศิลปิน", "พื้นที่ชุมชน"],
     resources_need: ["เงินทุน", "ภาคีด้านสุขภาพ", "องค์ความรู้ด้านการประเมินผล"],
     created_at: now,
-    source: "demo",
   },
   {
     id: "i10",
@@ -434,7 +425,6 @@ export const DEMO_IDEAS: Idea[] = [
     resources_have: ["ต้นแบบที่ใช้งานได้", "ทีมออกแบบ"],
     resources_need: ["เครือข่ายชุมชน", "องค์ความรู้ท้องถิ่น", "เงินทุน"],
     created_at: now,
-    source: "demo",
   },
 ];
 
