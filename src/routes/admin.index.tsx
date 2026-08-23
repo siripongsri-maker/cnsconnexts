@@ -72,6 +72,11 @@ function AdminOverview() {
     { label: "บันทึกรายจังหวัด", value: provinceNotes.length, icon: MapPin, to: "/admin/map" as const },
   ];
 
+  const trend = useMemo(
+    () => buildTrend(realUsers.map((u) => u.created_at), bucket),
+    [realUsers, bucket],
+  );
+
   return (
     <div className="space-y-5">
       <section>
