@@ -17,7 +17,7 @@ import {
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
-import { NetworkBackground } from "@/components/network-background";
+import { ThailandNetwork } from "@/components/thailand-network";
 
 export const Route = createFileRoute("/")({
   head: () => ({
