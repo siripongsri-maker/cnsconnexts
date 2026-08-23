@@ -1,5 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Map, Store, CheckCircle2, Radio, Home } from "lucide-react";
+import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut } from "lucide-react";
+
+import { useAuth } from "@/lib/auth";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -22,6 +24,7 @@ export function AppShell({
   action?: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { mode, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -41,7 +44,27 @@ export function AppShell({
                 <p className="truncate text-[13px] text-muted-foreground">{subtitle}</p>
               )}
             </div>
-            {action}
+            <div className="flex items-center gap-2">
+              {action}
+              {mode === "user" || mode === "guest" ? (
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+                  aria-label="ออกจากระบบ"
+                >
+                  <LogOut className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                </button>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground"
+                  aria-label="เข้าสู่ระบบ"
+                >
+                  <LogIn className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                </Link>
+              )}
+            </div>
           </div>
         </header>
       )}
