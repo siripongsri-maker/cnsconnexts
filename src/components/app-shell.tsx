@@ -50,7 +50,7 @@ export function AppShell({
                 {title}
               </h1>
               {subtitle && (
-                <p className="line-clamp-1 break-words text-[12.5px] text-muted-foreground">{subtitle}</p>
+                <p className="truncate text-[12.5px] text-muted-foreground">{subtitle}</p>
               )}
             </div>
             <div className="flex items-center gap-2">
