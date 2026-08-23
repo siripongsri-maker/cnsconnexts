@@ -1,3 +1,5 @@
+import cnsLogo from "@/assets/cns-logo.png";
+
 /**
  * แบรนด์ "คนส. Connexts" — กิมมิค: ค-น-ส ↔ C-N-S
  * ในคำ connexts ตัว C N S จะถูกเน้นให้เชื่อมโยงกับ "คนส."

@@ -157,7 +157,7 @@ function PrintKit() {
             <header className="flex items-start justify-between gap-6 border-b-4 border-primary pb-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.3em] text-primary">
-                  คนส. CONNECT
+                  คนส. CoNnextS
                 </p>
                 <h2 className="text-4xl font-extrabold">
                   แผนที่พลัง{REGION_LABEL[region]}
@@ -303,7 +303,7 @@ function PrintKit() {
         {sheet === "sign" && (
           <section className="print-sheet flex min-h-[70vh] flex-col items-center justify-center bg-card p-12 text-center text-foreground">
             <p className="text-sm font-bold uppercase tracking-[0.35em] text-primary">
-              คนส. CONNECT
+              คนส. CoNnextS
             </p>
             <h2 className="mt-3 text-5xl font-extrabold leading-tight">
               สแกนเพื่ออัปเดต

@@ -1,3 +1,4 @@
+import { Wordmark } from "@/components/wordmark";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
