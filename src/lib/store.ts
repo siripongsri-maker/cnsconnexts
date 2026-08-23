@@ -11,6 +11,7 @@ import type {
   ConnectionStatus,
   Idea,
   ProvinceNote,
+  Rsvp,
   Submission,
   User,
 } from "./types";
