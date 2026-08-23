@@ -31,16 +31,16 @@ export const Route = createFileRoute("/join")({
 });
 
 function Join() {
-  const { c } = Route.useSearch();
+  const { c, source } = Route.useSearch();
   const navigate = useNavigate();
   const [code, setCode] = useState<string | null>(null);
 
   useEffect(() => {
-    const session = createSession("qr", c || null);
+    const session = createSession(sourceFromSearch(new URLSearchParams({ source })), c || null);
     setCode(session.id);
     const t = setTimeout(() => navigate({ to: "/start" }), 1100);
     return () => clearTimeout(t);
-  }, [c, navigate]);
+  }, [c, source, navigate]);
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background px-8 text-center">
