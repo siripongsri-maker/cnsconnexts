@@ -168,7 +168,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         id: `n-${Date.now()}-c`,
         kind: "commitment",
         title: "ส่งก้าวต่อไปให้เพื่อนแล้ว 🚀",
-        body: `แจ้งเตือน ${name} เรื่อง “${c.action}”`,
+        body: `แจ้งเตือน ${name} เรื่อง “${c.action_type}”`,
         from_id: otherId,
         from_name: name,
         connection_id: c.connection_id,
