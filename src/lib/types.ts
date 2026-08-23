@@ -144,3 +144,16 @@ export type Submission = {
   showcase: boolean;
   created_at: string;
 };
+
+/** In-app notification shown to the participant (client-side prototype). */
+export type AppNotification = {
+  id: string;
+  kind: "connect_sent" | "connect_received" | "accepted" | "commitment";
+  title: string;
+  body: string;
+  from_id: string;
+  from_name: string;
+  connection_id?: string | undefined;
+  read: boolean;
+  created_at: string;
+};
