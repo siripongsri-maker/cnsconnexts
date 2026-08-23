@@ -53,6 +53,7 @@ export const Route = createFileRoute("/admin/")({
 function AdminOverview() {
   const { users, ideas, submissions, connections, commitments, provinceNotes } = useStore();
   const events = useLiveEvents(8);
+  const [bucket, setBucket] = useState<Bucket>("day");
 
   const demoIds = new Set(Array.from({ length: 20 }, (_, i) => `u${i + 1}`));
   const realUsers = users.filter((u) => !demoIds.has(u.id));
