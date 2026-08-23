@@ -36,13 +36,13 @@ export const Route = createFileRoute("/dashboard")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "แดชบอร์ดสด — คนส. Connect" },
+      { title: "แดชบอร์ดสด — คนส. Connexts" },
       {
         name: "description",
         content:
           "แดชบอร์ดสดสำหรับผู้จัดและผู้เข้าร่วม: ดูการแมตช์ การเชื่อมต่อ และความคืบหน้าคำมั่นสัญญาแบบเรียลไทม์",
       },
-      { property: "og:title", content: "แดชบอร์ดสด — คนส. Connect" },
+      { property: "og:title", content: "แดชบอร์ดสด — คนส. Connexts" },
       {
         property: "og:description",
         content: "ตัวเลขสด ฟีดกิจกรรม และความคืบหน้าการลงมือทำของทั้งงาน",
@@ -206,7 +206,7 @@ function Dashboard() {
 
   const shareCurrentUrl = async () => {
     const url = window.location.href;
-    const title = view === "me" ? "มุมของฉัน — คนส. Connect" : "แดชบอร์ดสด — คนส. Connect";
+    const title = view === "me" ? "มุมของฉัน — คนส. Connexts" : "แดชบอร์ดสด — คนส. Connexts";
     const text = describeFilters(currentFilters);
     try {
       if (navigator.share) {
@@ -443,7 +443,7 @@ function Dashboard() {
     });
 
   return (
-    <AppShell title="แดชบอร์ดสด" subtitle="คนส. Connect · การแมตช์ การเชื่อม และการลงมือทำแบบเรียลไทม์">
+    <AppShell title="แดชบอร์ดสด" subtitle="คนส. Connexts · การแมตช์ การเชื่อม และการลงมือทำแบบเรียลไทม์">
       <div className="px-5 pt-4">
         <div className="flex rounded-2xl border border-border bg-card p-1">
           {(

@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "สร้างโปรไฟล์พลังของคุณ — คนส. Connext" },
+      { title: "สร้างโปรไฟล์พลังของคุณ — คนส. Connexts" },
       {
         name: "description",
         content: "กรอกข้อมูลครั้งเดียวจบในหน้าเดียว แล้วใช้ต่อได้ทั้งการจับคู่ แผนที่ และการส่งผลงาน",

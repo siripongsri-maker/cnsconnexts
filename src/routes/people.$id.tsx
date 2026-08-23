@@ -9,9 +9,9 @@ import { issueTh, provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
 export const Route = createFileRoute("/people/$id")({
   head: () => ({
     meta: [
-      { title: "โปรไฟล์ผู้เข้าร่วม — คนส. Connect" },
+      { title: "โปรไฟล์ผู้เข้าร่วม — คนส. Connexts" },
       { name: "description", content: "ดูว่าคนนี้มีพลังอะไรมาแบ่งปัน และกำลังมองหาอะไรอยู่" },
-      { property: "og:title", content: "โปรไฟล์ผู้เข้าร่วม — คนส. Connect" },
+      { property: "og:title", content: "โปรไฟล์ผู้เข้าร่วม — คนส. Connexts" },
       { property: "og:description", content: "ดูว่าเขามีพลังอะไร และกำลังมองหาอะไร" },
     ],
   }),

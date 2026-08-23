@@ -8,11 +8,11 @@ import { useAuth } from "@/lib/auth";
 export const Route = createFileRoute("/scan")({
   head: () => ({
     meta: [
-      { title: "สแกน QR เข้าร่วมงาน — คนส. Connect" },
+      { title: "สแกน QR เข้าร่วมงาน — คนส. Connexts" },
       {
         name: "description",
         content:
-          "เปิดกล้องสแกน QR ที่หน้างานเพื่อเข้าร่วม คนส. Connect ได้ทันที หรือเข้าแบบไม่ต้องล็อกอินด้วยปุ่มเดียว",
+          "เปิดกล้องสแกน QR ที่หน้างานเพื่อเข้าร่วม คนส. Connexts ได้ทันที หรือเข้าแบบไม่ต้องล็อกอินด้วยปุ่มเดียว",
       },
       { property: "og:title", content: "สแกน QR เข้าร่วมงานทันที" },
       {

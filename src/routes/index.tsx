@@ -19,17 +19,18 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
+import { Wordmark } from "@/components/wordmark";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "คนส. Connect — เชื่อมคน เชื่อมไอเดีย เชื่อมพลัง" },
+      { title: "คนส. Connexts — เชื่อมคน เชื่อมไอเดีย เชื่อมพลัง" },
       {
         name: "description",
         content:
           "ทุกคนมีพลังของตัวเอง มาค้นหาว่าวันนี้คุณควรเชื่อมกับใคร ในงานสมัชชาสุขภาพแห่งชาติ",
       },
-      { property: "og:title", content: "คนส. Connect" },
+      { property: "og:title", content: "คนส. Connexts" },
       {
         property: "og:description",
         content: "เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ",
@@ -85,10 +86,12 @@ function Welcome() {
         </div>
 
         <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
-          <h1 className="text-[clamp(2.75rem,14vw,4.5rem)] font-extrabold leading-[0.92] tracking-tighter">
-            <span className="block text-gradient">คนส.</span>
-            <span className="block text-ink">Connext</span>
+          <h1 className="text-[clamp(2.75rem,14vw,4.5rem)] leading-[0.92] tracking-tighter">
+            <Wordmark size="hero" />
           </h1>
+          <p className="mt-3 text-[11px] font-extrabold uppercase tracking-[0.35em] text-muted-foreground">
+            ค·น·ส = C·N·S
+          </p>
           <p className="mt-4 text-lg font-semibold text-primary">
             เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ
           </p>
@@ -143,9 +146,8 @@ function TopNav() {
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-xl items-center justify-between px-4 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))]">
-        <Link to="/" className="font-display text-lg font-extrabold tracking-tight">
-          <span className="text-gradient">คนส.</span>
-          <span className="text-ink">Connext</span>
+        <Link to="/" className="font-display text-[15px] leading-none tracking-tight">
+          <Wordmark size="sm" />
         </Link>
         <button
           type="button"

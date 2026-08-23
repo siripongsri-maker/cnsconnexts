@@ -11,12 +11,12 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "เข้าสู่ระบบ — คนส. Connext" },
+      { title: "เข้าสู่ระบบ — คนส. Connexts" },
       {
         name: "description",
         content: "เข้าสู่ระบบ สมัครสมาชิก หรือเข้าใช้แบบผู้เยี่ยมชม เพื่อเริ่มเชื่อมพลังกับเครือข่าย คนส.",
       },
-      { property: "og:title", content: "เข้าสู่ระบบ — คนส. Connext" },
+      { property: "og:title", content: "เข้าสู่ระบบ — คนส. Connexts" },
       {
         property: "og:description",
         content: "เข้าสู่ระบบหรือเข้าใช้แบบ Guest เพื่อเริ่มเชื่อมพลังกับเครือข่าย คนส.",
@@ -130,7 +130,7 @@ function AuthPage() {
 
         <div className="mt-6">
           <p className="text-[13px] font-bold uppercase tracking-[0.2em] text-primary">คนส.</p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight">Connext</h1>
+          <h1 className="font-display text-4xl font-extrabold tracking-tight">Connexts</h1>
           <p className="mt-2 text-[14px] text-muted-foreground">
             เข้าสู่ระบบเพื่อเก็บข้อมูลของคุณไว้ข้ามอุปกรณ์ หรือเข้าใช้แบบผู้เยี่ยมชมได้ทันที
           </p>

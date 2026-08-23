@@ -11,15 +11,15 @@ export const Route = createFileRoute("/notifications")({
   component: NotificationsPage,
   head: () => ({
     meta: [
-      { title: "การแจ้งเตือน · คนส. Connext" },
+      { title: "การแจ้งเตือน · คนส. Connexts" },
       {
         name: "description",
-        content: "ดูสัญญาณการเชื่อมต่อใหม่ คำตอบรับ และก้าวต่อไปจากเพื่อนในเครือข่าย คนส. Connext",
+        content: "ดูสัญญาณการเชื่อมต่อใหม่ คำตอบรับ และก้าวต่อไปจากเพื่อนในเครือข่าย คนส. Connexts",
       },
-      { property: "og:title", content: "การแจ้งเตือน · คนส. Connext" },
+      { property: "og:title", content: "การแจ้งเตือน · คนส. Connexts" },
       {
         property: "og:description",
-        content: "สัญญาณการเชื่อมต่อใหม่และก้าวต่อไปในเครือข่าย คนส. Connext",
+        content: "สัญญาณการเชื่อมต่อใหม่และก้าวต่อไปในเครือข่าย คนส. Connexts",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

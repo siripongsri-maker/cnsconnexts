@@ -10,7 +10,7 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/update")({
   head: () => ({
     meta: [
-      { title: "อัปเดตข้อมูลของฉัน — คนส. Connext" },
+      { title: "อัปเดตข้อมูลของฉัน — คนส. Connexts" },
       {
         name: "description",
         content:

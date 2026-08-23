@@ -14,12 +14,12 @@ import type { Commitment, ConnectionStatus } from "@/lib/types";
 export const Route = createFileRoute("/calendar")({
   head: () => ({
     meta: [
-      { title: "ปฏิทินนัดหมาย — คนส. Connect" },
+      { title: "ปฏิทินนัดหมาย — คนส. Connexts" },
       {
         name: "description",
         content: "เสนอวันเวลาสำหรับคำมั่นสัญญาของแต่ละคอนเนกชัน และติดตามสถานะการลงมือทำ",
       },
-      { property: "og:title", content: "ปฏิทินนัดหมาย — คนส. Connect" },
+      { property: "og:title", content: "ปฏิทินนัดหมาย — คนส. Connexts" },
       {
         property: "og:description",
         content: "นัดวันเวลา ติดตามสถานะ ทำให้คำมั่นสัญญาเกิดขึ้นจริง",

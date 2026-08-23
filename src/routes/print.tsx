@@ -11,7 +11,7 @@ import { makeJoinCode } from "@/lib/session";
 export const Route = createFileRoute("/print")({
   head: () => ({
     meta: [
-      { title: "ชุดไฟล์พิมพ์ — คนส. Connect" },
+      { title: "ชุดไฟล์พิมพ์ — คนส. Connexts" },
       {
         name: "description",
         content:
