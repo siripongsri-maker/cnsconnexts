@@ -16,6 +16,7 @@ import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
 import { CommitmentReminders } from "@/components/commitment-reminders";
+import { FilterAlerts } from "@/components/filter-alerts";
 import { LoadingScreen } from "@/components/loading-screen";
 
 
@@ -139,6 +140,7 @@ function RootComponent() {
           </HydrationGate>
           <NotificationHost />
           <CommitmentReminders />
+          <FilterAlerts />
           <Toaster position="top-center" />
         </StoreProvider>
       </AuthProvider>
