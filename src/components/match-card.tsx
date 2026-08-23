@@ -24,8 +24,8 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
       <div className="flex items-start gap-3">
         <Avatar user={u} size={54} />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-extrabold">{u.name}</h3>
-          <p className="truncate text-[12px] text-muted-foreground">
+          <h3 className="line-clamp-2 break-words text-base font-extrabold leading-snug">{u.name}</h3>
+          <p className="line-clamp-2 break-words text-[12px] leading-snug text-muted-foreground">
             {provinceTh(u.province)} · {u.organization}
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">

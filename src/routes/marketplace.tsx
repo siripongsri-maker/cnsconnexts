@@ -106,7 +106,7 @@ function Marketplace() {
                 {owner && (
                   <div className="mt-3 flex items-center gap-2">
                     <Avatar user={owner} size={32} />
-                    <p className="min-w-0 truncate text-[12px] font-semibold">
+                    <p className="min-w-0 flex-1 line-clamp-2 break-words text-[12px] font-semibold leading-snug">
                       {owner.name} · <span className="text-muted-foreground">{owner.organization}</span>
                     </p>
                   </div>

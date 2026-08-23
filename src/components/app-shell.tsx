@@ -42,11 +42,11 @@ export function AppShell({
             >
               <Home className="h-[18px] w-[18px]" strokeWidth={2.2} />
             </Link>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <Link to="/" className="block min-w-0" aria-label="คนส. Connexts">
                 <Wordmark size="xs" withMark />
               </Link>
-              <h1 className="truncate text-lg font-extrabold leading-tight tracking-tight sm:text-xl">
+              <h1 className="line-clamp-2 break-words text-[17px] font-extrabold leading-tight tracking-tight sm:text-xl">
                 {title}
               </h1>
               {subtitle && (
