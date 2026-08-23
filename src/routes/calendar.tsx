@@ -261,10 +261,13 @@ function CommitmentRow({
     <div className="rounded-2xl bg-accent/50 p-3">
       <PartnerHead partner={partner} label={m.action_type} />
       {m.follow_up_date && (
-        <p className="mt-2 text-[11px] font-semibold text-primary">
-          นัดไว้ {new Date(m.follow_up_date).toLocaleDateString("th-TH", { dateStyle: "medium" })} ·{" "}
-          {timeTh(m.follow_up_date)} น.
-        </p>
+        <>
+          <p className="mt-2 text-[11px] font-semibold text-primary">
+            นัดไว้ {new Date(m.follow_up_date).toLocaleDateString("th-TH", { dateStyle: "medium" })} ·{" "}
+            {timeTh(m.follow_up_date)} น.
+          </p>
+          <ReminderChip iso={m.follow_up_date} done={m.status === "Completed"} />
+        </>
       )}
       <div className="mt-2 flex gap-2">
         <input
