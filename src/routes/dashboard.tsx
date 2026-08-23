@@ -10,6 +10,13 @@ import { ISSUES, POWER_EMOJI, POWERS, REGIONS, type ConnectionStatus, type User 
 import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 import { rankMatches } from "@/lib/matching";
+import {
+  loadPresets,
+  savePresets,
+  sameFilters,
+  type DashboardFilters,
+  type FilterPreset,
+} from "@/lib/filter-presets";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
