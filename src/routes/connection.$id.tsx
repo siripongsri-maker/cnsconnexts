@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, Chip } from "@/components/power-bits";
+import { ChatRoom } from "@/components/chat-room";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
 import { issueTh, powerTh, STATUS_TH, ACTION_TYPES_TH } from "@/lib/i18n";
@@ -81,6 +82,8 @@ function ConnectionDetail() {
             {conn.match_reason}
           </p>
         </div>
+
+        <ChatRoom connectionId={conn.id} compact />
 
         <div>
           <h2 className="text-xl font-extrabold">จะลุยด้วยกันแบบไหนดี?</h2>

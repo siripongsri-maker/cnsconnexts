@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Handshake, Heart, Radio, Sparkles } from "lucide-react";
+import { CheckCircle2, Handshake, Heart, MessageCircle, Radio, Sparkles } from "lucide-react";
 
 import { useLiveEvents, type LiveEvent, type LiveKind } from "@/lib/live";
 import { playConnext } from "@/lib/notify";
@@ -9,6 +9,7 @@ const ICON: Record<LiveKind, typeof Handshake> = {
   like: Heart,
   connect: Handshake,
   commitment: CheckCircle2,
+  message: MessageCircle,
 };
 
 const TONE: Record<LiveKind, string> = {
@@ -16,6 +17,7 @@ const TONE: Record<LiveKind, string> = {
   like: "bg-coral/15 text-coral",
   connect: "bg-electric/15 text-electric",
   commitment: "bg-lime/20 text-ink",
+  message: "bg-primary/12 text-primary",
 };
 
 const KIND_TH: Record<LiveKind, string> = {
@@ -23,6 +25,7 @@ const KIND_TH: Record<LiveKind, string> = {
   like: "ถูกใจ",
   connect: "เชื่อมต่อ",
   commitment: "คำมั่นสัญญา",
+  message: "แชท",
 };
 
 function ago(iso: string, now: number) {
