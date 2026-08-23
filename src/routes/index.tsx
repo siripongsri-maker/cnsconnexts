@@ -143,9 +143,8 @@ function TopNav() {
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-xl items-center justify-between px-4 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))]">
-        <Link to="/" className="font-display text-lg font-extrabold tracking-tight">
-          <span className="text-gradient">คนส.</span>
-          <span className="text-ink">Connext</span>
+        <Link to="/" className="font-display text-[15px] leading-none tracking-tight">
+          <Wordmark size="sm" />
         </Link>
         <button
           type="button"
