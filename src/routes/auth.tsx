@@ -56,7 +56,7 @@ function AuthPage() {
       linkAccount(user.email ?? "", user.id);
       toast.success("เชื่อมโปรไฟล์เดิมเข้ากับบัญชีนี้แล้ว ข้อมูลของคุณจะไม่หาย");
     }
-    void navigate({ to: "/", replace: true });
+    void navigate({ to: me ? "/" : "/onboarding", replace: true });
   }, [mode, user, me, linkAccount, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -79,7 +79,6 @@ function AuthPage() {
           toast.success("ส่งอีเมลยืนยันแล้ว กรุณาเปิดลิงก์ในอีเมลเพื่อยืนยันบัญชี");
         } else {
           toast.success("สมัครสมาชิกสำเร็จ");
-          void navigate({ to: "/onboarding" });
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -88,7 +87,6 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("เข้าสู่ระบบสำเร็จ");
-        void navigate({ to: "/" });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "เกิดข้อผิดพลาด";
@@ -115,7 +113,6 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    void navigate({ to: "/" });
   }
 
   function handleGuest() {
