@@ -493,8 +493,57 @@ function Dashboard() {
                 ล้าง
               </button>
             </div>
+
+            <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
+              <p className="text-[11px] font-bold text-muted-foreground">ชุดตัวกรองที่บันทึกไว้</p>
+              <button
+                type="button"
+                onClick={saveCurrentPreset}
+                disabled={activeCount === 0}
+                className="tap flex h-8 items-center gap-1 rounded-lg border border-border px-2 text-[11px] font-extrabold disabled:opacity-40"
+              >
+                <BookmarkPlus className="h-3.5 w-3.5" />
+                บันทึกชุดนี้
+              </button>
+            </div>
+            {presets.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">
+                ยังไม่มีชุดที่บันทึก — เลือกตัวกรองแล้วกด “บันทึกชุดนี้”
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {presets.map((p) => (
+                  <span
+                    key={p.id}
+                    className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-extrabold ${
+                      activePresetId === p.id
+                        ? "gradient-power border-transparent text-primary-foreground"
+                        : "border-border bg-background"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => applyPreset(p)}
+                      title={describeFilters(p.filters)}
+                      className="tap"
+                    >
+                      {p.name}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`ลบชุด ${p.name}`}
+                      onClick={() => removePreset(p.id)}
+                      className="tap opacity-70"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
+
 
         {activeCount > 0 && (
           <p className="text-[11px] font-bold text-muted-foreground">
