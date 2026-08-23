@@ -58,6 +58,16 @@ function AdminOverview() {
           เปิดจอฉายกิจกรรมสด →
         </Link>
       </section>
+
+      <section className="card-soft rounded-2xl bg-card p-4">
+        <h2 className="text-[14px] font-extrabold">เอกสาร Journey ทุกฟังก์ชัน</h2>
+        <p className="mt-1 text-[12px] text-muted-foreground">
+          คู่มือฉบับเดียวจบ พร้อมภาพหน้าจอทุกหน้า ข้อมูลเข้า-ออก และวิธีเชื่อมหน้าบ้านกับหลังบ้าน
+        </p>
+        <Link to="/journey" className="mt-2 inline-block text-[12px] font-extrabold text-primary">
+          เปิดเอกสาร Journey →
+        </Link>
+      </section>
     </div>
   );
 }
