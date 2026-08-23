@@ -71,6 +71,8 @@ export type User = {
   powers_have: string[];
   powers_need: string[];
   created_at: string;
+  /** Last time the participant updated their own profile. */
+  updated_at?: string | undefined;
 };
 
 /** A detail/update someone posts about a specific province on the Power Map. */

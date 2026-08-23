@@ -43,8 +43,8 @@ const REGION_FILL: Record<Region, string> = {
 
 function useJoinUrl() {
   const code = makeJoinCode();
-  const [url, setUrl] = useState(`/join?c=${code}`);
-  useEffect(() => setUrl(`${window.location.origin}/join?c=${code}`), [code]);
+  const [url, setUrl] = useState(`/update?c=${code}`);
+  useEffect(() => setUrl(`${window.location.origin}/update?c=${code}`), [code]);
   return { url, code };
 }
 
