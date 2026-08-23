@@ -28,6 +28,7 @@ const searchSchema = z.object({
   power: z.string().optional().catch(undefined),
   powerMode: z.enum(["any", "have", "need"]).optional().catch(undefined),
   view: z.enum(["organizer", "me"]).optional().catch(undefined),
+  sort: z.string().optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/dashboard")({
