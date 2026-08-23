@@ -211,6 +211,49 @@ function AdminOverview() {
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
+        <h2 className="text-[14px] font-extrabold">Funnel การใช้งาน</h2>
+        <p className="text-[11px] text-muted-foreground">
+          อัตราคอนเวอร์ชันจากผู้เข้าชม → โปรไฟล์ → ประเด็น → พลัง → คู่แมตช์ → เชื่อมต่อ → คำมั่นสัญญา
+        </p>
+
+        <div className="mt-3 space-y-2">
+          {funnel.map((s, i) => {
+            const prev = i === 0 ? s.value : (funnel[i - 1]?.value ?? 0);
+            const width = funnelTop > 0 ? Math.max((s.value / funnelTop) * 100, s.value > 0 ? 6 : 2) : 2;
+            const fromTop = funnelTop > 0 ? Math.round((s.value / funnelTop) * 100) : 0;
+            const fromPrev = prev > 0 ? Math.round((s.value / prev) * 100) : 0;
+            return (
+              <div key={s.step}>
+                <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                  <span className="font-bold">
+                    {i + 1}. {s.th} <span className="text-muted-foreground">· {s.step}</span>
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">
+                    <span className="font-extrabold text-foreground">{s.value}</span> · {fromTop}% ของทั้งหมด
+                    {i > 0 ? ` · ${fromPrev}% จากขั้นก่อน` : ""}
+                  </span>
+                </div>
+                <div className="mt-1 h-4 w-full overflow-hidden rounded-lg bg-muted">
+                  <div
+                    className="h-full rounded-lg bg-primary/80"
+                    style={{ width: `${width}%`, opacity: 1 - i * 0.09 }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          คอนเวอร์ชันรวม Welcome → คำมั่นสัญญา:{" "}
+          <span className="font-extrabold text-primary">
+            {funnelTop > 0 ? Math.round(((funnel.at(-1)?.value ?? 0) / funnelTop) * 100) : 0}%
+          </span>
+        </p>
+      </section>
+
+      <section className="card-soft rounded-2xl bg-card p-4">
+
         <h2 className="text-[14px] font-extrabold">กิจกรรมสดล่าสุด</h2>
         {events.length === 0 ? (
           <p className="mt-2 text-[12px] text-muted-foreground">ยังไม่มีสัญญาณสด</p>
