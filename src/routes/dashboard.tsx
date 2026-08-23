@@ -857,6 +857,76 @@ function Dashboard() {
             </Panel>
           </>
         )}
+        <Panel
+          title={`ผลการค้นหา · ${results.length} คน · เรียงตาม${
+            SORT_OPTIONS.find((s) => s.key === sort)?.label ?? ""
+          }`}
+        >
+          {results.length === 0 ? (
+            <p className="text-[12px] text-muted-foreground">
+              ไม่พบผู้เข้าร่วมที่ตรงตัวกรอง — ลองล้างตัวกรองหรือเปลี่ยนคำค้น
+            </p>
+          ) : (
+            <>
+              {results.slice(0, resultLimit).map((r) => (
+                <Link
+                  key={r.user.id}
+                  to="/people/$id"
+                  params={{ id: r.user.id }}
+                  className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-2.5"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted text-lg">
+                    {r.user.photo ? (
+                      <img
+                        src={r.user.photo}
+                        alt={r.user.name}
+                        className="h-10 w-10 rounded-xl object-cover"
+                      />
+                    ) : (
+                      r.user.avatar
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline gap-2">
+                      <span className="truncate text-[13px] font-extrabold">{r.user.name}</span>
+                      <span className="shrink-0 text-[10px] font-bold text-muted-foreground">
+                        {REGION_LABEL[r.user.region]}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 flex flex-wrap gap-1">
+                      {r.reasons.map((reason) => (
+                        <span
+                          key={reason}
+                          className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground"
+                        >
+                          {reason}
+                        </span>
+                      ))}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-sm font-extrabold tabular-nums text-primary">
+                      {r.relevance}%
+                    </span>
+                    <span className="block text-[10px] font-bold text-muted-foreground">
+                      {r.match != null ? `แมตช์ ${r.match}%` : "ความเกี่ยวข้อง"}
+                    </span>
+                  </span>
+                </Link>
+              ))}
+              {results.length > resultLimit && (
+                <button
+                  type="button"
+                  onClick={() => setResultLimit((n) => n + 12)}
+                  className="tap h-11 w-full rounded-2xl border border-border text-[12px] font-extrabold"
+                >
+                  ดูเพิ่ม ({results.length - resultLimit})
+                </button>
+              )}
+            </>
+          )}
+        </Panel>
+
         <Panel title="ส่งออกข้อมูลกิจกรรม">
           <p className="text-[12px] text-muted-foreground">
             ส่งออกตามฟิลเตอร์ปัจจุบัน · แมตช์ {matchRows.length} · คอนเนกชัน {connectionRows.length} ·
