@@ -137,6 +137,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const saveProfile: Store["saveProfile"] = useCallback((data) => {
     const now = new Date().toISOString();
+    let resolvedSource = data.source;
+    if (!resolvedSource) {
+      try {
+        const raw = localStorage.getItem("connecting-power-session");
+        const fromSession = raw ? (JSON.parse(raw) as { source?: UserSource }).source : undefined;
+        if (fromSession) resolvedSource = fromSession;
+      } catch {
+        /* ignore */
+      }
+    }
     let saved: User = {
       ...data,
       avatar: data.avatar || "✨",
@@ -145,7 +155,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updated_at: now,
     };
     setState((s) => {
-      const user: User = { ...saved, created_at: s.me?.created_at ?? now };
+      const source = resolvedSource ?? s.me?.source ?? "direct";
+      const user: User = {
+        ...saved,
+        created_at: s.me?.created_at ?? now,
+        source,
+      };
       saved = user;
       return {
         ...s,
