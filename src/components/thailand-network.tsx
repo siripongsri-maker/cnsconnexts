@@ -99,12 +99,12 @@ export function ThailandNetwork({
             x2={m.x}
             y2={m.y}
             stroke="currentColor"
-            strokeWidth={2.2}
+            strokeWidth={reducedMotion || lowSpec ? 1.2 : 2.2}
             strokeLinecap="round"
-            strokeDasharray="10 14"
-            opacity={0.5}
-            className="animate-dash"
-            style={{ animationDelay: `${delay}s` }}
+            strokeDasharray={reducedMotion || lowSpec ? "6 10" : "10 14"}
+            opacity={reducedMotion || lowSpec ? 0.3 : 0.5}
+            className={shouldAnimate ? "animate-dash" : undefined}
+            style={shouldAnimate ? { animationDelay: `${delay}s` } : undefined}
           />
         );
       })}
