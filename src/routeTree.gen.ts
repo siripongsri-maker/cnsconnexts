@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CommitmentsRouteImport } from './routes/commitments'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as EbookRouteImport } from './routes/ebook'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
@@ -35,6 +36,11 @@ const CommitmentsRoute = CommitmentsRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EbookRoute = EbookRouteImport.update({
+  id: '/ebook',
+  path: '/ebook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/ebook': typeof EbookRoute
   '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/ebook': typeof EbookRoute
   '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
+  '/ebook': typeof EbookRoute
   '/join': typeof JoinRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/ebook'
     | '/join'
     | '/map'
     | '/marketplace'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/ebook'
     | '/join'
     | '/map'
     | '/marketplace'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/commitments'
     | '/dashboard'
+    | '/ebook'
     | '/join'
     | '/map'
     | '/marketplace'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CommitmentsRoute: typeof CommitmentsRoute
   DashboardRoute: typeof DashboardRoute
+  EbookRoute: typeof EbookRoute
   JoinRoute: typeof JoinRoute
   MapRoute: typeof MapRoute
   MarketplaceRoute: typeof MarketplaceRoute
@@ -207,6 +220,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ebook': {
+      id: '/ebook'
+      path: '/ebook'
+      fullPath: '/ebook'
+      preLoaderRoute: typeof EbookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -279,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CommitmentsRoute: CommitmentsRoute,
   DashboardRoute: DashboardRoute,
+  EbookRoute: EbookRoute,
   JoinRoute: JoinRoute,
   MapRoute: MapRoute,
   MarketplaceRoute: MarketplaceRoute,
