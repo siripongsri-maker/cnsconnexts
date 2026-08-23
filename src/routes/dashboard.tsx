@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { zodValidator } from "@tanstack/zod-adapter";
+import { z } from "zod";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Link2, Search, Share2, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
@@ -18,7 +21,17 @@ import {
   type FilterPreset,
 } from "@/lib/filter-presets";
 
+const searchSchema = z.object({
+  q: z.string().optional().catch(undefined),
+  region: z.string().optional().catch(undefined),
+  issue: z.string().optional().catch(undefined),
+  power: z.string().optional().catch(undefined),
+  powerMode: z.enum(["any", "have", "need"]).optional().catch(undefined),
+  view: z.enum(["organizer", "me"]).optional().catch(undefined),
+});
+
 export const Route = createFileRoute("/dashboard")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: "แดชบอร์ดสด — คนส. Connect" },
@@ -92,15 +105,17 @@ type Feed = {
 function Dashboard() {
   const { me, users, ideas, connections, commitments } = useStore();
   const userMap = useUserMap();
-  const [view, setView] = useState<"organizer" | "me">("organizer");
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/dashboard" });
+  const [view, setView] = useState<"organizer" | "me">(search.view ?? "organizer");
   const [now, setNow] = useState(() => Date.now());
 
   // --- ฟิลเตอร์ขั้นสูง (ใช้ได้ทั้งมุมผู้จัดและมุมของฉัน) ---
-  const [q, setQ] = useState("");
-  const [region, setRegion] = useState<string>("all");
-  const [issue, setIssue] = useState<string>("all");
-  const [power, setPower] = useState<string>("all");
-  const [powerMode, setPowerMode] = useState<"any" | "have" | "need">("any");
+  const [q, setQ] = useState<string>(search.q ?? "");
+  const [region, setRegion] = useState<string>(search.region ?? "all");
+  const [issue, setIssue] = useState<string>(search.issue ?? "all");
+  const [power, setPower] = useState<string>(search.power ?? "all");
+  const [powerMode, setPowerMode] = useState<"any" | "have" | "need">(search.powerMode ?? "any");
   const [showFilters, setShowFilters] = useState(false);
 
   // --- ชุดตัวกรองที่บันทึกไว้ ---
@@ -108,6 +123,25 @@ function Dashboard() {
   useEffect(() => setPresets(loadPresets()), []);
   const currentFilters: DashboardFilters = { q, region, issue, power, powerMode };
   const activePresetId = presets.find((p) => sameFilters(p.filters, currentFilters))?.id ?? null;
+
+  // --- sync filters + view to URL so the page is shareable ---
+  const hasMounted = useRef(false);
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+    const next = {
+      q: q.trim() || undefined,
+      region: region !== "all" ? region : undefined,
+      issue: issue !== "all" ? issue : undefined,
+      power: power !== "all" ? power : undefined,
+      powerMode: powerMode !== "any" ? powerMode : undefined,
+      view: view !== "organizer" ? view : undefined,
+    };
+    navigate({ search: next, replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, region, issue, power, powerMode, view]);
 
   const describeFilters = (f: DashboardFilters) =>
     [
@@ -162,6 +196,25 @@ function Dashboard() {
     setIssue("all");
     setPower("all");
     setPowerMode("any");
+  };
+
+  const shareCurrentUrl = async () => {
+    const url = window.location.href;
+    const title = view === "me" ? "มุมของฉัน — คนส. Connect" : "แดชบอร์ดสด — คนส. Connect";
+    const text = describeFilters(currentFilters);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+        toast.success("แชร์แล้ว");
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        toast.success("คัดลอกลิงก์แล้ว", { icon: <Link2 className="h-4 w-4" /> });
+      } else {
+        window.prompt("คัดลอกลิงก์นี้", url);
+      }
+    } catch {
+      toast.error("แชร์ไม่สำเร็จ");
+    }
   };
 
 
@@ -421,6 +474,15 @@ function Dashboard() {
           >
             <SlidersHorizontal className="h-4 w-4" />
             {activeCount ? activeCount : "กรอง"}
+          </button>
+          <button
+            type="button"
+            onClick={shareCurrentUrl}
+            aria-label="แชร์ลิงก์หน้านี้"
+            title="แชร์ลิงก์หน้าผลลัพธ์ที่ใช้ตัวกรองปัจจุบัน"
+            className="tap flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card text-[13px] font-extrabold text-primary"
+          >
+            <Share2 className="h-4 w-4" />
           </button>
         </div>
 
