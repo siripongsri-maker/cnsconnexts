@@ -21,6 +21,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PrintRouteImport } from './routes/print'
 import { Route as QrRouteImport } from './routes/qr'
 import { Route as SubmitRouteImport } from './routes/submit'
+import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
@@ -84,6 +85,11 @@ const SubmitRoute = SubmitRouteImport.update({
   path: '/submit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminImportRoute = AdminImportRouteImport.update({
+  id: '/admin/import',
+  path: '/admin/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConnectionIdRoute = ConnectionIdRouteImport.update({
   id: '/connection/$id',
   path: '/connection/$id',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/submit': typeof SubmitRoute
+  '/admin/import': typeof AdminImportRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/submit': typeof SubmitRoute
+  '/admin/import': typeof AdminImportRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/submit': typeof SubmitRoute
+  '/admin/import': typeof AdminImportRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/qr'
     | '/submit'
+    | '/admin/import'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/qr'
     | '/submit'
+    | '/admin/import'
     | '/connection/$id'
     | '/people/$id'
   id:
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/qr'
     | '/submit'
+    | '/admin/import'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesById: FileRoutesById
@@ -208,6 +220,7 @@ export interface RootRouteChildren {
   PrintRoute: typeof PrintRoute
   QrRoute: typeof QrRoute
   SubmitRoute: typeof SubmitRoute
+  AdminImportRoute: typeof AdminImportRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
 }
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubmitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/import': {
+      id: '/admin/import'
+      path: '/admin/import'
+      fullPath: '/admin/import'
+      preLoaderRoute: typeof AdminImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/connection/$id': {
       id: '/connection/$id'
       path: '/connection/$id'
@@ -328,6 +348,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrintRoute: PrintRoute,
   QrRoute: QrRoute,
   SubmitRoute: SubmitRoute,
+  AdminImportRoute: AdminImportRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
 }
