@@ -32,21 +32,31 @@ const SIZES: Record<Size, { th: string; en: string; gap: string }> = {
   },
 };
 
+const MARK_SIZE: Record<Size, string> = {
+  xs: "h-5 w-5",
+  sm: "h-6 w-6",
+  md: "h-9 w-9",
+  hero: "h-12 w-12",
+};
+
 export function Wordmark({
   size = "sm",
   className = "",
+  withMark = false,
 }: {
   size?: Size;
   className?: string;
+  /** แสดงโลโก้สัญลักษณ์ CNS ข้างชื่อแบรนด์ */
+  withMark?: boolean;
 }) {
   const s = SIZES[size];
   const stacked = size === "md" || size === "hero";
 
-  return (
+  const text = (
     <span
       className={`inline-flex min-w-0 font-display leading-none ${
         stacked ? `flex-col items-start ${s.gap}` : `flex-row items-baseline ${s.gap}`
-      } ${className}`}
+      } ${withMark ? "" : className}`}
     >
       <span
         aria-hidden
