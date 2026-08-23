@@ -14,7 +14,6 @@ import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 import { rankMatches } from "@/lib/matching";
 import {
-  emptyFilters,
   loadPresets,
   savePresets,
   sameFilters,
