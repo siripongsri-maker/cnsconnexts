@@ -20,6 +20,7 @@ import {
   type DashboardFilters,
   type FilterPreset,
 } from "@/lib/filter-presets";
+import { relevanceOf, sortScored, SORT_OPTIONS, type SortKey } from "@/lib/relevance";
 
 const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
