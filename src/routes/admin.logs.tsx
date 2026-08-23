@@ -250,13 +250,15 @@ function AdminLogs() {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="ค้นหา หน้า/เหตุการณ์/รหัสผู้ใช้"
-          className="min-w-[180px] flex-1 rounded-xl border border-border bg-background px-3 py-2 text-[12px]"
+          disabled={!canSearch}
+          placeholder={canSearch ? "ค้นหา หน้า/เหตุการณ์/รหัสผู้ใช้" : "บทบาทนี้ไม่มีสิทธิ์ค้นหา"}
+          className="min-w-[180px] flex-1 rounded-xl border border-border bg-background px-3 py-2 text-[12px] disabled:opacity-50"
         />
         <select
           value={type}
+          disabled={!canSearch}
           onChange={(e) => setType(e.target.value as UsageLog["type"] | "all")}
-          className="rounded-xl border border-border bg-background px-3 py-2 text-[12px]"
+          className="rounded-xl border border-border bg-background px-3 py-2 text-[12px] disabled:opacity-50"
         >
           {TYPES.map((t) => (
             <option key={t} value={t}>
@@ -264,42 +266,64 @@ function AdminLogs() {
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={() =>
-            downloadCSV(
-              "usage-logs",
-              filtered.map((l) => ({
-                เวลา: fmt(l.at),
-                ประเภท: LOG_TYPE_LABEL[l.type],
-                เหตุการณ์: l.label,
-                รายละเอียด: l.detail ?? "",
-                หน้า: l.path ?? "",
-                ผู้ใช้: l.visitor,
-              })),
-            )
-          }
-          className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
-        >
-          <Download className="h-3.5 w-3.5" /> CSV
-        </button>
-        <button
-          type="button"
-          onClick={() => downloadJSON("usage-logs", filtered)}
-          className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
-        >
-          <Download className="h-3.5 w-3.5" /> JSON
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            if (confirm("ลบบันทึกการใช้งานทั้งหมดในเครื่องนี้?")) clearLogs();
-          }}
-          className="inline-flex items-center gap-1 rounded-xl border border-destructive/40 px-3 py-2 text-[12px] font-extrabold text-destructive"
-        >
-          <Trash2 className="h-3.5 w-3.5" /> ล้างบันทึก
-        </button>
+        {canExport ? (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                downloadCSV(
+                  "usage-logs",
+                  filtered.map((l) => ({
+                    เวลา: fmt(l.at),
+                    ประเภท: LOG_TYPE_LABEL[l.type],
+                    เหตุการณ์: l.label,
+                    รายละเอียด: l.detail ?? "",
+                    หน้า: l.path ?? "",
+                    ผู้ใช้: l.visitor,
+                  })),
+                );
+                logUsage("admin", "ส่งออกบันทึกการใช้งาน (CSV)", `${adminUser ?? "-"} · ${filtered.length} รายการ`);
+              }}
+              className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
+            >
+              <Download className="h-3.5 w-3.5" /> CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                downloadJSON("usage-logs", filtered);
+                logUsage("admin", "ส่งออกบันทึกการใช้งาน (JSON)", `${adminUser ?? "-"} · ${filtered.length} รายการ`);
+              }}
+              className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
+            >
+              <Download className="h-3.5 w-3.5" /> JSON
+            </button>
+          </>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-xl border border-dashed border-border px-3 py-2 text-[12px] font-bold text-muted-foreground">
+            <Lock className="h-3.5 w-3.5" /> ส่งออกต้องมีสิทธิ์
+          </span>
+        )}
+        {canClear ? (
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm("ลบบันทึกการใช้งานทั้งหมดในเครื่องนี้?")) {
+                clearLogs();
+                logUsage("admin", "ล้างบันทึกการใช้งานทั้งหมด", adminUser ?? "-");
+              }
+            }}
+            className="inline-flex items-center gap-1 rounded-xl border border-destructive/40 px-3 py-2 text-[12px] font-extrabold text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> ล้างบันทึก
+          </button>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-xl border border-dashed border-border px-3 py-2 text-[12px] font-bold text-muted-foreground">
+            <Lock className="h-3.5 w-3.5" /> ล้างบันทึกต้องมีสิทธิ์
+          </span>
+        )}
       </div>
+
 
       <section className="card-soft overflow-x-auto rounded-2xl bg-card">
         <table className="w-full text-left text-[12px]">
