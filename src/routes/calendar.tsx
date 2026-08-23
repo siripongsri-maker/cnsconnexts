@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { BellRing, CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { REMINDER_STAGES } from "@/components/commitment-reminders";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { ACTION_TYPES_TH, STATUS_TH } from "@/lib/i18n";
@@ -261,10 +262,13 @@ function CommitmentRow({
     <div className="rounded-2xl bg-accent/50 p-3">
       <PartnerHead partner={partner} label={m.action_type} />
       {m.follow_up_date && (
-        <p className="mt-2 text-[11px] font-semibold text-primary">
-          นัดไว้ {new Date(m.follow_up_date).toLocaleDateString("th-TH", { dateStyle: "medium" })} ·{" "}
-          {timeTh(m.follow_up_date)} น.
-        </p>
+        <>
+          <p className="mt-2 text-[11px] font-semibold text-primary">
+            นัดไว้ {new Date(m.follow_up_date).toLocaleDateString("th-TH", { dateStyle: "medium" })} ·{" "}
+            {timeTh(m.follow_up_date)} น.
+          </p>
+          <ReminderChip iso={m.follow_up_date} done={m.status === "Completed"} />
+        </>
       )}
       <div className="mt-2 flex gap-2">
         <input
@@ -366,5 +370,43 @@ function NewCommitmentRow({
         </div>
       </div>
     </div>
+  );
+}
+
+/** ป้ายนับถอยหลังถึงนัด + ช่วงเตือนถัดไป (อัปเดตทุก 30 วินาที) */
+function ReminderChip({ iso, done }: { iso: string; done: boolean }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  if (done) return null;
+  const due = new Date(iso).getTime();
+  if (Number.isNaN(due)) return null;
+  const diff = due - now;
+
+  if (diff <= 0) {
+    return (
+      <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
+        <BellRing className="h-3 w-3" /> ถึงเวลานัดแล้ว
+      </p>
+    );
+  }
+
+  const mins = Math.floor(diff / 60000);
+  const left =
+    mins < 60
+      ? `อีก ${mins} นาที`
+      : mins < 1440
+        ? `อีก ${Math.floor(mins / 60)} ชั่วโมง`
+        : `อีก ${Math.floor(mins / 1440)} วัน`;
+  const next = REMINDER_STAGES.filter((s) => s.ms < diff).slice(-1)[0];
+
+  return (
+    <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+      <BellRing className="h-3 w-3" /> {left}
+      {next ? ` · เตือน${next.label}` : " · เตือนแล้ว"}
+    </p>
   );
 }
