@@ -27,14 +27,6 @@ export function Wordmark({
       <span className="flex items-end gap-[0.06em] leading-none">
         {PAIRS.map((p) => (
           <span key={p.en} className="relative inline-flex flex-col items-center leading-none">
-            <span
-              aria-hidden
-              className={`font-extrabold uppercase tracking-[0.08em] text-primary/70 ${
-                hero ? "text-[0.24em]" : "text-[0.42em]"
-              }`}
-            >
-              {p.en}
-            </span>
             <span className="text-gradient font-extrabold leading-[0.9]">{p.th}</span>
           </span>
         ))}
