@@ -13,13 +13,13 @@ export const Route = createFileRoute("/join")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "เข้าร่วมห้อง — Connecting Power" },
+      { title: "เข้าร่วมห้อง — คนส. Connect" },
       {
         name: "description",
         content:
           "สแกน QR แล้วใช่ไหม? คุณเข้ามาแล้ว! เรากำลังตั้งค่าเซสชันของคุณ แล้วพาไปสร้างโปรไฟล์พลัง",
       },
-      { property: "og:title", content: "เข้าร่วม Connecting Power" },
+      { property: "og:title", content: "เข้าร่วม คนส. Connect" },
       {
         property: "og:description",
         content: "สแกนแล้วเข้าร่วมได้ทันที — สร้างโปรไฟล์พลังของคุณใน 2 นาที",
@@ -53,7 +53,7 @@ function Join() {
           <QrCode className="h-9 w-9" />
         </span>
         <h1 className="mt-6 text-2xl font-extrabold tracking-tight">คุณเข้าห้องแล้ว</h1>
-        <p className="mt-2 text-sm font-semibold text-primary">ยินดีต้อนรับสู่ Connecting Power</p>
+        <p className="mt-2 text-sm font-semibold text-primary">ยินดีต้อนรับสู่ คนส. Connect</p>
         <p className="mt-3 flex items-center justify-center gap-2 text-[13px] text-muted-foreground">
           <Sparkles className="h-4 w-4 animate-pulse-node" />
           กำลังสร้างเซสชันของคุณ…

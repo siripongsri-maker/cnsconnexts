@@ -9,7 +9,7 @@ import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
 export const Route = createFileRoute("/ebook")({
   head: () => ({
     meta: [
-      { title: "หนังสือรวมผลงาน — Connecting Power" },
+      { title: "หนังสือรวมผลงาน — คนส. Connect" },
       {
         name: "description",
         content:
@@ -94,7 +94,7 @@ function Ebook() {
         <div className="print-book mt-6 space-y-8">
           <div className="hidden print-cover">
             <h1 className="text-3xl font-extrabold">หนังสือรวมผลงานเครือข่าย</h1>
-            <p className="text-sm">Connecting Power · สมัชชาสุขภาพแห่งชาติ</p>
+            <p className="text-sm">คนส. Connect · สมัชชาสุขภาพแห่งชาติ</p>
           </div>
 
           {groups.length === 0 && (

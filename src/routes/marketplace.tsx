@@ -12,12 +12,12 @@ import { issueTh, REGION_LABEL } from "@/lib/i18n";
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
     meta: [
-      { title: "ตลาดพลัง — Connecting Power" },
+      { title: "ตลาดพลัง — คนส. Connect" },
       {
         name: "description",
         content: "จับคู่ไอเดียกับพลัง! เลือกโปรเจกต์ที่กำลังมองหาพาร์ตเนอร์ ทุน คอนเนกชัน หรือความรู้ท้องถิ่น",
       },
-      { property: "og:title", content: "ตลาดพลัง — Connecting Power" },
+      { property: "og:title", content: "ตลาดพลัง — คนส. Connect" },
       { property: "og:description", content: "ตลาดแลกเปลี่ยนพลังและไอเดีย" },
     ],
   }),

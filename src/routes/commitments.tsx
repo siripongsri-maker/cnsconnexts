@@ -8,12 +8,12 @@ import { STATUS_TH } from "@/lib/i18n";
 export const Route = createFileRoute("/commitments")({
   head: () => ({
     meta: [
-      { title: "จะทำอะไรต่อดี? — Connecting Power" },
+      { title: "จะทำอะไรต่อดี? — คนส. Connect" },
       {
         name: "description",
         content: "รวมคอนเนกชันและคำมั่นสัญญาที่คุณสร้างไว้ ตั้งแต่วางแผนจนถึงทำสำเร็จ",
       },
-      { property: "og:title", content: "จะทำอะไรต่อดี? — Connecting Power" },
+      { property: "og:title", content: "จะทำอะไรต่อดี? — คนส. Connect" },
       { property: "og:description", content: "รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?" },
     ],
   }),

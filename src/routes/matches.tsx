@@ -10,7 +10,7 @@ import { issueTh } from "@/lib/i18n";
 export const Route = createFileRoute("/matches")({
   head: () => ({
     meta: [
-      { title: "คนที่คุณควรเจอ — Connecting Power" },
+      { title: "คนที่คุณควรเจอ — คนส. Connect" },
       {
         name: "description",
         content: "รายชื่อคนที่เข้ากับพลังของคุณวันนี้ เรียงตามประเด็นร่วมและพลังที่เติมเต็มกัน",
