@@ -32,12 +32,18 @@ type Draft = Pick<User, "name" | "organization" | "bio" | "province" | "interest
 const DEMO_IDS = new Set(Array.from({ length: 20 }, (_, i) => `u${i + 1}`));
 const isDemo = (id: string) => DEMO_IDS.has(id);
 
-type SourceFilter = "all" | "real" | "demo";
+type SourceFilter = "all" | "real" | "demo" | UserSource;
 
 const SOURCE_LABEL: Record<SourceFilter, string> = {
   all: "ทั้งหมด",
   real: "ผู้ใช้จริง",
   demo: "เดโม่",
+  qr: "QR",
+  link: "ลิงก์",
+  invite: "Invite",
+  direct: "เข้าตรง",
+  auth: "บัญชี",
+  admin: "นำเข้า",
 };
 
 function AdminPeoplePage() {
