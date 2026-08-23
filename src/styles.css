@@ -121,6 +121,9 @@
   0%, 100% { transform: translate3d(0, 0, 0); }
   50% { transform: translate3d(0, -14px, 0); }
 }
+@keyframes dash {
+  to { stroke-dashoffset: -48; }
+}
 @keyframes pulse-node {
   0%, 100% { opacity: 0.45; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.35); }
