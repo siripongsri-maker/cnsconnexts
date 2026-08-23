@@ -228,7 +228,10 @@ function AdminPeoplePage() {
                   >
                     <span className="text-2xl leading-none">{u.avatar}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block break-words text-sm font-semibold">{u.name}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="block break-words text-sm font-semibold">{u.name}</span>
+                        <SourceBadge source={u.source} />
+                      </span>
                       <span className="block break-words text-xs text-muted-foreground">
                         {u.organization} · {provinceTh(u.province)} · {REGION_LABEL[u.region]}
                       </span>
