@@ -19,7 +19,7 @@ import {
   Users,
 } from "lucide-react";
 
-import { useAdminAuth } from "@/lib/admin-auth";
+import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -56,7 +56,7 @@ export const ADMIN_MENU = [
 ] as const;
 
 function AdminLayout() {
-  const { ready, authed, signIn, signOut } = useAdminAuth();
+  const { ready, authed, role, user: adminUser, signIn, signOut } = useAdminAuth();
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
@@ -121,6 +121,11 @@ function AdminLayout() {
             เข้าสู่ระบบผู้ดูแล
           </button>
 
+          <p className="rounded-xl bg-muted/60 p-3 text-[11px] leading-relaxed text-muted-foreground">
+            บทบาท: <b>ผู้ดูแลสูงสุด</b> ดู/ค้นหา/ส่งออก/ล้าง Log ได้ทั้งหมด ·{" "}
+            <b>นักวิเคราะห์</b> ดู ค้นหา และส่งออกได้ · <b>ผู้ชม</b> ดูได้อย่างเดียว
+          </p>
+
           <Link to="/" className="block text-center text-[12px] font-bold text-muted-foreground">
             ← กลับหน้าแรก
           </Link>
@@ -138,7 +143,9 @@ function AdminLayout() {
           </Link>
           <div className="min-w-0">
             <p className="truncate text-[15px] font-extrabold">หลังบ้านผู้ดูแล</p>
-            <p className="truncate text-[11px] text-muted-foreground">คนส. Connexts · connexts</p>
+            <p className="truncate text-[11px] text-muted-foreground">
+              คนส. Connexts · {adminUser ?? "-"} · {role ? ROLE_TH[role] : "-"}
+            </p>
           </div>
           <button
             type="button"
