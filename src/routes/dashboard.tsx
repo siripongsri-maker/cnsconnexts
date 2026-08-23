@@ -487,7 +487,7 @@ function Dashboard() {
             type="button"
             onClick={() => setShowFilters((v) => !v)}
             aria-expanded={showFilters}
-            className={`tap flex h-11 items-center gap-1.5 rounded-2xl border border-border px-3 text-[13px] font-extrabold ${
+            className={`tap flex h-11 shrink-0 items-center gap-1.5 rounded-2xl border border-border px-3 text-[13px] font-extrabold ${
               activeCount ? "gradient-power text-primary-foreground" : "bg-card"
             }`}
           >
@@ -499,7 +499,7 @@ function Dashboard() {
             onClick={shareCurrentUrl}
             aria-label="แชร์ลิงก์หน้านี้"
             title="แชร์ลิงก์หน้าผลลัพธ์ที่ใช้ตัวกรองปัจจุบัน"
-            className="tap flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card text-[13px] font-extrabold text-primary"
+            className="tap flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-[13px] font-extrabold text-primary"
           >
             <Share2 className="h-4 w-4" />
           </button>
