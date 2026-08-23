@@ -71,6 +71,7 @@ function Welcome() {
   const { reducedMotion, lowSpec } = useMotionSettings();
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
+      <PdpaConsent />
       <div
         className="absolute inset-0"
         style={{ backgroundImage: "var(--gradient-soft)" }}
