@@ -467,8 +467,9 @@ function Dashboard() {
       </div>
 
       <div className="space-y-2 px-5 pt-3">
-        <div className="flex gap-2">
-          <label className="flex h-11 flex-1 items-center gap-2 rounded-2xl border border-border bg-card px-3">
+        <div className="flex min-w-0 gap-2">
+          <label className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-2xl border border-border bg-card px-3">
+
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <input
               value={q}
