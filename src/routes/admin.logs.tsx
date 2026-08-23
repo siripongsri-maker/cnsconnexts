@@ -144,6 +144,86 @@ function AdminLogs() {
       </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
+        <h2 className="text-[14px] font-extrabold">การเข้าชมรายวัน (14 วันล่าสุด)</h2>
+        <div className="mt-3 h-44 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={daily} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+              <defs>
+                <linearGradient id="viewsFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.45} />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={32} />
+              <Tooltip
+                contentStyle={{ fontSize: 12, borderRadius: 12 }}
+                formatter={(v: number) => [`${v} ครั้ง`, "เข้าชม"]}
+              />
+              <Area
+                type="monotone"
+                dataKey="views"
+                stroke="var(--primary)"
+                strokeWidth={2}
+                fill="url(#viewsFill)"
+                isAnimationActive={false}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <section className="card-soft rounded-2xl bg-card p-4">
+          <h2 className="text-[14px] font-extrabold">แหล่งที่มา</h2>
+          {sources.length === 0 ? (
+            <p className="mt-2 text-[12px] text-muted-foreground">ยังไม่มีข้อมูล</p>
+          ) : (
+            <div className="mt-3 h-44 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={sources} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 8 }}>
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} formatter={(v: number) => [`${v} เหตุการณ์`, "จำนวน"]} />
+                  <Bar dataKey="value" fill="var(--primary)" radius={[0, 6, 6, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </section>
+
+        <section className="card-soft rounded-2xl bg-card p-4">
+          <h2 className="text-[14px] font-extrabold">อัตราการยินยอม PDPA</h2>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="h-36 w-36 shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={consentTotal ? consentPie : [{ name: "ยังไม่มีข้อมูล", value: 1 }]}
+                    dataKey="value"
+                    innerRadius={38}
+                    outerRadius={60}
+                    paddingAngle={2}
+                    isAnimationActive={false}
+                  >
+                    {(consentTotal ? consentPie : [{ name: "-", value: 1 }]).map((entry, i) => (
+                      <Cell key={entry.name} fill={consentTotal ? PIE_COLORS[i] : "var(--muted)"} />
+                    ))}
+                  </Pie>
+                  {consentTotal > 0 && <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />}
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="text-[12px]">
+              <p className="text-3xl font-extrabold text-gradient">{consentRate}%</p>
+              <p className="text-muted-foreground">ยินยอม {consentStats.accepted} · ไม่ยินยอม {consentStats.declined}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">นับจากการตัดสินใจบนเครื่องนี้</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section className="card-soft rounded-2xl bg-card p-4">
         <h2 className="text-[14px] font-extrabold">สถานะความยินยอมของเครื่องนี้</h2>
         <p className="mt-1 text-[12px] text-muted-foreground">
           {consent
