@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { LogIn, UserPlus, Sparkles, Mail, Lock, User as UserIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { LogIn, UserPlus, Sparkles, Mail, Lock, User as UserIcon, Link2, ShieldCheck, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
+import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -29,17 +30,34 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { mode, enterGuest } = useAuth();
+  const { mode, user, enterGuest } = useAuth();
+  const { me, linkAccount } = useStore();
   const [tab, setTab] = useState<"login" | "signup">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sentEmail, setSentEmail] = useState(false);
+  const [linkGuest, setLinkGuest] = useState(true);
+  const linkRef = useRef(true);
+  linkRef.current = linkGuest;
+
+  const hasLocalProfile = Boolean(me);
+  const alreadyLinked = Boolean(me?.linked_email);
 
   useEffect(() => {
-    if (mode === "user") void navigate({ to: "/", replace: true });
-  }, [mode, navigate]);
+    if (me?.name && !name) setName(me.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.name]);
+
+  useEffect(() => {
+    if (mode !== "user" || !user) return;
+    if (me && !me.linked_user_id && linkRef.current) {
+      linkAccount(user.email ?? "", user.id);
+      toast.success("เชื่อมโปรไฟล์เดิมเข้ากับบัญชีนี้แล้ว ข้อมูลของคุณจะไม่หาย");
+    }
+    void navigate({ to: me ? "/" : "/onboarding", replace: true });
+  }, [mode, user, me, linkAccount, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,7 +79,6 @@ function AuthPage() {
           toast.success("ส่งอีเมลยืนยันแล้ว กรุณาเปิดลิงก์ในอีเมลเพื่อยืนยันบัญชี");
         } else {
           toast.success("สมัครสมาชิกสำเร็จ");
-          void navigate({ to: "/onboarding" });
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -70,7 +87,6 @@ function AuthPage() {
         });
         if (error) throw error;
         toast.success("เข้าสู่ระบบสำเร็จ");
-        void navigate({ to: "/" });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "เกิดข้อผิดพลาด";
@@ -97,7 +113,6 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    void navigate({ to: "/" });
   }
 
   function handleGuest() {
@@ -120,6 +135,55 @@ function AuthPage() {
             เข้าสู่ระบบเพื่อเก็บข้อมูลของคุณไว้ข้ามอุปกรณ์ หรือเข้าใช้แบบผู้เยี่ยมชมได้ทันที
           </p>
         </div>
+
+
+        {hasLocalProfile && (
+          <div className="mt-6 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/15 text-lg">
+                {me?.photo ? (
+                  <img src={me.photo} alt="" className="h-9 w-9 rounded-xl object-cover" />
+                ) : (
+                  (me?.avatar ?? "✨")
+                )}
+              </span>
+              <div className="min-w-0">
+                <p className="text-[14px] font-bold">พบโปรไฟล์เดิมในเครื่องนี้: {me?.name}</p>
+                {alreadyLinked ? (
+                  <p className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-primary">
+                    <ShieldCheck className="h-4 w-4" />
+                    เชื่อมกับบัญชี {me?.linked_email} แล้ว
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[12.5px] text-muted-foreground">
+                    เชื่อมโปรไฟล์นี้เข้ากับบัญชีอีเมล เพื่อไม่ให้ข้อมูล การเชื่อมต่อ และคำมั่นสัญญาของคุณหาย
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {!alreadyLinked && (
+              <button
+                type="button"
+                onClick={() => setLinkGuest((v) => !v)}
+                aria-pressed={linkGuest}
+                className="tap mt-3 flex w-full items-center gap-3 rounded-xl bg-background/70 px-3 py-2.5 text-left"
+              >
+                <span
+                  className={`grid h-5 w-5 shrink-0 place-items-center rounded-md border ${
+                    linkGuest ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                  }`}
+                >
+                  {linkGuest && <Check className="h-3.5 w-3.5" />}
+                </span>
+                <span className="text-[13px] font-semibold">
+                  <Link2 className="mr-1 inline h-4 w-4 text-primary" />
+                  เชื่อมโปรไฟล์เดิมเข้ากับบัญชีที่เข้าสู่ระบบ (แนะนำ)
+                </span>
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 grid grid-cols-2 gap-1 rounded-2xl bg-accent p-1">
           {(
@@ -240,7 +304,7 @@ function AuthPage() {
         </button>
 
         <p className="mt-4 text-center text-[12px] text-muted-foreground">
-          โหมดผู้เยี่ยมชมจะเก็บข้อมูลไว้ในเครื่องนี้เท่านั้น
+          โหมดผู้เยี่ยมชมจะเก็บข้อมูลไว้ในเครื่องนี้เท่านั้น — เข้าสู่ระบบด้วยอีเมลภายหลังเพื่อเชื่อมโปรไฟล์เดิมไว้กับบัญชีได้
         </p>
       </div>
     </div>

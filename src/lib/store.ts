@@ -49,6 +49,7 @@ type Store = State & {
   addProvinceNote: (n: Omit<ProvinceNote, "id" | "created_at">) => ProvinceNote;
   addSubmission: (s: Omit<Submission, "id" | "created_at" | "showcase">) => Submission;
   toggleShowcase: (id: string) => void;
+  linkAccount: (email: string, userId: string) => void;
   importUsers: (list: User[]) => number;
   notify: (n: Omit<AppNotification, "id" | "created_at" | "read">) => AppNotification;
   markNotificationsRead: () => void;
@@ -105,6 +106,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
     });
     return saved;
+  }, []);
+
+  const linkAccount: Store["linkAccount"] = useCallback((email, userId) => {
+    const now = new Date().toISOString();
+    setState((s) => {
+      if (!s.me) return s;
+      const user: User = { ...s.me, linked_email: email, linked_user_id: userId, linked_at: now };
+      return {
+        ...s,
+        me: user,
+        users: s.users.map((u) => (u.id === "me" ? user : u)),
+      };
+    });
   }, []);
 
   const connect: Store["connect"] = useCallback((otherId, score, reason) => {
@@ -277,13 +291,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addProvinceNote,
       addSubmission,
       toggleShowcase,
+      linkAccount,
       importUsers,
       notify,
       markNotificationsRead,
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, addSubmission, toggleShowcase, importUsers, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);

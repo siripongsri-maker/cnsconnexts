@@ -73,6 +73,12 @@ export type User = {
   created_at: string;
   /** Last time the participant updated their own profile. */
   updated_at?: string | undefined;
+  /** Email of the account this local profile is linked to (guest → account). */
+  linked_email?: string | undefined;
+  /** Auth user id this local profile is linked to. */
+  linked_user_id?: string | undefined;
+  /** When the profile was linked to an account. */
+  linked_at?: string | undefined;
 };
 
 /** A detail/update someone posts about a specific province on the Power Map. */
