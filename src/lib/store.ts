@@ -401,7 +401,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const importUsers: Store["importUsers"] = useCallback((list) => {
     setState((s) => {
       const existing = new Set(s.users.map((u) => u.id));
-      const fresh = list.filter((u) => !existing.has(u.id));
+      const fresh = list
+        .filter((u) => !existing.has(u.id))
+        .map((u) => ({ ...u, source: u.source ?? ("admin" as UserSource) }));
       return { ...s, users: [...fresh, ...s.users] };
     });
     return list.length;
