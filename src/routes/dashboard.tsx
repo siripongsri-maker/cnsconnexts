@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { LiveTicker } from "@/components/live-ticker";
 import { Activity, CheckCircle2, Handshake, Sparkles, Users } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
@@ -269,6 +270,8 @@ function Dashboard() {
             />
           ))}
         </Panel>
+
+        <LiveTicker />
 
         <Panel title={view === "me" ? "กิจกรรมล่าสุดของคุณและทั้งงาน" : "ฟีดกิจกรรมสด"}>
           {feed.length === 0 && (
