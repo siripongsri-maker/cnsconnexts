@@ -4,15 +4,17 @@ import { useState } from "react";
 import type { MatchResult } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { issueTh, powerTh, provinceTh } from "@/lib/i18n";
+import { Heart, Sparkles } from "lucide-react";
 import { Avatar, Chip, PowerChip, ScoreRing } from "./power-bits";
 
 export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: number }) {
-  const { connect, connections } = useStore();
+  const { connect, connections, likedUsers, toggleLikeUser } = useStore();
   const u = match.user;
   const existing = connections.find(
     (c) => (c.user_a === "me" && c.user_b === u.id) || (c.user_b === "me" && c.user_a === u.id),
   );
   const [burst, setBurst] = useState(false);
+  const liked = likedUsers.includes(u.id);
 
   return (
     <article
@@ -34,10 +36,31 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
             ))}
           </div>
         </div>
-        <ScoreRing score={match.score} />
+        <div className="flex shrink-0 flex-col items-center gap-2">
+          <ScoreRing score={match.score} />
+          <button
+            aria-label={liked ? "เอาออกจากถูกใจ" : "ถูกใจ"}
+            aria-pressed={liked}
+            onClick={() => toggleLikeUser(u.id)}
+            className={`tap grid h-9 w-9 place-items-center rounded-xl border ${
+              liked ? "border-coral/40 bg-coral/15" : "border-border bg-card"
+            }`}
+          >
+            <Heart className={`h-4.5 w-4.5 ${liked ? "fill-coral text-coral" : "text-muted-foreground"}`} />
+          </button>
+        </div>
       </div>
 
-      <p className="mt-3 rounded-xl bg-accent/60 p-3 text-[13px] leading-relaxed text-accent-foreground">
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {match.highlights.map((h) => (
+          <Chip key={h} tone="electric">
+            <Sparkles className="h-3 w-3" />
+            {h}
+          </Chip>
+        ))}
+      </div>
+
+      <p className="mt-2 rounded-xl bg-accent/60 p-3 text-[12.5px] leading-relaxed text-accent-foreground">
         {match.reason}
       </p>
 
