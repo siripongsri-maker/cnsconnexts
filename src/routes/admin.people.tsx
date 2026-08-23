@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Save, Trash2, Users, FileUp, Filter } from "lucide-react";
+import { Search, Save, Trash2, Users, FileUp, Filter, Download } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
 import { PROVINCES } from "@/lib/thailand-geo";
 import { ISSUES, type Region, type UserSource } from "@/lib/types";
 import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
+import { downloadCSV, type Row } from "@/lib/export";
 import type { User } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/people")({
