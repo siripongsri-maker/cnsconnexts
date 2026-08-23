@@ -68,6 +68,8 @@ type Store = State & {
   toggleShowcase: (id: string) => void;
   linkAccount: (email: string, userId: string) => void;
   importUsers: (list: User[]) => number;
+  updateUser: (id: string, patch: Partial<User>) => void;
+  removeUser: (id: string) => void;
   sendMessage: (connectionId: string, text: string) => ChatMessage;
   markRoomRead: (connectionId: string) => void;
   notify: (n: Omit<AppNotification, "id" | "created_at" | "read">) => AppNotification;
@@ -377,6 +379,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return list.length;
   }, []);
 
+  const updateUser: Store["updateUser"] = useCallback((id, patch) => {
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) =>
+        u.id === id ? { ...u, ...patch, updated_at: new Date().toISOString() } : u,
+      ),
+      me: s.me && s.me.id === id ? { ...s.me, ...patch } : s.me,
+    }));
+  }, []);
+
+  const removeUser: Store["removeUser"] = useCallback((id) => {
+    setState((s) => ({ ...s, users: s.users.filter((u) => u.id !== id) }));
+  }, []);
+
   const sendMessage: Store["sendMessage"] = useCallback((connectionId, text) => {
     const body = text.trim();
     const msg: ChatMessage = {
@@ -478,6 +494,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleShowcase,
       linkAccount,
       importUsers,
+      updateUser,
+      removeUser,
       sendMessage,
       markRoomRead,
       notify,
@@ -485,7 +503,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
