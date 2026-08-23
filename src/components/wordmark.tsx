@@ -47,14 +47,14 @@ export function Wordmark({
       className={`inline-flex min-w-0 font-display leading-none ${
         stacked ? `flex-col items-start ${s.gap}` : `flex-row items-baseline ${s.gap}`
       } ${className}`}
-      aria-hidden
     >
       <span
+        aria-hidden
         className={`text-gradient font-extrabold leading-[1.15] tracking-tight ${s.th}`}
       >
         คนส.
       </span>
-      <span className={`flex items-baseline leading-[1.05] tracking-tight ${s.en}`}>
+      <span aria-hidden className={`flex items-baseline leading-[1.05] tracking-tight ${s.en}`}>
         {CONNEXTS.map((ch, i) =>
           HILITE.has(i) ? (
             <span
