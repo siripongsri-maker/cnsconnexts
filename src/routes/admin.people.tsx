@@ -122,6 +122,58 @@ function AdminPeoplePage() {
           />
         </div>
 
+        <div className="space-y-3 rounded-2xl border border-border bg-card p-3">
+          <div className="flex rounded-xl bg-muted p-0.5">
+            {(["all", "real", "demo"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSource(s)}
+                className={`tap flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                  source === s ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                {SOURCE_LABEL[s]}
+                {s === "real" ? ` (${realCount})` : s === "demo" ? ` (${users.length - realCount})` : ""}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block space-y-1">
+              <span className="text-[11px] font-medium text-muted-foreground">onboard ตั้งแต่</span>
+              <input
+                type="date"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none"
+              />
+            </label>
+            <label className="block space-y-1">
+              <span className="text-[11px] font-medium text-muted-foreground">ถึงวันที่</span>
+              <input
+                type="date"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none"
+              />
+            </label>
+          </div>
+          {(source !== "all" || from || to || q) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSource("all");
+                setFrom("");
+                setTo("");
+                setQ("");
+              }}
+              className="text-[11px] font-semibold text-primary"
+            >
+              ล้างตัวกรองทั้งหมด
+            </button>
+          )}
+        </div>
+
         <Link
           to="/admin/import"
           className="flex items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground"
