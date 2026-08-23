@@ -3,6 +3,7 @@ import { DEMO_COMMITMENTS, DEMO_CONNECTIONS, DEMO_IDEAS, DEMO_USERS } from "./de
 import { DEMO_PROVINCE_NOTES } from "./demo-province-notes";
 import { DEMO_SUBMISSIONS } from "./demo-submissions";
 import type {
+  AppNotification,
   Commitment,
   Connection,
   ConnectionStatus,
@@ -23,6 +24,7 @@ type State = {
   savedIdeas: string[];
   provinceNotes: ProvinceNote[];
   submissions: Submission[];
+  notifications: AppNotification[];
 };
 
 const initial: State = {
@@ -34,6 +36,7 @@ const initial: State = {
   savedIdeas: [],
   provinceNotes: DEMO_PROVINCE_NOTES,
   submissions: DEMO_SUBMISSIONS,
+  notifications: [],
 };
 
 type Store = State & {
@@ -47,6 +50,9 @@ type Store = State & {
   addSubmission: (s: Omit<Submission, "id" | "created_at" | "showcase">) => Submission;
   toggleShowcase: (id: string) => void;
   importUsers: (list: User[]) => number;
+  notify: (n: Omit<AppNotification, "id" | "created_at" | "read">) => AppNotification;
+  markNotificationsRead: () => void;
+  clearNotifications: () => void;
   reset: () => void;
 };
 
@@ -114,7 +120,40 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         (c) => (c.user_a === "me" && c.user_b === otherId) || (c.user_b === "me" && c.user_a === otherId),
       );
       if (existing) return s;
-      return { ...s, connections: [conn, ...s.connections] };
+      const other = s.users.find((u) => u.id === otherId);
+      const name = other?.name ?? "เพื่อนใหม่";
+      const sent: AppNotification = {
+        id: `n-${Date.now()}`,
+        kind: "connect_sent",
+        title: "ส่งคำขอเชื่อมแล้ว",
+        body: `กำลังส่งสัญญาณถึง ${name}…`,
+        from_id: otherId,
+        from_name: name,
+        connection_id: conn.id,
+        read: false,
+        created_at: new Date().toISOString(),
+      };
+      // จำลองการตอบรับจากอีกฝ่าย (ต้นแบบฝั่ง client)
+      setTimeout(() => {
+        setState((cur) => ({
+          ...cur,
+          notifications: [
+            {
+              id: `n-${Date.now()}-a`,
+              kind: "accepted",
+              title: `${name} ตอบรับการเชื่อมแล้ว ✨`,
+              body: "แตะเพื่อกำหนดก้าวต่อไปร่วมกัน",
+              from_id: otherId,
+              from_name: name,
+              connection_id: conn.id,
+              read: false,
+              created_at: new Date().toISOString(),
+            },
+            ...cur.notifications,
+          ],
+        }));
+      }, 2600);
+      return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
     });
     return conn;
   }, []);
@@ -181,6 +220,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return list.length;
   }, []);
 
+  const notify: Store["notify"] = useCallback((n) => {
+    const item: AppNotification = {
+      ...n,
+      id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      read: false,
+      created_at: new Date().toISOString(),
+    };
+    setState((s) => ({ ...s, notifications: [item, ...s.notifications] }));
+    return item;
+  }, []);
+
+  const markNotificationsRead: Store["markNotificationsRead"] = useCallback(() => {
+    setState((s) => ({ ...s, notifications: s.notifications.map((n) => ({ ...n, read: true })) }));
+  }, []);
+
+  const clearNotifications: Store["clearNotifications"] = useCallback(() => {
+    setState((s) => ({ ...s, notifications: [] }));
+  }, []);
+
   const reset = useCallback(() => setState(initial), []);
 
   const value = useMemo<Store>(
@@ -196,9 +254,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addSubmission,
       toggleShowcase,
       importUsers,
+      notify,
+      markNotificationsRead,
+      clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, addSubmission, toggleShowcase, importUsers, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, addSubmission, toggleShowcase, importUsers, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
