@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Link2, Search, Share2, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, ArrowUpDown, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Link2, Search, Share2, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
