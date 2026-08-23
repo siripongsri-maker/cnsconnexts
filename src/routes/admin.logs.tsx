@@ -74,6 +74,52 @@ function AdminLogs() {
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [logs]);
 
+  /** การเข้าชมรายวัน 14 วันล่าสุด */
+  const daily = useMemo(() => {
+    const counts = new Map<string, number>();
+    logs
+      .filter((l) => l.type === "page_view")
+      .forEach((l) => {
+        const key = l.at.slice(0, 10);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      });
+    const out: Array<{ day: string; label: string; views: number }> = [];
+    for (let i = 13; i >= 0; i -= 1) {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      out.push({
+        day: key,
+        label: `${d.getDate()}/${d.getMonth() + 1}`,
+        views: counts.get(key) ?? 0,
+      });
+    }
+    return out;
+  }, [logs]);
+
+  /** แหล่งที่มาของผู้เข้าชม */
+  const sources = useMemo(() => {
+    const counts = new Map<string, number>();
+    logs.forEach((l) => {
+      const s = l.source ?? "direct";
+      counts.set(s, (counts.get(s) ?? 0) + 1);
+    });
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, value]) => ({ name: name === "direct" ? "เข้าตรง" : name, value }));
+  }, [logs]);
+
+  const consentStats = useMemo(() => (logs, getConsentStats()), [logs]);
+  const consentTotal = consentStats.accepted + consentStats.declined;
+  const consentRate = consentTotal ? Math.round((consentStats.accepted / consentTotal) * 100) : 0;
+  const consentPie = [
+    { name: "ยินยอม", value: consentStats.accepted },
+    { name: "ไม่ยินยอม", value: consentStats.declined },
+  ];
+  const PIE_COLORS = ["var(--primary)", "var(--muted-foreground)"];
+
   return (
     <div className="space-y-5">
       <section>
