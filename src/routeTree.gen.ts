@@ -18,6 +18,7 @@ import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as QrRouteImport } from './routes/qr'
+import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
 
@@ -66,6 +67,11 @@ const QrRoute = QrRouteImport.update({
   path: '/qr',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SubmitRoute = SubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ConnectionIdRoute = ConnectionIdRouteImport.update({
   id: '/connection/$id',
   path: '/connection/$id',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/qr': typeof QrRoute
+  '/submit': typeof SubmitRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/qr': typeof QrRoute
+  '/submit': typeof SubmitRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/qr': typeof QrRoute
+  '/submit': typeof SubmitRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/qr'
+    | '/submit'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/qr'
+    | '/submit'
     | '/connection/$id'
     | '/people/$id'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/qr'
+    | '/submit'
     | '/connection/$id'
     | '/people/$id'
   fileRoutesById: FileRoutesById
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
   QrRoute: typeof QrRoute
+  SubmitRoute: typeof SubmitRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
 }
@@ -238,6 +251,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QrRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/submit': {
+      id: '/submit'
+      path: '/submit'
+      fullPath: '/submit'
+      preLoaderRoute: typeof SubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/connection/$id': {
       id: '/connection/$id'
       path: '/connection/$id'
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
   QrRoute: QrRoute,
+  SubmitRoute: SubmitRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
 }
