@@ -46,6 +46,7 @@ function extractCode(raw: string) {
 
 function ScanPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/scan" });
   const { enterGuest } = useAuth();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -62,8 +63,12 @@ function ScanPage() {
     streamRef.current = null;
   }, []);
 
+  const defaultSource: UserSource = sourceFromSearch(
+    new URLSearchParams(typeof search === "object" && search ? (search as Record<string, unknown>) : {}),
+  );
+
   const join = useCallback(
-    (code: string, source: "qr" | "direct") => {
+    (code: string, source: UserSource) => {
       if (doneRef.current) return;
       doneRef.current = true;
       stop();
