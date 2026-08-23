@@ -46,7 +46,6 @@ function extractCode(raw: string) {
 
 function ScanPage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/scan" });
   const { enterGuest } = useAuth();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
