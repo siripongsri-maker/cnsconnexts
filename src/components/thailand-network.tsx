@@ -35,7 +35,7 @@ export function ThailandNetwork({
     const r = rand(seed);
     const pool = [...PROVINCES];
     const picked: { x: number; y: number; c: string; d: number; rr: number }[] = [];
-    for (let i = 0; i < count && pool.length; i++) {
+    for (let i = 0; i < effectiveCount && pool.length; i++) {
       const idx = Math.floor(r() * pool.length);
       const p = pool.splice(idx, 1)[0]!;
       picked.push({
@@ -65,7 +65,7 @@ export function ThailandNetwork({
       }
     });
     return { nodes: picked, links };
-  }, [count, seed]);
+  }, [effectiveCount, seed]);
 
   return (
     <svg
