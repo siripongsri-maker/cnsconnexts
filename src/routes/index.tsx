@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
+import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
 
 export const Route = createFileRoute("/")({
