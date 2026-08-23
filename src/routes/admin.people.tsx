@@ -364,7 +364,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function SourceBadge({ source }: { source?: UserSource }) {
+function SourceBadge({ source }: { source?: UserSource | undefined }) {
   const label = source ? SOURCE_LABEL[source] : "เข้าตรง";
   const color =
     source === "qr"
