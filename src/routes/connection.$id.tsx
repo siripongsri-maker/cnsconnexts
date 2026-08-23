@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, Chip } from "@/components/power-bits";
 import { ChatRoom } from "@/components/chat-room";
+import { RsvpButtons } from "@/components/rsvp-buttons";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
 import { issueTh, powerTh, STATUS_TH, ACTION_TYPES_TH } from "@/lib/i18n";
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/connection/$id")({
 
 function ConnectionDetail() {
   const { id } = Route.useParams();
-  const { connections, users, me, addCommitment } = useStore();
+  const { connections, users, me, addCommitment, commitments } = useStore();
   const navigate = useNavigate();
 
   const conn = connections.find((c) => c.id === id);
@@ -41,6 +42,7 @@ function ConnectionDetail() {
 
   if (!a || !b) throw notFound();
 
+  const myCommitments = commitments.filter((m) => m.connection_id === conn.id);
   const sharedIssues = a.interests.filter((i) => b.interests.includes(i));
   const sharedPower = [...new Set([...a.powers_have.slice(0, 1), ...b.powers_have.slice(0, 1)])];
 
@@ -132,6 +134,33 @@ function ConnectionDetail() {
           ))}
         </div>
       </div>
+
+      {myCommitments.length > 0 && (
+        <div className="mx-auto max-w-xl px-5 pb-4">
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+            นัดหมายที่ตกลงไว้
+          </p>
+          <ul className="space-y-3">
+            {myCommitments.map((m) => (
+              <li key={m.id} className="rounded-2xl bg-accent/50 p-3">
+                <p className="text-sm font-bold">{m.action_type}</p>
+                <p className="text-xs text-muted-foreground">{m.description}</p>
+                {m.follow_up_date && (
+                  <p className="mt-1 text-[11px] font-semibold text-primary">
+                    นัด{" "}
+                    {new Date(m.follow_up_date).toLocaleString("th-TH", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}{" "}
+                    น.
+                  </p>
+                )}
+                <RsvpButtons m={m} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border/60 bg-background/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         <button
