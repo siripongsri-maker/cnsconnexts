@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, QrCode } from "lucide-react";
+
+import { useAuth } from "@/lib/auth";
 import { NetworkBackground } from "@/components/network-background";
 
 export const Route = createFileRoute("/")({
@@ -124,3 +126,32 @@ function Welcome() {
     </div>
   );
 }
+
+function AuthRow() {
+  const { mode, displayName, signOut } = useAuth();
+
+  if (mode === "user" || mode === "guest") {
+    return (
+      <div className="flex items-center justify-between rounded-2xl border border-border bg-card/80 px-4 py-3 backdrop-blur">
+        <span className="min-w-0 truncate text-[13px] font-bold">{displayName}</span>
+        <button
+          type="button"
+          onClick={() => void signOut()}
+          className="tap shrink-0 text-[13px] font-bold text-primary"
+        >
+          ออกจากระบบ
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      to="/auth"
+      className="tap flex h-12 items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 text-[13px] font-bold text-primary backdrop-blur"
+    >
+      เข้าสู่ระบบ / สร้างบัญชี / เข้าแบบ Guest
+    </Link>
+  );
+}
+
