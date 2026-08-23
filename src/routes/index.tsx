@@ -117,12 +117,13 @@ function Welcome() {
             <ArrowRight className="h-5 w-5 shrink-0" />
           </Link>
           <Link
-            to="/qr"
+            to="/scan"
             className="tap flex h-14 items-center justify-center gap-2 rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
           >
             <QrCode className="h-4 w-4" />
-            สแกนเพื่อเข้าร่วม
+            สแกน QR เข้าร่วมทันที (ไม่ต้องล็อกอิน)
           </Link>
+
           <p className="pt-1 text-center text-[11px] text-muted-foreground">
             ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
           </p>
