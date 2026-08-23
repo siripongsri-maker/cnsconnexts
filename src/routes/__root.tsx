@@ -132,15 +132,23 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-      <StoreProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <NotificationHost />
-        <CommitmentReminders />
-        <Toaster position="top-center" />
-      </StoreProvider>
+        <StoreProvider>
+          <HydrationGate>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </HydrationGate>
+          <NotificationHost />
+          <CommitmentReminders />
+          <Toaster position="top-center" />
+        </StoreProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+function HydrationGate({ children }: { children: ReactNode }) {
+  const { hydrated } = useStore();
+  if (!hydrated) return <LoadingScreen message="กำลังเชื่อม" />;
+  return children;
 }
 
