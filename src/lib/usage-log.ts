@@ -64,6 +64,7 @@ export function setConsent(value: ConsentValue) {
   } catch {
     /* ignore */
   }
+  bumpConsentStats(value);
   if (value === "accepted") {
     logUsage("consent", "ยินยอมให้เก็บข้อมูลการใช้งาน", `เวอร์ชัน ${CONSENT_VERSION}`);
   } else {
