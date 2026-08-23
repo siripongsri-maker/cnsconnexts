@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from "react";
 
-export type LiveKind = "match" | "like" | "connect" | "commitment";
+export type LiveKind = "match" | "like" | "connect" | "commitment" | "message";
 
 export type LiveEvent = {
   id: string;

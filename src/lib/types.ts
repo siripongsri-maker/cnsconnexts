@@ -127,6 +127,15 @@ export type Commitment = {
   created_at: string;
 };
 
+/** ข้อความในห้องแชทสั้นของคู่เชื่อมต่อ */
+export type ChatMessage = {
+  id: string;
+  connection_id: string;
+  from_id: string;
+  text: string;
+  created_at: string;
+};
+
 export const COURSES = ["คนส.", "นนส.", "คศน."] as const;
 export type Course = (typeof COURSES)[number];
 
@@ -154,7 +163,7 @@ export type Submission = {
 /** In-app notification shown to the participant (client-side prototype). */
 export type AppNotification = {
   id: string;
-  kind: "connect_sent" | "connect_received" | "accepted" | "commitment" | "reminder";
+  kind: "connect_sent" | "connect_received" | "accepted" | "commitment" | "reminder" | "message";
   title: string;
   body: string;
   from_id: string;
