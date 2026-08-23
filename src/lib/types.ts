@@ -56,6 +56,8 @@ export const POWER_EMOJI: Record<string, string> = Object.fromEntries(
 
 export type Generation = "Gen Z" | "Millennial" | "Gen X" | "Boomer";
 
+export type UserSource = "qr" | "link" | "invite" | "direct" | "auth" | "demo" | "admin";
+
 export type User = {
   id: string;
   name: string;
@@ -79,6 +81,8 @@ export type User = {
   linked_user_id?: string | undefined;
   /** When the profile was linked to an account. */
   linked_at?: string | undefined;
+  /** How this participant entered the app: QR scan, shared link, invite, direct, auth, demo, or admin import. */
+  source?: UserSource | undefined;
 };
 
 /** A detail/update someone posts about a specific province on the Power Map. */
