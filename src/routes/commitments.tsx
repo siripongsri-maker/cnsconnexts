@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
+import { LiveProgress } from "@/components/live-progress";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
@@ -52,6 +53,10 @@ function Commitments() {
 
   return (
     <AppShell title="จะทำอะไรต่อดี?" subtitle="รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?">
+      <div className="px-5 pt-4">
+        <LiveProgress />
+      </div>
+
       <div className="grid grid-cols-2 gap-3 px-5 py-4">
         <div className="card-soft p-4">
           <p className="text-3xl font-extrabold text-gradient">{shownConnections.length}</p>
