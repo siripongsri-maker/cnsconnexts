@@ -1,4 +1,4 @@
-import cnsLogo from "@/assets/cns-logo.png";
+import cnsMark from "@/assets/cns-mark.png.asset.json";
 
 /**
  * แบรนด์ "คนส. Connexts" — กิมมิค: ค-น-ส ↔ C-N-S
@@ -98,12 +98,12 @@ export function Wordmark({
       className={`inline-flex min-w-0 max-w-full items-center gap-1.5 sm:gap-2 ${className}`}
     >
       <img
-        src={cnsLogo}
+        src={cnsMark.url}
         alt=""
         aria-hidden
         loading="lazy"
-        width={816}
-        height={816}
+        width={512}
+        height={512}
         className={`${MARK_SIZE[size]} brand-mark shrink-0 object-contain`}
       />
       {text}
