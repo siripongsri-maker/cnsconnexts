@@ -39,13 +39,15 @@ function StartPage() {
   const { me, hydrated } = useStore();
   const [session, setSession] = useState<ParticipantSession | null>(null);
 
+  const entrySource = sourceFromSearch(new URLSearchParams(window.location.search));
+
   useEffect(() => {
-    setSession(getSession() ?? createSession("direct", null));
-  }, []);
+    setSession(getSession() ?? createSession(entrySource, null));
+  }, [entrySource]);
 
   const begin = () => {
     if (mode !== "user") enterGuest();
-    if (!getSession()) createSession("direct", null);
+    if (!getSession()) createSession(entrySource, null);
     void navigate({ to: "/onboarding" });
   };
 
