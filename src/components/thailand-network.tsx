@@ -110,7 +110,12 @@ export function ThailandNetwork({
       })}
 
       {nodes.map((n, i) => (
-        <g key={i} style={{ transformOrigin: `${n.x}px ${n.y}px` }} className="animate-pulse-node">
+        <g
+          key={i}
+          style={{ transformOrigin: `${n.x}px ${n.y}px` }}
+          className={shouldAnimate ? "animate-pulse-node" : undefined}
+          opacity={reducedMotion || lowSpec ? 0.85 : 1}
+        >
           <circle cx={n.x} cy={n.y} r={n.rr * 2.4} fill={n.c} opacity={0.14} />
           <circle cx={n.x} cy={n.y} r={n.rr} fill={n.c} />
         </g>
