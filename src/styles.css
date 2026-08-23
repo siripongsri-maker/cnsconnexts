@@ -260,7 +260,10 @@ textarea.input-line {
 @media (prefers-reduced-motion: reduce) {
   .animate-dash,
   .animate-pulse-node,
-  .animate-float {
+  .animate-float,
+  .animate-rise,
+  .animate-pop,
+  .animate-draw {
     animation: none !important;
   }
 }
