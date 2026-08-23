@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Link2, Sparkles, UserCircle2, Zap } from "lucide-react";
 
-import { createSession, getSession, type ParticipantSession } from "@/lib/session";
+import { createSession, getSession, sourceFromSearch, type ParticipantSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 
@@ -39,13 +39,15 @@ function StartPage() {
   const { me, hydrated } = useStore();
   const [session, setSession] = useState<ParticipantSession | null>(null);
 
+  const entrySource = sourceFromSearch(new URLSearchParams(window.location.search));
+
   useEffect(() => {
-    setSession(getSession() ?? createSession("direct", null));
-  }, []);
+    setSession(getSession() ?? createSession(entrySource, null));
+  }, [entrySource]);
 
   const begin = () => {
     if (mode !== "user") enterGuest();
-    if (!getSession()) createSession("direct", null);
+    if (!getSession()) createSession(entrySource, null);
     void navigate({ to: "/onboarding" });
   };
 

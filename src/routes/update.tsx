@@ -6,6 +6,7 @@ import { Check, QrCode } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
+import { getSession } from "@/lib/session";
 
 export const Route = createFileRoute("/update")({
   head: () => ({
@@ -113,7 +114,8 @@ function UpdateMe() {
             initial={me}
             submitLabel="บันทึกข้อมูลของฉัน"
             onSubmit={(draft) => {
-              saveProfile(draft);
+              const session = getSession();
+              saveProfile({ ...draft, source: session?.source });
               setSaved(true);
               window.scrollTo({ top: 0, behavior: "smooth" });
               setTimeout(() => setSaved(false), 4000);

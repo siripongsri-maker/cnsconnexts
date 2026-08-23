@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, Save, Trash2, Users, FileUp } from "lucide-react";
+import { Search, Save, Trash2, Users, FileUp, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
 import { PROVINCES } from "@/lib/thailand-geo";
-import { ISSUES, type Region } from "@/lib/types";
+import { ISSUES, type Region, type UserSource } from "@/lib/types";
 import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
 import type { User } from "@/lib/types";
 
@@ -32,12 +32,18 @@ type Draft = Pick<User, "name" | "organization" | "bio" | "province" | "interest
 const DEMO_IDS = new Set(Array.from({ length: 20 }, (_, i) => `u${i + 1}`));
 const isDemo = (id: string) => DEMO_IDS.has(id);
 
-type SourceFilter = "all" | "real" | "demo";
+type SourceFilter = "all" | "real" | "demo" | UserSource;
 
 const SOURCE_LABEL: Record<SourceFilter, string> = {
   all: "ทั้งหมด",
   real: "ผู้ใช้จริง",
   demo: "เดโม่",
+  qr: "QR",
+  link: "ลิงก์",
+  invite: "Invite",
+  direct: "เข้าตรง",
+  auth: "บัญชี",
+  admin: "นำเข้า",
 };
 
 function AdminPeoplePage() {
@@ -56,6 +62,7 @@ function AdminPeoplePage() {
     return users.filter((u) => {
       if (source === "real" && isDemo(u.id)) return false;
       if (source === "demo" && !isDemo(u.id)) return false;
+      if (source !== "all" && source !== "real" && source !== "demo" && u.source !== source) return false;
       if (fromTs !== null || toTs !== null) {
         const ts = new Date(u.created_at).getTime();
         if (Number.isNaN(ts)) return false;
@@ -138,6 +145,27 @@ function AdminPeoplePage() {
               </button>
             ))}
           </div>
+          <label className="block space-y-1">
+            <span className="text-[11px] font-medium text-muted-foreground">แหล่งที่มา</span>
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value as SourceFilter)}
+                className="w-full appearance-none rounded-xl border border-border bg-background py-2 pl-8 pr-3 text-xs outline-none"
+              >
+                <option value="all">ทั้งหมด</option>
+                <option value="real">ผู้ใช้จริง</option>
+                <option value="demo">เดโม่</option>
+                <option value="qr">QR</option>
+                <option value="link">ลิงก์</option>
+                <option value="invite">Invite</option>
+                <option value="direct">เข้าตรง</option>
+                <option value="auth">บัญชี</option>
+                <option value="admin">นำเข้า</option>
+              </select>
+            </div>
+          </label>
           <div className="grid grid-cols-2 gap-2">
             <label className="block space-y-1">
               <span className="text-[11px] font-medium text-muted-foreground">onboard ตั้งแต่</span>
@@ -200,7 +228,10 @@ function AdminPeoplePage() {
                   >
                     <span className="text-2xl leading-none">{u.avatar}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block break-words text-sm font-semibold">{u.name}</span>
+                      <span className="flex items-center gap-2">
+                        <span className="block break-words text-sm font-semibold">{u.name}</span>
+                        <SourceBadge source={u.source} />
+                      </span>
                       <span className="block break-words text-xs text-muted-foreground">
                         {u.organization} · {provinceTh(u.province)} · {REGION_LABEL[u.region]}
                       </span>
@@ -330,5 +361,26 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
       {children}
     </label>
+  );
+}
+
+function SourceBadge({ source }: { source?: UserSource | undefined }) {
+  const label = source ? SOURCE_LABEL[source] : "เข้าตรง";
+  const color =
+    source === "qr"
+      ? "bg-lime/20 text-lime-foreground"
+      : source === "link"
+        ? "bg-coral/20 text-coral"
+        : source === "invite"
+          ? "bg-electric/20 text-electric"
+          : source === "auth"
+            ? "bg-primary/15 text-primary"
+            : source === "admin"
+              ? "bg-secondary text-secondary-foreground"
+              : source === "demo"
+                ? "bg-muted text-muted-foreground"
+                : "bg-accent text-accent-foreground";
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${color}`}>{label}</span>
   );
 }

@@ -8,8 +8,9 @@ const GUIDE: { t: string; d: string }[] = [
   { t: "สร้าง Power Profile", d: "กรอกครั้งเดียวจบ แล้วระบบจับคู่คนที่ควรเจอให้ทันที" },
 ];
 
-import { createSession, makeJoinCode } from "@/lib/session";
+import { createSession, makeJoinCode, sourceFromSearch } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
+import type { UserSource } from "@/lib/types";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -61,8 +62,10 @@ function ScanPage() {
     streamRef.current = null;
   }, []);
 
+  const defaultSource: UserSource = sourceFromSearch(new URLSearchParams(window.location.search));
+
   const join = useCallback(
-    (code: string, source: "qr" | "direct") => {
+    (code: string, source: UserSource) => {
       if (doneRef.current) return;
       doneRef.current = true;
       stop();

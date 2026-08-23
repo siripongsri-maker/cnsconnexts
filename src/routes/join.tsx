@@ -3,10 +3,11 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { QrCode, Sparkles } from "lucide-react";
-import { createSession } from "@/lib/session";
+import { createSession, sourceFromSearch } from "@/lib/session";
 
 const searchSchema = z.object({
   c: fallback(z.string(), "").default(""),
+  source: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/join")({
@@ -30,16 +31,16 @@ export const Route = createFileRoute("/join")({
 });
 
 function Join() {
-  const { c } = Route.useSearch();
+  const { c, source } = Route.useSearch();
   const navigate = useNavigate();
   const [code, setCode] = useState<string | null>(null);
 
   useEffect(() => {
-    const session = createSession("qr", c || null);
+    const session = createSession(sourceFromSearch(new URLSearchParams({ source })), c || null);
     setCode(session.id);
     const t = setTimeout(() => navigate({ to: "/start" }), 1100);
     return () => clearTimeout(t);
-  }, [c, navigate]);
+  }, [c, source, navigate]);
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background px-8 text-center">

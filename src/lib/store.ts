@@ -14,6 +14,7 @@ import type {
   Rsvp,
   Submission,
   User,
+  UserSource,
 } from "./types";
 
 const KEY = "connecting-power-v1";
@@ -48,9 +49,14 @@ const initial: State = {
   messages: [],
 };
 
+type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
+  avatar?: string;
+  source?: UserSource | undefined;
+};
+
 type Store = State & {
   hydrated: boolean;
-  saveProfile: (u: Omit<User, "id" | "created_at" | "avatar"> & { avatar?: string }) => User;
+  saveProfile: (u: ProfileInput) => User;
   connect: (otherId: string, score: number, reason: string) => Connection;
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
@@ -131,6 +137,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const saveProfile: Store["saveProfile"] = useCallback((data) => {
     const now = new Date().toISOString();
+    let resolvedSource = data.source;
+    if (!resolvedSource) {
+      try {
+        const raw = localStorage.getItem("connecting-power-session");
+        const fromSession = raw ? (JSON.parse(raw) as { source?: UserSource }).source : undefined;
+        if (fromSession) resolvedSource = fromSession;
+      } catch {
+        /* ignore */
+      }
+    }
     let saved: User = {
       ...data,
       avatar: data.avatar || "✨",
@@ -139,7 +155,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updated_at: now,
     };
     setState((s) => {
-      const user: User = { ...saved, created_at: s.me?.created_at ?? now };
+      const source = resolvedSource ?? s.me?.source ?? "direct";
+      const user: User = {
+        ...saved,
+        created_at: s.me?.created_at ?? now,
+        source,
+      };
       saved = user;
       return {
         ...s,
@@ -380,7 +401,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const importUsers: Store["importUsers"] = useCallback((list) => {
     setState((s) => {
       const existing = new Set(s.users.map((u) => u.id));
-      const fresh = list.filter((u) => !existing.has(u.id));
+      const fresh = list
+        .filter((u) => !existing.has(u.id))
+        .map((u) => ({ ...u, source: u.source ?? ("admin" as UserSource) }));
       return { ...s, users: [...fresh, ...s.users] };
     });
     return list.length;

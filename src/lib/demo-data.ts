@@ -16,6 +16,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Ideas", "Creativity", "Communication"],
     powers_need: ["Funding / Resources", "Policy Connection", "Community Network"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u2",
@@ -30,6 +31,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Communication", "Technology", "Knowledge"],
     powers_need: ["Local Knowledge", "Community Network", "Partnership"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u3",
@@ -44,6 +46,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Community Network", "Local Knowledge", "Partnership"],
     powers_need: ["Communication", "Digital Innovation", "Funding / Resources"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u4",
@@ -58,6 +61,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Community Network", "Local Knowledge", "Ideas"],
     powers_need: ["Funding / Resources", "Knowledge", "Communication"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u5",
@@ -72,6 +76,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Knowledge", "Partnership", "Policy Connection"],
     powers_need: ["Creativity", "Technology", "Community Network"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u6",
@@ -86,6 +91,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Funding / Resources", "Partnership", "Policy Connection"],
     powers_need: ["Ideas", "Local Knowledge", "Community Network"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u7",
@@ -100,6 +106,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Creativity", "Communication", "Local Knowledge"],
     powers_need: ["Funding / Resources", "Partnership", "Knowledge"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u8",
@@ -114,6 +121,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Community Network", "Creativity", "Ideas"],
     powers_need: ["Policy Connection", "Funding / Resources", "Knowledge"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u9",
@@ -128,6 +136,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Local Knowledge", "Community Network", "Knowledge"],
     powers_need: ["Technology", "Creativity", "Funding / Resources"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u10",
@@ -142,6 +151,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Knowledge", "Community Network", "Partnership"],
     powers_need: ["Communication", "Funding / Resources", "Technology"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u11",
@@ -156,6 +166,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Technology", "Ideas", "Knowledge"],
     powers_need: ["Community Network", "Local Knowledge", "Funding / Resources"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u12",
@@ -170,6 +181,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Knowledge", "Technology", "Local Knowledge"],
     powers_need: ["Policy Connection", "Communication", "Partnership"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u13",
@@ -184,6 +196,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Community Network", "Partnership", "Local Knowledge"],
     powers_need: ["Policy Connection", "Communication", "Knowledge"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u14",
@@ -198,6 +211,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Policy Connection", "Knowledge", "Partnership"],
     powers_need: ["Creativity", "Community Network", "Digital Innovation"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u15",
@@ -212,6 +226,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Creativity", "Communication", "Ideas"],
     powers_need: ["Funding / Resources", "Partnership", "Knowledge"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u16",
@@ -226,6 +241,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Local Knowledge", "Community Network", "Ideas"],
     powers_need: ["Funding / Resources", "Policy Connection", "Communication"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u17",
@@ -240,6 +256,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Community Network", "Ideas", "Communication"],
     powers_need: ["Policy Connection", "Knowledge", "Funding / Resources"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u18",
@@ -254,6 +271,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Technology", "Creativity", "Ideas"],
     powers_need: ["Community Network", "Local Knowledge", "Funding / Resources"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u19",
@@ -268,6 +286,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Local Knowledge", "Community Network", "Knowledge"],
     powers_need: ["Funding / Resources", "Communication", "Digital Innovation"],
     created_at: now,
+    source: "demo",
   },
   {
     id: "u20",
@@ -282,6 +301,7 @@ export const DEMO_USERS: User[] = [
     powers_have: ["Local Knowledge", "Ideas", "Community Network"],
     powers_need: ["Technology", "Policy Connection", "Funding / Resources"],
     created_at: now,
+    source: "demo",
   },
 ];
 
