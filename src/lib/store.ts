@@ -53,6 +53,10 @@ type Store = State & {
   connect: (otherId: string, score: number, reason: string) => Connection;
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
+  updateCommitment: (
+    id: string,
+    patch: { follow_up_date?: string | null; status?: ConnectionStatus; description?: string },
+  ) => void;
   toggleSaveIdea: (id: string) => void;
   toggleLikeUser: (id: string) => boolean;
   skipUser: (id: string) => void;
@@ -253,6 +257,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateCommitment: Store["updateCommitment"] = useCallback((id, patch) => {
+    setState((s) => {
+      const target = s.commitments.find((m) => m.id === id);
+      if (!target) return s;
+      const conn = s.connections.find((c) => c.id === target.connection_id);
+      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+      if (patch.follow_up_date) {
+        emitLive(
+          "commitment",
+          "เสนอวันเวลานัดหมาย",
+          `${name} · ${new Date(patch.follow_up_date).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}`,
+        );
+      } else if (patch.status) {
+        emitLive("commitment", "อัปเดตสถานะคำมั่นสัญญา", `${name} · ${patch.status}`);
+      }
+      return {
+        ...s,
+        commitments: s.commitments.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+        connections: patch.status
+          ? s.connections.map((c) =>
+              c.id === target.connection_id ? { ...c, status: patch.status! } : c,
+            )
+          : s.connections,
+      };
+    });
+  }, []);
+
   const toggleSaveIdea: Store["toggleSaveIdea"] = useCallback((id) => {
     setState((s) => ({
       ...s,
@@ -414,6 +446,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       connect,
       addCommitment,
       setConnectionStatus,
+      updateCommitment,
       toggleSaveIdea,
       toggleLikeUser,
       skipUser,
@@ -430,7 +463,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
