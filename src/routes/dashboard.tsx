@@ -106,15 +106,17 @@ type Feed = {
 function Dashboard() {
   const { me, users, ideas, connections, commitments } = useStore();
   const userMap = useUserMap();
-  const [view, setView] = useState<"organizer" | "me">("organizer");
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/dashboard" });
+  const [view, setView] = useState<"organizer" | "me">(search.view);
   const [now, setNow] = useState(() => Date.now());
 
   // --- ฟิลเตอร์ขั้นสูง (ใช้ได้ทั้งมุมผู้จัดและมุมของฉัน) ---
-  const [q, setQ] = useState("");
-  const [region, setRegion] = useState<string>("all");
-  const [issue, setIssue] = useState<string>("all");
-  const [power, setPower] = useState<string>("all");
-  const [powerMode, setPowerMode] = useState<"any" | "have" | "need">("any");
+  const [q, setQ] = useState(search.q);
+  const [region, setRegion] = useState<string>(search.region);
+  const [issue, setIssue] = useState<string>(search.issue);
+  const [power, setPower] = useState<string>(search.power);
+  const [powerMode, setPowerMode] = useState<"any" | "have" | "need">(search.powerMode);
   const [showFilters, setShowFilters] = useState(false);
 
   // --- ชุดตัวกรองที่บันทึกไว้ ---
@@ -122,6 +124,20 @@ function Dashboard() {
   useEffect(() => setPresets(loadPresets()), []);
   const currentFilters: DashboardFilters = { q, region, issue, power, powerMode };
   const activePresetId = presets.find((p) => sameFilters(p.filters, currentFilters))?.id ?? null;
+
+  // --- sync filters + view to URL so the page is shareable ---
+  useEffect(() => {
+    const next = {
+      q: q.trim() || undefined,
+      region: region !== "all" ? region : undefined,
+      issue: issue !== "all" ? issue : undefined,
+      power: power !== "all" ? power : undefined,
+      powerMode: powerMode !== "any" ? powerMode : undefined,
+      view: view !== "organizer" ? view : undefined,
+    };
+    navigate({ search: next, replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, region, issue, power, powerMode, view]);
 
   const describeFilters = (f: DashboardFilters) =>
     [
@@ -176,6 +192,25 @@ function Dashboard() {
     setIssue("all");
     setPower("all");
     setPowerMode("any");
+  };
+
+  const shareCurrentUrl = async () => {
+    const url = window.location.href;
+    const title = view === "me" ? "มุมของฉัน — คนส. Connect" : "แดชบอร์ดสด — คนส. Connect";
+    const text = describeFilters(currentFilters);
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+        toast.success("แชร์แล้ว");
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        toast.success("คัดลอกลิงก์แล้ว", { icon: <Link2 className="h-4 w-4" /> });
+      } else {
+        window.prompt("คัดลอกลิงก์นี้", url);
+      }
+    } catch {
+      toast.error("แชร์ไม่สำเร็จ");
+    }
   };
 
 
