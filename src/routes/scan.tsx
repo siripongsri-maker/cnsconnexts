@@ -215,6 +215,19 @@ function ScanPage() {
           </span>
           <Zap className="h-5 w-5 shrink-0" />
         </button>
+
+        <button
+          type="button"
+          onClick={() => join("DEMO", "direct")}
+          className="tap mt-3 flex h-14 items-center justify-between rounded-3xl border-2 border-dashed border-primary/60 bg-card/80 px-6 text-primary backdrop-blur"
+        >
+          <span className="text-left">
+            <span className="block text-sm font-extrabold">เริ่มออนบอร์ดดิ้งด้วยเดโม่</span>
+            <span className="block text-[12px] opacity-80">ลองกรอกโปรไฟล์ตัวอย่างก่อนใช้จริง</span>
+          </span>
+          <Sparkles className="h-5 w-5 shrink-0" />
+        </button>
+
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           ข้อมูลจะเก็บไว้ในเครื่องนี้ก่อน · ผูกกับอีเมลภายหลังได้ที่หน้าเข้าสู่ระบบ
         </p>
