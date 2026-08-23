@@ -81,7 +81,7 @@ export function Wordmark({
               {ch}
             </span>
           ) : (
-            <span key={`${ch}-${i}`} className="font-extrabold text-ink/85">
+            <span key={`${ch}-${i}`} className="font-extrabold text-ink/85 dark:text-ink">
               {ch}
             </span>
           ),
