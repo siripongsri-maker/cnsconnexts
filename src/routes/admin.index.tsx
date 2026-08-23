@@ -5,6 +5,8 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
+import { useUsageLogs } from "@/lib/usage-log";
+
 
 type Bucket = "day" | "week";
 
@@ -77,6 +79,54 @@ function AdminOverview() {
     () => buildTrend(realUsers.map((u) => u.created_at), bucket),
     [realUsers, bucket],
   );
+
+  const logs = useUsageLogs();
+
+  /** Funnel: Welcome → Power Profile → Interests → Have/Need → Discover → Connect → Commitment */
+  const funnel = useMemo(() => {
+    const realIds = new Set(realUsers.map((u) => u.id));
+    const visitors = new Set(logs.map((l) => l.visitor));
+    const discoverVisitors = new Set(
+      logs
+        .filter((l) => /\/(matches|discover)/.test(l.path ?? "") || /แมตช์|match/i.test(l.label))
+        .map((l) => l.visitor),
+    );
+
+    const realConnections = connections.filter(
+      (c) => realIds.has(c.user_a) || realIds.has(c.user_b),
+    );
+    const connectedUsers = new Set<string>();
+    for (const c of realConnections) {
+      if (realIds.has(c.user_a)) connectedUsers.add(c.user_a);
+      if (realIds.has(c.user_b)) connectedUsers.add(c.user_b);
+    }
+    const connIds = new Set(realConnections.map((c) => c.id));
+    const committedConnections = new Set(
+      commitments.filter((m) => connIds.has(m.connection_id)).map((m) => m.connection_id),
+    );
+
+    const profile = realUsers.filter((u) => u.name.trim().length > 0).length;
+    const interests = realUsers.filter((u) => u.interests.length > 0).length;
+    const haveNeed = realUsers.filter(
+      (u) => u.powers_have.length > 0 || u.powers_need.length > 0,
+    ).length;
+    const welcome = Math.max(visitors.size, profile);
+    const discover = Math.max(discoverVisitors.size, connectedUsers.size);
+
+    return [
+      { step: "Welcome", th: "เข้าหน้าแรก", value: welcome },
+      { step: "Power Profile", th: "สร้างโปรไฟล์", value: profile },
+      { step: "Select Interests", th: "เลือกประเด็นสนใจ", value: interests },
+      { step: "Have / Need", th: "ระบุพลังที่มี/ต้องการ", value: haveNeed },
+      { step: "Discover Matches", th: "ดูคู่แมตช์", value: discover },
+      { step: "Connect", th: "กดเชื่อมต่อ", value: connectedUsers.size },
+      { step: "Make a Commitment", th: "ตั้งคำมั่นสัญญา", value: committedConnections.size },
+    ];
+  }, [realUsers, connections, commitments, logs]);
+
+  const funnelTop = funnel[0]?.value ?? 0;
+
+
 
   return (
     <div className="space-y-5">
@@ -161,6 +211,49 @@ function AdminOverview() {
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
+        <h2 className="text-[14px] font-extrabold">Funnel การใช้งาน</h2>
+        <p className="text-[11px] text-muted-foreground">
+          อัตราคอนเวอร์ชันจากผู้เข้าชม → โปรไฟล์ → ประเด็น → พลัง → คู่แมตช์ → เชื่อมต่อ → คำมั่นสัญญา
+        </p>
+
+        <div className="mt-3 space-y-2">
+          {funnel.map((s, i) => {
+            const prev = i === 0 ? s.value : (funnel[i - 1]?.value ?? 0);
+            const width = funnelTop > 0 ? Math.max((s.value / funnelTop) * 100, s.value > 0 ? 6 : 2) : 2;
+            const fromTop = funnelTop > 0 ? Math.round((s.value / funnelTop) * 100) : 0;
+            const fromPrev = prev > 0 ? Math.round((s.value / prev) * 100) : 0;
+            return (
+              <div key={s.step}>
+                <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                  <span className="font-bold">
+                    {i + 1}. {s.th} <span className="text-muted-foreground">· {s.step}</span>
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">
+                    <span className="font-extrabold text-foreground">{s.value}</span> · {fromTop}% ของทั้งหมด
+                    {i > 0 ? ` · ${fromPrev}% จากขั้นก่อน` : ""}
+                  </span>
+                </div>
+                <div className="mt-1 h-4 w-full overflow-hidden rounded-lg bg-muted">
+                  <div
+                    className="h-full rounded-lg bg-primary/80"
+                    style={{ width: `${width}%`, opacity: 1 - i * 0.09 }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          คอนเวอร์ชันรวม Welcome → คำมั่นสัญญา:{" "}
+          <span className="font-extrabold text-primary">
+            {funnelTop > 0 ? Math.round(((funnel.at(-1)?.value ?? 0) / funnelTop) * 100) : 0}%
+          </span>
+        </p>
+      </section>
+
+      <section className="card-soft rounded-2xl bg-card p-4">
+
         <h2 className="text-[14px] font-extrabold">กิจกรรมสดล่าสุด</h2>
         {events.length === 0 ? (
           <p className="mt-2 text-[12px] text-muted-foreground">ยังไม่มีสัญญาณสด</p>
