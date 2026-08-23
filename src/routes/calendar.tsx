@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { BellRing, CalendarDays, ChevronLeft, ChevronRight, Clock, MessageCircle, Send } from "lucide-react";
+import { BellRing, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Clock, Download, MessageCircle, Send } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { REMINDER_STAGES } from "@/components/commitment-reminders";
 import { RsvpButtons } from "@/components/rsvp-buttons";
+import { commitmentToEvent, downloadICS, googleCalendarUrl } from "@/lib/ical";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { ACTION_TYPES_TH, STATUS_TH } from "@/lib/i18n";
@@ -102,6 +103,26 @@ function CalendarPage() {
   return (
     <AppShell title="ปฏิทินนัดหมาย" subtitle="เสนอวันเวลา แล้วติดตามให้เกิดขึ้นจริง">
       <div className="space-y-4 px-5 py-4">
+        <button
+          type="button"
+          onClick={() => {
+            const events = commitments
+              .map((m) => commitmentToEvent(m, partnerOf(m.connection_id)?.name))
+              .filter((e): e is NonNullable<typeof e> => Boolean(e));
+            if (events.length === 0) {
+              toast.error("ยังไม่มีนัดที่ระบุวันเวลา");
+              return;
+            }
+            downloadICS("นัดหมายทั้งหมด", events);
+            toast.success(`ส่งออกปฏิทิน ${events.length} นัดแล้ว`, {
+              description: "เปิดไฟล์ .ics เพื่อบันทึกลงปฏิทินของคุณ",
+            });
+          }}
+          className="tap flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-xs font-extrabold text-foreground"
+        >
+          <Download className="h-4 w-4 text-primary" /> ส่งออกนัดทั้งหมดเป็นไฟล์ปฏิทิน (.ics)
+        </button>
+
         <div className="card-soft p-4">
           <div className="mb-3 flex items-center justify-between">
             <button
@@ -345,6 +366,31 @@ function CommitmentRow({
         >
           <MessageCircle className="h-3 w-3" /> เปิดแชท
         </Link>
+        {m.follow_up_date && (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                const ev = commitmentToEvent(m, partner?.name);
+                if (ev) downloadICS("นัดหมาย", [ev]);
+              }}
+              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-[11px] font-bold text-foreground"
+            >
+              <Download className="h-3 w-3" /> .ics
+            </button>
+            <a
+              href={(() => {
+                const ev = commitmentToEvent(m, partner?.name);
+                return ev ? googleCalendarUrl(ev) : "#";
+              })()}
+              target="_blank"
+              rel="noreferrer"
+              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-[11px] font-bold text-foreground"
+            >
+              <CalendarPlus className="h-3 w-3" /> Google
+            </a>
+          </>
+        )}
       </div>
     </div>
   );
