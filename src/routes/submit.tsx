@@ -1,23 +1,26 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Camera, CheckCircle2, X } from "lucide-react";
+import { useState } from "react";
+import { Camera, CheckCircle2, Pencil, X } from "lucide-react";
+
 import { AppShell } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
-import { COURSES, ISSUES, REGIONS, type Course, type Region } from "@/lib/types";
+import { COURSES, type Course } from "@/lib/types";
 import { issueTh, REGION_LABEL } from "@/lib/i18n";
 import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
 
 export const Route = createFileRoute("/submit")({
   head: () => ({
     meta: [
-      { title: "ส่งผลงาน — คนส. Connect" },
+      { title: "ส่งผลงาน — คนส. Connext" },
       {
         name: "description",
         content:
-          "แบบฟอร์มส่งผลงานสำหรับสมาชิก คนส. นนส. คศน. เล่าประเด็นนโยบายที่ทำ ผลงานเด่น และสิ่งที่อยากให้เพื่อนมาร่วม",
+          "ส่งผลงานโดยใช้ข้อมูลจากโปรไฟล์ของคุณอัตโนมัติ กรอกเฉพาะเรื่องงาน ไม่ต้องกรอกซ้ำ",
       },
       { property: "og:title", content: "ส่งผลงานของคุณ" },
-      { property: "og:description", content: "เล่าเรื่องงานของคุณให้เพื่อน ๆ ในเครือข่ายได้รู้จัก" },
+      { property: "og:description", content: "กรอกเฉพาะเรื่องงาน ข้อมูลส่วนตัวดึงจากโปรไฟล์" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SubmitPage,
@@ -25,14 +28,10 @@ export const Route = createFileRoute("/submit")({
 
 function SubmitPage() {
   const navigate = useNavigate();
-  const { addSubmission } = useStore();
+  const { me, hydrated, addSubmission } = useStore();
 
-  const [name, setName] = useState("");
   const [course, setCourse] = useState<Course>("คนส.");
   const [batch, setBatch] = useState("");
-  const [region, setRegion] = useState<Region>("Central");
-  const [province, setProvince] = useState("");
-  const [issues, setIssues] = useState<string[]>([]);
   const [summary, setSummary] = useState("");
   const [highlight, setHighlight] = useState("");
   const [wanted, setWanted] = useState("");
@@ -40,8 +39,7 @@ function SubmitPage() {
   const [stageReady, setStageReady] = useState(false);
   const [done, setDone] = useState(false);
 
-  const provinces = useMemo(() => PROVINCES_BY_REGION(region), [region]);
-  const valid = name.trim() && summary.trim() && issues.length > 0;
+  const valid = Boolean(me && summary.trim());
 
   const onPhoto = (file: File | undefined) => {
     if (!file) return;
@@ -51,22 +49,41 @@ function SubmitPage() {
   };
 
   const submit = () => {
-    if (!valid) return;
+    if (!me || !valid) return;
     addSubmission({
-      name: name.trim(),
+      name: me.name,
       course,
       batch: batch.trim(),
-      region,
-      province: province || (provinces[0]?.en ?? "Bangkok"),
-      policy_issues: issues,
+      region: me.region,
+      province: me.province || (PROVINCES_BY_REGION(me.region)[0]?.en ?? "Bangkok"),
+      policy_issues: me.interests,
       summary: summary.trim(),
       highlight: highlight.trim(),
-      wanted: wanted.trim(),
-      photo,
+      wanted: wanted.trim() || me.powers_need.join(", "),
+      photo: photo ?? me.photo,
       stage_ready: stageReady,
     });
     setDone(true);
   };
+
+  if (hydrated && !me) {
+    return (
+      <AppShell title="ส่งผลงาน" subtitle="ต้องมีโปรไฟล์ก่อน">
+        <div className="px-5 py-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            เพื่อไม่ให้กรอกข้อมูลซ้ำ เราจะดึงชื่อ ภาค จังหวัด และประเด็นที่คุณทำ จากโปรไฟล์ของคุณ
+            สร้างโปรไฟล์ครั้งเดียวแล้วส่งผลงานได้เลย
+          </p>
+          <Link
+            to="/onboarding"
+            className="tap mt-5 inline-flex items-center justify-center rounded-3xl gradient-power px-6 py-3 text-sm font-extrabold text-primary-foreground"
+          >
+            สร้างโปรไฟล์ของฉัน
+          </Link>
+        </div>
+      </AppShell>
+    );
+  }
 
   if (done) {
     return (
@@ -87,11 +104,9 @@ function SubmitPage() {
             <button
               onClick={() => {
                 setDone(false);
-                setName("");
                 setSummary("");
                 setHighlight("");
                 setWanted("");
-                setIssues([]);
                 setPhoto(undefined);
               }}
               className="tap flex h-14 items-center justify-center rounded-3xl border border-border bg-card text-sm font-bold"
@@ -111,16 +126,44 @@ function SubmitPage() {
   }
 
   return (
-    <AppShell title="ส่งผลงาน" subtitle="สำหรับสมาชิก คนส. / นนส. / คศน.">
+    <AppShell title="ส่งผลงาน" subtitle="กรอกเฉพาะเรื่องงาน ข้อมูลอื่นดึงจากโปรไฟล์">
       <div className="space-y-6 px-5 pb-32 pt-4">
-        <Field label="ชื่อ">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="ชื่อ–สกุล หรือชื่อเล่น"
-            className="input-line"
-          />
-        </Field>
+        {me && (
+          <div className="card-soft rounded-3xl bg-card p-4">
+            <div className="flex items-start gap-3">
+              <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-accent text-2xl">
+                {me.photo ? (
+                  <img src={me.photo} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  me.avatar
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[15px] font-extrabold leading-tight">{me.name}</p>
+                <p className="text-[12px] text-muted-foreground">
+                  {REGION_LABEL[me.region]} · {me.province} · {me.organization}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {me.interests.map((i) => (
+                    <span
+                      key={i}
+                      className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary"
+                    >
+                      {issueTh(i)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <Link
+                to="/update"
+                className="tap inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-[11px] font-bold"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                แก้ไข
+              </Link>
+            </div>
+          </div>
+        )}
 
         <Field label="รุ่น / หลักสูตร">
           <div className="flex flex-wrap gap-2">
@@ -142,61 +185,6 @@ function SubmitPage() {
             placeholder="รุ่นที่ (เช่น รุ่น 7)"
             className="input-line mt-2"
           />
-        </Field>
-
-        <Field label="ภาค">
-          <div className="flex flex-wrap gap-2">
-            {REGIONS.map((r) => (
-              <button
-                key={r}
-                onClick={() => {
-                  setRegion(r);
-                  setProvince("");
-                }}
-                className={`tap rounded-2xl border px-3.5 py-2 text-sm font-bold ${
-                  region === r ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
-                }`}
-              >
-                {REGION_LABEL[r]}
-              </button>
-            ))}
-          </div>
-        </Field>
-
-        <Field label="จังหวัด">
-          <select
-            value={province}
-            onChange={(e) => setProvince(e.target.value)}
-            className="input-line"
-          >
-            <option value="">เลือกจังหวัด</option>
-            {provinces.map((p) => (
-              <option key={p.en} value={p.en}>
-                {p.th}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="ประเด็นนโยบายที่ทำ">
-          <div className="flex flex-wrap gap-2">
-            {ISSUES.map((i) => {
-              const on = issues.includes(i);
-              return (
-                <button
-                  key={i}
-                  onClick={() =>
-                    setIssues(on ? issues.filter((x) => x !== i) : [...issues, i])
-                  }
-                  className={`tap rounded-full border px-3.5 py-1.5 text-[13px] font-semibold ${
-                    on ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
-                  }`}
-                >
-                  {issueTh(i)}
-                </button>
-              );
-            })}
-          </div>
         </Field>
 
         <Field label="สรุปงาน 1–2 บรรทัด">
@@ -221,7 +209,7 @@ function SubmitPage() {
           />
         </Field>
 
-        <Field label="สิ่งที่อยากให้เพื่อนมาร่วม">
+        <Field label="สิ่งที่อยากให้เพื่อนมาร่วม (ถ้าเว้นว่าง จะใช้พลังที่คุณต้องการจากโปรไฟล์)">
           <textarea
             value={wanted}
             onChange={(e) => setWanted(e.target.value)}
@@ -232,7 +220,7 @@ function SubmitPage() {
           />
         </Field>
 
-        <Field label="แนบรูป (ไม่บังคับ)">
+        <Field label="แนบรูปผลงาน (ไม่บังคับ)">
           {photo ? (
             <div className="relative w-fit">
               <img
