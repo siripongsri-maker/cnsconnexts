@@ -15,6 +15,7 @@ import { StoreProvider } from "@/lib/store";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
+import { CommitmentReminders } from "@/components/commitment-reminders";
 
 
 function NotFoundComponent() {
@@ -134,6 +135,7 @@ function RootComponent() {
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
         <NotificationHost />
+        <CommitmentReminders />
         <Toaster position="top-center" />
       </StoreProvider>
       </AuthProvider>
