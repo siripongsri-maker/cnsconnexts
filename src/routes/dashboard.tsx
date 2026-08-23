@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
