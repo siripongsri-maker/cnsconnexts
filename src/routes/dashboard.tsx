@@ -119,6 +119,9 @@ function Dashboard() {
   const [power, setPower] = useState<string>(search.power ?? "all");
   const [powerMode, setPowerMode] = useState<"any" | "have" | "need">(search.powerMode ?? "any");
   const [showFilters, setShowFilters] = useState(false);
+  const [sort, setSort] = useState<SortKey>(
+    (SORT_OPTIONS.some((s) => s.key === search.sort) ? (search.sort as SortKey) : "relevance"),
+  );
 
   // --- ชุดตัวกรองที่บันทึกไว้ ---
   const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -140,10 +143,11 @@ function Dashboard() {
       power: power !== "all" ? power : undefined,
       powerMode: powerMode !== "any" ? powerMode : undefined,
       view: view !== "organizer" ? view : undefined,
+      sort: sort !== "relevance" ? sort : undefined,
     };
     navigate({ search: next, replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, region, issue, power, powerMode, view]);
+  }, [q, region, issue, power, powerMode, view, sort]);
 
   const describeFilters = (f: DashboardFilters) =>
     [
