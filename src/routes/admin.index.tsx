@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, CalendarDays, Handshake, Lightbulb, MapPin, Users } from "lucide-react";
+import { BookOpen, CalendarDays, Handshake, Lightbulb, MapPin, UserCheck, Users } from "lucide-react";
 
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
