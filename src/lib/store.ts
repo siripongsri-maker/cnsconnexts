@@ -14,6 +14,7 @@ import type {
   Rsvp,
   Submission,
   User,
+  UserSource,
 } from "./types";
 
 const KEY = "connecting-power-v1";
