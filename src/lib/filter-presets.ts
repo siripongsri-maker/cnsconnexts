@@ -10,6 +10,8 @@ export type FilterPreset = {
   id: string;
   name: string;
   filters: DashboardFilters;
+  /** แจ้งเตือนเมื่อมีแมตช์/คู่เชื่อมต่อใหม่ที่ตรงชุดนี้ */
+  alerts?: boolean;
   created_at: string;
 };
 
@@ -34,10 +36,13 @@ export function loadPresets(): FilterPreset[] {
   }
 }
 
+export const PRESETS_EVENT = "cns:filter-presets-changed";
+
 export function savePresets(list: FilterPreset[]) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(KEY, JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent(PRESETS_EVENT));
   } catch {
     /* ignore quota errors */
   }
