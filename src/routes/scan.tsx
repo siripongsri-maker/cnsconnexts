@@ -1,6 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, CameraOff, QrCode, ScanLine, Sparkles, Zap } from "lucide-react";
+import { Camera, CameraOff, Clock, QrCode, ScanLine, Sparkles, Zap } from "lucide-react";
+
+const GUIDE: { t: string; d: string }[] = [
+  { t: "ส่อง QR หรือกรอกรหัสห้อง", d: "QR ติดอยู่ที่บอร์ดและป้ายในพื้นที่ คนส. Connexts" },
+  { t: "เข้าร่วมแบบไม่ต้องล็อกอิน", d: "ข้อมูลเก็บในเครื่องนี้ก่อน ผูกอีเมลภายหลังได้" },
+  { t: "สร้าง Power Profile", d: "กรอกครั้งเดียวจบ แล้วระบบจับคู่คนที่ควรเจอให้ทันที" },
+];
 
 import { createSession, makeJoinCode } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
