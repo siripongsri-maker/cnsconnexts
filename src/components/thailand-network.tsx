@@ -68,7 +68,7 @@ export function ThailandNetwork({
       preserveAspectRatio="xMidYMid meet"
       className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}
     >
-      <g opacity={0.22}>
+      <g opacity={0.4}>
         {PROVINCES.map((p) => (
           <path
             key={p.en}
@@ -76,7 +76,7 @@ export function ThailandNetwork({
             fill="currentColor"
             stroke="currentColor"
             strokeWidth={1}
-            fillOpacity={0.12}
+            fillOpacity={0.16}
             strokeOpacity={0.45}
           />
         ))}

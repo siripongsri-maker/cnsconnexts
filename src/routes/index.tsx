@@ -65,7 +65,7 @@ function Welcome() {
         style={{ backgroundImage: "var(--gradient-soft)" }}
         aria-hidden
       />
-      <div className="pointer-events-none absolute inset-x-0 top-[12%] bottom-0 z-0 text-primary opacity-40">
+      <div className="pointer-events-none absolute inset-x-0 top-[10%] bottom-0 z-0 text-primary opacity-55">
         <ThailandNetwork count={18} />
       </div>
 
