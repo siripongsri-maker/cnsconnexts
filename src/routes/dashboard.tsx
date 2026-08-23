@@ -96,6 +96,50 @@ function Dashboard() {
   const [powerMode, setPowerMode] = useState<"any" | "have" | "need">("any");
   const [showFilters, setShowFilters] = useState(false);
 
+  // --- ชุดตัวกรองที่บันทึกไว้ ---
+  const [presets, setPresets] = useState<FilterPreset[]>([]);
+  useEffect(() => setPresets(loadPresets()), []);
+  const currentFilters: DashboardFilters = { q, region, issue, power, powerMode };
+  const activePresetId = presets.find((p) => sameFilters(p.filters, currentFilters))?.id ?? null;
+
+  const describeFilters = (f: DashboardFilters) =>
+    [
+      f.q.trim() ? `"${f.q.trim()}"` : null,
+      f.region !== "all" ? REGION_LABEL[f.region as keyof typeof REGION_LABEL] : null,
+      f.issue !== "all" ? issueTh(f.issue) : null,
+      f.power !== "all" ? powerTh(f.power) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || "ทั้งหมด";
+
+  const applyPreset = (p: FilterPreset) => {
+    setQ(p.filters.q);
+    setRegion(p.filters.region);
+    setIssue(p.filters.issue);
+    setPower(p.filters.power);
+    setPowerMode(p.filters.powerMode);
+  };
+
+  const persist = (list: FilterPreset[]) => {
+    setPresets(list);
+    savePresets(list);
+  };
+
+  const saveCurrentPreset = () => {
+    const suggestion = describeFilters(currentFilters);
+    const name = window.prompt("ตั้งชื่อชุดตัวกรอง", suggestion)?.trim();
+    if (!name) return;
+    const next: FilterPreset = {
+      id: `fp_${Date.now()}`,
+      name,
+      filters: currentFilters,
+      created_at: new Date().toISOString(),
+    };
+    persist([next, ...presets.filter((p) => p.name !== name)].slice(0, 12));
+  };
+
+  const removePreset = (id: string) => persist(presets.filter((p) => p.id !== id));
+
   const activeCount =
     (q.trim() ? 1 : 0) +
     (region !== "all" ? 1 : 0) +
@@ -108,6 +152,7 @@ function Dashboard() {
     setPower("all");
     setPowerMode("any");
   };
+
 
   const matchUser = useMemo(() => {
     const needle = q.trim().toLowerCase();
