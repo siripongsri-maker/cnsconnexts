@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrandPreviewRouteImport } from './routes/brand-preview'
 import { Route as CalendarRouteImport } from './routes/calendar'
@@ -37,6 +38,11 @@ import { Route as PeopleIdRouteImport } from './routes/people.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -130,14 +136,14 @@ const UpdateRoute = UpdateRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminImportRoute = AdminImportRouteImport.update({
-  id: '/admin/import',
-  path: '/admin/import',
-  getParentRoute: () => rootRouteImport,
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminPeopleRoute = AdminPeopleRouteImport.update({
-  id: '/admin/people',
-  path: '/admin/people',
-  getParentRoute: () => rootRouteImport,
+  id: '/people',
+  path: '/people',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ChatIdRoute = ChatIdRouteImport.update({
   id: '/chat/$id',
@@ -157,6 +163,7 @@ const PeopleIdRoute = PeopleIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
@@ -210,6 +218,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/brand-preview'
     | '/calendar'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/brand-preview'
     | '/calendar'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/brand-preview'
     | '/calendar'
@@ -317,6 +329,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   BrandPreviewRoute: typeof BrandPreviewRoute
   CalendarRoute: typeof CalendarRoute
@@ -335,8 +348,6 @@ export interface RootRouteChildren {
   StartRoute: typeof StartRoute
   SubmitRoute: typeof SubmitRoute
   UpdateRoute: typeof UpdateRoute
-  AdminImportRoute: typeof AdminImportRoute
-  AdminPeopleRoute: typeof AdminPeopleRoute
   ChatIdRoute: typeof ChatIdRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
@@ -349,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -479,17 +497,17 @@ declare module '@tanstack/react-router' {
     }
     '/admin/import': {
       id: '/admin/import'
-      path: '/admin/import'
+      path: '/import'
       fullPath: '/admin/import'
       preLoaderRoute: typeof AdminImportRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/people': {
       id: '/admin/people'
-      path: '/admin/people'
+      path: '/people'
       fullPath: '/admin/people'
       preLoaderRoute: typeof AdminPeopleRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/chat/$id': {
       id: '/chat/$id'
@@ -515,8 +533,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminImportRoute: typeof AdminImportRoute
+  AdminPeopleRoute: typeof AdminPeopleRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminImportRoute: AdminImportRoute,
+  AdminPeopleRoute: AdminPeopleRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   BrandPreviewRoute: BrandPreviewRoute,
   CalendarRoute: CalendarRoute,
@@ -535,8 +566,6 @@ const rootRouteChildren: RootRouteChildren = {
   StartRoute: StartRoute,
   SubmitRoute: SubmitRoute,
   UpdateRoute: UpdateRoute,
-  AdminImportRoute: AdminImportRoute,
-  AdminPeopleRoute: AdminPeopleRoute,
   ChatIdRoute: ChatIdRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
