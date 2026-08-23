@@ -300,10 +300,17 @@ export function useUsageLogs() {
   useEffect(() => {
     const sync = () => setLogs(getLogs());
     sync();
+    // ลบบันทึกหมดอายุอัตโนมัติเป็นระยะ
+    const timer = window.setInterval(() => {
+      if (purgeExpiredLogs()) sync();
+    }, 60_000);
     window.addEventListener(LOG_EVENT, sync);
+    window.addEventListener(RETENTION_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => {
+      window.clearInterval(timer);
       window.removeEventListener(LOG_EVENT, sync);
+      window.removeEventListener(RETENTION_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
   }, []);
