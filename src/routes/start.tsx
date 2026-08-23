@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Link2, Sparkles, UserCircle2, Zap } from "lucide-react";
 
-import { createSession, getSession, type ParticipantSession } from "@/lib/session";
+import { createSession, getSession, sourceFromSearch, type ParticipantSession } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 
