@@ -98,6 +98,69 @@ function AdminOverview() {
       </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-[14px] font-extrabold">แนวโน้มผู้ใช้ onboard จริง</h2>
+            <p className="text-[11px] text-muted-foreground">
+              {bucket === "day" ? "14 วันล่าสุด" : "8 สัปดาห์ล่าสุด"} · ใหม่และยอดสะสม
+            </p>
+          </div>
+          <div className="flex rounded-xl bg-muted p-0.5">
+            {(["day", "week"] as const).map((b) => (
+              <button
+                key={b}
+                type="button"
+                onClick={() => setBucket(b)}
+                className={`tap rounded-lg px-3 py-1.5 text-[11px] font-bold ${
+                  bucket === b ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                {b === "day" ? "รายวัน" : "รายสัปดาห์"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-3 h-52 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={trend} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="realUsersFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "1px solid hsl(var(--border))",
+                  background: "hsl(var(--card))",
+                  fontSize: 12,
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="สะสม"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                fill="url(#realUsersFill)"
+              />
+              <Area
+                type="monotone"
+                dataKey="ใหม่"
+                stroke="hsl(var(--accent))"
+                strokeWidth={2}
+                fill="none"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
+      <section className="card-soft rounded-2xl bg-card p-4">
         <h2 className="text-[14px] font-extrabold">กิจกรรมสดล่าสุด</h2>
         {events.length === 0 ? (
           <p className="mt-2 text-[12px] text-muted-foreground">ยังไม่มีสัญญาณสด</p>
