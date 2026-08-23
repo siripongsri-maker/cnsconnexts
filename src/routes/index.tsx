@@ -1,5 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, QrCode } from "lucide-react";
+import {
+  ArrowRight,
+  QrCode,
+  Menu,
+  X,
+  Sparkles,
+  Map,
+  Store,
+  CheckCircle2,
+  Radio,
+  FileText,
+  BookOpen,
+  Printer,
+  UserCircle,
+} from "lucide-react";
+import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
 import { NetworkBackground } from "@/components/network-background";
@@ -30,6 +45,18 @@ const STATS = [
   { n: "4", l: "ภูมิภาค" },
 ];
 
+const NAV_LINKS = [
+  { to: "/matches", label: "คู่เชื่อม", icon: Sparkles },
+  { to: "/map", label: "แผนที่พลัง", icon: Map },
+  { to: "/marketplace", label: "ตลาดนัด", icon: Store },
+  { to: "/commitments", label: "ก้าวต่อไป", icon: CheckCircle2 },
+  { to: "/dashboard", label: "สด", icon: Radio },
+  { to: "/submit", label: "ส่งผลงาน", icon: FileText },
+  { to: "/ebook", label: "รวมผลงาน", icon: BookOpen },
+  { to: "/print", label: "ไฟล์พิมพ์", icon: Printer },
+  { to: "/update", label: "อัปเดตข้อมูล", icon: UserCircle },
+] as const;
+
 function Welcome() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
@@ -42,7 +69,9 @@ function Welcome() {
         <NetworkBackground count={26} />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))]">
+      <TopNav />
+
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(6rem,env(safe-area-inset-top)+4.5rem)]">
         <div className="animate-rise">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
             <span className="h-2 w-2 rounded-full bg-lime animate-pulse-node" />
@@ -85,73 +114,92 @@ function Welcome() {
             </span>
             <ArrowRight className="h-5 w-5 shrink-0" />
           </Link>
-          <div className="grid grid-cols-2 gap-3">
-            <Link
-              to="/map"
-              className="tap flex h-14 items-center justify-center rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
-            >
-              แผนที่พลัง
-            </Link>
-            <Link
-              to="/qr"
-              className="tap flex h-14 items-center justify-center gap-2 rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
-            >
-              <QrCode className="h-4 w-4" />
-              สแกนเพื่อเข้าร่วม
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { to: "/update" as const, label: "อัปเดตข้อมูลฉัน" },
-              { to: "/submit" as const, label: "ส่งผลงาน" },
-              { to: "/ebook" as const, label: "รวมผลงาน" },
-              { to: "/print" as const, label: "ไฟล์พิมพ์" },
-            ].map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="tap flex h-12 items-center justify-center rounded-2xl border border-border bg-card/80 text-[13px] font-bold backdrop-blur"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-          <AuthRow />
+          <Link
+            to="/qr"
+            className="tap flex h-14 items-center justify-center gap-2 rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
+          >
+            <QrCode className="h-4 w-4" />
+            สแกนเพื่อเข้าร่วม
+          </Link>
           <p className="pt-1 text-center text-[11px] text-muted-foreground">
             ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
           </p>
-
         </div>
       </div>
     </div>
   );
 }
 
-function AuthRow() {
+function TopNav() {
+  const [open, setOpen] = useState(false);
   const { mode, displayName, signOut } = useAuth();
 
-  if (mode === "user" || mode === "guest") {
-    return (
-      <div className="flex items-center justify-between rounded-2xl border border-border bg-card/80 px-4 py-3 backdrop-blur">
-        <span className="min-w-0 truncate text-[13px] font-bold">{displayName}</span>
+  return (
+    <header className="fixed inset-x-0 top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-xl items-center justify-between px-4 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))]">
+        <Link to="/" className="font-display text-lg font-extrabold tracking-tight">
+          <span className="text-gradient">คนส.</span>
+          <span className="text-ink">Connext</span>
+        </Link>
         <button
           type="button"
-          onClick={() => void signOut()}
-          className="tap shrink-0 text-[13px] font-bold text-primary"
+          onClick={() => setOpen((v) => !v)}
+          className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+          aria-label={open ? "ปิดเมนู" : "เปิดเมนู"}
+          aria-expanded={open}
         >
-          ออกจากระบบ
+          {open ? (
+            <X className="h-5 w-5" strokeWidth={2.2} />
+          ) : (
+            <Menu className="h-5 w-5" strokeWidth={2.2} />
+          )}
         </button>
       </div>
-    );
-  }
 
-  return (
-    <Link
-      to="/auth"
-      className="tap flex h-12 items-center justify-center rounded-2xl border border-primary/40 bg-primary/10 text-[13px] font-bold text-primary backdrop-blur"
-    >
-      เข้าสู่ระบบ / สร้างบัญชี / เข้าแบบ Guest
-    </Link>
+      {open && (
+        <nav className="max-h-[75vh] overflow-y-auto border-t border-border/60 bg-background/95 px-4 pb-4 pt-3">
+          <ul className="grid grid-cols-3 gap-2">
+            {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  onClick={() => setOpen(false)}
+                  className="tap flex flex-col items-center gap-1.5 rounded-2xl bg-accent p-3 text-center text-[11px] font-semibold text-foreground"
+                >
+                  <Icon className="h-5 w-5 text-primary" strokeWidth={2} />
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-3 border-t border-border/60 pt-3">
+            {mode === "anon" ? (
+              <Link
+                to="/auth"
+                onClick={() => setOpen(false)}
+                className="tap flex h-12 items-center justify-center rounded-2xl bg-primary text-sm font-bold text-primary-foreground"
+              >
+                เข้าสู่ระบบ / สร้างบัญชี
+              </Link>
+            ) : (
+              <div className="flex items-center justify-between rounded-2xl bg-accent px-4 py-3">
+                <span className="min-w-0 truncate text-sm font-bold">{displayName}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    void signOut();
+                  }}
+                  className="tap shrink-0 text-sm font-bold text-primary"
+                >
+                  ออกจากระบบ
+                </button>
+              </div>
+            )}
+          </div>
+        </nav>
+      )}
+    </header>
   );
 }
-
