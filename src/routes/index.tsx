@@ -14,6 +14,7 @@ import {
   Printer,
   UserCircle, CalendarDays,
   Palette,
+  Compass,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -21,6 +22,7 @@ import { useAuth } from "@/lib/auth";
 import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
 import { Wordmark } from "@/components/wordmark";
+import { TOUR_EVENT } from "@/components/guided-tour";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -179,6 +181,17 @@ function TopNav() {
               </li>
             ))}
           </ul>
+
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              window.dispatchEvent(new Event(TOUR_EVENT));
+            }}
+            className="tap mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-border text-sm font-bold text-foreground"
+          >
+            <Compass className="h-4 w-4 text-primary" /> ทัวร์แนะนำการใช้งาน
+          </button>
 
           <div className="mt-3 border-t border-border/60 pt-3">
             {mode === "anon" ? (

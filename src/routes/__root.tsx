@@ -18,6 +18,7 @@ import { NotificationHost } from "@/components/notification-host";
 import { CommitmentReminders } from "@/components/commitment-reminders";
 import { FilterAlerts } from "@/components/filter-alerts";
 import { LoadingScreen } from "@/components/loading-screen";
+import { GuidedTour } from "@/components/guided-tour";
 
 
 function NotFoundComponent() {
@@ -141,6 +142,7 @@ function RootComponent() {
           <NotificationHost />
           <CommitmentReminders />
           <FilterAlerts />
+          <GuidedTour />
           <Toaster position="top-center" />
         </StoreProvider>
       </AuthProvider>
