@@ -18,6 +18,7 @@ import { Route as MapRouteImport } from './routes/map'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PrintRouteImport } from './routes/print'
 import { Route as QrRouteImport } from './routes/qr'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
@@ -68,6 +69,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrintRoute = PrintRouteImport.update({
+  id: '/print',
+  path: '/print',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QrRoute = QrRouteImport.update({
   id: '/qr',
   path: '/qr',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/submit': typeof SubmitRoute
   '/connection/$id': typeof ConnectionIdRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/submit': typeof SubmitRoute
   '/connection/$id': typeof ConnectionIdRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/submit': typeof SubmitRoute
   '/connection/$id': typeof ConnectionIdRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/print'
     | '/qr'
     | '/submit'
     | '/connection/$id'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/print'
     | '/qr'
     | '/submit'
     | '/connection/$id'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/matches'
     | '/onboarding'
+    | '/print'
     | '/qr'
     | '/submit'
     | '/connection/$id'
@@ -193,6 +205,7 @@ export interface RootRouteChildren {
   MarketplaceRoute: typeof MarketplaceRoute
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
+  PrintRoute: typeof PrintRoute
   QrRoute: typeof QrRoute
   SubmitRoute: typeof SubmitRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
@@ -264,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/print': {
+      id: '/print'
+      path: '/print'
+      fullPath: '/print'
+      preLoaderRoute: typeof PrintRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/qr': {
       id: '/qr'
       path: '/qr'
@@ -305,6 +325,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceRoute: MarketplaceRoute,
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
+  PrintRoute: PrintRoute,
   QrRoute: QrRoute,
   SubmitRoute: SubmitRoute,
   ConnectionIdRoute: ConnectionIdRoute,
