@@ -15,6 +15,7 @@ import {
   Monitor,
   QrCode,
   Settings,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 
@@ -49,6 +50,7 @@ export const ADMIN_MENU = [
   { to: "/admin/commitments", label: "คำมั่น/ปฏิทิน", icon: CalendarDays },
   { to: "/admin/live", label: "จอสด", icon: Monitor },
   { to: "/admin/qr", label: "QR/ป้าย", icon: QrCode },
+  { to: "/admin/logs", label: "Log การใช้งาน", icon: ShieldCheck },
   { to: "/admin/export", label: "ส่งออกข้อมูล", icon: Download },
   { to: "/admin/settings", label: "ตั้งค่า", icon: Settings },
 ] as const;

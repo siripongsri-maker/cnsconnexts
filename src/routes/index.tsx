@@ -23,6 +23,7 @@ import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
 import { Wordmark } from "@/components/wordmark";
 import { TOUR_EVENT } from "@/components/guided-tour";
+import { PdpaConsent } from "@/components/pdpa-consent";
 
 export const Route = createFileRoute("/")({
   head: () => ({

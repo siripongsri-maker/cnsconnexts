@@ -19,6 +19,7 @@ import { CommitmentReminders } from "@/components/commitment-reminders";
 import { FilterAlerts } from "@/components/filter-alerts";
 import { LoadingScreen } from "@/components/loading-screen";
 import { GuidedTour } from "@/components/guided-tour";
+import { UsageTracker } from "@/components/usage-tracker";
 
 
 function NotFoundComponent() {
@@ -143,6 +144,7 @@ function RootComponent() {
           <CommitmentReminders />
           <FilterAlerts />
           <GuidedTour />
+          <UsageTracker />
           <Toaster position="top-center" />
         </StoreProvider>
       </AuthProvider>

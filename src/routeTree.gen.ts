@@ -37,6 +37,7 @@ import { Route as AdminExportRouteImport } from './routes/admin.export'
 import { Route as AdminIdeasRouteImport } from './routes/admin.ideas'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as AdminLiveRouteImport } from './routes/admin.live'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminMapRouteImport } from './routes/admin.map'
 import { Route as AdminPeopleRouteImport } from './routes/admin.people'
 import { Route as AdminQrRouteImport } from './routes/admin.qr'
@@ -186,6 +187,11 @@ const AdminLiveRoute = AdminLiveRouteImport.update({
   path: '/live',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMapRoute = AdminMapRouteImport.update({
   id: '/map',
   path: '/map',
@@ -255,6 +261,7 @@ export interface FileRoutesByFullPath {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
   '/admin/qr': typeof AdminQrRoute
@@ -292,6 +299,7 @@ export interface FileRoutesByTo {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
   '/admin/qr': typeof AdminQrRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
+  '/admin/logs': typeof AdminLogsRoute
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
   '/admin/qr': typeof AdminQrRoute
@@ -371,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
+    | '/admin/logs'
     | '/admin/map'
     | '/admin/people'
     | '/admin/qr'
@@ -408,6 +418,7 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
+    | '/admin/logs'
     | '/admin/map'
     | '/admin/people'
     | '/admin/qr'
@@ -446,6 +457,7 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
+    | '/admin/logs'
     | '/admin/map'
     | '/admin/people'
     | '/admin/qr'
@@ -682,6 +694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLiveRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/map': {
       id: '/admin/map'
       path: '/map'
@@ -748,6 +767,7 @@ interface AdminRouteChildren {
   AdminIdeasRoute: typeof AdminIdeasRoute
   AdminImportRoute: typeof AdminImportRoute
   AdminLiveRoute: typeof AdminLiveRoute
+  AdminLogsRoute: typeof AdminLogsRoute
   AdminMapRoute: typeof AdminMapRoute
   AdminPeopleRoute: typeof AdminPeopleRoute
   AdminQrRoute: typeof AdminQrRoute
@@ -763,6 +783,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIdeasRoute: AdminIdeasRoute,
   AdminImportRoute: AdminImportRoute,
   AdminLiveRoute: AdminLiveRoute,
+  AdminLogsRoute: AdminLogsRoute,
   AdminMapRoute: AdminMapRoute,
   AdminPeopleRoute: AdminPeopleRoute,
   AdminQrRoute: AdminQrRoute,
