@@ -139,7 +139,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (scheduledReplies.has(conn.id)) return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
       scheduledReplies.add(conn.id);
       setTimeout(() => {
-        setState((cur) => ({
+        setState((cur) => {
+          if (cur.notifications.some((n) => n.kind === "accepted" && n.connection_id === conn.id)) return cur;
+          return {
           ...cur,
           notifications: [
             {
@@ -155,7 +157,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             },
             ...cur.notifications,
           ],
-        }));
+          };
+        });
       }, 2600);
       return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
     });
