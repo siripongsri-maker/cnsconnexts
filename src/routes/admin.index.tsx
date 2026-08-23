@@ -1,8 +1,50 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BookOpen, CalendarDays, Handshake, Lightbulb, MapPin, UserCheck, Users } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
+
+type Bucket = "day" | "week";
+
+/** สร้างชุดข้อมูลแนวโน้มผู้ใช้จริงรายวัน/รายสัปดาห์ (สะสมด้วย) */
+function buildTrend(dates: string[], bucket: Bucket) {
+  const points = bucket === "day" ? 14 : 8;
+  const now = new Date();
+  const startOf = (d: Date) => {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (bucket === "week") x.setDate(x.getDate() - x.getDay());
+    return x;
+  };
+  const keys: Date[] = [];
+  for (let i = points - 1; i >= 0; i--) {
+    const d = startOf(now);
+    d.setDate(d.getDate() - i * (bucket === "week" ? 7 : 1));
+    keys.push(d);
+  }
+  const counts = new Map<number, number>();
+  for (const iso of dates) {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) continue;
+    const k = startOf(d).getTime();
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  let cumulative = dates.filter((iso) => {
+    const d = new Date(iso);
+    return !Number.isNaN(d.getTime()) && startOf(d).getTime() < keys[0]!.getTime();
+  }).length;
+
+  return keys.map((k) => {
+    const n = counts.get(k.getTime()) ?? 0;
+    cumulative += n;
+    return {
+      label: k.toLocaleDateString("th-TH", { day: "numeric", month: "short" }),
+      ใหม่: n,
+      สะสม: cumulative,
+    };
+  });
+}
 
 export const Route = createFileRoute("/admin/")({
   component: AdminOverview,
