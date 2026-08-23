@@ -98,8 +98,9 @@ function Welcome() {
               สแกนเพื่อเข้าร่วม
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {[
+              { to: "/update" as const, label: "อัปเดตข้อมูลฉัน" },
               { to: "/submit" as const, label: "ส่งผลงาน" },
               { to: "/ebook" as const, label: "รวมผลงาน" },
               { to: "/print" as const, label: "ไฟล์พิมพ์" },
