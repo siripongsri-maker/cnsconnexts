@@ -126,6 +126,29 @@ function ScanPage() {
           ยกกล้องส่อง QR ที่ติดในห้อง เข้าร่วมได้ทันที ไม่ต้องสมัครสมาชิก
         </p>
 
+        {/* คำแนะนำก่อนเริ่มออนบอร์ดดิ้ง */}
+        <ol className="card-soft mt-5 space-y-3 rounded-3xl bg-card p-5">
+          <li className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            3 ขั้นตอนก่อนเริ่ม
+          </li>
+          {GUIDE.map((g, i) => (
+            <li key={g.t} className="flex items-start gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full gradient-power text-[12px] font-extrabold text-primary-foreground">
+                {i + 1}
+              </span>
+              <span>
+                <span className="block text-sm font-bold">{g.t}</span>
+                <span className="block text-[12px] leading-relaxed text-muted-foreground">{g.d}</span>
+              </span>
+            </li>
+          ))}
+          <li className="flex items-center gap-2 rounded-2xl bg-muted/60 px-3 py-2 text-[12px] font-semibold text-muted-foreground">
+            <Clock className="h-3.5 w-3.5 shrink-0 text-primary" />
+            ใช้เวลารวมประมาณ 2 นาที · เตรียมชื่อ จังหวัด และสิ่งที่คุณให้ได้/ต้องการ
+          </li>
+        </ol>
+
+
         <div className="card-soft mt-6 overflow-hidden rounded-3xl bg-card p-4">
           <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-muted">
             <video
