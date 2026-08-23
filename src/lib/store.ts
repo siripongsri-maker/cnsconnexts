@@ -50,7 +50,7 @@ const initial: State = {
 
 type Store = State & {
   hydrated: boolean;
-  saveProfile: (u: Omit<User, "id" | "created_at" | "avatar"> & { avatar?: string }) => User;
+  saveProfile: (u: Omit<User, "id" | "created_at" | "avatar" | "source"> & { avatar?: string; source?: User["source"] }>) => User;
   connect: (otherId: string, score: number, reason: string) => Connection;
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
