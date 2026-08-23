@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrandPreviewRouteImport } from './routes/brand-preview'
 import { Route as CalendarRouteImport } from './routes/calendar'
@@ -28,8 +29,18 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as UpdateRouteImport } from './routes/update'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCommitmentsRouteImport } from './routes/admin.commitments'
+import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
+import { Route as AdminExportRouteImport } from './routes/admin.export'
+import { Route as AdminIdeasRouteImport } from './routes/admin.ideas'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
+import { Route as AdminLiveRouteImport } from './routes/admin.live'
+import { Route as AdminMapRouteImport } from './routes/admin.map'
 import { Route as AdminPeopleRouteImport } from './routes/admin.people'
+import { Route as AdminQrRouteImport } from './routes/admin.qr'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminSubmissionsRouteImport } from './routes/admin.submissions'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
@@ -37,6 +48,11 @@ import { Route as PeopleIdRouteImport } from './routes/people.$id'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -129,15 +145,65 @@ const UpdateRoute = UpdateRouteImport.update({
   path: '/update',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCommitmentsRoute = AdminCommitmentsRouteImport.update({
+  id: '/commitments',
+  path: '/commitments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
+  id: '/connections',
+  path: '/connections',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExportRoute = AdminExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminIdeasRoute = AdminIdeasRouteImport.update({
+  id: '/ideas',
+  path: '/ideas',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminImportRoute = AdminImportRouteImport.update({
-  id: '/admin/import',
-  path: '/admin/import',
-  getParentRoute: () => rootRouteImport,
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLiveRoute = AdminLiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMapRoute = AdminMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminPeopleRoute = AdminPeopleRouteImport.update({
-  id: '/admin/people',
-  path: '/admin/people',
-  getParentRoute: () => rootRouteImport,
+  id: '/people',
+  path: '/people',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminQrRoute = AdminQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSubmissionsRoute = AdminSubmissionsRouteImport.update({
+  id: '/submissions',
+  path: '/submissions',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ChatIdRoute = ChatIdRouteImport.update({
   id: '/chat/$id',
@@ -157,6 +223,7 @@ const PeopleIdRoute = PeopleIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
@@ -175,11 +242,21 @@ export interface FileRoutesByFullPath {
   '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
+  '/admin/commitments': typeof AdminCommitmentsRoute
+  '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/export': typeof AdminExportRoute
+  '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
+  '/admin/live': typeof AdminLiveRoute
+  '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
+  '/admin/qr': typeof AdminQrRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/submissions': typeof AdminSubmissionsRoute
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -201,15 +278,26 @@ export interface FileRoutesByTo {
   '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
+  '/admin/commitments': typeof AdminCommitmentsRoute
+  '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/export': typeof AdminExportRoute
+  '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
+  '/admin/live': typeof AdminLiveRoute
+  '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
+  '/admin/qr': typeof AdminQrRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/submissions': typeof AdminSubmissionsRoute
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand-preview': typeof BrandPreviewRoute
   '/calendar': typeof CalendarRoute
@@ -228,16 +316,27 @@ export interface FileRoutesById {
   '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
+  '/admin/commitments': typeof AdminCommitmentsRoute
+  '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/export': typeof AdminExportRoute
+  '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
+  '/admin/live': typeof AdminLiveRoute
+  '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
+  '/admin/qr': typeof AdminQrRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/submissions': typeof AdminSubmissionsRoute
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/brand-preview'
     | '/calendar'
@@ -256,11 +355,21 @@ export interface FileRouteTypes {
     | '/start'
     | '/submit'
     | '/update'
+    | '/admin/commitments'
+    | '/admin/connections'
+    | '/admin/export'
+    | '/admin/ideas'
     | '/admin/import'
+    | '/admin/live'
+    | '/admin/map'
     | '/admin/people'
+    | '/admin/qr'
+    | '/admin/settings'
+    | '/admin/submissions'
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -282,14 +391,25 @@ export interface FileRouteTypes {
     | '/start'
     | '/submit'
     | '/update'
+    | '/admin/commitments'
+    | '/admin/connections'
+    | '/admin/export'
+    | '/admin/ideas'
     | '/admin/import'
+    | '/admin/live'
+    | '/admin/map'
     | '/admin/people'
+    | '/admin/qr'
+    | '/admin/settings'
+    | '/admin/submissions'
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/admin'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/brand-preview'
     | '/calendar'
@@ -308,15 +428,26 @@ export interface FileRouteTypes {
     | '/start'
     | '/submit'
     | '/update'
+    | '/admin/commitments'
+    | '/admin/connections'
+    | '/admin/export'
+    | '/admin/ideas'
     | '/admin/import'
+    | '/admin/live'
+    | '/admin/map'
     | '/admin/people'
+    | '/admin/qr'
+    | '/admin/settings'
+    | '/admin/submissions'
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   BrandPreviewRoute: typeof BrandPreviewRoute
   CalendarRoute: typeof CalendarRoute
@@ -335,8 +466,6 @@ export interface RootRouteChildren {
   StartRoute: typeof StartRoute
   SubmitRoute: typeof SubmitRoute
   UpdateRoute: typeof UpdateRoute
-  AdminImportRoute: typeof AdminImportRoute
-  AdminPeopleRoute: typeof AdminPeopleRoute
   ChatIdRoute: typeof ChatIdRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
@@ -349,6 +478,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -477,19 +613,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpdateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/commitments': {
+      id: '/admin/commitments'
+      path: '/commitments'
+      fullPath: '/admin/commitments'
+      preLoaderRoute: typeof AdminCommitmentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/connections': {
+      id: '/admin/connections'
+      path: '/connections'
+      fullPath: '/admin/connections'
+      preLoaderRoute: typeof AdminConnectionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/export': {
+      id: '/admin/export'
+      path: '/export'
+      fullPath: '/admin/export'
+      preLoaderRoute: typeof AdminExportRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/ideas': {
+      id: '/admin/ideas'
+      path: '/ideas'
+      fullPath: '/admin/ideas'
+      preLoaderRoute: typeof AdminIdeasRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/import': {
       id: '/admin/import'
-      path: '/admin/import'
+      path: '/import'
       fullPath: '/admin/import'
       preLoaderRoute: typeof AdminImportRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/live': {
+      id: '/admin/live'
+      path: '/live'
+      fullPath: '/admin/live'
+      preLoaderRoute: typeof AdminLiveRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/map': {
+      id: '/admin/map'
+      path: '/map'
+      fullPath: '/admin/map'
+      preLoaderRoute: typeof AdminMapRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/people': {
       id: '/admin/people'
-      path: '/admin/people'
+      path: '/people'
       fullPath: '/admin/people'
       preLoaderRoute: typeof AdminPeopleRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/qr': {
+      id: '/admin/qr'
+      path: '/qr'
+      fullPath: '/admin/qr'
+      preLoaderRoute: typeof AdminQrRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/submissions': {
+      id: '/admin/submissions'
+      path: '/submissions'
+      fullPath: '/admin/submissions'
+      preLoaderRoute: typeof AdminSubmissionsRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/chat/$id': {
       id: '/chat/$id'
@@ -515,8 +721,41 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminCommitmentsRoute: typeof AdminCommitmentsRoute
+  AdminConnectionsRoute: typeof AdminConnectionsRoute
+  AdminExportRoute: typeof AdminExportRoute
+  AdminIdeasRoute: typeof AdminIdeasRoute
+  AdminImportRoute: typeof AdminImportRoute
+  AdminLiveRoute: typeof AdminLiveRoute
+  AdminMapRoute: typeof AdminMapRoute
+  AdminPeopleRoute: typeof AdminPeopleRoute
+  AdminQrRoute: typeof AdminQrRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminSubmissionsRoute: typeof AdminSubmissionsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCommitmentsRoute: AdminCommitmentsRoute,
+  AdminConnectionsRoute: AdminConnectionsRoute,
+  AdminExportRoute: AdminExportRoute,
+  AdminIdeasRoute: AdminIdeasRoute,
+  AdminImportRoute: AdminImportRoute,
+  AdminLiveRoute: AdminLiveRoute,
+  AdminMapRoute: AdminMapRoute,
+  AdminPeopleRoute: AdminPeopleRoute,
+  AdminQrRoute: AdminQrRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminSubmissionsRoute: AdminSubmissionsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   BrandPreviewRoute: BrandPreviewRoute,
   CalendarRoute: CalendarRoute,
@@ -535,8 +774,6 @@ const rootRouteChildren: RootRouteChildren = {
   StartRoute: StartRoute,
   SubmitRoute: SubmitRoute,
   UpdateRoute: UpdateRoute,
-  AdminImportRoute: AdminImportRoute,
-  AdminPeopleRoute: AdminPeopleRoute,
   ChatIdRoute: ChatIdRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
