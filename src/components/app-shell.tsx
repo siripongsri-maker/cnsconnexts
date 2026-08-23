@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Map, Store, CheckCircle2, Radio } from "lucide-react";
+import { Sparkles, Map, Store, CheckCircle2, Radio, Home } from "lucide-react";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -27,7 +27,14 @@ export function AppShell({
     <div className="min-h-screen bg-background pb-24">
       {title && (
         <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 px-5 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))] backdrop-blur-xl">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+            <Link
+              to="/"
+              className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+              aria-label="กลับหน้าแรก"
+            >
+              <Home className="h-[18px] w-[18px]" strokeWidth={2.2} />
+            </Link>
             <div className="min-w-0">
               <h1 className="truncate text-xl font-extrabold tracking-tight">{title}</h1>
               {subtitle && (
