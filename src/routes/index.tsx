@@ -12,7 +12,7 @@ import {
   FileText,
   BookOpen,
   Printer,
-  UserCircle,
+  UserCircle, CalendarDays,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -51,6 +51,7 @@ const NAV_LINKS = [
   { to: "/map", label: "แผนที่พลัง", icon: Map },
   { to: "/marketplace", label: "ตลาดนัด", icon: Store },
   { to: "/commitments", label: "ก้าวต่อไป", icon: CheckCircle2 },
+  { to: "/calendar", label: "ปฏิทินนัด", icon: CalendarDays },
   { to: "/dashboard", label: "สด", icon: Radio },
   { to: "/submit", label: "ส่งผลงาน", icon: FileText },
   { to: "/ebook", label: "รวมผลงาน", icon: BookOpen },
