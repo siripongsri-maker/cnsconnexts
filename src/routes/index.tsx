@@ -14,6 +14,7 @@ import {
   Printer,
   UserCircle, CalendarDays,
   Palette,
+  Compass,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -21,6 +22,7 @@ import { useAuth } from "@/lib/auth";
 import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
 import { Wordmark } from "@/components/wordmark";
+import { TOUR_EVENT } from "@/components/guided-tour";
 
 export const Route = createFileRoute("/")({
   head: () => ({
