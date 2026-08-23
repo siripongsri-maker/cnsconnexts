@@ -27,7 +27,7 @@ export const Route = createFileRoute("/brand-preview")({
 const SWATCHES = [
   { name: "พื้นหลังอ่อน", className: "bg-background", note: "โหมดสว่าง" },
   { name: "การ์ด", className: "bg-card border border-border", note: "พื้นหลังการ์ด" },
-  { name: "พื้นหลังมืด", className: "dark bg-ink", note: "โหมดมืด" },
+  { name: "พื้นหลังมืด", className: "dark bg-background", note: "โหมดมืด" },
   { name: "ม่วงไฟฟ้า", className: "dark bg-primary", note: "สีหลัก" },
   { name: "ฟ้าไฟฟ้า", className: "dark bg-electric", note: "สีฟ้า" },
   { name: "ปะการัง", className: "dark bg-coral", note: "สีปะการัง" },
