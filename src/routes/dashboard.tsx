@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, CheckCircle2, Handshake, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
 import { useStore, useUserMap } from "@/lib/store";
 import { ISSUES, POWER_EMOJI, POWERS, REGIONS, type ConnectionStatus, type User } from "@/lib/types";
 import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
+import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
+import { rankMatches } from "@/lib/matching";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -249,6 +251,69 @@ function Dashboard() {
     }).length,
   })).sort((a, b) => b.count - a.count);
   const maxRegion = Math.max(1, ...byRegion.map((r) => r.count));
+
+  // --- ชุดข้อมูลสำหรับส่งออก (อิงตามฟิลเตอร์ปัจจุบัน) ---
+  const nameOf = (id: string) => userMap[id]?.name ?? id;
+
+  const matchRows = useMemo<Row[]>(() => {
+    if (!me) return [];
+    const pool = fUsers.filter((u) => u.id !== me.id);
+    return rankMatches(me, pool, pool.length).map((m, i) => ({
+      อันดับ: i + 1,
+      ชื่อ: m.user.name,
+      องค์กร: m.user.organization,
+      จังหวัด: m.user.province,
+      ภูมิภาค: REGION_LABEL[m.user.region],
+      คะแนนแมตช์: m.score,
+      เหตุผล: m.reason,
+      ประเด็นร่วม: m.user.interests.map(issueTh).join(" | "),
+      พลังที่เขามี: m.theyBring.map(powerTh).join(" | "),
+      พลังที่เขาต้องการ: m.theyNeed.map(powerTh).join(" | "),
+    }));
+  }, [me, fUsers]);
+
+  const connectionRows = useMemo<Row[]>(
+    () =>
+      fConnections.map((c) => ({
+        id: c.id,
+        คนที่1: nameOf(c.user_a),
+        คนที่2: nameOf(c.user_b),
+        ภูมิภาค1: userMap[c.user_a] ? REGION_LABEL[userMap[c.user_a]!.region] : "",
+        ภูมิภาค2: userMap[c.user_b] ? REGION_LABEL[userMap[c.user_b]!.region] : "",
+        คะแนนแมตช์: c.match_score,
+        สถานะ: STATUS_TH[c.status],
+        สร้างเมื่อ: c.created_at,
+      })),
+    [fConnections, userMap],
+  );
+
+  const commitmentRows = useMemo<Row[]>(
+    () =>
+      fCommitments.map((m) => {
+        const conn = connections.find((c) => c.id === m.connection_id);
+        return {
+          id: m.id,
+          คู่เชื่อม: conn ? `${nameOf(conn.user_a)} × ${nameOf(conn.user_b)}` : m.connection_id,
+          ประเภทการลงมือทำ: m.action_type,
+          รายละเอียด: m.description,
+          สถานะ: STATUS_TH[m.status],
+          นัดหมาย: m.follow_up_date ?? "",
+          สร้างเมื่อ: m.created_at,
+        };
+      }),
+    [fCommitments, connections, userMap],
+  );
+
+  const exportAllJSON = () =>
+    downloadJSON("konsor-connect-event-data", {
+      exported_at: new Date().toISOString(),
+      view,
+      filters: { q, region, issue, power, powerMode },
+      summary: { ...stats, completion },
+      matches: matchRows,
+      connections: connectionRows,
+      commitments: commitmentRows,
+    });
 
   return (
     <AppShell title="แดชบอร์ดสด" subtitle="คนส. Connect · การแมตช์ การเชื่อม และการลงมือทำแบบเรียลไทม์">
@@ -576,8 +641,66 @@ function Dashboard() {
             </Panel>
           </>
         )}
+        <Panel title="ส่งออกข้อมูลกิจกรรม">
+          <p className="text-[12px] text-muted-foreground">
+            ส่งออกตามฟิลเตอร์ปัจจุบัน · แมตช์ {matchRows.length} · คอนเนกชัน {connectionRows.length} ·
+            คำมั่นสัญญา {commitmentRows.length}
+          </p>
+          <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3">
+            <ExportBtn
+              label="แมตช์ (CSV)"
+              disabled={matchRows.length === 0}
+              onClick={() => downloadCSV("matches", matchRows)}
+            />
+            <ExportBtn
+              label="คอนเนกชัน (CSV)"
+              disabled={connectionRows.length === 0}
+              onClick={() => downloadCSV("connections", connectionRows)}
+            />
+            <ExportBtn
+              label="คำมั่นสัญญา (CSV)"
+              disabled={commitmentRows.length === 0}
+              onClick={() => downloadCSV("commitments", commitmentRows)}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={exportAllJSON}
+            className="tap mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-2xl gradient-power text-sm font-extrabold text-primary-foreground"
+          >
+            <FileJson className="h-4 w-4" /> ส่งออกทั้งหมด (JSON)
+          </button>
+          {matchRows.length === 0 && (
+            <p className="text-[11px] text-muted-foreground">
+              * ต้องมีโปรไฟล์ของคุณจึงจะส่งออกรายการแมตช์ได้
+            </p>
+          )}
+        </Panel>
+
       </div>
     </AppShell>
+  );
+}
+
+function ExportBtn({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="tap flex h-11 items-center justify-center gap-1.5 rounded-2xl border border-border bg-background px-2 text-[12px] font-extrabold disabled:opacity-40"
+    >
+      <Download className="h-4 w-4 shrink-0 text-primary" />
+      <span className="truncate">{label}</span>
+    </button>
   );
 }
 
