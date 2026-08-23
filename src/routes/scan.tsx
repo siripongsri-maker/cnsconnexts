@@ -62,7 +62,7 @@ function ScanPage() {
       stop();
       enterGuest();
       createSession(source, code);
-      navigate({ to: "/onboarding" });
+      navigate({ to: "/start" });
     },
     [enterGuest, navigate, stop],
   );

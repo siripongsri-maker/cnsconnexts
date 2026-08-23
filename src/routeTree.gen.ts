@@ -23,6 +23,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PrintRouteImport } from './routes/print'
 import { Route as QrRouteImport } from './routes/qr'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as StartRouteImport } from './routes/start'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as UpdateRouteImport } from './routes/update'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
@@ -99,6 +100,11 @@ const ScanRoute = ScanRouteImport.update({
   path: '/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StartRoute = StartRouteImport.update({
+  id: '/start',
+  path: '/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubmitRoute = SubmitRouteImport.update({
   id: '/submit',
   path: '/submit',
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/scan': typeof ScanRoute
+  '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
   '/admin/import': typeof AdminImportRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/scan': typeof ScanRoute
+  '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
   '/admin/import': typeof AdminImportRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
   '/scan': typeof ScanRoute
+  '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
   '/admin/import': typeof AdminImportRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/qr'
     | '/scan'
+    | '/start'
     | '/submit'
     | '/update'
     | '/admin/import'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/qr'
     | '/scan'
+    | '/start'
     | '/submit'
     | '/update'
     | '/admin/import'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/print'
     | '/qr'
     | '/scan'
+    | '/start'
     | '/submit'
     | '/update'
     | '/admin/import'
@@ -270,6 +282,7 @@ export interface RootRouteChildren {
   PrintRoute: typeof PrintRoute
   QrRoute: typeof QrRoute
   ScanRoute: typeof ScanRoute
+  StartRoute: typeof StartRoute
   SubmitRoute: typeof SubmitRoute
   UpdateRoute: typeof UpdateRoute
   AdminImportRoute: typeof AdminImportRoute
@@ -377,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ScanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/start': {
+      id: '/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof StartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/submit': {
       id: '/submit'
       path: '/submit'
@@ -430,6 +450,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrintRoute: PrintRoute,
   QrRoute: QrRoute,
   ScanRoute: ScanRoute,
+  StartRoute: StartRoute,
   SubmitRoute: SubmitRoute,
   UpdateRoute: UpdateRoute,
   AdminImportRoute: AdminImportRoute,

@@ -37,7 +37,7 @@ function Join() {
   useEffect(() => {
     const session = createSession("qr", c || null);
     setCode(session.id);
-    const t = setTimeout(() => navigate({ to: "/onboarding" }), 1100);
+    const t = setTimeout(() => navigate({ to: "/start" }), 1100);
     return () => clearTimeout(t);
   }, [c, navigate]);
 
