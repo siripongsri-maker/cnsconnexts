@@ -638,6 +638,28 @@ function Dashboard() {
         )}
 
 
+
+        <div className="-mx-5 flex items-center gap-1.5 overflow-x-auto px-5 pb-0.5">
+          <span className="flex shrink-0 items-center gap-1 text-[11px] font-extrabold text-muted-foreground">
+            <ArrowUpDown className="h-3.5 w-3.5" /> เรียงโดย
+          </span>
+          {SORT_OPTIONS.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => setSort(s.key)}
+              aria-pressed={sort === s.key}
+              className={`tap shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${
+                sort === s.key
+                  ? "gradient-power border-transparent text-primary-foreground"
+                  : "border-border bg-card text-muted-foreground"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+
         {activeCount > 0 && (
           <p className="text-[11px] font-bold text-muted-foreground">
             กำลังกรอง · {fUsers.length} คน · {fConnections.length} คอนเนกชัน ·{" "}
