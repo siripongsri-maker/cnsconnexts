@@ -70,6 +70,13 @@ type Store = State & {
   importUsers: (list: User[]) => number;
   updateUser: (id: string, patch: Partial<User>) => void;
   removeUser: (id: string) => void;
+  updateIdea: (id: string, patch: Partial<Idea>) => void;
+  removeIdea: (id: string) => void;
+  updateSubmission: (id: string, patch: Partial<Submission>) => void;
+  removeSubmission: (id: string) => void;
+  removeProvinceNote: (id: string) => void;
+  removeCommitment: (id: string) => void;
+  removeConnection: (id: string) => void;
   sendMessage: (connectionId: string, text: string) => ChatMessage;
   markRoomRead: (connectionId: string) => void;
   notify: (n: Omit<AppNotification, "id" | "created_at" | "read">) => AppNotification;
@@ -393,6 +400,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, users: s.users.filter((u) => u.id !== id) }));
   }, []);
 
+  const updateIdea: Store["updateIdea"] = useCallback((id, patch) => {
+    setState((s) => ({ ...s, ideas: s.ideas.map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
+  }, []);
+
+  const removeIdea: Store["removeIdea"] = useCallback((id) => {
+    setState((s) => ({ ...s, ideas: s.ideas.filter((i) => i.id !== id) }));
+  }, []);
+
+  const updateSubmission: Store["updateSubmission"] = useCallback((id, patch) => {
+    setState((s) => ({
+      ...s,
+      submissions: s.submissions.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+    }));
+  }, []);
+
+  const removeSubmission: Store["removeSubmission"] = useCallback((id) => {
+    setState((s) => ({ ...s, submissions: s.submissions.filter((x) => x.id !== id) }));
+  }, []);
+
+  const removeProvinceNote: Store["removeProvinceNote"] = useCallback((id) => {
+    setState((s) => ({ ...s, provinceNotes: s.provinceNotes.filter((n) => n.id !== id) }));
+  }, []);
+
+  const removeCommitment: Store["removeCommitment"] = useCallback((id) => {
+    setState((s) => ({ ...s, commitments: s.commitments.filter((c) => c.id !== id) }));
+  }, []);
+
+  const removeConnection: Store["removeConnection"] = useCallback((id) => {
+    setState((s) => ({
+      ...s,
+      connections: s.connections.filter((c) => c.id !== id),
+      commitments: s.commitments.filter((c) => c.connection_id !== id),
+    }));
+  }, []);
+
   const sendMessage: Store["sendMessage"] = useCallback((connectionId, text) => {
     const body = text.trim();
     const msg: ChatMessage = {
@@ -496,6 +538,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       importUsers,
       updateUser,
       removeUser,
+      updateIdea,
+      removeIdea,
+      updateSubmission,
+      removeSubmission,
+      removeProvinceNote,
+      removeCommitment,
+      removeConnection,
       sendMessage,
       markRoomRead,
       notify,
@@ -503,7 +552,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
