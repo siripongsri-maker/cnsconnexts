@@ -20,11 +20,17 @@ export function ThailandNetwork({
   count = 18,
   className = "",
   seed = 11,
+  reducedMotion = false,
+  lowSpec = false,
 }: {
   count?: number;
   className?: string;
   seed?: number;
+  reducedMotion?: boolean;
+  lowSpec?: boolean;
 }) {
+  const effectiveCount = lowSpec ? Math.min(count, 10) : count;
+  const shouldAnimate = !reducedMotion && !lowSpec;
   const { nodes, links } = useMemo(() => {
     const r = rand(seed);
     const pool = [...PROVINCES];
