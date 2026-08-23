@@ -385,7 +385,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const notify: Store["notify"] = useCallback(((n) => {
+  const notify: Store["notify"] = useCallback((n) => {
     const item: AppNotification = {
       ...n,
       id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
