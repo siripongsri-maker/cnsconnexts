@@ -84,4 +84,21 @@ export function Wordmark({
       <span className="sr-only">คนส. Connexts</span>
     </span>
   );
+
+  if (!withMark) return text;
+
+  return (
+    <span className={`inline-flex min-w-0 items-center gap-2 ${className}`}>
+      <img
+        src={cnsLogo}
+        alt=""
+        aria-hidden
+        loading="lazy"
+        width={816}
+        height={816}
+        className={`${MARK_SIZE[size]} shrink-0 object-contain`}
+      />
+      {text}
+    </span>
+  );
 }
