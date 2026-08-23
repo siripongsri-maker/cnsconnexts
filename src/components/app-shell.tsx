@@ -3,6 +3,7 @@ import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut, Bell } 
 
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
+import { Wordmark } from "@/components/wordmark";
 import type { ReactNode } from "react";
 
 const NAV = [
