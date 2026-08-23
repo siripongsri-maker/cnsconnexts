@@ -371,3 +371,41 @@ function NewCommitmentRow({
     </div>
   );
 }
+
+/** ป้ายนับถอยหลังถึงนัด + ช่วงเตือนถัดไป (อัปเดตทุก 30 วินาที) */
+function ReminderChip({ iso, done }: { iso: string; done: boolean }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  if (done) return null;
+  const due = new Date(iso).getTime();
+  if (Number.isNaN(due)) return null;
+  const diff = due - now;
+
+  if (diff <= 0) {
+    return (
+      <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
+        <BellRing className="h-3 w-3" /> ถึงเวลานัดแล้ว
+      </p>
+    );
+  }
+
+  const mins = Math.floor(diff / 60000);
+  const left =
+    mins < 60
+      ? `อีก ${mins} นาที`
+      : mins < 1440
+        ? `อีก ${Math.floor(mins / 60)} ชั่วโมง`
+        : `อีก ${Math.floor(mins / 1440)} วัน`;
+  const next = REMINDER_STAGES.filter((s) => s.ms < diff).slice(-1)[0];
+
+  return (
+    <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+      <BellRing className="h-3 w-3" /> {left}
+      {next ? ` · เตือน${next.label}` : " · เตือนแล้ว"}
+    </p>
+  );
+}
