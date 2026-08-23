@@ -52,7 +52,7 @@ const timeTh = (iso: string) =>
   new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
 
 function CalendarPage() {
-  const { connections, commitments, users, addCommitment, updateCommitment } = useStore();
+  const { connections, commitments, users, addCommitment, updateCommitment, sendMessage } = useStore();
   const [cursor, setCursor] = useState(() => new Date());
   const [selected, setSelected] = useState(() => dayKey(new Date()));
 
