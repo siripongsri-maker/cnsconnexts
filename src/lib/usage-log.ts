@@ -163,6 +163,7 @@ export function logUsage(
     label,
     ...(detail ? { detail } : {}),
     path: path ?? window.location.pathname,
+    source: getSource(),
   };
 
   try {
