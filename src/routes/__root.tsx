@@ -11,11 +11,12 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { StoreProvider } from "@/lib/store";
+import { StoreProvider, useStore } from "@/lib/store";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
 import { CommitmentReminders } from "@/components/commitment-reminders";
+import { LoadingScreen } from "@/components/loading-screen";
 
 
 function NotFoundComponent() {
@@ -131,15 +132,23 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-      <StoreProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <NotificationHost />
-        <CommitmentReminders />
-        <Toaster position="top-center" />
-      </StoreProvider>
+        <StoreProvider>
+          <HydrationGate>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </HydrationGate>
+          <NotificationHost />
+          <CommitmentReminders />
+          <Toaster position="top-center" />
+        </StoreProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+function HydrationGate({ children }: { children: ReactNode }) {
+  const { hydrated } = useStore();
+  if (!hydrated) return <LoadingScreen message="กำลังเชื่อม" />;
+  return children;
 }
 
