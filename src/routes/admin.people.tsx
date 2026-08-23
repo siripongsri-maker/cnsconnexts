@@ -256,7 +256,10 @@ function AdminPeoplePage() {
               type="button"
               onClick={() => {
                 const real = users.filter((u) => !isDemo(u.id));
-                if (!real.length) return toast.error("ยังไม่มีผู้ใช้จริงให้ส่งออก");
+                if (!real.length) {
+                  toast.error("ยังไม่มีผู้ใช้จริงให้ส่งออก");
+                  return;
+                }
                 downloadCSV("connexts-real-users", toRows(real));
                 toast.success(`ส่งออกผู้ใช้จริง ${real.length} คนแล้ว`);
               }}
@@ -267,7 +270,10 @@ function AdminPeoplePage() {
             <button
               type="button"
               onClick={() => {
-                if (!filtered.length) return toast.error("ไม่มีรายการตามตัวกรอง");
+                if (!filtered.length) {
+                  toast.error("ไม่มีรายการตามตัวกรอง");
+                  return;
+                }
                 downloadCSV("connexts-people-filtered", toRows(filtered));
                 toast.success(`ส่งออก ${filtered.length} รายการแล้ว`);
               }}
