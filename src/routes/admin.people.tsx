@@ -336,7 +336,26 @@ function AdminPeoplePage() {
                       </span>
                     </span>
                   </button>
-                ) : (
+                ) : null}
+                {!editing && (
+                  <div className="mt-2 flex gap-2 border-t border-border pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setDetailId(u.id)}
+                      className="tap inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-[11px] font-semibold"
+                    >
+                      <Eye className="size-3.5" /> ดูรายละเอียด
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => open(u)}
+                      className="tap inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
+                    >
+                      แก้ไขข้อมูล
+                    </button>
+                  </div>
+                )}
+                {editing ? (
                   <div className="space-y-3">
                     <Field label="ชื่อ">
                       <input
