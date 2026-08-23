@@ -18,6 +18,7 @@ import { Route as JoinRouteImport } from './routes/join'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MatchesRouteImport } from './routes/matches'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PrintRouteImport } from './routes/print'
 import { Route as QrRouteImport } from './routes/qr'
@@ -72,6 +73,11 @@ const MatchesRoute = MatchesRouteImport.update({
   path: '/matches',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
+  '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/print': typeof PrintRoute
   '/qr': typeof QrRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/marketplace'
     | '/matches'
+    | '/notifications'
     | '/onboarding'
     | '/print'
     | '/qr'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/marketplace'
     | '/matches'
+    | '/notifications'
     | '/onboarding'
     | '/print'
     | '/qr'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/map'
     | '/marketplace'
     | '/matches'
+    | '/notifications'
     | '/onboarding'
     | '/print'
     | '/qr'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MatchesRoute: typeof MatchesRoute
+  NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PrintRoute: typeof PrintRoute
   QrRoute: typeof QrRoute
@@ -316,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MatchesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -385,6 +405,7 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   MarketplaceRoute: MarketplaceRoute,
   MatchesRoute: MatchesRoute,
+  NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PrintRoute: PrintRoute,
   QrRoute: QrRoute,
