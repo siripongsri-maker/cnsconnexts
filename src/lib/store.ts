@@ -56,6 +56,8 @@ type Store = State & {
   reset: () => void;
 };
 
+const scheduledReplies = new Set<string>();
+
 const Ctx = createContext<Store | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -134,6 +136,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         created_at: new Date().toISOString(),
       };
       // จำลองการตอบรับจากอีกฝ่าย (ต้นแบบฝั่ง client)
+      if (scheduledReplies.has(conn.id)) return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
+      scheduledReplies.add(conn.id);
       setTimeout(() => {
         setState((cur) => ({
           ...cur,
