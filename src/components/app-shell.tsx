@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Map, Store, CheckCircle2, Radio } from "lucide-react";
+import { Sparkles, Map, Store, CheckCircle2, Radio, Home } from "lucide-react";
 import type { ReactNode } from "react";
 
 const NAV = [
