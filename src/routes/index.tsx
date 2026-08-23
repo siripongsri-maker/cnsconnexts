@@ -17,7 +17,7 @@ import {
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
-import { NetworkBackground } from "@/components/network-background";
+import { ThailandNetwork } from "@/components/thailand-network";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -65,8 +65,8 @@ function Welcome() {
         style={{ backgroundImage: "var(--gradient-soft)" }}
         aria-hidden
       />
-      <div className="absolute inset-0 z-0 text-primary opacity-45">
-        <NetworkBackground count={26} />
+      <div className="pointer-events-none absolute inset-x-0 top-[10%] bottom-0 z-0 text-primary opacity-55">
+        <ThailandNetwork count={18} />
       </div>
 
       <TopNav />
