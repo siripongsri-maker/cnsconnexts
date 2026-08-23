@@ -11,11 +11,12 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { StoreProvider } from "@/lib/store";
+import { StoreProvider, useStore } from "@/lib/store";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
 import { CommitmentReminders } from "@/components/commitment-reminders";
+import { LoadingScreen } from "@/components/loading-screen";
 
 
 function NotFoundComponent() {
