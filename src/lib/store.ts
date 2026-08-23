@@ -79,18 +79,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [state, hydrated]);
 
   const saveProfile: Store["saveProfile"] = useCallback((data) => {
-    const user: User = {
+    const now = new Date().toISOString();
+    let saved: User = {
       ...data,
       avatar: data.avatar || "✨",
       id: "me",
-      created_at: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
     };
-    setState((s) => ({
-      ...s,
-      me: user,
-      users: [user, ...s.users.filter((u) => u.id !== "me")],
-    }));
-    return user;
+    setState((s) => {
+      const user: User = { ...saved, created_at: s.me?.created_at ?? now };
+      saved = user;
+      return {
+        ...s,
+        me: user,
+        users: [user, ...s.users.filter((u) => u.id !== "me")],
+      };
+    });
+    return saved;
   }, []);
 
   const connect: Store["connect"] = useCallback((otherId, score, reason) => {
