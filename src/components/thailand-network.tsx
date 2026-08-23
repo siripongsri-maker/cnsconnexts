@@ -20,16 +20,22 @@ export function ThailandNetwork({
   count = 18,
   className = "",
   seed = 11,
+  reducedMotion = false,
+  lowSpec = false,
 }: {
   count?: number;
   className?: string;
   seed?: number;
+  reducedMotion?: boolean;
+  lowSpec?: boolean;
 }) {
+  const effectiveCount = lowSpec ? Math.min(count, 10) : count;
+  const shouldAnimate = !reducedMotion && !lowSpec;
   const { nodes, links } = useMemo(() => {
     const r = rand(seed);
     const pool = [...PROVINCES];
     const picked: { x: number; y: number; c: string; d: number; rr: number }[] = [];
-    for (let i = 0; i < count && pool.length; i++) {
+    for (let i = 0; i < effectiveCount && pool.length; i++) {
       const idx = Math.floor(r() * pool.length);
       const p = pool.splice(idx, 1)[0]!;
       picked.push({
@@ -59,7 +65,7 @@ export function ThailandNetwork({
       }
     });
     return { nodes: picked, links };
-  }, [count, seed]);
+  }, [effectiveCount, seed]);
 
   return (
     <svg
@@ -93,18 +99,23 @@ export function ThailandNetwork({
             x2={m.x}
             y2={m.y}
             stroke="currentColor"
-            strokeWidth={2.2}
+            strokeWidth={reducedMotion || lowSpec ? 1.2 : 2.2}
             strokeLinecap="round"
-            strokeDasharray="10 14"
-            opacity={0.5}
-            className="animate-dash"
-            style={{ animationDelay: `${delay}s` }}
+            strokeDasharray={reducedMotion || lowSpec ? "6 10" : "10 14"}
+            opacity={reducedMotion || lowSpec ? 0.3 : 0.5}
+            className={shouldAnimate ? "animate-dash" : undefined}
+            style={shouldAnimate ? { animationDelay: `${delay}s` } : undefined}
           />
         );
       })}
 
       {nodes.map((n, i) => (
-        <g key={i} style={{ transformOrigin: `${n.x}px ${n.y}px` }} className="animate-pulse-node">
+        <g
+          key={i}
+          style={{ transformOrigin: `${n.x}px ${n.y}px` }}
+          className={shouldAnimate ? "animate-pulse-node" : undefined}
+          opacity={reducedMotion || lowSpec ? 0.85 : 1}
+        >
           <circle cx={n.x} cy={n.y} r={n.rr * 2.4} fill={n.c} opacity={0.14} />
           <circle cx={n.x} cy={n.y} r={n.rr} fill={n.c} />
         </g>

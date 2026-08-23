@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
+import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
 
 export const Route = createFileRoute("/")({
@@ -58,6 +59,7 @@ const NAV_LINKS = [
 ] as const;
 
 function Welcome() {
+  const { reducedMotion, lowSpec } = useMotionSettings();
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
       <div
@@ -66,7 +68,7 @@ function Welcome() {
         aria-hidden
       />
       <div className="pointer-events-none absolute inset-x-0 top-[10%] bottom-0 z-0 text-primary opacity-55">
-        <ThailandNetwork count={18} />
+        <ThailandNetwork count={18} reducedMotion={reducedMotion} lowSpec={lowSpec} />
       </div>
 
       <TopNav />
