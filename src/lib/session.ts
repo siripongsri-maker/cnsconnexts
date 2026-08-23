@@ -1,8 +1,10 @@
+import type { UserSource } from "./types";
+
 const SESSION_KEY = "connecting-power-session";
 
 export type ParticipantSession = {
   id: string;
-  source: "qr" | "direct";
+  source: UserSource;
   code: string | null;
   started_at: string;
 };
@@ -38,4 +40,21 @@ export function getSession(): ParticipantSession | null {
 /** Short human-friendly code printed under the QR poster. */
 export function makeJoinCode() {
   return "NHA26";
+}
+
+/** Read a source value from a URLSearchParams object (e.g. ?source=qr). */
+export function sourceFromSearch(params: URLSearchParams): UserSource {
+  const raw = params.get("source");
+  if (
+    raw === "qr" ||
+    raw === "link" ||
+    raw === "invite" ||
+    raw === "direct" ||
+    raw === "auth" ||
+    raw === "demo" ||
+    raw === "admin"
+  ) {
+    return raw;
+  }
+  return "direct";
 }
