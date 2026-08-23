@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { LiveTicker } from "@/components/live-ticker";
-import { Activity, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import { Activity, BookmarkPlus, CheckCircle2, Handshake, Download, FileJson, Search, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { NetworkBackground } from "@/components/network-background";
@@ -10,6 +10,13 @@ import { ISSUES, POWER_EMOJI, POWERS, REGIONS, type ConnectionStatus, type User 
 import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 import { rankMatches } from "@/lib/matching";
+import {
+  loadPresets,
+  savePresets,
+  sameFilters,
+  type DashboardFilters,
+  type FilterPreset,
+} from "@/lib/filter-presets";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -96,6 +103,50 @@ function Dashboard() {
   const [powerMode, setPowerMode] = useState<"any" | "have" | "need">("any");
   const [showFilters, setShowFilters] = useState(false);
 
+  // --- ชุดตัวกรองที่บันทึกไว้ ---
+  const [presets, setPresets] = useState<FilterPreset[]>([]);
+  useEffect(() => setPresets(loadPresets()), []);
+  const currentFilters: DashboardFilters = { q, region, issue, power, powerMode };
+  const activePresetId = presets.find((p) => sameFilters(p.filters, currentFilters))?.id ?? null;
+
+  const describeFilters = (f: DashboardFilters) =>
+    [
+      f.q.trim() ? `"${f.q.trim()}"` : null,
+      f.region !== "all" ? REGION_LABEL[f.region as keyof typeof REGION_LABEL] : null,
+      f.issue !== "all" ? issueTh(f.issue) : null,
+      f.power !== "all" ? powerTh(f.power) : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || "ทั้งหมด";
+
+  const applyPreset = (p: FilterPreset) => {
+    setQ(p.filters.q);
+    setRegion(p.filters.region);
+    setIssue(p.filters.issue);
+    setPower(p.filters.power);
+    setPowerMode(p.filters.powerMode);
+  };
+
+  const persist = (list: FilterPreset[]) => {
+    setPresets(list);
+    savePresets(list);
+  };
+
+  const saveCurrentPreset = () => {
+    const suggestion = describeFilters(currentFilters);
+    const name = window.prompt("ตั้งชื่อชุดตัวกรอง", suggestion)?.trim();
+    if (!name) return;
+    const next: FilterPreset = {
+      id: `fp_${Date.now()}`,
+      name,
+      filters: currentFilters,
+      created_at: new Date().toISOString(),
+    };
+    persist([next, ...presets.filter((p) => p.name !== name)].slice(0, 12));
+  };
+
+  const removePreset = (id: string) => persist(presets.filter((p) => p.id !== id));
+
   const activeCount =
     (q.trim() ? 1 : 0) +
     (region !== "all" ? 1 : 0) +
@@ -108,6 +159,7 @@ function Dashboard() {
     setPower("all");
     setPowerMode("any");
   };
+
 
   const matchUser = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -441,8 +493,57 @@ function Dashboard() {
                 ล้าง
               </button>
             </div>
+
+            <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
+              <p className="text-[11px] font-bold text-muted-foreground">ชุดตัวกรองที่บันทึกไว้</p>
+              <button
+                type="button"
+                onClick={saveCurrentPreset}
+                disabled={activeCount === 0}
+                className="tap flex h-8 items-center gap-1 rounded-lg border border-border px-2 text-[11px] font-extrabold disabled:opacity-40"
+              >
+                <BookmarkPlus className="h-3.5 w-3.5" />
+                บันทึกชุดนี้
+              </button>
+            </div>
+            {presets.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">
+                ยังไม่มีชุดที่บันทึก — เลือกตัวกรองแล้วกด “บันทึกชุดนี้”
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {presets.map((p) => (
+                  <span
+                    key={p.id}
+                    className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-extrabold ${
+                      activePresetId === p.id
+                        ? "gradient-power border-transparent text-primary-foreground"
+                        : "border-border bg-background"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => applyPreset(p)}
+                      title={describeFilters(p.filters)}
+                      className="tap"
+                    >
+                      {p.name}
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`ลบชุด ${p.name}`}
+                      onClick={() => removePreset(p.id)}
+                      className="tap opacity-70"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         )}
+
 
         {activeCount > 0 && (
           <p className="text-[11px] font-bold text-muted-foreground">
