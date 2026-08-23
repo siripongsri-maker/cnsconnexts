@@ -6,6 +6,7 @@ import { Check, QrCode } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
+import { getSession } from "@/lib/session";
 
 export const Route = createFileRoute("/update")({
   head: () => ({
