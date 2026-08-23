@@ -471,6 +471,15 @@ function Dashboard() {
             <SlidersHorizontal className="h-4 w-4" />
             {activeCount ? activeCount : "กรอง"}
           </button>
+          <button
+            type="button"
+            onClick={shareCurrentUrl}
+            aria-label="แชร์ลิงก์หน้านี้"
+            title="แชร์ลิงก์หน้าผลลัพธ์ที่ใช้ตัวกรองปัจจุบัน"
+            className="tap flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-card text-[13px] font-extrabold text-primary"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
         </div>
 
         {showFilters && (
