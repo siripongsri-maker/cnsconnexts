@@ -47,6 +47,50 @@ const SOURCE_LABEL: Record<SourceFilter, string> = {
   admin: "นำเข้า",
 };
 
+/** สถานะความสมบูรณ์ของโปรไฟล์ (ครบ / ยังไม่ครบ) */
+function profileStatus(u: User) {
+  const missing: string[] = [];
+  if (!u.bio?.trim()) missing.push("คำอธิบาย");
+  if (!u.interests?.length) missing.push("ความสนใจ");
+  if (!u.powers_have?.length) missing.push("พลังที่มี");
+  if (!u.powers_need?.length) missing.push("พลังที่ต้องการ");
+  if (!u.photo) missing.push("รูปโปรไฟล์");
+  const total = 5;
+  const percent = Math.round(((total - missing.length) / total) * 100);
+  return { missing, percent, label: missing.length === 0 ? "ครบถ้วน" : "ยังไม่ครบ" };
+}
+
+const fmtDate = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+};
+
+function toRows(list: User[]): Row[] {
+  return list.map((u) => {
+    const st = profileStatus(u);
+    return {
+      id: u.id,
+      ชื่อ: u.name,
+      องค์กร: u.organization,
+      จังหวัด: provinceTh(u.province),
+      ภูมิภาค: REGION_LABEL[u.region],
+      เจเนอเรชัน: u.generation,
+      วันที่onboard: fmtDate(u.created_at),
+      เวลาonboard: u.created_at,
+      อัปเดตล่าสุด: u.updated_at ? fmtDate(u.updated_at) : "",
+      แหล่งที่มา: SOURCE_LABEL[(u.source ?? "direct") as SourceFilter],
+      อีเมลที่ผูก: u.linked_email ?? "",
+      สถานะโปรไฟล์: st.label,
+      ความครบถ้วน: `${st.percent}%`,
+      ข้อมูลที่ขาด: st.missing.join(" / "),
+      ความสนใจ: u.interests.map(issueTh).join(" / "),
+      พลังที่มี: u.powers_have.join(" / "),
+      พลังที่ต้องการ: u.powers_need.join(" / "),
+      คำอธิบาย: u.bio,
+    };
+  });
+}
+
 function AdminPeoplePage() {
   const { users, updateUser, removeUser } = useStore();
   const [q, setQ] = useState("");
