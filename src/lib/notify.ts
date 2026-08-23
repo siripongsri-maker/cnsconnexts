@@ -57,7 +57,7 @@ function chime(audio: AudioContext) {
 function speakConnext() {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   try {
-    const u = new SpeechSynthesisUtterance("connext");
+    const u = new SpeechSynthesisUtterance("connexts");
     u.lang = "en-US";
     u.rate = 0.95;
     u.pitch = 1.15;
