@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, CameraOff, Clock, QrCode, ScanLine, Sparkles, Zap } from "lucide-react";
 
@@ -8,8 +8,9 @@ const GUIDE: { t: string; d: string }[] = [
   { t: "สร้าง Power Profile", d: "กรอกครั้งเดียวจบ แล้วระบบจับคู่คนที่ควรเจอให้ทันที" },
 ];
 
-import { createSession, makeJoinCode } from "@/lib/session";
+import { createSession, makeJoinCode, sourceFromSearch } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
+import type { UserSource } from "@/lib/types";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
