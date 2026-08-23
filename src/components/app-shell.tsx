@@ -44,7 +44,7 @@ export function AppShell({
             </Link>
             <div className="min-w-0">
               <Link to="/" className="block min-w-0" aria-label="คนส. Connexts">
-                <Wordmark size="xs" />
+                <Wordmark size="xs" withMark />
               </Link>
               <h1 className="truncate text-lg font-extrabold leading-tight tracking-tight sm:text-xl">
                 {title}
