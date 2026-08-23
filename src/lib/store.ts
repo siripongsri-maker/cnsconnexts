@@ -22,6 +22,8 @@ type State = {
   connections: Connection[];
   commitments: Commitment[];
   savedIdeas: string[];
+  likedUsers: string[];
+  skippedUsers: string[];
   provinceNotes: ProvinceNote[];
   submissions: Submission[];
   notifications: AppNotification[];
@@ -34,6 +36,8 @@ const initial: State = {
   connections: DEMO_CONNECTIONS,
   commitments: DEMO_COMMITMENTS,
   savedIdeas: [],
+  likedUsers: [],
+  skippedUsers: [],
   provinceNotes: DEMO_PROVINCE_NOTES,
   submissions: DEMO_SUBMISSIONS,
   notifications: [],
@@ -46,6 +50,9 @@ type Store = State & {
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
   toggleSaveIdea: (id: string) => void;
+  toggleLikeUser: (id: string) => boolean;
+  skipUser: (id: string) => void;
+  undoSkip: () => void;
   addProvinceNote: (n: Omit<ProvinceNote, "id" | "created_at">) => ProvinceNote;
   addSubmission: (s: Omit<Submission, "id" | "created_at" | "showcase">) => Submission;
   toggleShowcase: (id: string) => void;
@@ -225,6 +232,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const toggleLikeUser: Store["toggleLikeUser"] = useCallback((id) => {
+    let liked = false;
+    setState((s) => {
+      liked = !s.likedUsers.includes(id);
+      return {
+        ...s,
+        likedUsers: liked ? [...s.likedUsers, id] : s.likedUsers.filter((x) => x !== id),
+        skippedUsers: s.skippedUsers.filter((x) => x !== id),
+      };
+    });
+    return liked;
+  }, []);
+
+  const skipUser: Store["skipUser"] = useCallback((id) => {
+    setState((s) => ({
+      ...s,
+      skippedUsers: s.skippedUsers.includes(id) ? s.skippedUsers : [...s.skippedUsers, id],
+      likedUsers: s.likedUsers.filter((x) => x !== id),
+    }));
+  }, []);
+
+  const undoSkip: Store["undoSkip"] = useCallback(() => {
+    setState((s) => ({ ...s, skippedUsers: s.skippedUsers.slice(0, -1) }));
+  }, []);
+
   const addProvinceNote: Store["addProvinceNote"] = useCallback((n) => {
     const note: ProvinceNote = { ...n, id: `pn-${Date.now()}`, created_at: new Date().toISOString() };
     setState((s) => ({ ...s, provinceNotes: [note, ...s.provinceNotes] }));
@@ -288,6 +320,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addCommitment,
       setConnectionStatus,
       toggleSaveIdea,
+      toggleLikeUser,
+      skipUser,
+      undoSkip,
       addProvinceNote,
       addSubmission,
       toggleShowcase,
@@ -298,7 +333,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);

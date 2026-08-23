@@ -7,6 +7,7 @@ export type MatchResult = {
   user: User;
   score: number;
   reason: string;
+  highlights: string[];
   theyBring: string[];
   theyNeed: string[];
 };
@@ -46,11 +47,19 @@ export function scoreMatch(me: User, other: User): MatchResult {
 
   const reason = bits.join(" · ") + geoBit;
 
+  const highlights: string[] = [];
+  if (sharedIssues.length) highlights.push(`ประเด็นร่วม: ${issueTh(sharedIssues[0]!)}`);
+  if (theyGiveMe.length) highlights.push(`เติมให้คุณ: ${powerTh(theyGiveMe[0]!)}`);
+  if (iGiveThem.length) highlights.push(`คุณช่วยเขา: ${powerTh(iGiveThem[0]!)}`);
+  if (me.region === other.region) highlights.push(`ภาคเดียวกัน: ${REGION_LABEL[me.region]}`);
+  else highlights.push(`ข้ามภาค: ${REGION_LABEL[other.region]}`);
+
 
   return {
     user: other,
     score,
     reason,
+    highlights: highlights.slice(0, 3),
     theyBring: theyGiveMe.length ? theyGiveMe : other.powers_have.slice(0, 2),
     theyNeed: other.powers_need.slice(0, 2),
   };
