@@ -256,3 +256,11 @@ textarea.input-line {
     overflow: visible;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-dash,
+  .animate-pulse-node,
+  .animate-float {
+    animation: none !important;
+  }
+}
