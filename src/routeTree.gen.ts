@@ -32,6 +32,7 @@ import { Route as UpdateRouteImport } from './routes/update'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCommitmentsRouteImport } from './routes/admin.commitments'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
+import { Route as AdminExportRouteImport } from './routes/admin.export'
 import { Route as AdminIdeasRouteImport } from './routes/admin.ideas'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as AdminLiveRouteImport } from './routes/admin.live'
@@ -158,6 +159,11 @@ const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
   path: '/connections',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminExportRoute = AdminExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminIdeasRoute = AdminIdeasRouteImport.update({
   id: '/ideas',
   path: '/ideas',
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/update': typeof UpdateRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/export': typeof AdminExportRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/update': typeof UpdateRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/export': typeof AdminExportRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/update': typeof UpdateRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/export': typeof AdminExportRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
@@ -339,6 +348,7 @@ export interface FileRouteTypes {
     | '/update'
     | '/admin/commitments'
     | '/admin/connections'
+    | '/admin/export'
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/update'
     | '/admin/commitments'
     | '/admin/connections'
+    | '/admin/export'
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/update'
     | '/admin/commitments'
     | '/admin/connections'
+    | '/admin/export'
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
@@ -610,6 +622,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConnectionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/export': {
+      id: '/admin/export'
+      path: '/export'
+      fullPath: '/admin/export'
+      preLoaderRoute: typeof AdminExportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ideas': {
       id: '/admin/ideas'
       path: '/ideas'
@@ -686,6 +705,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminCommitmentsRoute: typeof AdminCommitmentsRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
+  AdminExportRoute: typeof AdminExportRoute
   AdminIdeasRoute: typeof AdminIdeasRoute
   AdminImportRoute: typeof AdminImportRoute
   AdminLiveRoute: typeof AdminLiveRoute
@@ -699,6 +719,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCommitmentsRoute: AdminCommitmentsRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
+  AdminExportRoute: AdminExportRoute,
   AdminIdeasRoute: AdminIdeasRoute,
   AdminImportRoute: AdminImportRoute,
   AdminLiveRoute: AdminLiveRoute,
