@@ -86,7 +86,7 @@ function Welcome() {
         </div>
 
         <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
-          <h1 className="text-[clamp(2.75rem,14vw,4.5rem)] leading-[0.92] tracking-tighter">
+          <h1 className="min-w-0">
             <Wordmark size="hero" />
           </h1>
           <p className="mt-4 text-lg font-semibold text-primary">
