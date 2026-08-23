@@ -114,7 +114,8 @@ function UpdateMe() {
             initial={me}
             submitLabel="บันทึกข้อมูลของฉัน"
             onSubmit={(draft) => {
-              saveProfile(draft);
+              const session = getSession();
+              saveProfile({ ...draft, source: session?.source });
               setSaved(true);
               window.scrollTo({ top: 0, behavior: "smooth" });
               setTimeout(() => setSaved(false), 4000);
