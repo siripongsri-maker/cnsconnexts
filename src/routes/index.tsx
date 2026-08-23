@@ -23,6 +23,7 @@ import { useMotionSettings } from "@/lib/motion";
 import { ThailandNetwork } from "@/components/thailand-network";
 import { Wordmark } from "@/components/wordmark";
 import { TOUR_EVENT } from "@/components/guided-tour";
+import { PdpaConsent } from "@/components/pdpa-consent";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -70,6 +71,7 @@ function Welcome() {
   const { reducedMotion, lowSpec } = useMotionSettings();
   return (
     <div className="relative min-h-screen overflow-hidden bg-background">
+      <PdpaConsent />
       <div
         className="absolute inset-0"
         style={{ backgroundImage: "var(--gradient-soft)" }}

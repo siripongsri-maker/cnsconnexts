@@ -4,6 +4,7 @@
  * ไม่ใช่ระบบยืนยันตัวตนจริง
  */
 import { useCallback, useEffect, useState } from "react";
+import { logUsage } from "./usage-log";
 
 export const ADMIN_USER = "connexts";
 export const ADMIN_PASSWORD = "cns2026";
@@ -41,6 +42,7 @@ export function useAdminAuth() {
       /* ignore */
     }
     setAuthed(true);
+    logUsage("admin", "ผู้ดูแลเข้าสู่ระบบหลังบ้าน", user);
     return true;
   }, []);
 
@@ -50,6 +52,7 @@ export function useAdminAuth() {
     } catch {
       /* ignore */
     }
+    logUsage("admin", "ผู้ดูแลออกจากระบบหลังบ้าน");
     setAuthed(false);
   }, []);
 
