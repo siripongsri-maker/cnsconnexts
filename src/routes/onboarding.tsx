@@ -59,7 +59,8 @@ function Onboarding() {
             initial={me}
             submitLabel={me ? "บันทึกและดูคู่พลัง" : "ค้นหาคู่พลังของฉัน"}
             onSubmit={(draft) => {
-              saveProfile(draft);
+              const session = getSession();
+              saveProfile({ ...draft, source: session?.source });
               void navigate({ to: "/matches" });
             }}
           />
