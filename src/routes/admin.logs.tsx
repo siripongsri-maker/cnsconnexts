@@ -1,12 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Download, Trash2 } from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { downloadCSV, downloadJSON } from "@/lib/export";
 import {
   LOG_TYPE_LABEL,
   clearLogs,
   getConsent,
+  getConsentStats,
   useUsageLogs,
   type UsageLog,
 } from "@/lib/usage-log";
