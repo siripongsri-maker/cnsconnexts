@@ -125,6 +125,19 @@ export type Commitment = {
   status: ConnectionStatus;
   follow_up_date: string | null;
   created_at: string;
+  /** การตอบรับนัดของฉัน */
+  rsvp?: Rsvp;
+  /** การตอบรับของคู่เชื่อมต่อ (จำลองในโปรโตไทป์) */
+  partner_rsvp?: Rsvp;
+};
+
+/** สถานะตอบรับนัด */
+export type Rsvp = "pending" | "accepted" | "declined";
+
+export const RSVP_TH: Record<Rsvp, string> = {
+  pending: "รอตอบรับ",
+  accepted: "ตอบรับแล้ว",
+  declined: "ไม่สะดวก",
 };
 
 /** ข้อความในห้องแชทสั้นของคู่เชื่อมต่อ */
