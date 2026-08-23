@@ -51,7 +51,7 @@ const initial: State = {
 
 type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
   avatar?: string;
-  source?: UserSource;
+  source?: UserSource | undefined;
 };
 
 type Store = State & {
