@@ -50,8 +50,8 @@ function Welcome() {
 
         <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
           <h1 className="text-[clamp(2.75rem,14vw,4.5rem)] font-extrabold leading-[0.92] tracking-tighter">
-            <span className="block text-gradient">CONNECTING</span>
-            <span className="block text-ink">POWER</span>
+            <span className="block text-gradient">คนส.</span>
+            <span className="block text-ink">Connext</span>
           </h1>
           <p className="mt-4 text-lg font-semibold text-primary">
             เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ
