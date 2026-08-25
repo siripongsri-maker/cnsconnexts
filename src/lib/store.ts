@@ -196,12 +196,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ]);
 
     const users = ((p.data as Row[]) ?? []).map((r) => rowToUser(r, myId));
-    const me = users.find((u) => u.id === "me") ?? null;
+    const fetchedMe = users.find((u) => u.id === "me") ?? null;
+    // ถ้าอ่านฐานข้อมูลไม่ทัน/ไม่สำเร็จ อย่าล้างโปรไฟล์ที่มีอยู่ทิ้ง
+    // (เคยทำให้ผู้ใช้ถูกเด้งกลับไปกรอกโปรไฟล์ซ้ำ)
+    const keepMe = !fetchedMe && !!myId;
 
     setState((s) => ({
       ...s,
-      me,
-      users,
+      me: fetchedMe ?? (keepMe ? s.me : null),
+      users: keepMe && s.me ? [s.me, ...users.filter((u) => u.id !== "me")] : users,
+
       ideas: ((i.data as Row[]) ?? []).map((r) => ({
         id: r.id,
         title: r.title,
