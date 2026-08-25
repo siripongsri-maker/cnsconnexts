@@ -331,7 +331,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
         if (legacy?.me?.name) {
           const id = uuid();
-          const { error } = await db.from("participants").insert({
+          const payload = {
             id,
             device_id: getDeviceId(),
             name: legacy.me.name,
@@ -346,10 +346,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             powers_have: legacy.me.powers_have ?? [],
             powers_need: legacy.me.powers_need ?? [],
             source: legacy.me.source ?? "direct",
-          });
+          };
+          const { error } = await db.from("participants").insert(payload);
           if (!error) {
             myIdRef.current = id;
             localStorage.setItem(MY_ID_KEY, id);
+          } else {
+            // ส่งไม่สำเร็จ → เก็บไว้ให้ผู้ใช้กดซิงก์เองภายหลัง
+            writePending({
+              id,
+              name: payload.name,
+              savedAt: new Date().toISOString(),
+              payload,
+              mode: "insert",
+            });
           }
         }
         try {
@@ -360,8 +370,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      const pending = readLocal<PendingProfile>(PENDING_KEY);
+      if (pending?.payload) setPendingProfile(pending);
 
       await refresh();
+
       if (!cancelled) setHydrated(true);
     };
 
