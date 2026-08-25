@@ -2,13 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 
 /** ระบบสำรองข้อมูลอัตโนมัติ — อ่าน/กู้คืนสแนปช็อตจากตาราง data_backups (ต้องใช้รหัสผู้ดูแล) */
 
+export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+
 export type BackupRow = {
   id: string;
   table_name: string;
   operation: string;
   row_id: string | null;
-  old_data: Record<string, unknown> | null;
-  new_data: Record<string, unknown> | null;
+  old_data: Json | null;
+  new_data: Json | null;
   created_at: string;
 };
 
