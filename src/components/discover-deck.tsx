@@ -179,49 +179,51 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
           )}
           {drag > 40 && (
             <span className="pointer-events-none absolute left-4 top-4 rounded-xl border-2 border-primary px-2 py-1 text-xs font-extrabold text-primary">
-              ถูกใจ
+              สนใจ
             </span>
           )}
         </article>
       </div>
 
-      <div className="mt-4 grid grid-cols-[56px_1fr_56px] items-center gap-3">
+      <div className="mt-4 grid grid-cols-[64px_1fr_64px] items-center gap-3">
         <button
-          aria-label="ข้าม"
+          aria-label="ข้ามคนนี้"
           onClick={doSkip}
-          className="tap grid h-14 w-14 place-items-center rounded-2xl border border-border bg-card"
+          className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-border bg-card"
         >
-          <X className="h-6 w-6 text-muted-foreground" />
+          <X className="h-5 w-5 text-muted-foreground" />
+          <span className="text-[11px] font-extrabold text-muted-foreground">ข้าม</span>
         </button>
 
         {existing ? (
           <Link
             to="/connection/$id"
             params={{ id: existing.id }}
-            className="tap inline-flex h-14 items-center justify-center rounded-2xl bg-lime px-4 text-sm font-extrabold text-lime-foreground"
+            className="tap inline-flex h-16 items-center justify-center rounded-2xl bg-lime px-4 text-sm font-extrabold text-lime-foreground"
           >
             เชื่อมกันแล้ว ✨ ดูก้าวต่อไป
           </Link>
         ) : (
           <button
             onClick={doConnect}
-            className="tap inline-flex h-14 items-center justify-center rounded-2xl gradient-power px-4 text-base font-extrabold text-primary-foreground"
+            className="tap inline-flex h-16 items-center justify-center rounded-2xl gradient-power px-4 text-base font-extrabold text-primary-foreground"
           >
             ขอเชื่อมต่อ
           </button>
         )}
 
         <button
-          aria-label="ถูกใจ"
+          aria-label="สนใจ เก็บไว้ก่อน"
           onClick={doLike}
-          className="tap grid h-14 w-14 place-items-center rounded-2xl border border-coral/40 bg-coral/10"
+          className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-coral/40 bg-coral/10"
         >
-          <Heart className="h-6 w-6 text-coral" />
+          <Heart className="h-5 w-5 text-coral" />
+          <span className="text-[11px] font-extrabold text-coral">สนใจ</span>
         </button>
       </div>
 
       <p className="mt-2 text-center text-[11px] text-muted-foreground">
-        ปัดซ้ายเพื่อข้าม · ปัดขวาเพื่อถูกใจ · เหลืออีก {matches.length - 1} คน
+        เหลืออีก {matches.length - 1} คน · อยากดูเป็นรายชื่อ กดปุ่ม “รายการ” ด้านบน
       </p>
     </div>
   );
