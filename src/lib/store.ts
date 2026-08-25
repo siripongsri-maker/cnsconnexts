@@ -122,7 +122,8 @@ function getDeviceId() {
   return id;
 }
 
-type Row = Record<string, any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Row = any;
 
 function rowToUser(r: Row, myId: string | null): User {
   return {
@@ -208,8 +209,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         description: r.description ?? "",
         status: r.status as ConnectionStatus,
         follow_up_date: r.follow_up_date ?? null,
-        rsvp: (r.rsvp ?? undefined) as Rsvp | undefined,
-        partner_rsvp: (r.partner_rsvp ?? undefined) as Rsvp | undefined,
+        ...(r.rsvp ? { rsvp: r.rsvp as Rsvp } : {}),
+        ...(r.partner_rsvp ? { partner_rsvp: r.partner_rsvp as Rsvp } : {}),
         created_at: r.created_at,
       })),
       messages: ((msg.data as Row[]) ?? []).map((r) => ({
