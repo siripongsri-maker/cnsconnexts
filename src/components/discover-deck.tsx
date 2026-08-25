@@ -22,9 +22,10 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
     return (
       <div className="card-soft mx-5 grid place-items-center gap-3 p-8 text-center">
         <span className="text-3xl">🎉</span>
-        <p className="text-sm font-bold">ดูครบทุกคนในหมวดนี้แล้ว</p>
+        <p className="text-sm font-bold">ยังไม่มีใครให้ดูในหมวดนี้</p>
         <p className="text-[12px] text-muted-foreground">
-          ลองเปลี่ยนประเด็น หรือดูรายการที่คุณถูกใจไว้
+          ลองเปลี่ยนประเด็น ดูรายการที่คุณถูกใจไว้ หรือชวนคนข้าง ๆ สแกน QR เข้าร่วม
+          เพื่อให้มีคู่เชื่อมเพิ่มขึ้น
         </p>
         {skippedUsers.length > 0 && (
           <button

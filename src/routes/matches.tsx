@@ -73,7 +73,7 @@ function Matches() {
             ปัดเร็ว
           </ModeTab>
           <ModeTab active={mode === "list"} onClick={() => setMode("list")} icon={<List className="h-4 w-4" />}>
-            ทั้งหมด
+            รายการ
           </ModeTab>
           <ModeTab active={mode === "liked"} onClick={() => setMode("liked")} icon={<Heart className="h-4 w-4" />}>
             ถูกใจ {liked.length > 0 ? `(${liked.length})` : ""}
