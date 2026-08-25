@@ -1,19 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut, Bell } from "lucide-react";
+import { Home, LogIn, LogOut, Bell } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { Wordmark } from "@/components/wordmark";
 import { SponsorFooter } from "@/components/sponsor-footer";
+import { BottomNav } from "@/components/bottom-nav";
 import type { ReactNode } from "react";
-
-const NAV = [
-  { to: "/matches", label: "คู่เชื่อม", icon: Sparkles },
-  { to: "/map", label: "แผนที่พลัง", icon: Map },
-  { to: "/marketplace", label: "ตลาดนัด", icon: Store },
-  { to: "/commitments", label: "ก้าวต่อไป", icon: CheckCircle2 },
-  { to: "/dashboard", label: "สด", icon: Radio },
-] as const;
 
 export function AppShell({
   children,
