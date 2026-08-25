@@ -14,7 +14,351 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      commitments: {
+        Row: {
+          action_type: string
+          connection_id: string
+          created_at: string
+          description: string
+          follow_up_date: string | null
+          id: string
+          partner_rsvp: string | null
+          rsvp: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          connection_id: string
+          created_at?: string
+          description?: string
+          follow_up_date?: string | null
+          id?: string
+          partner_rsvp?: string | null
+          rsvp?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          connection_id?: string
+          created_at?: string
+          description?: string
+          follow_up_date?: string | null
+          id?: string
+          partner_rsvp?: string | null
+          rsvp?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitments_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connections: {
+        Row: {
+          created_at: string
+          id: string
+          match_reason: string
+          match_score: number
+          status: string
+          updated_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_reason?: string
+          match_score?: number
+          status?: string
+          updated_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_reason?: string
+          match_score?: number
+          status?: string
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connections_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connections_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ideas: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          issues: string[]
+          owner_id: string | null
+          region: string
+          resources_have: string[]
+          resources_need: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          id?: string
+          issues?: string[]
+          owner_id?: string | null
+          region?: string
+          resources_have?: string[]
+          resources_need?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          issues?: string[]
+          owner_id?: string | null
+          region?: string
+          resources_have?: string[]
+          resources_need?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ideas_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          connection_id: string
+          created_at: string
+          from_id: string | null
+          id: string
+          text: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          from_id?: string | null
+          id?: string
+          text: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          from_id?: string | null
+          id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_from_id_fkey"
+            columns: ["from_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          avatar: string
+          bio: string
+          created_at: string
+          device_id: string | null
+          generation: string
+          id: string
+          interests: string[]
+          linked_at: string | null
+          linked_email: string | null
+          linked_user_id: string | null
+          name: string
+          organization: string
+          photo: string | null
+          powers_have: string[]
+          powers_need: string[]
+          province: string
+          region: string
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          avatar?: string
+          bio?: string
+          created_at?: string
+          device_id?: string | null
+          generation?: string
+          id?: string
+          interests?: string[]
+          linked_at?: string | null
+          linked_email?: string | null
+          linked_user_id?: string | null
+          name: string
+          organization?: string
+          photo?: string | null
+          powers_have?: string[]
+          powers_need?: string[]
+          province?: string
+          region?: string
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar?: string
+          bio?: string
+          created_at?: string
+          device_id?: string | null
+          generation?: string
+          id?: string
+          interests?: string[]
+          linked_at?: string | null
+          linked_email?: string | null
+          linked_user_id?: string | null
+          name?: string
+          organization?: string
+          photo?: string | null
+          powers_have?: string[]
+          powers_need?: string[]
+          province?: string
+          region?: string
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      province_notes: {
+        Row: {
+          author_id: string | null
+          author_name: string
+          created_at: string
+          detail: string
+          id: string
+          issues: string[]
+          province: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string
+          created_at?: string
+          detail?: string
+          id?: string
+          issues?: string[]
+          province: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string
+          created_at?: string
+          detail?: string
+          id?: string
+          issues?: string[]
+          province?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "province_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      submissions: {
+        Row: {
+          batch: string
+          course: string
+          created_at: string
+          highlight: string
+          id: string
+          name: string
+          photo: string | null
+          policy_issues: string[]
+          province: string
+          region: string
+          showcase: boolean
+          stage_ready: boolean
+          summary: string
+          updated_at: string
+          wanted: string
+        }
+        Insert: {
+          batch?: string
+          course?: string
+          created_at?: string
+          highlight?: string
+          id?: string
+          name: string
+          photo?: string | null
+          policy_issues?: string[]
+          province?: string
+          region?: string
+          showcase?: boolean
+          stage_ready?: boolean
+          summary?: string
+          updated_at?: string
+          wanted?: string
+        }
+        Update: {
+          batch?: string
+          course?: string
+          created_at?: string
+          highlight?: string
+          id?: string
+          name?: string
+          photo?: string | null
+          policy_issues?: string[]
+          province?: string
+          region?: string
+          showcase?: boolean
+          stage_ready?: boolean
+          summary?: string
+          updated_at?: string
+          wanted?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
