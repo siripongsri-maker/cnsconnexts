@@ -19,6 +19,8 @@ const LOCAL_KEY = "connecting-power-local-v2";
 const DEVICE_KEY = "connexts-device-id";
 const MY_ID_KEY = "connexts-participant-id";
 const LEGACY_KEY = "connecting-power-v1";
+const LEGACY_MIGRATED_KEY = "connexts-legacy-migrated";
+
 
 type LocalState = {
   savedIdeas: string[];
