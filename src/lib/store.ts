@@ -292,8 +292,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       myIdRef.current = localStorage.getItem(MY_ID_KEY);
 
-      // ย้ายโปรไฟล์เดิมที่อยู่ในเครื่อง (Phase 1) ขึ้นฐานข้อมูลกลางครั้งเดียว
-      if (!myIdRef.current) {
+      // ย้ายโปรไฟล์เดิมที่อยู่ในเครื่อง (Phase 1) ขึ้นฐานข้อมูลกลาง "ครั้งเดียวเท่านั้น"
+      // ถ้าไม่กันไว้ จะสร้างโปรไฟล์ซ้ำและชนกับการบันทึกของผู้ใช้ จนถูกเด้งกลับไปกรอกใหม่
+      if (!myIdRef.current && localStorage.getItem(LEGACY_MIGRATED_KEY) !== "1") {
         const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
         if (legacy?.me?.name) {
           const id = uuid();
@@ -318,7 +319,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             localStorage.setItem(MY_ID_KEY, id);
           }
         }
+        try {
+          localStorage.setItem(LEGACY_MIGRATED_KEY, "1");
+          localStorage.removeItem(LEGACY_KEY);
+        } catch {
+          /* ignore */
+        }
       }
+
 
       await refresh();
       if (!cancelled) setHydrated(true);
