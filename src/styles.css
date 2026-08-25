@@ -146,6 +146,13 @@
   from { stroke-dashoffset: 200; }
   to { stroke-dashoffset: 0; }
 }
+@keyframes swipe-hint {
+  0%, 100% { transform: translateX(-34px) rotate(-10deg); opacity: 0.75; }
+  50% { transform: translateX(34px) rotate(10deg); opacity: 1; }
+}
+@utility animate-swipe-hint {
+  animation: swipe-hint 1.8s ease-in-out infinite;
+}
 
 @utility gradient-power {
   background-image: var(--gradient-power);
