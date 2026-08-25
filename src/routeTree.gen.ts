@@ -17,6 +17,7 @@ import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as CommitmentsRouteImport } from './routes/commitments'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as EbookRouteImport } from './routes/ebook'
+import { Route as GuideRouteImport } from './routes/guide'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as JourneyRouteImport } from './routes/journey'
 import { Route as MapRouteImport } from './routes/map'
@@ -85,6 +86,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const EbookRoute = EbookRouteImport.update({
   id: '/ebook',
   path: '/ebook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuideRoute = GuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
   '/ebook': typeof EbookRoute
+  '/guide': typeof GuideRoute
   '/join': typeof JoinRoute
   '/journey': typeof JourneyRoute
   '/map': typeof MapRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByTo {
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
   '/ebook': typeof EbookRoute
+  '/guide': typeof GuideRoute
   '/join': typeof JoinRoute
   '/journey': typeof JourneyRoute
   '/map': typeof MapRoute
@@ -320,6 +328,7 @@ export interface FileRoutesById {
   '/commitments': typeof CommitmentsRoute
   '/dashboard': typeof DashboardRoute
   '/ebook': typeof EbookRoute
+  '/guide': typeof GuideRoute
   '/join': typeof JoinRoute
   '/journey': typeof JourneyRoute
   '/map': typeof MapRoute
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/commitments'
     | '/dashboard'
     | '/ebook'
+    | '/guide'
     | '/join'
     | '/journey'
     | '/map'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/commitments'
     | '/dashboard'
     | '/ebook'
+    | '/guide'
     | '/join'
     | '/journey'
     | '/map'
@@ -438,6 +449,7 @@ export interface FileRouteTypes {
     | '/commitments'
     | '/dashboard'
     | '/ebook'
+    | '/guide'
     | '/join'
     | '/journey'
     | '/map'
@@ -478,6 +490,7 @@ export interface RootRouteChildren {
   CommitmentsRoute: typeof CommitmentsRoute
   DashboardRoute: typeof DashboardRoute
   EbookRoute: typeof EbookRoute
+  GuideRoute: typeof GuideRoute
   JoinRoute: typeof JoinRoute
   JourneyRoute: typeof JourneyRoute
   MapRoute: typeof MapRoute
@@ -552,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/ebook'
       fullPath: '/ebook'
       preLoaderRoute: typeof EbookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guide': {
+      id: '/guide'
+      path: '/guide'
+      fullPath: '/guide'
+      preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -803,6 +823,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommitmentsRoute: CommitmentsRoute,
   DashboardRoute: DashboardRoute,
   EbookRoute: EbookRoute,
+  GuideRoute: GuideRoute,
   JoinRoute: JoinRoute,
   JourneyRoute: JourneyRoute,
   MapRoute: MapRoute,
