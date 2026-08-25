@@ -482,15 +482,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
 
       const sync = (async () => {
-        // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
-        if (existingId) {
-          const { id: _omit, ...patch } = payload;
-          const { error } = await db.from("participants").update(patch).eq("id", existingId);
-          if (error) throw error;
-        } else {
-          const { error } = await db.from("participants").insert(payload);
-          if (error) throw error;
+        try {
+          // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
+          if (existingId) {
+            const { id: _omit, ...patch } = payload;
+            const { error } = await db.from("participants").update(patch).eq("id", existingId);
+            if (error) throw error;
+          } else {
+            const { error } = await db.from("participants").insert(payload);
+            if (error) throw error;
+          }
+        } catch (err) {
+          // ยังส่งขึ้นฐานข้อมูลไม่สำเร็จ → เก็บไว้ในเครื่องเพื่อให้กดซิงก์ภายหลัง
+          const pending: PendingProfile = {
+            id,
+            name: payload.name,
+            savedAt: now,
+            payload,
+            mode: existingId ? "update" : "insert",
+          };
+          writePending(pending);
+          setPendingProfile(pending);
+          throw err;
         }
+        clearPending();
+        setPendingProfile(null);
         await refresh();
         return saved;
       })();
@@ -501,6 +517,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [refresh],
   );
+
+  const syncPendingProfile: Store["syncPendingProfile"] = useCallback(async () => {
+    const pending = pendingProfile ?? readLocal<PendingProfile>(PENDING_KEY);
+    if (!pending?.payload) return;
+    const payload = { ...pending.payload, device_id: getDeviceId() } as Record<string, unknown>;
+    if (pending.mode === "update") {
+      const { id: _omit, ...patch } = payload;
+      const { error } = await db.from("participants").update(patch).eq("id", pending.id);
+      if (error) throw error;
+    } else {
+      const { error } = await db.from("participants").insert(payload);
+      if (error) throw error;
+    }
+    myIdRef.current = pending.id;
+    try {
+      localStorage.setItem(MY_ID_KEY, pending.id);
+    } catch {
+      /* ignore */
+    }
+    clearPending();
+    setPendingProfile(null);
+    await refresh();
+  }, [pendingProfile, refresh]);
+
+  const dismissPendingProfile: Store["dismissPendingProfile"] = useCallback(() => {
+    clearPending();
+    setPendingProfile(null);
+  }, []);
+
 
   const linkAccount: Store["linkAccount"] = useCallback(
     (email, userId) => {
