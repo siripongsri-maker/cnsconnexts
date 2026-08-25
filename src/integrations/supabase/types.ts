@@ -310,6 +310,7 @@ export type Database = {
           batch: string
           course: string
           created_at: string
+          device_id: string | null
           highlight: string
           id: string
           name: string
@@ -327,6 +328,7 @@ export type Database = {
           batch?: string
           course?: string
           created_at?: string
+          device_id?: string | null
           highlight?: string
           id?: string
           name: string
@@ -344,6 +346,7 @@ export type Database = {
           batch?: string
           course?: string
           created_at?: string
+          device_id?: string | null
           highlight?: string
           id?: string
           name?: string
@@ -364,7 +367,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_device_id: { Args: never; Returns: string }
+      is_my_connection: { Args: { _connection_id: string }; Returns: boolean }
+      is_my_participant: { Args: { _id: string }; Returns: boolean }
+      my_participant_ids: { Args: never; Returns: string[] }
     }
     Enums: {
       [_ in never]: never
