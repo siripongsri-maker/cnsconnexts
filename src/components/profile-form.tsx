@@ -34,9 +34,11 @@ export function ProfileForm({
   const [have, setHave] = useState<string[]>(initial?.powers_have ?? []);
   const [need, setNeed] = useState<string[]>(initial?.powers_need ?? []);
   const [bio, setBio] = useState(initial?.bio ?? "");
+  const [sending, setSending] = useState(false);
 
   const provinces = useMemo(() => PROVINCES_BY_REGION(region), [region]);
   const valid = name.trim().length > 0 && interests.length > 0 && have.length > 0;
+
 
   const toggle = (list: string[], set: (v: string[]) => void, v: string) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -49,9 +51,11 @@ export function ProfileForm({
   };
 
   const submit = () => {
-    if (!valid) return;
+    if (!valid || sending) return;
+    setSending(true);
     onSubmit({
       name: name.trim(),
+
       avatar,
       photo,
       province: province || (provinces[0]?.en ?? "Bangkok"),
@@ -200,11 +204,12 @@ export function ProfileForm({
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/92 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         <button
           type="button"
-          disabled={!valid}
+          disabled={!valid || sending}
           onClick={submit}
           className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground disabled:opacity-40"
         >
-          {submitLabel}
+          {sending ? "กำลังบันทึก…" : submitLabel}
+
         </button>
         {!valid && (
           <p className="mx-auto mt-1.5 max-w-xl text-center text-[11px] text-muted-foreground">

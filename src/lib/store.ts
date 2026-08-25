@@ -19,6 +19,8 @@ const LOCAL_KEY = "connecting-power-local-v2";
 const DEVICE_KEY = "connexts-device-id";
 const MY_ID_KEY = "connexts-participant-id";
 const LEGACY_KEY = "connecting-power-v1";
+const LEGACY_MIGRATED_KEY = "connexts-legacy-migrated";
+
 
 type LocalState = {
   savedIdeas: string[];
@@ -196,12 +198,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ]);
 
     const users = ((p.data as Row[]) ?? []).map((r) => rowToUser(r, myId));
-    const me = users.find((u) => u.id === "me") ?? null;
+    const fetchedMe = users.find((u) => u.id === "me") ?? null;
+    // ถ้าอ่านฐานข้อมูลไม่ทัน/ไม่สำเร็จ อย่าล้างโปรไฟล์ที่มีอยู่ทิ้ง
+    // (เคยทำให้ผู้ใช้ถูกเด้งกลับไปกรอกโปรไฟล์ซ้ำ)
+    const keepMe = !fetchedMe && !!myId;
 
     setState((s) => ({
       ...s,
-      me,
-      users,
+      me: fetchedMe ?? (keepMe ? s.me : null),
+      users: keepMe && s.me ? [s.me, ...users.filter((u) => u.id !== "me")] : users,
+
       ideas: ((i.data as Row[]) ?? []).map((r) => ({
         id: r.id,
         title: r.title,
@@ -288,8 +294,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       myIdRef.current = localStorage.getItem(MY_ID_KEY);
 
-      // ย้ายโปรไฟล์เดิมที่อยู่ในเครื่อง (Phase 1) ขึ้นฐานข้อมูลกลางครั้งเดียว
-      if (!myIdRef.current) {
+      // ย้ายโปรไฟล์เดิมที่อยู่ในเครื่อง (Phase 1) ขึ้นฐานข้อมูลกลาง "ครั้งเดียวเท่านั้น"
+      // ถ้าไม่กันไว้ จะสร้างโปรไฟล์ซ้ำและชนกับการบันทึกของผู้ใช้ จนถูกเด้งกลับไปกรอกใหม่
+      if (!myIdRef.current && localStorage.getItem(LEGACY_MIGRATED_KEY) !== "1") {
         const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
         if (legacy?.me?.name) {
           const id = uuid();
@@ -314,7 +321,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             localStorage.setItem(MY_ID_KEY, id);
           }
         }
+        try {
+          localStorage.setItem(LEGACY_MIGRATED_KEY, "1");
+          localStorage.removeItem(LEGACY_KEY);
+        } catch {
+          /* ignore */
+        }
       }
+
 
       await refresh();
       if (!cancelled) setHydrated(true);
