@@ -6,6 +6,7 @@ import type { MatchResult } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { issueTh, powerTh, provinceTh } from "@/lib/i18n";
 import { Avatar, Chip, PowerChip, ScoreRing } from "./power-bits";
+import { SwipeCoach } from "./swipe-coach";
 
 /** สำรับ "ปัดเร็ว" — ข้าม / ถูกใจ / เชื่อมต่อ ได้ในแตะเดียว */
 export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
