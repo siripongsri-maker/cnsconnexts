@@ -80,7 +80,7 @@ function toRows(list: User[]): Row[] {
       เวลาonboard: u.created_at,
       อัปเดตล่าสุด: u.updated_at ? fmtDate(u.updated_at) : "",
       แหล่งที่มา: SOURCE_LABEL[(u.source ?? "direct") as SourceFilter],
-      อีเมลที่ผูก: u.linked_email ?? "",
+      ผูกบัญชีอีเมล: u.linked_at ? "ผูกแล้ว" : "ยังไม่ผูก",
       สถานะโปรไฟล์: st.label,
       ความครบถ้วน: `${st.percent}%`,
       ข้อมูลที่ขาด: st.missing.join(" / "),
@@ -580,7 +580,7 @@ function UserDetail({
             <p className="mt-2 text-[11px] text-muted-foreground">
               onboard {fmtDate(user.created_at)}
               {user.updated_at ? ` · อัปเดต ${fmtDate(user.updated_at)}` : ""}
-              {user.linked_email ? ` · ${user.linked_email}` : ""}
+              {user.linked_at ? " · ผูกบัญชีอีเมลแล้ว" : ""}
             </p>
             {st.missing.length > 0 && (
               <p className="mt-1 text-[11px] text-coral">ข้อมูลที่ยังขาด: {st.missing.join(" / ")}</p>
