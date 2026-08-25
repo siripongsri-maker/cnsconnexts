@@ -23,6 +23,8 @@ const DEVICE_KEY = "connexts-device-id";
 const MY_ID_KEY = "connexts-participant-id";
 const LEGACY_KEY = "connecting-power-v1";
 const LEGACY_MIGRATED_KEY = "connexts-legacy-migrated";
+/** โปรไฟล์ที่ค้างอยู่ในเครื่อง ยังส่งขึ้นฐานข้อมูลกลางไม่สำเร็จ */
+const PENDING_KEY = "connexts-pending-profile";
 
 
 type LocalState = {
@@ -63,9 +65,23 @@ type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
   source?: UserSource | undefined;
 };
 
+export type PendingProfile = {
+  id: string;
+  name: string;
+  savedAt: string;
+  payload: Record<string, unknown>;
+  mode: "insert" | "update";
+};
+
+
 type Store = State & {
   hydrated: boolean;
   saveProfile: (u: ProfileInput) => Promise<User>;
+  /** โปรไฟล์ที่บันทึกไว้ในเครื่องแต่ยังไม่ถูกส่งขึ้นฐานข้อมูล */
+  pendingProfile: PendingProfile | null;
+  /** ส่งโปรไฟล์ที่ค้างขึ้นฐานข้อมูลกลาง */
+  syncPendingProfile: () => Promise<void>;
+  dismissPendingProfile: () => void;
   connect: (otherId: string, score: number, reason: string) => Connection;
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
@@ -118,6 +134,24 @@ function readLocal<T>(key: string): T | null {
     return null;
   }
 }
+
+function writePending(p: PendingProfile) {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify(p));
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearPending() {
+  try {
+    localStorage.removeItem(PENDING_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+
 
 /** รหัสผ่านผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
 function adminPassword(): string | null {
@@ -190,6 +224,7 @@ const idOut = (id: string, myId: string | null) => (id === myId ? "me" : id);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initial);
   const [hydrated, setHydrated] = useState(false);
+  const [pendingProfile, setPendingProfile] = useState<PendingProfile | null>(null);
   const myIdRef = useRef<string | null>(null);
   const localRef = useRef<LocalState>({
     savedIdeas: [],
@@ -314,7 +349,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
         if (legacy?.me?.name) {
           const id = uuid();
-          const { error } = await db.from("participants").insert({
+          const payload = {
             id,
             device_id: getDeviceId(),
             name: legacy.me.name,
@@ -329,10 +364,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             powers_have: legacy.me.powers_have ?? [],
             powers_need: legacy.me.powers_need ?? [],
             source: legacy.me.source ?? "direct",
-          });
+          };
+          const { error } = await db.from("participants").insert(payload);
           if (!error) {
             myIdRef.current = id;
             localStorage.setItem(MY_ID_KEY, id);
+          } else {
+            // ส่งไม่สำเร็จ → เก็บไว้ให้ผู้ใช้กดซิงก์เองภายหลัง
+            writePending({
+              id,
+              name: payload.name,
+              savedAt: new Date().toISOString(),
+              payload,
+              mode: "insert",
+            });
           }
         }
         try {
@@ -343,8 +388,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      const pending = readLocal<PendingProfile>(PENDING_KEY);
+      if (pending?.payload) setPendingProfile(pending);
 
       await refresh();
+
       if (!cancelled) setHydrated(true);
     };
 
@@ -434,15 +482,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
 
       const sync = (async () => {
-        // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
-        if (existingId) {
-          const { id: _omit, ...patch } = payload;
-          const { error } = await db.from("participants").update(patch).eq("id", existingId);
-          if (error) throw error;
-        } else {
-          const { error } = await db.from("participants").insert(payload);
-          if (error) throw error;
+        try {
+          // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
+          if (existingId) {
+            const { id: _omit, ...patch } = payload;
+            const { error } = await db.from("participants").update(patch).eq("id", existingId);
+            if (error) throw error;
+          } else {
+            const { error } = await db.from("participants").insert(payload);
+            if (error) throw error;
+          }
+        } catch (err) {
+          // ยังส่งขึ้นฐานข้อมูลไม่สำเร็จ → เก็บไว้ในเครื่องเพื่อให้กดซิงก์ภายหลัง
+          const pending: PendingProfile = {
+            id,
+            name: payload.name,
+            savedAt: now,
+            payload,
+            mode: existingId ? "update" : "insert",
+          };
+          writePending(pending);
+          setPendingProfile(pending);
+          throw err;
         }
+        clearPending();
+        setPendingProfile(null);
         await refresh();
         return saved;
       })();
@@ -453,6 +517,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [refresh],
   );
+
+  const syncPendingProfile: Store["syncPendingProfile"] = useCallback(async () => {
+    const pending = pendingProfile ?? readLocal<PendingProfile>(PENDING_KEY);
+    if (!pending?.payload) return;
+    const payload = { ...pending.payload, device_id: getDeviceId() } as Record<string, unknown>;
+    if (pending.mode === "update") {
+      const { id: _omit, ...patch } = payload;
+      const { error } = await db.from("participants").update(patch as never).eq("id", pending.id);
+      if (error) throw error;
+    } else {
+      const { error } = await db.from("participants").insert(payload as never);
+      if (error) throw error;
+    }
+    myIdRef.current = pending.id;
+    try {
+      localStorage.setItem(MY_ID_KEY, pending.id);
+    } catch {
+      /* ignore */
+    }
+    clearPending();
+    setPendingProfile(null);
+    await refresh();
+  }, [pendingProfile, refresh]);
+
+  const dismissPendingProfile: Store["dismissPendingProfile"] = useCallback(() => {
+    clearPending();
+    setPendingProfile(null);
+  }, []);
+
 
   const linkAccount: Store["linkAccount"] = useCallback(
     (email, userId) => {
@@ -1011,6 +1104,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ...state,
       hydrated,
       saveProfile,
+      pendingProfile,
+      syncPendingProfile,
+      dismissPendingProfile,
       connect,
       addCommitment,
       setConnectionStatus,
@@ -1042,7 +1138,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
