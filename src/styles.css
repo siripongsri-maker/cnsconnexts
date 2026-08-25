@@ -288,7 +288,8 @@ textarea.input-line {
   .animate-float,
   .animate-rise,
   .animate-pop,
-  .animate-draw {
+  .animate-draw,
+  .animate-swipe-hint {
     animation: none !important;
   }
 }
