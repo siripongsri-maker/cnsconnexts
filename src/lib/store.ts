@@ -135,6 +135,24 @@ function readLocal<T>(key: string): T | null {
   }
 }
 
+function writePending(p: PendingProfile) {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify(p));
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearPending() {
+  try {
+    localStorage.removeItem(PENDING_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+
+
 /** รหัสผ่านผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
 function adminPassword(): string | null {
   if (typeof window === "undefined") return null;
