@@ -434,7 +434,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
 
       void (async () => {
-        await db.from("participants").upsert(payload, { onConflict: "id" });
+        // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
+        // และข้อมูลผู้ใช้ใหม่ไม่ขึ้นฐานข้อมูลกลาง
+        if (existingId) {
+          const { id: _omit, ...patch } = payload;
+          const { error } = await db.from("participants").update(patch).eq("id", existingId);
+          if (error) console.error("[connexts] อัปเดตโปรไฟล์ไม่สำเร็จ", error);
+        } else {
+          const { error } = await db.from("participants").insert(payload);
+          if (error) console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", error);
+        }
         await refresh();
       })();
 
@@ -454,7 +463,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         me: s.me ? { ...s.me, linked_email: email, linked_user_id: userId, linked_at: now } : s.me,
       }));
       void (async () => {
-        await supabase
+        await db
           .from("participants")
           .update({ linked_email: email, linked_user_id: userId, linked_at: now })
           .eq("id", id);
