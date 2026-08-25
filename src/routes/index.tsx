@@ -46,12 +46,6 @@ export const Route = createFileRoute("/")({
   component: Welcome,
 });
 
-const STATS = [
-  { n: "128", l: "คน" },
-  { n: "42", l: "ไอเดีย" },
-  { n: "86", l: "การเชื่อม" },
-  { n: "4", l: "ภูมิภาค" },
-];
 
 const NAV_LINKS = [
   { to: "/guide", label: "คู่มือใช้งาน", icon: BookOpenCheck },
@@ -100,16 +94,6 @@ function Welcome() {
           </p>
         </div>
 
-        <div className="animate-rise grid grid-cols-4 gap-2" style={{ animationDelay: "160ms" }}>
-          {STATS.map((s) => (
-            <div key={s.l} className="card-soft px-2 py-3 text-center">
-              <p className="text-xl font-extrabold text-gradient">{s.n}</p>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                {s.l}
-              </p>
-            </div>
-          ))}
-        </div>
 
         <div className="animate-rise mt-8 space-y-3" style={{ animationDelay: "240ms" }}>
           <Link
