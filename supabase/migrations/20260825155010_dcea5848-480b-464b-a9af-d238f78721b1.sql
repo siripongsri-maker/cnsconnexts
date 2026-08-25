@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.record_data_backup() FROM PUBLIC, anon, authenticated;
