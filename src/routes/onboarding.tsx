@@ -73,13 +73,25 @@ function Onboarding() {
           <ProfileForm
             initial={me}
             submitLabel={me ? "บันทึกและดูคู่พลัง" : "ค้นหาคู่พลังของฉัน"}
-            onSubmit={(draft) => {
+            onSubmit={async (draft) => {
               const session = getSession();
-              saveProfile({ ...draft, source: session?.source });
-              void navigate({ to: "/matches" });
+              try {
+                setSyncing(true);
+                await saveProfile({ ...draft, source: session?.source });
+                void navigate({ to: "/matches" });
+              } catch (err) {
+                console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", err);
+                toast.error("บันทึกขึ้นระบบไม่สำเร็จ ลองใหม่อีกครั้งนะ");
+              } finally {
+                setSyncing(false);
+              }
             }}
           />
         )}
+        {syncing && (
+          <p className="mt-3 text-center text-[12px] font-bold text-primary">กำลังเชื่อมข้อมูลขึ้นระบบ…</p>
+        )}
+
       </main>
     </div>
   );
