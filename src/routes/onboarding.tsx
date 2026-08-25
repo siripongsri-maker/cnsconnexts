@@ -28,6 +28,8 @@ function Onboarding() {
   const navigate = useNavigate();
   const { me, hydrated, saveProfile } = useStore();
   const [showIntro, setShowIntro] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+
 
   useEffect(() => {
     setShowIntro(!hasSeenIntro());
