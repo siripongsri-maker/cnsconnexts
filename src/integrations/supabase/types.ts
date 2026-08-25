@@ -367,10 +367,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      current_device_id: { Args: never; Returns: string }
-      is_my_connection: { Args: { _connection_id: string }; Returns: boolean }
-      is_my_participant: { Args: { _id: string }; Returns: boolean }
-      my_participant_ids: { Args: never; Returns: string[] }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
