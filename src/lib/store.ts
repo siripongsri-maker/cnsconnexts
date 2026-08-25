@@ -65,7 +65,7 @@ type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
 
 type Store = State & {
   hydrated: boolean;
-  saveProfile: (u: ProfileInput) => User;
+  saveProfile: (u: ProfileInput) => Promise<User>;
   connect: (otherId: string, score: number, reason: string) => Connection;
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
