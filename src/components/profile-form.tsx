@@ -51,8 +51,9 @@ export function ProfileForm({
   };
 
   const submit = () => {
-    if (!valid) return;
-    onSubmit({
+    if (!valid || sending) return;
+    setSending(true);
+
       name: name.trim(),
       avatar,
       photo,
