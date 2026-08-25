@@ -524,10 +524,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const payload = { ...pending.payload, device_id: getDeviceId() } as Record<string, unknown>;
     if (pending.mode === "update") {
       const { id: _omit, ...patch } = payload;
-      const { error } = await db.from("participants").update(patch).eq("id", pending.id);
+      const { error } = await db.from("participants").update(patch as never).eq("id", pending.id);
       if (error) throw error;
     } else {
-      const { error } = await db.from("participants").insert(payload);
+      const { error } = await db.from("participants").insert(payload as never);
       if (error) throw error;
     }
     myIdRef.current = pending.id;
