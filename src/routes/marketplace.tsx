@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { IdeaForm } from "@/components/idea-form";
 import { Avatar, Chip } from "@/components/power-bits";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
-import { ISSUES, REGIONS, type Region } from "@/lib/types";
+import { ISSUES, REGIONS, type Idea, type Region } from "@/lib/types";
 import { issueTh, REGION_LABEL } from "@/lib/i18n";
 
 export const Route = createFileRoute("/marketplace")({
@@ -25,11 +26,14 @@ export const Route = createFileRoute("/marketplace")({
 });
 
 function Marketplace() {
-  const { ideas, users, savedIdeas, toggleSaveIdea, connect, connections, me } = useStore();
+  const { ideas, users, savedIdeas, toggleSaveIdea, connect, connections, me, removeIdea } = useStore();
   const navigate = useNavigate();
   const [issue, setIssue] = useState<string | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
   const [need, setNeed] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Idea | null>(null);
+  const [mineOnly, setMineOnly] = useState(false);
 
   const needOptions = useMemo(
     () => Array.from(new Set(ideas.flatMap((i) => i.resources_need))),
@@ -40,12 +44,39 @@ function Marketplace() {
     (i) =>
       (!issue || i.issues.includes(issue)) &&
       (!region || i.region === region) &&
-      (!need || i.resources_need.includes(need)),
+      (!need || i.resources_need.includes(need)) &&
+      (!mineOnly || i.owner_id === "me"),
   );
 
   return (
-    <AppShell title="ตลาดพลัง" subtitle="Power Marketplace · ตลาดแลกเปลี่ยนพลังและไอเดีย">
+    <AppShell
+      title="ตลาดพลัง"
+      subtitle="Power Marketplace · ตลาดแลกเปลี่ยนพลังและไอเดีย"
+      action={
+        <button
+          onClick={() => {
+            if (!me) {
+              navigate({ to: "/onboarding" });
+              return;
+            }
+            setEditing(null);
+            setFormOpen(true);
+          }}
+          className="tap inline-flex h-9 items-center gap-1 rounded-full bg-white/20 px-3 text-[12px] font-extrabold"
+        >
+          <Plus className="h-4 w-4" /> ลงไอเดีย
+        </button>
+      }
+    >
       <div className="space-y-2 px-5 py-3">
+        <Row>
+          <Pill active={!mineOnly} onClick={() => setMineOnly(false)}>
+            ไอเดียทั้งหมด
+          </Pill>
+          <Pill active={mineOnly} onClick={() => setMineOnly(true)}>
+            ของฉัน
+          </Pill>
+        </Row>
         <Row>
           <Pill active={!issue} onClick={() => setIssue(null)}>
             ทุกประเด็น
@@ -135,6 +166,30 @@ function Marketplace() {
                   </div>
                 </div>
 
+                {idea.owner_id === "me" && (
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() => {
+                        setEditing(idea);
+                        setFormOpen(true);
+                      }}
+                      className="tap inline-flex h-9 items-center gap-1 rounded-lg border border-border px-3 text-[12px] font-bold"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> แก้ไข
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!confirm(`ลบไอเดีย “${idea.title}” ?`)) return;
+                        removeIdea(idea.id);
+                        toast.success("ลบไอเดียแล้ว");
+                      }}
+                      className="tap inline-flex h-9 items-center gap-1 rounded-lg border border-destructive/40 px-3 text-[12px] font-bold text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> ลบ
+                    </button>
+                  </div>
+                )}
+
                 <div className="mt-4 flex gap-2">
                   <button
                     onClick={() => {
@@ -172,7 +227,38 @@ function Marketplace() {
             </article>
           );
         })}
+
+        {filtered.length === 0 && (
+          <div className="card-soft p-6 text-center">
+            <p className="text-sm text-muted-foreground">
+              {mineOnly ? "คุณยังไม่ได้ลงไอเดียเลย" : "ยังไม่มีไอเดียในหมวดนี้"}
+            </p>
+            <button
+              onClick={() => {
+                if (!me) {
+                  navigate({ to: "/onboarding" });
+                  return;
+                }
+                setEditing(null);
+                setFormOpen(true);
+              }}
+              className="tap mt-3 h-11 w-full rounded-xl gradient-power text-sm font-extrabold text-primary-foreground"
+            >
+              ลงไอเดียของคุณ
+            </button>
+          </div>
+        )}
       </div>
+
+      {formOpen && (
+        <IdeaForm
+          idea={editing ?? undefined}
+          onClose={() => {
+            setFormOpen(false);
+            setEditing(null);
+          }}
+        />
+      )}
     </AppShell>
   );
 }
