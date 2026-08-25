@@ -147,6 +147,8 @@ function RootComponent() {
           <FilterAlerts />
           <GuidedTour />
           <UsageTracker />
+          <CacheRefresher />
+
           <Toaster position="top-center" />
         </StoreProvider>
       </AuthProvider>
