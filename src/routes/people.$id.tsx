@@ -21,9 +21,17 @@ export const Route = createFileRoute("/people/$id")({
 
 function Person() {
   const { id } = Route.useParams();
-  const { users, me, connect, connections, ideas } = useStore();
+  const { users, me, connect, connections, ideas, hydrated } = useStore();
   const user = users.find((u) => u.id === id);
+  if (!hydrated && !user) {
+    return (
+      <div className="grid min-h-screen place-items-center p-8 text-sm text-muted-foreground">
+        กำลังเปิดโปรไฟล์…
+      </div>
+    );
+  }
   if (!user) throw notFound();
+
 
   const match = me ? scoreMatch(me, user) : null;
   const existing = connections.find(

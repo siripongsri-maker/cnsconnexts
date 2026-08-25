@@ -1,6 +1,8 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { emitLive } from "./live";
+import { adminDeleteRow, adminUpdateRow, type AdminTable } from "./admin.functions";
+import { ADMIN_PASSWORD } from "./admin-auth";
 import type {
   AppNotification,
   ChatMessage,
@@ -82,6 +84,7 @@ type Store = State & {
   importUsers: (list: User[]) => number;
   updateUser: (id: string, patch: Partial<User>) => void;
   removeUser: (id: string) => void;
+  addIdea: (i: Omit<Idea, "id" | "created_at" | "owner_id">) => Idea;
   updateIdea: (id: string, patch: Partial<Idea>) => void;
   removeIdea: (id: string) => void;
   updateSubmission: (id: string, patch: Partial<Submission>) => void;
@@ -110,6 +113,16 @@ function readLocal<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** รหัสผ่านผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
+function adminPassword(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem("connext-admin-session") === "1" ? ADMIN_PASSWORD : null;
   } catch {
     return null;
   }
@@ -777,7 +790,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       const { id: _ignored, created_at: _c, ...rest } = patch as Partial<User> & { id?: string };
       void (async () => {
-        await supabase.from("participants").update(rest as Row).eq("id", dbId(id));
+        const target = dbId(id);
+        const { error } = await supabase.from("participants").update(rest as Row).eq("id", target);
+        const pwd = adminPassword();
+        if (pwd) {
+          await adminUpdateRow({
+            data: { password: pwd, table: "participants", id: target, patch: rest as Row },
+          }).catch(() => undefined);
+        } else if (error) {
+          console.warn("[store] update participant failed", error.message);
+        }
         await refresh();
       })();
     },
@@ -785,14 +807,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const removeRow = useCallback(
-    (table: string, id: string) => {
+    (table: AdminTable, id: string) => {
       void (async () => {
-        await supabase.from(table as never).delete().eq("id", id);
+        const { error } = await supabase.from(table as never).delete().eq("id", id);
+        const pwd = adminPassword();
+        // ผู้ดูแลหลังบ้านลบข้อมูลของคนอื่นได้ผ่านสิทธิ์ฝั่งเซิร์ฟเวอร์
+        if (pwd) {
+          await adminDeleteRow({ data: { password: pwd, table, id } }).catch((e: unknown) =>
+            console.warn("[store] admin delete failed", e),
+          );
+        } else if (error) {
+          console.warn("[store] delete failed", error.message);
+        }
         await refresh();
       })();
     },
     [refresh],
   );
+
 
   const removeUser: Store["removeUser"] = useCallback(
     (id) => {
@@ -800,6 +832,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeRow("participants", dbId(id));
     },
     [removeRow, dbId],
+  );
+
+  const addIdea: Store["addIdea"] = useCallback(
+    (data) => {
+      const item: Idea = {
+        ...data,
+        id: uuid(),
+        owner_id: "me",
+        created_at: new Date().toISOString(),
+      };
+      setState((s) => ({ ...s, ideas: [item, ...s.ideas] }));
+      void (async () => {
+        const { error } = await supabase.from("ideas").insert({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          owner_id: myIdRef.current,
+          region: item.region,
+          issues: item.issues,
+          resources_have: item.resources_have,
+          resources_need: item.resources_need,
+        });
+        if (error) console.warn("[store] create idea failed", error.message);
+        await refresh();
+      })();
+      emitLive("match", "ไอเดียใหม่ในตลาดพลัง", item.title);
+      return item;
+    },
+    [refresh],
   );
 
   const updateIdea: Store["updateIdea"] = useCallback(
@@ -955,6 +1016,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       importUsers,
       updateUser,
       removeUser,
+      addIdea,
       updateIdea,
       removeIdea,
       updateSubmission,
@@ -969,7 +1031,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);

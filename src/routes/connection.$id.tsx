@@ -27,24 +27,32 @@ export const Route = createFileRoute("/connection/$id")({
 
 function ConnectionDetail() {
   const { id } = Route.useParams();
-  const { connections, users, me, addCommitment, commitments } = useStore();
+  const { connections, users, me, addCommitment, commitments, hydrated } = useStore();
   const navigate = useNavigate();
-
-  const conn = connections.find((c) => c.id === id);
-  if (!conn) throw notFound();
-
-  const a = users.find((u) => u.id === conn.user_a) ?? me;
-  const b = users.find((u) => u.id === conn.user_b);
 
   const [action, setAction] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [status, setStatus] = useState<ConnectionStatus>("Planning");
 
-  if (!a || !b) throw notFound();
+  const conn = connections.find((c) => c.id === id);
+  const a = conn ? users.find((u) => u.id === conn.user_a) ?? me : null;
+  const b = conn ? users.find((u) => u.id === conn.user_b) ?? null : null;
+
+  // ระหว่างที่ยังโหลดข้อมูลจากฐานข้อมูลไม่เสร็จ อย่าเพิ่งบอกว่า "ไม่พบ"
+  if (!hydrated || (!conn && connections.length === 0)) {
+    return (
+      <div className="grid min-h-screen place-items-center p-8 text-sm text-muted-foreground">
+        กำลังเปิดคอนเนกชัน…
+      </div>
+    );
+  }
+
+  if (!conn || !a || !b) throw notFound();
 
   const myCommitments = commitments.filter((m) => m.connection_id === conn.id);
   const sharedIssues = a.interests.filter((i) => b.interests.includes(i));
   const sharedPower = [...new Set([...a.powers_have.slice(0, 1), ...b.powers_have.slice(0, 1)])];
+
 
   return (
     <div className="min-h-screen bg-background pb-36">
