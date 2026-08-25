@@ -65,6 +65,15 @@ type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
   source?: UserSource | undefined;
 };
 
+export type PendingProfile = {
+  id: string;
+  name: string;
+  savedAt: string;
+  payload: Record<string, unknown>;
+  mode: "insert" | "update";
+};
+
+
 type Store = State & {
   hydrated: boolean;
   saveProfile: (u: ProfileInput) => Promise<User>;
