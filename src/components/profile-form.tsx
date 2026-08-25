@@ -204,11 +204,12 @@ export function ProfileForm({
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/92 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         <button
           type="button"
-          disabled={!valid}
+          disabled={!valid || sending}
           onClick={submit}
           className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground disabled:opacity-40"
         >
-          {submitLabel}
+          {sending ? "กำลังบันทึก…" : submitLabel}
+
         </button>
         {!valid && (
           <p className="mx-auto mt-1.5 max-w-xl text-center text-[11px] text-muted-foreground">
