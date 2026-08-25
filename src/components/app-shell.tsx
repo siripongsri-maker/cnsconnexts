@@ -4,6 +4,7 @@ import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut, Bell } 
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { Wordmark } from "@/components/wordmark";
+import { SponsorFooter } from "@/components/sponsor-footer";
 import type { ReactNode } from "react";
 
 const NAV = [
@@ -90,6 +91,10 @@ export function AppShell({
         </header>
       )}
       <main className="mx-auto w-full max-w-xl">{children}</main>
+
+      <div className="mx-auto w-full max-w-xl px-5">
+        <SponsorFooter />
+      </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/90 pb-[max(0.4rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
         <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2 pt-2">
