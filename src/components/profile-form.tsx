@@ -50,24 +50,29 @@ export function ProfileForm({
     reader.readAsDataURL(file);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!valid || sending) return;
     setSending(true);
-    onSubmit({
-      name: name.trim(),
+    try {
+      await onSubmit({
+        name: name.trim(),
 
-      avatar,
-      photo,
-      province: province || (provinces[0]?.en ?? "Bangkok"),
-      region,
-      organization: organization.trim() || "อิสระ",
-      generation,
-      bio: bio.trim(),
-      interests,
-      powers_have: have,
-      powers_need: need,
-    });
+        avatar,
+        photo,
+        province: province || (provinces[0]?.en ?? "Bangkok"),
+        region,
+        organization: organization.trim() || "อิสระ",
+        generation,
+        bio: bio.trim(),
+        interests,
+        powers_have: have,
+        powers_need: need,
+      });
+    } finally {
+      setSending(false);
+    }
   };
+
 
   return (
     <div className="space-y-7 pb-32">
