@@ -96,32 +96,8 @@ export function AppShell({
         <SponsorFooter />
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/90 pb-[max(0.4rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
-        <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2 pt-2">
-          {NAV.map(({ to, label, icon: Icon }) => {
-            const active = pathname.startsWith(to);
-            return (
-              <li key={to} className="flex-1">
-                <Link
-                  to={to}
-                  className={`tap flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[10px] font-semibold ${
-                    active ? "text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  <span
-                    className={`grid h-8 w-12 shrink-0 place-items-center rounded-full transition-colors ${
-                      active ? "bg-primary/12" : ""
-                    }`}
-                  >
-                    <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.6 : 2} />
-                  </span>
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      <BottomNav />
+
     </div>
   );
 }
