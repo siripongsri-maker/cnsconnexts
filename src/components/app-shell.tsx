@@ -1,19 +1,12 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, Map, Store, CheckCircle2, Radio, Home, LogIn, LogOut, Bell } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Home, LogIn, LogOut, Bell } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { Wordmark } from "@/components/wordmark";
 import { SponsorFooter } from "@/components/sponsor-footer";
+import { BottomNav } from "@/components/bottom-nav";
 import type { ReactNode } from "react";
-
-const NAV = [
-  { to: "/matches", label: "คู่เชื่อม", icon: Sparkles },
-  { to: "/map", label: "แผนที่พลัง", icon: Map },
-  { to: "/marketplace", label: "ตลาดนัด", icon: Store },
-  { to: "/commitments", label: "ก้าวต่อไป", icon: CheckCircle2 },
-  { to: "/dashboard", label: "สด", icon: Radio },
-] as const;
 
 export function AppShell({
   children,
@@ -26,7 +19,6 @@ export function AppShell({
   subtitle?: string;
   action?: ReactNode;
 }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { mode, signOut } = useAuth();
   const { notifications } = useStore();
   const unread = notifications.filter((n) => !n.read).length;
@@ -96,32 +88,8 @@ export function AppShell({
         <SponsorFooter />
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/90 pb-[max(0.4rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
-        <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2 pt-2">
-          {NAV.map(({ to, label, icon: Icon }) => {
-            const active = pathname.startsWith(to);
-            return (
-              <li key={to} className="flex-1">
-                <Link
-                  to={to}
-                  className={`tap flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[10px] font-semibold ${
-                    active ? "text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  <span
-                    className={`grid h-8 w-12 shrink-0 place-items-center rounded-full transition-colors ${
-                      active ? "bg-primary/12" : ""
-                    }`}
-                  >
-                    <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.6 : 2} />
-                  </span>
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      <BottomNav />
+
     </div>
   );
 }
