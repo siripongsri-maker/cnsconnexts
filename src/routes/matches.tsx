@@ -36,8 +36,18 @@ function Matches() {
   const [mode, setMode] = useState<Mode>("deck");
 
   useEffect(() => {
-    if (hydrated && !me) navigate({ to: "/onboarding" });
+    if (!hydrated || me) return;
+    // มีโปรไฟล์อยู่แล้วในเครื่องนี้ (แค่ยังโหลดไม่เสร็จ) อย่าเด้งไปกรอกซ้ำ
+    let hasProfile = false;
+    try {
+      hasProfile = !!localStorage.getItem("connexts-participant-id");
+    } catch {
+      hasProfile = false;
+    }
+    if (hasProfile) return;
+    navigate({ to: "/onboarding", replace: true });
   }, [hydrated, me, navigate]);
+
 
   const all = useMemo(() => {
     if (!me) return [];
