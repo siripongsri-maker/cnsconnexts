@@ -34,9 +34,11 @@ export function ProfileForm({
   const [have, setHave] = useState<string[]>(initial?.powers_have ?? []);
   const [need, setNeed] = useState<string[]>(initial?.powers_need ?? []);
   const [bio, setBio] = useState(initial?.bio ?? "");
+  const [sending, setSending] = useState(false);
 
   const provinces = useMemo(() => PROVINCES_BY_REGION(region), [region]);
   const valid = name.trim().length > 0 && interests.length > 0 && have.length > 0;
+
 
   const toggle = (list: string[], set: (v: string[]) => void, v: string) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
