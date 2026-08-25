@@ -45,7 +45,7 @@ function AuthPage() {
   linkRef.current = linkGuest;
 
   const hasLocalProfile = Boolean(me);
-  const alreadyLinked = Boolean(me?.linked_email);
+  const alreadyLinked = Boolean(me?.linked_at ?? me?.linked_email);
 
   useEffect(() => {
     if (me?.name && !name) setName(me.name);
@@ -54,7 +54,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (mode !== "user" || !user) return;
-    if (me && !me.linked_user_id && linkRef.current) {
+    if (me && !me.linked_at && !me.linked_user_id && linkRef.current) {
       linkAccount(user.email ?? "", user.id);
       toast.success("เชื่อมโปรไฟล์เดิมเข้ากับบัญชีนี้แล้ว ข้อมูลของคุณจะไม่หาย");
     }
@@ -156,7 +156,7 @@ function AuthPage() {
                 {alreadyLinked ? (
                   <p className="mt-1 flex items-center gap-1.5 text-[12.5px] font-semibold text-primary">
                     <ShieldCheck className="h-4 w-4" />
-                    เชื่อมกับบัญชี {me?.linked_email} แล้ว
+                    เชื่อมกับบัญชี {me?.linked_email ?? user?.email ?? "อีเมลของคุณ"} แล้ว
                   </p>
                 ) : (
                   <p className="mt-1 text-[12.5px] text-muted-foreground">

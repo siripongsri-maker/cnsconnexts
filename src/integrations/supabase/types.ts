@@ -310,6 +310,7 @@ export type Database = {
           batch: string
           course: string
           created_at: string
+          device_id: string | null
           highlight: string
           id: string
           name: string
@@ -327,6 +328,7 @@ export type Database = {
           batch?: string
           course?: string
           created_at?: string
+          device_id?: string | null
           highlight?: string
           id?: string
           name: string
@@ -344,6 +346,7 @@ export type Database = {
           batch?: string
           course?: string
           created_at?: string
+          device_id?: string | null
           highlight?: string
           id?: string
           name?: string

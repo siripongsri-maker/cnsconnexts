@@ -122,6 +122,27 @@ function getDeviceId() {
   return id;
 }
 
+/**
+ * ส่งรหัสอุปกรณ์ไปกับทุกคำขอฐานข้อมูล เพื่อให้ RLS ตรวจสิทธิ์ความเป็นเจ้าของ
+ * ของผู้ใช้แบบ guest ได้ (แก้/ลบได้เฉพาะข้อมูลของตัวเองเท่านั้น)
+ */
+function attachDeviceHeader() {
+  if (typeof window === "undefined") return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rest?.headers?.set?.("x-device-id", getDeviceId());
+  } catch {
+    /* ignore */
+  }
+}
+
+/** คอลัมน์สาธารณะของโปรไฟล์ (ไม่ดึง device_id / linked_email / linked_user_id) */
+const PARTICIPANT_PUBLIC_COLS =
+  "id,name,avatar,photo,province,region,organization,generation,bio,interests,powers_have,powers_need,source,linked_at,created_at,updated_at";
+
+const SUBMISSION_PUBLIC_COLS =
+  "id,name,course,batch,region,province,policy_issues,summary,highlight,wanted,photo,stage_ready,showcase,created_at,updated_at";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = any;
 
@@ -141,8 +162,6 @@ function rowToUser(r: Row, myId: string | null): User {
     powers_need: r.powers_need ?? [],
     created_at: r.created_at,
     updated_at: r.updated_at ?? undefined,
-    linked_email: r.linked_email ?? undefined,
-    linked_user_id: r.linked_user_id ?? undefined,
     linked_at: r.linked_at ?? undefined,
     source: (r.source ?? "direct") as UserSource,
   };
@@ -164,14 +183,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
 
   const refresh = useCallback(async () => {
+    attachDeviceHeader();
     const myId = myIdRef.current;
     const [p, i, c, m, msg, sb, pn] = await Promise.all([
-      supabase.from("participants").select("*").order("created_at", { ascending: false }),
+      supabase.from("participants").select(PARTICIPANT_PUBLIC_COLS).order("created_at", { ascending: false }),
       supabase.from("ideas").select("*").order("created_at", { ascending: false }),
       supabase.from("connections").select("*").order("created_at", { ascending: false }),
       supabase.from("commitments").select("*").order("created_at", { ascending: false }),
       supabase.from("messages").select("*").order("created_at", { ascending: true }),
-      supabase.from("submissions").select("*").order("created_at", { ascending: false }),
+      supabase.from("submissions").select(SUBMISSION_PUBLIC_COLS).order("created_at", { ascending: false }),
       supabase.from("province_notes").select("*").order("created_at", { ascending: false }),
     ]);
 
@@ -254,6 +274,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     const boot = async () => {
+      attachDeviceHeader();
       const local = readLocal<LocalState>(LOCAL_KEY);
       if (local) {
         localRef.current = {
@@ -678,6 +699,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           photo: item.photo ?? null,
           stage_ready: item.stage_ready,
           showcase: false,
+          device_id: getDeviceId(),
         });
         await refresh();
       })();
