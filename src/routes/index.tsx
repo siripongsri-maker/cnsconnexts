@@ -47,8 +47,12 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: async () => {
-    const stats = await getPublicStats();
-    return { stats };
+    try {
+      const stats = await getPublicStats();
+      return { stats };
+    } catch {
+      return { stats: { participants: 0, ideas: 0, connections: 0 } };
+    }
   },
   component: Welcome,
 });
