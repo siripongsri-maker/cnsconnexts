@@ -12,7 +12,8 @@ import {
   FileText,
   BookOpen,
   Printer,
-  UserCircle, CalendarDays,
+  UserCircle,
+  CalendarDays,
   Palette,
   Compass,
   BookOpenCheck,
@@ -21,6 +22,7 @@ import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
 import { useMotionSettings } from "@/lib/motion";
+import { getPublicStats } from "@/lib/stats.functions";
 import { ThailandNetwork } from "@/components/thailand-network";
 import { Wordmark } from "@/components/wordmark";
 import { TOUR_EVENT } from "@/components/guided-tour";
@@ -43,8 +45,13 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  loader: async () => {
+    const stats = await getPublicStats();
+    return { stats };
+  },
   component: Welcome,
 });
+
 
 
 const NAV_LINKS = [
@@ -66,7 +73,9 @@ const NAV_LINKS = [
 
 function Welcome() {
   const { reducedMotion, lowSpec } = useMotionSettings();
+  const { stats } = Route.useLoaderData();
   return (
+
     <div className="relative min-h-screen overflow-hidden bg-background">
       <PdpaConsent />
       <div
@@ -92,6 +101,20 @@ function Welcome() {
           <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
             ทุกคนมีพลังไม่เหมือนกัน มาค้นหากันเถอะว่าวันนี้คุณควรเชื่อมต่อกับใคร
           </p>
+        </div>
+        <div className="animate-rise grid grid-cols-3 gap-2" style={{ animationDelay: "160ms" }}>
+          {[
+            { n: stats.participants, l: "ผู้เข้าร่วม" },
+            { n: stats.ideas, l: "ไอเดีย" },
+            { n: stats.connections, l: "การเชื่อม" },
+          ].map((s) => (
+            <div key={s.l} className="card-soft px-2 py-3 text-center">
+              <p className="text-xl font-extrabold text-gradient">{s.n}</p>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                {s.l}
+              </p>
+            </div>
+          ))}
         </div>
 
 
