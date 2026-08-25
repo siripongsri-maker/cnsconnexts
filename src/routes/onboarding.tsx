@@ -33,6 +33,13 @@ function Onboarding() {
     setShowIntro(!hasSeenIntro());
   }, []);
 
+  // มีโปรไฟล์แล้ว → ไม่ต้องกรอกซ้ำ ไปหน้าคู่เชื่อมเลย
+  useEffect(() => {
+    if (!hydrated || !me) return;
+    void navigate({ to: "/matches", replace: true });
+  }, [hydrated, me, navigate]);
+
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 bg-background/90 px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-xl">
