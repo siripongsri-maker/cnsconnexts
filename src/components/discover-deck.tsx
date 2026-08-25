@@ -74,6 +74,11 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
 
   return (
     <div className="px-5">
+      <SwipeCoach />
+      <p className="mb-3 rounded-2xl bg-muted/70 px-3 py-2 text-center text-[12.5px] font-semibold leading-snug">
+        ลากการ์ดไป <span className="text-primary">ขวา = สนใจ</span> · ลากไป{" "}
+        <span className="text-muted-foreground">ซ้าย = ข้าม</span> หรือกดปุ่มด้านล่างก็ได้
+      </p>
       <div className="relative">
         {next && (
           <div className="card-soft absolute inset-x-2 top-3 h-full scale-[0.97] opacity-50" aria-hidden />
