@@ -31,16 +31,14 @@ export const Route = createFileRoute("/admin/people")({
 
 type Draft = Pick<User, "name" | "organization" | "bio" | "province" | "interests">;
 
-/** รหัสสมาชิกชุดเดโม่ (u1–u20) */
-const DEMO_IDS = new Set(Array.from({ length: 20 }, (_, i) => `u${i + 1}`));
-const isDemo = (id: string) => DEMO_IDS.has(id);
+/** Phase 2: ไม่มีข้อมูลเดโม่แล้ว ผู้ใช้ทุกคนคือผู้ใช้จริง */
+const isDemo = (_id: string) => false;
 
-type SourceFilter = "all" | "real" | "demo" | UserSource;
+type SourceFilter = "all" | "real" | UserSource;
 
 const SOURCE_LABEL: Record<SourceFilter, string> = {
   all: "ทั้งหมด",
   real: "ผู้ใช้จริง",
-  demo: "เดโม่",
   qr: "QR",
   link: "ลิงก์",
   invite: "Invite",
@@ -108,9 +106,7 @@ function AdminPeoplePage() {
     const fromTs = from ? new Date(`${from}T00:00:00`).getTime() : null;
     const toTs = to ? new Date(`${to}T23:59:59`).getTime() : null;
     return users.filter((u) => {
-      if (source === "real" && isDemo(u.id)) return false;
-      if (source === "demo" && !isDemo(u.id)) return false;
-      if (source !== "all" && source !== "real" && source !== "demo" && u.source !== source) return false;
+      if (source !== "all" && source !== "real" && u.source !== source) return false;
       if (fromTs !== null || toTs !== null) {
         const ts = new Date(u.created_at).getTime();
         if (Number.isNaN(ts)) return false;
@@ -180,7 +176,7 @@ function AdminPeoplePage() {
 
         <div className="space-y-3 rounded-2xl border border-border bg-card p-3">
           <div className="flex rounded-xl bg-muted p-0.5">
-            {(["all", "real", "demo"] as const).map((s) => (
+            {(["all", "real"] as const).map((s) => (
               <button
                 key={s}
                 type="button"
@@ -190,7 +186,7 @@ function AdminPeoplePage() {
                 }`}
               >
                 {SOURCE_LABEL[s]}
-                {s === "real" ? ` (${realCount})` : s === "demo" ? ` (${users.length - realCount})` : ""}
+                {s === "real" ? ` (${realCount})` : ""}
               </button>
             ))}
           </div>
@@ -205,7 +201,6 @@ function AdminPeoplePage() {
               >
                 <option value="all">ทั้งหมด</option>
                 <option value="real">ผู้ใช้จริง</option>
-                <option value="demo">เดโม่</option>
                 <option value="qr">QR</option>
                 <option value="link">ลิงก์</option>
                 <option value="invite">Invite</option>
@@ -500,9 +495,7 @@ function SourceBadge({ source }: { source?: UserSource | undefined }) {
             ? "bg-primary/15 text-primary"
             : source === "admin"
               ? "bg-secondary text-secondary-foreground"
-              : source === "demo"
-                ? "bg-muted text-muted-foreground"
-                : "bg-accent text-accent-foreground";
+              : "bg-accent text-accent-foreground";
   return (
     <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${color}`}>{label}</span>
   );
