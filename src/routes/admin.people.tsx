@@ -39,6 +39,7 @@ type SourceFilter = "all" | "real" | UserSource;
 const SOURCE_LABEL: Record<SourceFilter, string> = {
   all: "ทั้งหมด",
   real: "ผู้ใช้จริง",
+  demo: "เดโม่",
   qr: "QR",
   link: "ลิงก์",
   invite: "Invite",
