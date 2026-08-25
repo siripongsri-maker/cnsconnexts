@@ -1,8 +1,6 @@
-import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { emitLive } from "./live";
-import { DEMO_COMMITMENTS, DEMO_CONNECTIONS, DEMO_IDEAS, DEMO_USERS } from "./demo-data";
-import { DEMO_PROVINCE_NOTES } from "./demo-province-notes";
-import { DEMO_SUBMISSIONS } from "./demo-submissions";
 import type {
   AppNotification,
   ChatMessage,
@@ -17,7 +15,17 @@ import type {
   UserSource,
 } from "./types";
 
-const KEY = "connecting-power-v1";
+const LOCAL_KEY = "connecting-power-local-v2";
+const DEVICE_KEY = "connexts-device-id";
+const MY_ID_KEY = "connexts-participant-id";
+const LEGACY_KEY = "connecting-power-v1";
+
+type LocalState = {
+  savedIdeas: string[];
+  likedUsers: string[];
+  skippedUsers: string[];
+  notifications: AppNotification[];
+};
 
 type State = {
   me: User | null;
@@ -25,28 +33,24 @@ type State = {
   ideas: Idea[];
   connections: Connection[];
   commitments: Commitment[];
-  savedIdeas: string[];
-  likedUsers: string[];
-  skippedUsers: string[];
   provinceNotes: ProvinceNote[];
   submissions: Submission[];
-  notifications: AppNotification[];
   messages: ChatMessage[];
-};
+} & LocalState;
 
 const initial: State = {
   me: null,
-  users: DEMO_USERS,
-  ideas: DEMO_IDEAS,
-  connections: DEMO_CONNECTIONS,
-  commitments: DEMO_COMMITMENTS,
+  users: [],
+  ideas: [],
+  connections: [],
+  commitments: [],
+  provinceNotes: [],
+  submissions: [],
+  messages: [],
   savedIdeas: [],
   likedUsers: [],
   skippedUsers: [],
-  provinceNotes: DEMO_PROVINCE_NOTES,
-  submissions: DEMO_SUBMISSIONS,
   notifications: [],
-  messages: [],
 };
 
 type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
@@ -91,250 +95,505 @@ type Store = State & {
   reset: () => void;
 };
 
-const scheduledReplies = new Set<string>();
+const Ctx = createContext<Store | null>(null);
 
-const REPLIES = [
-  "ดีเลยครับ นัดคุยกันสั้น ๆ 15 นาทีดีไหม",
-  "สนใจมากค่ะ ขอรายละเอียดเพิ่มนิดนึงได้ไหม",
-  "ผมว่าเรื่องนี้ทำร่วมกับพื้นที่ผมได้เลย",
-  "ว่างสัปดาห์หน้าครับ วันไหนสะดวก",
-  "ขอบคุณที่ทัก เดี๋ยวส่งข้อมูลโครงการให้นะครับ",
-];
+/* ---------------- helpers ---------------- */
 
-function pickReply(text: string) {
-  if (/เมื่อไหร่|วันไหน|นัด|เวลา/.test(text)) return "สะดวกช่วงบ่ายวันพุธครับ นัดที่โซนเครือข่ายได้เลย";
-  if (/\?|ไหม|มั้ย/.test(text)) return "ได้เลยครับ ผมพร้อมร่วมมือ";
-  return REPLIES[Math.floor(Math.random() * REPLIES.length)]!;
+const uuid = () =>
+  typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+function readLocal<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
 }
 
-const Ctx = createContext<Store | null>(null);
+function getDeviceId() {
+  let id = localStorage.getItem(DEVICE_KEY);
+  if (!id) {
+    id = uuid();
+    localStorage.setItem(DEVICE_KEY, id);
+  }
+  return id;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Row = any;
+
+function rowToUser(r: Row, myId: string | null): User {
+  return {
+    id: r.id === myId ? "me" : r.id,
+    name: r.name,
+    avatar: r.avatar || "✨",
+    photo: r.photo ?? undefined,
+    province: r.province ?? "",
+    region: r.region,
+    organization: r.organization ?? "",
+    generation: r.generation,
+    bio: r.bio ?? "",
+    interests: r.interests ?? [],
+    powers_have: r.powers_have ?? [],
+    powers_need: r.powers_need ?? [],
+    created_at: r.created_at,
+    updated_at: r.updated_at ?? undefined,
+    linked_email: r.linked_email ?? undefined,
+    linked_user_id: r.linked_user_id ?? undefined,
+    linked_at: r.linked_at ?? undefined,
+    source: (r.source ?? "direct") as UserSource,
+  };
+}
+
+const idOut = (id: string, myId: string | null) => (id === myId ? "me" : id);
+
+/* ---------------- provider ---------------- */
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initial);
   const [hydrated, setHydrated] = useState(false);
+  const myIdRef = useRef<string | null>(null);
+  const localRef = useRef<LocalState>({
+    savedIdeas: [],
+    likedUsers: [],
+    skippedUsers: [],
+    notifications: [],
+  });
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<State>;
-        setState((s) => ({ ...s, ...parsed, users: parsed.users?.length ? parsed.users : s.users }));
-      }
-    } catch {
-      /* ignore */
-    }
-    setHydrated(true);
+  const refresh = useCallback(async () => {
+    const myId = myIdRef.current;
+    const [p, i, c, m, msg, sb, pn] = await Promise.all([
+      supabase.from("participants").select("*").order("created_at", { ascending: false }),
+      supabase.from("ideas").select("*").order("created_at", { ascending: false }),
+      supabase.from("connections").select("*").order("created_at", { ascending: false }),
+      supabase.from("commitments").select("*").order("created_at", { ascending: false }),
+      supabase.from("messages").select("*").order("created_at", { ascending: true }),
+      supabase.from("submissions").select("*").order("created_at", { ascending: false }),
+      supabase.from("province_notes").select("*").order("created_at", { ascending: false }),
+    ]);
+
+    const users = ((p.data as Row[]) ?? []).map((r) => rowToUser(r, myId));
+    const me = users.find((u) => u.id === "me") ?? null;
+
+    setState((s) => ({
+      ...s,
+      me,
+      users,
+      ideas: ((i.data as Row[]) ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        description: r.description ?? "",
+        owner_id: r.owner_id ? idOut(r.owner_id, myId) : "",
+        region: r.region,
+        issues: r.issues ?? [],
+        resources_have: r.resources_have ?? [],
+        resources_need: r.resources_need ?? [],
+        created_at: r.created_at,
+      })),
+      connections: ((c.data as Row[]) ?? []).map((r) => ({
+        id: r.id,
+        user_a: idOut(r.user_a, myId),
+        user_b: idOut(r.user_b, myId),
+        match_score: r.match_score ?? 0,
+        match_reason: r.match_reason ?? "",
+        status: r.status as ConnectionStatus,
+        created_at: r.created_at,
+      })),
+      commitments: ((m.data as Row[]) ?? []).map((r) => ({
+        id: r.id,
+        connection_id: r.connection_id,
+        action_type: r.action_type,
+        description: r.description ?? "",
+        status: r.status as ConnectionStatus,
+        follow_up_date: r.follow_up_date ?? null,
+        ...(r.rsvp ? { rsvp: r.rsvp as Rsvp } : {}),
+        ...(r.partner_rsvp ? { partner_rsvp: r.partner_rsvp as Rsvp } : {}),
+        created_at: r.created_at,
+      })),
+      messages: ((msg.data as Row[]) ?? []).map((r) => ({
+        id: r.id,
+        connection_id: r.connection_id,
+        from_id: r.from_id ? idOut(r.from_id, myId) : "",
+        text: r.text,
+        created_at: r.created_at,
+      })),
+      submissions: ((sb.data as Row[]) ?? []).map((r) => ({
+        id: r.id,
+        name: r.name,
+        course: r.course,
+        batch: r.batch ?? "",
+        region: r.region,
+        province: r.province ?? "",
+        policy_issues: r.policy_issues ?? [],
+        summary: r.summary ?? "",
+        highlight: r.highlight ?? "",
+        wanted: r.wanted ?? "",
+        photo: r.photo ?? undefined,
+        stage_ready: !!r.stage_ready,
+        showcase: !!r.showcase,
+        created_at: r.created_at,
+      })),
+      provinceNotes: ((pn.data as Row[]) ?? []).map((r) => ({
+        id: r.id,
+        province: r.province,
+        author_id: r.author_id ? idOut(r.author_id, myId) : "",
+        author_name: r.author_name ?? "",
+        title: r.title,
+        detail: r.detail ?? "",
+        issues: r.issues ?? [],
+        created_at: r.created_at,
+      })),
+    }));
   }, []);
 
+  // hydrate: local prefs + migrate legacy profile + first load + realtime
+  useEffect(() => {
+    let cancelled = false;
+
+    const boot = async () => {
+      const local = readLocal<LocalState>(LOCAL_KEY);
+      if (local) {
+        localRef.current = {
+          savedIdeas: local.savedIdeas ?? [],
+          likedUsers: local.likedUsers ?? [],
+          skippedUsers: local.skippedUsers ?? [],
+          notifications: local.notifications ?? [],
+        };
+        setState((s) => ({ ...s, ...localRef.current }));
+      }
+
+      myIdRef.current = localStorage.getItem(MY_ID_KEY);
+
+      // ย้ายโปรไฟล์เดิมที่อยู่ในเครื่อง (Phase 1) ขึ้นฐานข้อมูลกลางครั้งเดียว
+      if (!myIdRef.current) {
+        const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
+        if (legacy?.me?.name) {
+          const id = uuid();
+          const { error } = await supabase.from("participants").insert({
+            id,
+            device_id: getDeviceId(),
+            name: legacy.me.name,
+            avatar: legacy.me.avatar || "✨",
+            photo: legacy.me.photo ?? null,
+            province: legacy.me.province ?? "",
+            region: legacy.me.region,
+            organization: legacy.me.organization ?? "",
+            generation: legacy.me.generation,
+            bio: legacy.me.bio ?? "",
+            interests: legacy.me.interests ?? [],
+            powers_have: legacy.me.powers_have ?? [],
+            powers_need: legacy.me.powers_need ?? [],
+            source: legacy.me.source ?? "direct",
+          });
+          if (!error) {
+            myIdRef.current = id;
+            localStorage.setItem(MY_ID_KEY, id);
+          }
+        }
+      }
+
+      await refresh();
+      if (!cancelled) setHydrated(true);
+    };
+
+    void boot();
+
+    const channel = supabase
+      .channel("connexts-sync")
+      .on("postgres_changes", { event: "*", schema: "public" }, () => {
+        void refresh();
+      })
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [refresh]);
+
+  // persist device-local preferences only
   useEffect(() => {
     if (!hydrated) return;
+    const local: LocalState = {
+      savedIdeas: state.savedIdeas,
+      likedUsers: state.likedUsers,
+      skippedUsers: state.skippedUsers,
+      notifications: state.notifications,
+    };
+    localRef.current = local;
     try {
-      localStorage.setItem(KEY, JSON.stringify(state));
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(local));
     } catch {
       /* ignore */
     }
-  }, [state, hydrated]);
+  }, [state.savedIdeas, state.likedUsers, state.skippedUsers, state.notifications, hydrated]);
 
-  const saveProfile: Store["saveProfile"] = useCallback((data) => {
-    const now = new Date().toISOString();
-    let resolvedSource = data.source;
-    if (!resolvedSource) {
+  const dbId = useCallback((id: string) => (id === "me" ? myIdRef.current ?? id : id), []);
+
+  /* ---------------- actions ---------------- */
+
+  const saveProfile: Store["saveProfile"] = useCallback(
+    (data) => {
+      const now = new Date().toISOString();
+      let resolvedSource = data.source;
+      if (!resolvedSource) {
+        const session = readLocal<{ source?: UserSource }>("connecting-power-session");
+        if (session?.source) resolvedSource = session.source;
+      }
+      const existingId = myIdRef.current;
+      const id = existingId ?? uuid();
+      myIdRef.current = id;
       try {
-        const raw = localStorage.getItem("connecting-power-session");
-        const fromSession = raw ? (JSON.parse(raw) as { source?: UserSource }).source : undefined;
-        if (fromSession) resolvedSource = fromSession;
+        localStorage.setItem(MY_ID_KEY, id);
       } catch {
         /* ignore */
       }
-    }
-    let saved: User = {
-      ...data,
-      avatar: data.avatar || "✨",
-      id: "me",
-      created_at: now,
-      updated_at: now,
-    };
-    setState((s) => {
-      const source = resolvedSource ?? s.me?.source ?? "direct";
-      const user: User = {
-        ...saved,
-        created_at: s.me?.created_at ?? now,
-        source,
-      };
-      saved = user;
-      return {
-        ...s,
-        me: user,
-        users: [user, ...s.users.filter((u) => u.id !== "me")],
-      };
-    });
-    emitLive("match", "พบคู่แมตช์ใหม่", `${saved.name} เข้าร่วมและพร้อมจับคู่พลัง`);
-    return saved;
-  }, []);
 
-  const linkAccount: Store["linkAccount"] = useCallback((email, userId) => {
-    const now = new Date().toISOString();
-    setState((s) => {
-      if (!s.me) return s;
-      const user: User = { ...s.me, linked_email: email, linked_user_id: userId, linked_at: now };
-      return {
-        ...s,
-        me: user,
-        users: s.users.map((u) => (u.id === "me" ? user : u)),
+      const payload = {
+        id,
+        device_id: getDeviceId(),
+        name: data.name,
+        avatar: data.avatar || "✨",
+        photo: data.photo ?? null,
+        province: data.province,
+        region: data.region,
+        organization: data.organization,
+        generation: data.generation,
+        bio: data.bio,
+        interests: data.interests,
+        powers_have: data.powers_have,
+        powers_need: data.powers_need,
+        source: resolvedSource ?? "direct",
       };
-    });
-  }, []);
 
-  const connect: Store["connect"] = useCallback((otherId, score, reason) => {
-    const conn: Connection = {
-      id: `c-${Date.now()}`,
-      user_a: "me",
-      user_b: otherId,
-      match_score: score,
-      match_reason: reason,
-      status: "Connected",
-      created_at: new Date().toISOString(),
-    };
-    setState((s) => {
-      const existing = s.connections.find(
-        (c) => (c.user_a === "me" && c.user_b === otherId) || (c.user_b === "me" && c.user_a === otherId),
-      );
-      if (existing) return s;
-      const other = s.users.find((u) => u.id === otherId);
-      const name = other?.name ?? "เพื่อนใหม่";
-      const sent: AppNotification = {
-        id: `n-${Date.now()}`,
-        kind: "connect_sent",
-        title: "ส่งคำขอเชื่อมแล้ว",
-        body: `กำลังส่งสัญญาณถึง ${name}…`,
-        from_id: otherId,
-        from_name: name,
-        connection_id: conn.id,
-        read: false,
+      const saved: User = {
+        ...data,
+        avatar: payload.avatar,
+        id: "me",
+        created_at: now,
+        updated_at: now,
+        source: payload.source as UserSource,
+      };
+
+      setState((s) => ({
+        ...s,
+        me: saved,
+        users: [saved, ...s.users.filter((u) => u.id !== "me")],
+      }));
+
+      void (async () => {
+        await supabase.from("participants").upsert(payload, { onConflict: "id" });
+        await refresh();
+      })();
+
+      emitLive("match", "พบคู่แมตช์ใหม่", `${saved.name} เข้าร่วมและพร้อมจับคู่พลัง`);
+      return saved;
+    },
+    [refresh],
+  );
+
+  const linkAccount: Store["linkAccount"] = useCallback(
+    (email, userId) => {
+      const id = myIdRef.current;
+      if (!id) return;
+      const now = new Date().toISOString();
+      setState((s) => ({
+        ...s,
+        me: s.me ? { ...s.me, linked_email: email, linked_user_id: userId, linked_at: now } : s.me,
+      }));
+      void (async () => {
+        await supabase
+          .from("participants")
+          .update({ linked_email: email, linked_user_id: userId, linked_at: now })
+          .eq("id", id);
+        await refresh();
+      })();
+    },
+    [refresh],
+  );
+
+  const connect: Store["connect"] = useCallback(
+    (otherId, score, reason) => {
+      const myId = myIdRef.current;
+      const conn: Connection = {
+        id: uuid(),
+        user_a: "me",
+        user_b: otherId,
+        match_score: score,
+        match_reason: reason,
+        status: "Connected",
         created_at: new Date().toISOString(),
       };
-      // จำลองการตอบรับจากอีกฝ่าย (ต้นแบบฝั่ง client)
-      if (scheduledReplies.has(conn.id)) return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
-      scheduledReplies.add(conn.id);
-      setTimeout(() => {
-        setState((cur) => {
-          if (cur.notifications.some((n) => n.kind === "accepted" && n.connection_id === conn.id)) return cur;
-          return {
-          ...cur,
-          notifications: [
-            {
-              id: `n-${Date.now()}-a`,
-              kind: "accepted",
-              title: `${name} ตอบรับการเชื่อมแล้ว ✨`,
-              body: "แตะเพื่อกำหนดก้าวต่อไปร่วมกัน",
-              from_id: otherId,
-              from_name: name,
-              connection_id: conn.id,
-              read: false,
-              created_at: new Date().toISOString(),
-            },
-            ...cur.notifications,
-          ],
-          };
+
+      setState((s) => {
+        const existing = s.connections.find(
+          (c) =>
+            (c.user_a === "me" && c.user_b === otherId) || (c.user_b === "me" && c.user_a === otherId),
+        );
+        if (existing) return s;
+        const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนใหม่";
+        const sent: AppNotification = {
+          id: uuid(),
+          kind: "connect_sent",
+          title: "ส่งคำขอเชื่อมแล้ว",
+          body: `กำลังส่งสัญญาณถึง ${name}…`,
+          from_id: otherId,
+          from_name: name,
+          connection_id: conn.id,
+          read: false,
+          created_at: new Date().toISOString(),
+        };
+        emitLive("connect", "เชื่อมต่อใหม่", `คุณ ↔ ${name} · แมตช์ ${score}%`);
+        return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
+      });
+
+      if (myId) {
+        void (async () => {
+          await supabase.from("connections").insert({
+            id: conn.id,
+            user_a: myId,
+            user_b: otherId,
+            match_score: score,
+            match_reason: reason,
+            status: "Connected",
+          });
+          await refresh();
+        })();
+      }
+      return conn;
+    },
+    [refresh],
+  );
+
+  const addCommitment: Store["addCommitment"] = useCallback(
+    (c) => {
+      const item: Commitment = { ...c, id: uuid(), created_at: new Date().toISOString() };
+      setState((s) => {
+        const conn = s.connections.find((x) => x.id === c.connection_id);
+        const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+        const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+        const note: AppNotification = {
+          id: uuid(),
+          kind: "commitment",
+          title: "ส่งก้าวต่อไปให้เพื่อนแล้ว 🚀",
+          body: `แจ้งเตือน ${name} เรื่อง “${c.action_type}”`,
+          from_id: otherId,
+          from_name: name,
+          connection_id: c.connection_id,
+          read: false,
+          created_at: new Date().toISOString(),
+        };
+        emitLive("commitment", "คำมั่นสัญญาใหม่", `${c.action_type} กับ ${name}`);
+        return {
+          ...s,
+          notifications: [note, ...s.notifications],
+          commitments: [item, ...s.commitments],
+          connections: s.connections.map((x) =>
+            x.id === c.connection_id ? { ...x, status: c.status } : x,
+          ),
+        };
+      });
+
+      void (async () => {
+        await supabase.from("commitments").insert({
+          id: item.id,
+          connection_id: item.connection_id,
+          action_type: item.action_type,
+          description: item.description,
+          status: item.status,
+          follow_up_date: item.follow_up_date,
+          rsvp: item.rsvp ?? null,
         });
-        emitLive("connect", `${name} ตอบรับการเชื่อมแล้ว`, "พร้อมกำหนดก้าวต่อไปร่วมกัน");
-      }, 2600);
-      emitLive("connect", "เชื่อมต่อใหม่", `คุณ ↔ ${name} · แมตช์ ${score}%`);
-      return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
-    });
-    return conn;
-  }, []);
+        await supabase.from("connections").update({ status: item.status }).eq("id", item.connection_id);
+        await refresh();
+      })();
+      return item;
+    },
+    [refresh],
+  );
 
-  const addCommitment: Store["addCommitment"] = useCallback((c) => {
-    const item: Commitment = { ...c, id: `m-${Date.now()}`, created_at: new Date().toISOString() };
-    setState((s) => {
-      const conn = s.connections.find((x) => x.id === c.connection_id);
-      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
-      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
-      const note: AppNotification = {
-        id: `n-${Date.now()}-c`,
-        kind: "commitment",
-        title: "ส่งก้าวต่อไปให้เพื่อนแล้ว 🚀",
-        body: `แจ้งเตือน ${name} เรื่อง “${c.action_type}”`,
-        from_id: otherId,
-        from_name: name,
-        connection_id: c.connection_id,
-        read: false,
-        created_at: new Date().toISOString(),
-      };
-      emitLive("commitment", "คำมั่นสัญญาใหม่", `${c.action_type} กับ ${name}`);
-      return {
-      ...s,
-      notifications: [note, ...s.notifications],
-      commitments: [item, ...s.commitments],
-      connections: s.connections.map((x) =>
-        x.id === c.connection_id ? { ...x, status: c.status } : x,
-      ),
-      };
-    });
-    return item;
-  }, []);
+  const setConnectionStatus: Store["setConnectionStatus"] = useCallback(
+    (id, status) => {
+      setState((s) => {
+        const conn = s.connections.find((c) => c.id === id);
+        const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+        const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+        emitLive("commitment", "อัปเดตความคืบหน้า", `${name} · สถานะ: ${status}`);
+        return {
+          ...s,
+          connections: s.connections.map((c) => (c.id === id ? { ...c, status } : c)),
+          commitments: s.commitments.map((m) => (m.connection_id === id ? { ...m, status } : m)),
+        };
+      });
+      void (async () => {
+        await supabase.from("connections").update({ status }).eq("id", id);
+        await supabase.from("commitments").update({ status }).eq("connection_id", id);
+        await refresh();
+      })();
+    },
+    [refresh],
+  );
 
-  const setConnectionStatus: Store["setConnectionStatus"] = useCallback((id, status) => {
-    setState((s) => {
-      const conn = s.connections.find((c) => c.id === id);
-      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
-      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
-      emitLive("commitment", "อัปเดตความคืบหน้า", `${name} · สถานะ: ${status}`);
-      return {
-      ...s,
-      connections: s.connections.map((c) => (c.id === id ? { ...c, status } : c)),
-      commitments: s.commitments.map((m) => (m.connection_id === id ? { ...m, status } : m)),
-      };
-    });
-  }, []);
+  const updateCommitment: Store["updateCommitment"] = useCallback(
+    (id, patch) => {
+      setState((s) => {
+        const target = s.commitments.find((m) => m.id === id);
+        if (!target) return s;
+        const conn = s.connections.find((c) => c.id === target.connection_id);
+        const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+        const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+        if (patch.follow_up_date) {
+          emitLive(
+            "commitment",
+            "เสนอวันเวลานัดหมาย",
+            `${name} · ${new Date(patch.follow_up_date).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}`,
+          );
+        } else if (patch.status) {
+          emitLive("commitment", "อัปเดตสถานะคำมั่นสัญญา", `${name} · ${patch.status}`);
+        }
+        return {
+          ...s,
+          commitments: s.commitments.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+          connections: patch.status
+            ? s.connections.map((c) =>
+                c.id === target.connection_id ? { ...c, status: patch.status! } : c,
+              )
+            : s.connections,
+        };
+      });
+      void (async () => {
+        await supabase.from("commitments").update(patch).eq("id", id);
+        await refresh();
+      })();
+    },
+    [refresh],
+  );
 
-  const updateCommitment: Store["updateCommitment"] = useCallback((id, patch) => {
-    setState((s) => {
-      const target = s.commitments.find((m) => m.id === id);
-      if (!target) return s;
-      const conn = s.connections.find((c) => c.id === target.connection_id);
-      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
-      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
-      if (patch.follow_up_date) {
+  const setRsvp: Store["setRsvp"] = useCallback(
+    (id, rsvp) => {
+      setState((s) => {
+        const target = s.commitments.find((m) => m.id === id);
+        if (!target) return s;
+        const conn = s.connections.find((c) => c.id === target.connection_id);
+        const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+        const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
         emitLive(
           "commitment",
-          "เสนอวันเวลานัดหมาย",
-          `${name} · ${new Date(patch.follow_up_date).toLocaleString("th-TH", { dateStyle: "medium", timeStyle: "short" })}`,
+          rsvp === "accepted" ? "ตอบรับนัดหมาย ✅" : "แจ้งไม่สะดวก ❌",
+          `${name} · ${target.action_type}`,
         );
-      } else if (patch.status) {
-        emitLive("commitment", "อัปเดตสถานะคำมั่นสัญญา", `${name} · ${patch.status}`);
-      }
-      return {
-        ...s,
-        commitments: s.commitments.map((m) => (m.id === id ? { ...m, ...patch } : m)),
-        connections: patch.status
-          ? s.connections.map((c) =>
-              c.id === target.connection_id ? { ...c, status: patch.status! } : c,
-            )
-          : s.connections,
-      };
-    });
-  }, []);
-
-  const setRsvp: Store["setRsvp"] = useCallback((id, rsvp) => {
-    setState((s) => {
-      const target = s.commitments.find((m) => m.id === id);
-      if (!target) return s;
-      const conn = s.connections.find((c) => c.id === target.connection_id);
-      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
-      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
-      emitLive(
-        "commitment",
-        rsvp === "accepted" ? "ตอบรับนัดหมาย ✅" : "แจ้งไม่สะดวก ❌",
-        `${name} · ${target.action_type}`,
-      );
-      return {
-        ...s,
-        commitments: s.commitments.map((m) => (m.id === id ? { ...m, rsvp } : m)),
-      };
-    });
-  }, []);
+        return { ...s, commitments: s.commitments.map((m) => (m.id === id ? { ...m, rsvp } : m)) };
+      });
+      void (async () => {
+        await supabase.from("commitments").update({ rsvp }).eq("id", id);
+        await refresh();
+      })();
+    },
+    [refresh],
+  );
 
   const toggleSaveIdea: Store["toggleSaveIdea"] = useCallback((id) => {
     setState((s) => ({
@@ -374,141 +633,243 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, skippedUsers: s.skippedUsers.slice(0, -1) }));
   }, []);
 
-  const addProvinceNote: Store["addProvinceNote"] = useCallback((n) => {
-    const note: ProvinceNote = { ...n, id: `pn-${Date.now()}`, created_at: new Date().toISOString() };
-    setState((s) => ({ ...s, provinceNotes: [note, ...s.provinceNotes] }));
-    return note;
-  }, []);
+  const addProvinceNote: Store["addProvinceNote"] = useCallback(
+    (n) => {
+      const note: ProvinceNote = { ...n, id: uuid(), created_at: new Date().toISOString() };
+      setState((s) => ({ ...s, provinceNotes: [note, ...s.provinceNotes] }));
+      void (async () => {
+        await supabase.from("province_notes").insert({
+          id: note.id,
+          province: note.province,
+          author_id: note.author_id === "me" ? myIdRef.current : note.author_id || null,
+          author_name: note.author_name,
+          title: note.title,
+          detail: note.detail,
+          issues: note.issues,
+        });
+        await refresh();
+      })();
+      return note;
+    },
+    [refresh],
+  );
 
-  const addSubmission: Store["addSubmission"] = useCallback((data) => {
-    const item: Submission = {
-      ...data,
-      showcase: false,
-      id: `sb-${Date.now()}`,
-      created_at: new Date().toISOString(),
-    };
-    setState((s) => ({ ...s, submissions: [item, ...s.submissions] }));
-    return item;
-  }, []);
+  const addSubmission: Store["addSubmission"] = useCallback(
+    (data) => {
+      const item: Submission = {
+        ...data,
+        showcase: false,
+        id: uuid(),
+        created_at: new Date().toISOString(),
+      };
+      setState((s) => ({ ...s, submissions: [item, ...s.submissions] }));
+      void (async () => {
+        await supabase.from("submissions").insert({
+          id: item.id,
+          name: item.name,
+          course: item.course,
+          batch: item.batch,
+          region: item.region,
+          province: item.province,
+          policy_issues: item.policy_issues,
+          summary: item.summary,
+          highlight: item.highlight,
+          wanted: item.wanted,
+          photo: item.photo ?? null,
+          stage_ready: item.stage_ready,
+          showcase: false,
+        });
+        await refresh();
+      })();
+      return item;
+    },
+    [refresh],
+  );
 
-  const toggleShowcase: Store["toggleShowcase"] = useCallback((id) => {
-    setState((s) => ({
-      ...s,
-      submissions: s.submissions.map((x) => (x.id === id ? { ...x, showcase: !x.showcase } : x)),
-    }));
-  }, []);
+  const toggleShowcase: Store["toggleShowcase"] = useCallback(
+    (id) => {
+      let next = false;
+      setState((s) => {
+        next = !s.submissions.find((x) => x.id === id)?.showcase;
+        return {
+          ...s,
+          submissions: s.submissions.map((x) => (x.id === id ? { ...x, showcase: !x.showcase } : x)),
+        };
+      });
+      void (async () => {
+        await supabase.from("submissions").update({ showcase: next }).eq("id", id);
+        await refresh();
+      })();
+    },
+    [refresh],
+  );
 
-  const importUsers: Store["importUsers"] = useCallback((list) => {
-    setState((s) => {
-      const existing = new Set(s.users.map((u) => u.id));
-      const fresh = list
-        .filter((u) => !existing.has(u.id))
-        .map((u) => ({ ...u, source: u.source ?? ("admin" as UserSource) }));
-      return { ...s, users: [...fresh, ...s.users] };
-    });
-    return list.length;
-  }, []);
+  const importUsers: Store["importUsers"] = useCallback(
+    (list) => {
+      const rows = list.map((u) => ({
+        id: uuid(),
+        name: u.name,
+        avatar: u.avatar || "✨",
+        photo: u.photo ?? null,
+        province: u.province ?? "",
+        region: u.region,
+        organization: u.organization ?? "",
+        generation: u.generation,
+        bio: u.bio ?? "",
+        interests: u.interests ?? [],
+        powers_have: u.powers_have ?? [],
+        powers_need: u.powers_need ?? [],
+        source: u.source ?? "admin",
+      }));
+      void (async () => {
+        if (rows.length) await supabase.from("participants").insert(rows);
+        await refresh();
+      })();
+      return list.length;
+    },
+    [refresh],
+  );
 
-  const updateUser: Store["updateUser"] = useCallback((id, patch) => {
-    setState((s) => ({
-      ...s,
-      users: s.users.map((u) =>
-        u.id === id ? { ...u, ...patch, updated_at: new Date().toISOString() } : u,
-      ),
-      me: s.me && s.me.id === id ? { ...s.me, ...patch } : s.me,
-    }));
-  }, []);
+  const updateUser: Store["updateUser"] = useCallback(
+    (id, patch) => {
+      setState((s) => ({
+        ...s,
+        users: s.users.map((u) =>
+          u.id === id ? { ...u, ...patch, updated_at: new Date().toISOString() } : u,
+        ),
+        me: s.me && s.me.id === id ? { ...s.me, ...patch } : s.me,
+      }));
+      const { id: _ignored, created_at: _c, ...rest } = patch as Partial<User> & { id?: string };
+      void (async () => {
+        await supabase.from("participants").update(rest as Row).eq("id", dbId(id));
+        await refresh();
+      })();
+    },
+    [refresh, dbId],
+  );
 
-  const removeUser: Store["removeUser"] = useCallback((id) => {
-    setState((s) => ({ ...s, users: s.users.filter((u) => u.id !== id) }));
-  }, []);
+  const removeRow = useCallback(
+    (table: string, id: string) => {
+      void (async () => {
+        await supabase.from(table as never).delete().eq("id", id);
+        await refresh();
+      })();
+    },
+    [refresh],
+  );
 
-  const updateIdea: Store["updateIdea"] = useCallback((id, patch) => {
-    setState((s) => ({ ...s, ideas: s.ideas.map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
-  }, []);
+  const removeUser: Store["removeUser"] = useCallback(
+    (id) => {
+      setState((s) => ({ ...s, users: s.users.filter((u) => u.id !== id) }));
+      removeRow("participants", dbId(id));
+    },
+    [removeRow, dbId],
+  );
 
-  const removeIdea: Store["removeIdea"] = useCallback((id) => {
-    setState((s) => ({ ...s, ideas: s.ideas.filter((i) => i.id !== id) }));
-  }, []);
+  const updateIdea: Store["updateIdea"] = useCallback(
+    (id, patch) => {
+      setState((s) => ({ ...s, ideas: s.ideas.map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
+      void (async () => {
+        const { id: _i, created_at: _c, owner_id, ...rest } = patch as Row;
+        const payload: Row = { ...rest };
+        if (owner_id !== undefined) payload["owner_id"] = owner_id ? dbId(owner_id) : null;
+        await supabase.from("ideas").update(payload).eq("id", id);
+        await refresh();
+      })();
+    },
+    [refresh, dbId],
+  );
 
-  const updateSubmission: Store["updateSubmission"] = useCallback((id, patch) => {
-    setState((s) => ({
-      ...s,
-      submissions: s.submissions.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-    }));
-  }, []);
+  const removeIdea: Store["removeIdea"] = useCallback(
+    (id) => {
+      setState((s) => ({ ...s, ideas: s.ideas.filter((i) => i.id !== id) }));
+      removeRow("ideas", id);
+    },
+    [removeRow],
+  );
 
-  const removeSubmission: Store["removeSubmission"] = useCallback((id) => {
-    setState((s) => ({ ...s, submissions: s.submissions.filter((x) => x.id !== id) }));
-  }, []);
+  const updateSubmission: Store["updateSubmission"] = useCallback(
+    (id, patch) => {
+      setState((s) => ({
+        ...s,
+        submissions: s.submissions.map((x) => (x.id === id ? { ...x, ...patch } : x)),
+      }));
+      void (async () => {
+        const { id: _i, created_at: _c, ...rest } = patch as Row;
+        await supabase.from("submissions").update(rest).eq("id", id);
+        await refresh();
+      })();
+    },
+    [refresh],
+  );
 
-  const removeProvinceNote: Store["removeProvinceNote"] = useCallback((id) => {
-    setState((s) => ({ ...s, provinceNotes: s.provinceNotes.filter((n) => n.id !== id) }));
-  }, []);
+  const removeSubmission: Store["removeSubmission"] = useCallback(
+    (id) => {
+      setState((s) => ({ ...s, submissions: s.submissions.filter((x) => x.id !== id) }));
+      removeRow("submissions", id);
+    },
+    [removeRow],
+  );
 
-  const removeCommitment: Store["removeCommitment"] = useCallback((id) => {
-    setState((s) => ({ ...s, commitments: s.commitments.filter((c) => c.id !== id) }));
-  }, []);
+  const removeProvinceNote: Store["removeProvinceNote"] = useCallback(
+    (id) => {
+      setState((s) => ({ ...s, provinceNotes: s.provinceNotes.filter((n) => n.id !== id) }));
+      removeRow("province_notes", id);
+    },
+    [removeRow],
+  );
 
-  const removeConnection: Store["removeConnection"] = useCallback((id) => {
-    setState((s) => ({
-      ...s,
-      connections: s.connections.filter((c) => c.id !== id),
-      commitments: s.commitments.filter((c) => c.connection_id !== id),
-    }));
-  }, []);
+  const removeCommitment: Store["removeCommitment"] = useCallback(
+    (id) => {
+      setState((s) => ({ ...s, commitments: s.commitments.filter((c) => c.id !== id) }));
+      removeRow("commitments", id);
+    },
+    [removeRow],
+  );
 
-  const sendMessage: Store["sendMessage"] = useCallback((connectionId, text) => {
-    const body = text.trim();
-    const msg: ChatMessage = {
-      id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-      connection_id: connectionId,
-      from_id: "me",
-      text: body,
-      created_at: new Date().toISOString(),
-    };
-    if (!body) return msg;
-    setState((s) => {
-      const conn = s.connections.find((c) => c.id === connectionId);
-      const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
-      const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
-      emitLive("message", "ข้อความใหม่", `คุณ → ${name}: ${body.slice(0, 40)}`);
-      // จำลองการตอบกลับแบบเรียลไทม์ (ต้นแบบฝั่ง client)
-      window.setTimeout(() => {
-        const replyText = pickReply(body);
-        setState((cur) => ({
-          ...cur,
-          messages: [
-            ...cur.messages,
-            {
-              id: `msg-${Date.now()}-r`,
-              connection_id: connectionId,
-              from_id: otherId,
-              text: replyText,
-              created_at: new Date().toISOString(),
-            },
-          ],
-          notifications: [
-            {
-              id: `n-${Date.now()}-m`,
-              kind: "message",
-              title: `${name} ส่งข้อความถึงคุณ`,
-              body: replyText,
-              from_id: otherId,
-              from_name: name,
-              connection_id: connectionId,
-              read: false,
-              created_at: new Date().toISOString(),
-            },
-            ...cur.notifications,
-          ],
-        }));
-        emitLive("message", `${name} ตอบกลับแล้ว`, replyText.slice(0, 48), false);
-      }, 1400 + Math.floor(Math.random() * 1200));
-      return { ...s, messages: [...s.messages, msg] };
-    });
-    return msg;
-  }, []);
+  const removeConnection: Store["removeConnection"] = useCallback(
+    (id) => {
+      setState((s) => ({
+        ...s,
+        connections: s.connections.filter((c) => c.id !== id),
+        commitments: s.commitments.filter((c) => c.connection_id !== id),
+      }));
+      removeRow("connections", id);
+    },
+    [removeRow],
+  );
+
+  const sendMessage: Store["sendMessage"] = useCallback(
+    (connectionId, text) => {
+      const body = text.trim();
+      const msg: ChatMessage = {
+        id: uuid(),
+        connection_id: connectionId,
+        from_id: "me",
+        text: body,
+        created_at: new Date().toISOString(),
+      };
+      if (!body) return msg;
+      setState((s) => {
+        const conn = s.connections.find((c) => c.id === connectionId);
+        const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+        const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
+        emitLive("message", "ข้อความใหม่", `คุณ → ${name}: ${body.slice(0, 40)}`);
+        return { ...s, messages: [...s.messages, msg] };
+      });
+      void (async () => {
+        await supabase.from("messages").insert({
+          id: msg.id,
+          connection_id: connectionId,
+          from_id: myIdRef.current,
+          text: body,
+        });
+        await refresh();
+      })();
+      return msg;
+    },
+    [refresh],
+  );
 
   const markRoomRead: Store["markRoomRead"] = useCallback((connectionId) => {
     setState((s) => ({
@@ -520,12 +881,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const notify: Store["notify"] = useCallback((n) => {
-    const item: AppNotification = {
-      ...n,
-      id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      read: false,
-      created_at: new Date().toISOString(),
-    };
+    const item: AppNotification = { ...n, id: uuid(), read: false, created_at: new Date().toISOString() };
     setState((s) => ({ ...s, notifications: [item, ...s.notifications] }));
     return item;
   }, []);
@@ -538,7 +894,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, notifications: [] }));
   }, []);
 
-  const reset = useCallback(() => setState(initial), []);
+  const reset = useCallback(() => {
+    setState((s) => ({ ...s, savedIdeas: [], likedUsers: [], skippedUsers: [], notifications: [] }));
+  }, []);
 
   const value = useMemo<Store>(
     () => ({

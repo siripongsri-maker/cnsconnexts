@@ -6,6 +6,7 @@ import type { MatchResult } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { issueTh, powerTh, provinceTh } from "@/lib/i18n";
 import { Avatar, Chip, PowerChip, ScoreRing } from "./power-bits";
+import { SwipeCoach } from "./swipe-coach";
 
 /** สำรับ "ปัดเร็ว" — ข้าม / ถูกใจ / เชื่อมต่อ ได้ในแตะเดียว */
 export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
@@ -21,9 +22,10 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
     return (
       <div className="card-soft mx-5 grid place-items-center gap-3 p-8 text-center">
         <span className="text-3xl">🎉</span>
-        <p className="text-sm font-bold">ดูครบทุกคนในหมวดนี้แล้ว</p>
+        <p className="text-sm font-bold">ยังไม่มีใครให้ดูในหมวดนี้</p>
         <p className="text-[12px] text-muted-foreground">
-          ลองเปลี่ยนประเด็น หรือดูรายการที่คุณถูกใจไว้
+          ลองเปลี่ยนประเด็น ดูรายการที่คุณถูกใจไว้ หรือชวนคนข้าง ๆ สแกน QR เข้าร่วม
+          เพื่อให้มีคู่เชื่อมเพิ่มขึ้น
         </p>
         {skippedUsers.length > 0 && (
           <button
@@ -73,6 +75,11 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
 
   return (
     <div className="px-5">
+      <SwipeCoach />
+      <p className="mb-3 rounded-2xl bg-muted/70 px-3 py-2 text-center text-[12.5px] font-semibold leading-snug">
+        ลากการ์ดไป <span className="text-primary">ขวา = สนใจ</span> · ลากไป{" "}
+        <span className="text-muted-foreground">ซ้าย = ข้าม</span> หรือกดปุ่มด้านล่างก็ได้
+      </p>
       <div className="relative">
         {next && (
           <div className="card-soft absolute inset-x-2 top-3 h-full scale-[0.97] opacity-50" aria-hidden />
@@ -173,49 +180,51 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
           )}
           {drag > 40 && (
             <span className="pointer-events-none absolute left-4 top-4 rounded-xl border-2 border-primary px-2 py-1 text-xs font-extrabold text-primary">
-              ถูกใจ
+              สนใจ
             </span>
           )}
         </article>
       </div>
 
-      <div className="mt-4 grid grid-cols-[56px_1fr_56px] items-center gap-3">
+      <div className="mt-4 grid grid-cols-[64px_1fr_64px] items-center gap-3">
         <button
-          aria-label="ข้าม"
+          aria-label="ข้ามคนนี้"
           onClick={doSkip}
-          className="tap grid h-14 w-14 place-items-center rounded-2xl border border-border bg-card"
+          className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-border bg-card"
         >
-          <X className="h-6 w-6 text-muted-foreground" />
+          <X className="h-5 w-5 text-muted-foreground" />
+          <span className="text-[11px] font-extrabold text-muted-foreground">ข้าม</span>
         </button>
 
         {existing ? (
           <Link
             to="/connection/$id"
             params={{ id: existing.id }}
-            className="tap inline-flex h-14 items-center justify-center rounded-2xl bg-lime px-4 text-sm font-extrabold text-lime-foreground"
+            className="tap inline-flex h-16 items-center justify-center rounded-2xl bg-lime px-4 text-sm font-extrabold text-lime-foreground"
           >
             เชื่อมกันแล้ว ✨ ดูก้าวต่อไป
           </Link>
         ) : (
           <button
             onClick={doConnect}
-            className="tap inline-flex h-14 items-center justify-center rounded-2xl gradient-power px-4 text-base font-extrabold text-primary-foreground"
+            className="tap inline-flex h-16 items-center justify-center rounded-2xl gradient-power px-4 text-base font-extrabold text-primary-foreground"
           >
             ขอเชื่อมต่อ
           </button>
         )}
 
         <button
-          aria-label="ถูกใจ"
+          aria-label="สนใจ เก็บไว้ก่อน"
           onClick={doLike}
-          className="tap grid h-14 w-14 place-items-center rounded-2xl border border-coral/40 bg-coral/10"
+          className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-coral/40 bg-coral/10"
         >
-          <Heart className="h-6 w-6 text-coral" />
+          <Heart className="h-5 w-5 text-coral" />
+          <span className="text-[11px] font-extrabold text-coral">สนใจ</span>
         </button>
       </div>
 
       <p className="mt-2 text-center text-[11px] text-muted-foreground">
-        ปัดซ้ายเพื่อข้าม · ปัดขวาเพื่อถูกใจ · เหลืออีก {matches.length - 1} คน
+        เหลืออีก {matches.length - 1} คน · อยากดูเป็นรายชื่อ กดปุ่ม “รายการ” ด้านบน
       </p>
     </div>
   );

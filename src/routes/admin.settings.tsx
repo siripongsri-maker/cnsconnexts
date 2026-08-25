@@ -45,18 +45,18 @@ function AdminSettings() {
           <AlertTriangle className="h-4 w-4" /> โซนอันตราย
         </h2>
         <p className="text-[12px] text-muted-foreground">
-          รีเซ็ตข้อมูลทั้งหมดกลับเป็นชุดเดโม่เริ่มต้น การกระทำนี้ย้อนกลับไม่ได้
+          ล้างค่าที่เก็บในเครื่องนี้ (รายการถูกใจ ที่ข้าม และการแจ้งเตือน) ข้อมูลกลางบนฐานข้อมูลจะไม่ถูกลบ
         </p>
         <button
           type="button"
           onClick={() => {
-            if (!window.confirm("ยืนยันรีเซ็ตข้อมูลทั้งหมดกลับเป็นชุดเดโม่?")) return;
+            if (!window.confirm("ยืนยันล้างค่าที่เก็บในเครื่องนี้?")) return;
             reset();
-            toast.success("รีเซ็ตข้อมูลเรียบร้อย");
+            toast.success("ล้างค่าในเครื่องเรียบร้อย");
           }}
           className="tap inline-flex items-center gap-1.5 rounded-xl bg-destructive px-4 py-2 text-sm font-extrabold text-destructive-foreground"
         >
-          <RotateCcw className="h-4 w-4" /> รีเซ็ตข้อมูลทั้งหมด
+          <RotateCcw className="h-4 w-4" /> ล้างค่าในเครื่องนี้
         </button>
       </section>
     </div>

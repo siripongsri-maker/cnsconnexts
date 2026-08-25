@@ -15,6 +15,7 @@ import {
   UserCircle, CalendarDays,
   Palette,
   Compass,
+  BookOpenCheck,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -24,6 +25,7 @@ import { ThailandNetwork } from "@/components/thailand-network";
 import { Wordmark } from "@/components/wordmark";
 import { TOUR_EVENT } from "@/components/guided-tour";
 import { PdpaConsent } from "@/components/pdpa-consent";
+import { SponsorFooter } from "@/components/sponsor-footer";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -52,6 +54,7 @@ const STATS = [
 ];
 
 const NAV_LINKS = [
+  { to: "/guide", label: "คู่มือใช้งาน", icon: BookOpenCheck },
   { to: "/matches", label: "คู่เชื่อม", icon: Sparkles },
   { to: "/map", label: "แผนที่พลัง", icon: Map },
   { to: "/marketplace", label: "ตลาดนัด", icon: Store },
@@ -84,12 +87,6 @@ function Welcome() {
       <TopNav />
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(6rem,env(safe-area-inset-top)+4.5rem)]">
-        <div className="animate-rise">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-lime animate-pulse-node" />
-            สมัชชาสุขภาพแห่งชาติ
-          </span>
-        </div>
 
         <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
           <h1 className="min-w-0">
@@ -133,10 +130,20 @@ function Welcome() {
             สแกน QR เข้าร่วมทันที (ไม่ต้องล็อกอิน)
           </Link>
 
+          <Link
+            to="/guide"
+            className="tap flex h-12 items-center justify-center gap-2 rounded-3xl bg-accent text-sm font-bold text-foreground"
+          >
+            <BookOpenCheck className="h-4 w-4 text-primary" />
+            ใช้งานยังไง? อ่านคู่มือ 1 นาที
+          </Link>
+
           <p className="pt-1 text-center text-[11px] text-muted-foreground">
             ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
           </p>
         </div>
+
+        <SponsorFooter className="mt-8" />
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
 import { getSession } from "@/lib/session";
+import { IntroGuide, hasSeenIntro } from "@/components/intro-guide";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -25,6 +27,11 @@ export const Route = createFileRoute("/onboarding")({
 function Onboarding() {
   const navigate = useNavigate();
   const { me, hydrated, saveProfile } = useStore();
+  const [showIntro, setShowIntro] = useState(true);
+
+  useEffect(() => {
+    setShowIntro(!hasSeenIntro());
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -45,6 +52,7 @@ function Onboarding() {
       </header>
 
       <main className="mx-auto w-full max-w-xl px-5 pt-4">
+        {hydrated && !me && showIntro && <IntroGuide onDone={() => setShowIntro(false)} />}
         {hydrated && !me && (
           <p className="mb-4 rounded-2xl border border-border bg-card/80 px-4 py-3 text-[12px] leading-relaxed text-muted-foreground">
             กำลังใช้งานแบบไม่ต้องล็อกอิน — ข้อมูลเก็บในเครื่องนี้ก่อน{" "}
