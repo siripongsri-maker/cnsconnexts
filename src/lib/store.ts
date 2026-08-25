@@ -23,6 +23,8 @@ const DEVICE_KEY = "connexts-device-id";
 const MY_ID_KEY = "connexts-participant-id";
 const LEGACY_KEY = "connecting-power-v1";
 const LEGACY_MIGRATED_KEY = "connexts-legacy-migrated";
+/** โปรไฟล์ที่ค้างอยู่ในเครื่อง ยังส่งขึ้นฐานข้อมูลกลางไม่สำเร็จ */
+const PENDING_KEY = "connexts-pending-profile";
 
 
 type LocalState = {
