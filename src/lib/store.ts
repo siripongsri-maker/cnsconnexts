@@ -206,6 +206,7 @@ const idOut = (id: string, myId: string | null) => (id === myId ? "me" : id);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initial);
   const [hydrated, setHydrated] = useState(false);
+  const [pendingProfile, setPendingProfile] = useState<PendingProfile | null>(null);
   const myIdRef = useRef<string | null>(null);
   const localRef = useRef<LocalState>({
     savedIdeas: [],
