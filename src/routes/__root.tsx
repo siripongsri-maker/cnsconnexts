@@ -20,6 +20,8 @@ import { FilterAlerts } from "@/components/filter-alerts";
 import { LoadingScreen } from "@/components/loading-screen";
 import { GuidedTour } from "@/components/guided-tour";
 import { UsageTracker } from "@/components/usage-tracker";
+import { CacheRefresher } from "@/components/cache-refresher";
+
 
 
 function NotFoundComponent() {
