@@ -433,22 +433,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         users: [saved, ...s.users.filter((u) => u.id !== "me")],
       }));
 
-      void (async () => {
+      const sync = (async () => {
         // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
-        // และข้อมูลผู้ใช้ใหม่ไม่ขึ้นฐานข้อมูลกลาง
         if (existingId) {
           const { id: _omit, ...patch } = payload;
           const { error } = await db.from("participants").update(patch).eq("id", existingId);
-          if (error) console.error("[connexts] อัปเดตโปรไฟล์ไม่สำเร็จ", error);
+          if (error) throw error;
         } else {
           const { error } = await db.from("participants").insert(payload);
-          if (error) console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", error);
+          if (error) throw error;
         }
         await refresh();
+        return saved;
       })();
 
       emitLive("match", "พบคู่แมตช์ใหม่", `${saved.name} เข้าร่วมและพร้อมจับคู่พลัง`);
-      return saved;
+      return sync;
+
     },
     [refresh],
   );
