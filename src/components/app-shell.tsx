@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Home, LogIn, LogOut, Bell } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
@@ -19,7 +19,6 @@ export function AppShell({
   subtitle?: string;
   action?: ReactNode;
 }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { mode, signOut } = useAuth();
   const { notifications } = useStore();
   const unread = notifications.filter((n) => !n.read).length;

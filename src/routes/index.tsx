@@ -28,6 +28,7 @@ import { Wordmark } from "@/components/wordmark";
 import { TOUR_EVENT } from "@/components/guided-tour";
 import { PdpaConsent } from "@/components/pdpa-consent";
 import { SponsorFooter } from "@/components/sponsor-footer";
+import { BottomNav } from "@/components/bottom-nav";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -88,8 +89,9 @@ function Welcome() {
       </div>
 
       <TopNav />
+      <BottomNav />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(6rem,env(safe-area-inset-top)+4.5rem)]">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 pb-[max(6.5rem,env(safe-area-inset-bottom)+5rem)] pt-[max(6rem,env(safe-area-inset-top)+4.5rem)]">
 
         <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
           <h1 className="min-w-0">
