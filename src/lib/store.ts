@@ -777,7 +777,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       const { id: _ignored, created_at: _c, ...rest } = patch as Partial<User> & { id?: string };
       void (async () => {
-        await supabase.from("participants").update(rest as Row).eq("id", dbId(id));
+        const target = dbId(id);
+        const { error } = await supabase.from("participants").update(rest as Row).eq("id", target);
+        const pwd = adminPassword();
+        if (pwd) {
+          await adminUpdateRow({
+            data: { password: pwd, table: "participants", id: target, patch: rest as Row },
+          }).catch(() => undefined);
+        } else if (error) {
+          console.warn("[store] update participant failed", error.message);
+        }
         await refresh();
       })();
     },
@@ -785,14 +794,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const removeRow = useCallback(
-    (table: string, id: string) => {
+    (table: AdminTable, id: string) => {
       void (async () => {
-        await supabase.from(table as never).delete().eq("id", id);
+        const { error } = await supabase.from(table as never).delete().eq("id", id);
+        const pwd = adminPassword();
+        // ผู้ดูแลหลังบ้านลบข้อมูลของคนอื่นได้ผ่านสิทธิ์ฝั่งเซิร์ฟเวอร์
+        if (pwd) {
+          await adminDeleteRow({ data: { password: pwd, table, id } }).catch((e) =>
+            console.warn("[store] admin delete failed", e),
+          );
+        } else if (error) {
+          console.warn("[store] delete failed", error.message);
+        }
         await refresh();
       })();
     },
     [refresh],
   );
+
 
   const removeUser: Store["removeUser"] = useCallback(
     (id) => {
