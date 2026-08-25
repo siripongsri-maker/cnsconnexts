@@ -6,6 +6,7 @@ import { useStore } from "@/lib/store";
 import { Wordmark } from "@/components/wordmark";
 import { SponsorFooter } from "@/components/sponsor-footer";
 import { BottomNav } from "@/components/bottom-nav";
+import { PendingSyncBanner } from "@/components/pending-sync-banner";
 import type { ReactNode } from "react";
 
 export function AppShell({
@@ -82,6 +83,7 @@ export function AppShell({
           </div>
         </header>
       )}
+      <PendingSyncBanner />
       <main className="mx-auto w-full max-w-xl">{children}</main>
 
       <div className="mx-auto w-full max-w-xl px-5">
