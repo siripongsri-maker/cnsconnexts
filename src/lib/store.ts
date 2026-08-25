@@ -1,5 +1,6 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "./db";
 import { emitLive } from "./live";
 import { adminDeleteRow, adminUpdateRow, type AdminTable } from "./admin.functions";
 import { ADMIN_PASSWORD } from "./admin-auth";
@@ -201,13 +202,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     attachDeviceHeader();
     const myId = myIdRef.current;
     const [p, i, c, m, msg, sb, pn] = await Promise.all([
-      supabase.from("participants").select(PARTICIPANT_PUBLIC_COLS).order("created_at", { ascending: false }),
-      supabase.from("ideas").select("*").order("created_at", { ascending: false }),
-      supabase.from("connections").select("*").order("created_at", { ascending: false }),
-      supabase.from("commitments").select("*").order("created_at", { ascending: false }),
-      supabase.from("messages").select("*").order("created_at", { ascending: true }),
-      supabase.from("submissions").select(SUBMISSION_PUBLIC_COLS).order("created_at", { ascending: false }),
-      supabase.from("province_notes").select("*").order("created_at", { ascending: false }),
+      db.from("participants").select(PARTICIPANT_PUBLIC_COLS).order("created_at", { ascending: false }),
+      db.from("ideas").select("*").order("created_at", { ascending: false }),
+      db.from("connections").select("*").order("created_at", { ascending: false }),
+      db.from("commitments").select("*").order("created_at", { ascending: false }),
+      db.from("messages").select("*").order("created_at", { ascending: true }),
+      db.from("submissions").select(SUBMISSION_PUBLIC_COLS).order("created_at", { ascending: false }),
+      db.from("province_notes").select("*").order("created_at", { ascending: false }),
     ]);
 
     const users = ((p.data as Row[]) ?? []).map((r) => rowToUser(r, myId));
@@ -313,7 +314,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
         if (legacy?.me?.name) {
           const id = uuid();
-          const { error } = await supabase.from("participants").insert({
+          const { error } = await db.from("participants").insert({
             id,
             device_id: getDeviceId(),
             name: legacy.me.name,
@@ -433,7 +434,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
 
       void (async () => {
-        await supabase.from("participants").upsert(payload, { onConflict: "id" });
+        // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
+        // และข้อมูลผู้ใช้ใหม่ไม่ขึ้นฐานข้อมูลกลาง
+        if (existingId) {
+          const { id: _omit, ...patch } = payload;
+          const { error } = await db.from("participants").update(patch).eq("id", existingId);
+          if (error) console.error("[connexts] อัปเดตโปรไฟล์ไม่สำเร็จ", error);
+        } else {
+          const { error } = await db.from("participants").insert(payload);
+          if (error) console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", error);
+        }
         await refresh();
       })();
 
@@ -453,7 +463,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         me: s.me ? { ...s.me, linked_email: email, linked_user_id: userId, linked_at: now } : s.me,
       }));
       void (async () => {
-        await supabase
+        await db
           .from("participants")
           .update({ linked_email: email, linked_user_id: userId, linked_at: now })
           .eq("id", id);
@@ -500,7 +510,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       if (myId) {
         void (async () => {
-          await supabase.from("connections").insert({
+          await db.from("connections").insert({
             id: conn.id,
             user_a: myId,
             user_b: otherId,
@@ -546,7 +556,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
 
       void (async () => {
-        await supabase.from("commitments").insert({
+        await db.from("commitments").insert({
           id: item.id,
           connection_id: item.connection_id,
           action_type: item.action_type,
@@ -555,7 +565,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           follow_up_date: item.follow_up_date,
           rsvp: item.rsvp ?? null,
         });
-        await supabase.from("connections").update({ status: item.status }).eq("id", item.connection_id);
+        await db.from("connections").update({ status: item.status }).eq("id", item.connection_id);
         await refresh();
       })();
       return item;
@@ -577,8 +587,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       });
       void (async () => {
-        await supabase.from("connections").update({ status }).eq("id", id);
-        await supabase.from("commitments").update({ status }).eq("connection_id", id);
+        await db.from("connections").update({ status }).eq("id", id);
+        await db.from("commitments").update({ status }).eq("connection_id", id);
         await refresh();
       })();
     },
@@ -613,7 +623,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       });
       void (async () => {
-        await supabase.from("commitments").update(patch).eq("id", id);
+        await db.from("commitments").update(patch).eq("id", id);
         await refresh();
       })();
     },
@@ -636,7 +646,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return { ...s, commitments: s.commitments.map((m) => (m.id === id ? { ...m, rsvp } : m)) };
       });
       void (async () => {
-        await supabase.from("commitments").update({ rsvp }).eq("id", id);
+        await db.from("commitments").update({ rsvp }).eq("id", id);
         await refresh();
       })();
     },
@@ -686,7 +696,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const note: ProvinceNote = { ...n, id: uuid(), created_at: new Date().toISOString() };
       setState((s) => ({ ...s, provinceNotes: [note, ...s.provinceNotes] }));
       void (async () => {
-        await supabase.from("province_notes").insert({
+        await db.from("province_notes").insert({
           id: note.id,
           province: note.province,
           author_id: note.author_id === "me" ? myIdRef.current : note.author_id || null,
@@ -712,7 +722,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
       setState((s) => ({ ...s, submissions: [item, ...s.submissions] }));
       void (async () => {
-        await supabase.from("submissions").insert({
+        await db.from("submissions").insert({
           id: item.id,
           name: item.name,
           course: item.course,
@@ -746,7 +756,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       });
       void (async () => {
-        await supabase.from("submissions").update({ showcase: next }).eq("id", id);
+        await db.from("submissions").update({ showcase: next }).eq("id", id);
         await refresh();
       })();
     },
@@ -771,7 +781,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         source: u.source ?? "admin",
       }));
       void (async () => {
-        if (rows.length) await supabase.from("participants").insert(rows);
+        if (rows.length) await db.from("participants").insert(rows);
         await refresh();
       })();
       return list.length;
@@ -791,7 +801,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const { id: _ignored, created_at: _c, ...rest } = patch as Partial<User> & { id?: string };
       void (async () => {
         const target = dbId(id);
-        const { error } = await supabase.from("participants").update(rest as Row).eq("id", target);
+        const { error } = await db.from("participants").update(rest as Row).eq("id", target);
         const pwd = adminPassword();
         if (pwd) {
           await adminUpdateRow({
@@ -809,7 +819,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const removeRow = useCallback(
     (table: AdminTable, id: string) => {
       void (async () => {
-        const { error } = await supabase.from(table as never).delete().eq("id", id);
+        const { error } = await db.from(table as never).delete().eq("id", id);
         const pwd = adminPassword();
         // ผู้ดูแลหลังบ้านลบข้อมูลของคนอื่นได้ผ่านสิทธิ์ฝั่งเซิร์ฟเวอร์
         if (pwd) {
@@ -844,7 +854,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
       setState((s) => ({ ...s, ideas: [item, ...s.ideas] }));
       void (async () => {
-        const { error } = await supabase.from("ideas").insert({
+        const { error } = await db.from("ideas").insert({
           id: item.id,
           title: item.title,
           description: item.description,
@@ -870,7 +880,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const { id: _i, created_at: _c, owner_id, ...rest } = patch as Row;
         const payload: Row = { ...rest };
         if (owner_id !== undefined) payload["owner_id"] = owner_id ? dbId(owner_id) : null;
-        await supabase.from("ideas").update(payload).eq("id", id);
+        await db.from("ideas").update(payload).eq("id", id);
         await refresh();
       })();
     },
@@ -893,7 +903,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       void (async () => {
         const { id: _i, created_at: _c, ...rest } = patch as Row;
-        await supabase.from("submissions").update(rest).eq("id", id);
+        await db.from("submissions").update(rest).eq("id", id);
         await refresh();
       })();
     },
@@ -955,7 +965,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return { ...s, messages: [...s.messages, msg] };
       });
       void (async () => {
-        await supabase.from("messages").insert({
+        await db.from("messages").insert({
           id: msg.id,
           connection_id: connectionId,
           from_id: myIdRef.current,
