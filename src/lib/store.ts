@@ -84,6 +84,7 @@ type Store = State & {
   importUsers: (list: User[]) => number;
   updateUser: (id: string, patch: Partial<User>) => void;
   removeUser: (id: string) => void;
+  addIdea: (i: Omit<Idea, "id" | "created_at" | "owner_id">) => Idea;
   updateIdea: (id: string, patch: Partial<Idea>) => void;
   removeIdea: (id: string) => void;
   updateSubmission: (id: string, patch: Partial<Submission>) => void;
@@ -833,6 +834,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [removeRow, dbId],
   );
 
+  const addIdea: Store["addIdea"] = useCallback(
+    (data) => {
+      const item: Idea = {
+        ...data,
+        id: uuid(),
+        owner_id: "me",
+        created_at: new Date().toISOString(),
+      };
+      setState((s) => ({ ...s, ideas: [item, ...s.ideas] }));
+      void (async () => {
+        const { error } = await supabase.from("ideas").insert({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          owner_id: myIdRef.current,
+          region: item.region,
+          issues: item.issues,
+          resources_have: item.resources_have,
+          resources_need: item.resources_need,
+        });
+        if (error) console.warn("[store] create idea failed", error.message);
+        await refresh();
+      })();
+      emitLive("match", "ไอเดียใหม่ในตลาดพลัง", item.title);
+      return item;
+    },
+    [refresh],
+  );
+
   const updateIdea: Store["updateIdea"] = useCallback(
     (id, patch) => {
       setState((s) => ({ ...s, ideas: s.ideas.map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
@@ -986,6 +1016,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       importUsers,
       updateUser,
       removeUser,
+      addIdea,
       updateIdea,
       removeIdea,
       updateSubmission,
@@ -1000,7 +1031,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, saveProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
