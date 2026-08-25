@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, QrCode } from "lucide-react";
+import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { ProfileForm } from "@/components/profile-form";
@@ -113,12 +114,17 @@ function UpdateMe() {
             key={me.updated_at ?? me.created_at}
             initial={me}
             submitLabel="บันทึกข้อมูลของฉัน"
-            onSubmit={(draft) => {
+            onSubmit={async (draft) => {
               const session = getSession();
-              saveProfile({ ...draft, source: session?.source });
-              setSaved(true);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-              setTimeout(() => setSaved(false), 4000);
+              try {
+                await saveProfile({ ...draft, source: session?.source });
+                setSaved(true);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                setTimeout(() => setSaved(false), 4000);
+              } catch (err) {
+                console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", err);
+                toast.error("บันทึกขึ้นระบบไม่สำเร็จ ลองใหม่อีกครั้งนะ");
+              }
             }}
           />
         )}
