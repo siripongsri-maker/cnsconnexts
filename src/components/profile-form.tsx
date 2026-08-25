@@ -53,8 +53,9 @@ export function ProfileForm({
   const submit = () => {
     if (!valid || sending) return;
     setSending(true);
-
+    onSubmit({
       name: name.trim(),
+
       avatar,
       photo,
       province: province || (provinces[0]?.en ?? "Bangkok"),
