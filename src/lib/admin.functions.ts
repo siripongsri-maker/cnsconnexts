@@ -15,7 +15,7 @@ const ADMIN_TABLES = [
   "messages",
 ] as const;
 
-type AdminTable = (typeof ADMIN_TABLES)[number];
+export type AdminTable = (typeof ADMIN_TABLES)[number];
 
 type AdminInput = {
   password: string;

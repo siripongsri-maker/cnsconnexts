@@ -1,6 +1,8 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { emitLive } from "./live";
+import { adminDeleteRow, adminUpdateRow, type AdminTable } from "./admin.functions";
+import { ADMIN_PASSWORD } from "./admin-auth";
 import type {
   AppNotification,
   ChatMessage,
@@ -110,6 +112,16 @@ function readLocal<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** รหัสผ่านผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
+function adminPassword(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem("connext-admin-session") === "1" ? ADMIN_PASSWORD : null;
   } catch {
     return null;
   }
@@ -800,7 +812,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const pwd = adminPassword();
         // ผู้ดูแลหลังบ้านลบข้อมูลของคนอื่นได้ผ่านสิทธิ์ฝั่งเซิร์ฟเวอร์
         if (pwd) {
-          await adminDeleteRow({ data: { password: pwd, table, id } }).catch((e) =>
+          await adminDeleteRow({ data: { password: pwd, table, id } }).catch((e: unknown) =>
             console.warn("[store] admin delete failed", e),
           );
         } else if (error) {
