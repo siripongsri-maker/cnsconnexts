@@ -21,7 +21,7 @@ export function ProfileForm({
 }: {
   initial?: User | null;
   submitLabel: string;
-  onSubmit: (draft: ProfileDraft) => void;
+  onSubmit: (draft: ProfileDraft) => void | Promise<void>;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [avatar, setAvatar] = useState(initial?.avatar ?? "✨");
