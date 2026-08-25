@@ -68,6 +68,11 @@ type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
 type Store = State & {
   hydrated: boolean;
   saveProfile: (u: ProfileInput) => Promise<User>;
+  /** โปรไฟล์ที่บันทึกไว้ในเครื่องแต่ยังไม่ถูกส่งขึ้นฐานข้อมูล */
+  pendingProfile: PendingProfile | null;
+  /** ส่งโปรไฟล์ที่ค้างขึ้นฐานข้อมูลกลาง */
+  syncPendingProfile: () => Promise<void>;
+  dismissPendingProfile: () => void;
   connect: (otherId: string, score: number, reason: string) => Connection;
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
