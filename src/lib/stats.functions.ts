@@ -1,25 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export const getPublicStats = createServerFn({ method: "GET" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const empty = { participants: 0, ideas: 0, connections: 0 };
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const [
-    { count: participants, error: pErr },
-    { count: ideas, error: iErr },
-    { count: connections, error: cErr },
-  ] = await Promise.all([
-    supabaseAdmin.from("participants").select("*", { count: "exact", head: true }),
-    supabaseAdmin.from("ideas").select("*", { count: "exact", head: true }),
-    supabaseAdmin.from("connections").select("*", { count: "exact", head: true }),
-  ]);
+    const [p, i, c] = await Promise.all([
+      supabaseAdmin.from("participants").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("ideas").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("connections").select("*", { count: "exact", head: true }),
+    ]);
 
-  if (pErr) throw pErr;
-  if (iErr) throw iErr;
-  if (cErr) throw cErr;
-
-  return {
-    participants: participants ?? 0,
-    ideas: ideas ?? 0,
-    connections: connections ?? 0,
-  };
+    return {
+      participants: p.count ?? 0,
+      ideas: i.count ?? 0,
+      connections: c.count ?? 0,
+    };
+  } catch (error) {
+    console.error("getPublicStats failed", error);
+    return empty;
+  }
 });
