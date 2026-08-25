@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   BookOpen,
   CalendarDays,
+  DatabaseBackup,
   Download,
   FileUp,
   Handshake,
@@ -51,6 +52,7 @@ export const ADMIN_MENU = [
   { to: "/admin/live", label: "จอสด", icon: Monitor },
   { to: "/admin/qr", label: "QR/ป้าย", icon: QrCode },
   { to: "/admin/logs", label: "Log การใช้งาน", icon: ShieldCheck },
+  { to: "/admin/backups", label: "สำรองข้อมูล", icon: DatabaseBackup },
   { to: "/admin/export", label: "ส่งออกข้อมูล", icon: Download },
   { to: "/admin/settings", label: "ตั้งค่า", icon: Settings },
 ] as const;
