@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, Loader2, PlusCircle, RotateCcw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, PlusCircle, RotateCcw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -31,12 +31,14 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
   const [step, setStep] = useState<1 | 2>(1);
   const [word, setWord] = useState("");
   const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   useEffect(() => {
     if (!backupId) return;
     setPreview(null);
     setStep(1);
     setWord("");
+    setFailure(null);
     setLoading(true);
     previewRestore({ data: { password: ADMIN_PASSWORD, backupId } })
       .then((r) => setPreview(r as RestorePreview))
@@ -47,13 +49,27 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
   const confirm = async () => {
     if (!backupId) return;
     setSaving(true);
+    setFailure(null);
     try {
-      await restoreBackup({ data: { password: ADMIN_PASSWORD, backupId } });
-      toast.success("กู้คืนข้อมูลสำเร็จ");
+      const res = await restoreBackup({ data: { password: ADMIN_PASSWORD, backupId } });
+      toast.success("กู้คืนข้อมูลสำเร็จ", {
+        icon: <CheckCircle2 className="h-4 w-4" />,
+        duration: 8000,
+        description: `${title} · ตาราง ${res.table}${res.rowId ? ` · รหัส ${res.rowId.slice(0, 8)}` : ""} · ${
+          overwrite ? "ทับข้อมูลเดิม" : "เพิ่มข้อมูลกลับ"
+        } เมื่อ ${new Date(res.at).toLocaleString("th-TH")}`,
+      });
       onDone();
       onClose();
     } catch (e) {
-      toast.error("กู้คืนไม่สำเร็จ", { description: (e as Error).message });
+      const reason = (e as Error).message || "ไม่ทราบสาเหตุ";
+      setFailure(reason);
+      toast.error("กู้คืนไม่สำเร็จ", {
+        icon: <XCircle className="h-4 w-4" />,
+        duration: 12000,
+        description: `${title} — สาเหตุ: ${reason}`,
+        action: { label: "คัดลอกข้อผิดพลาด", onClick: () => void navigator.clipboard?.writeText(reason) },
+      });
     } finally {
       setSaving(false);
     }
@@ -143,6 +159,16 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
               placeholder={CONFIRM_WORD}
               autoFocus
             />
+          </div>
+        )}
+
+        {failure && (
+          <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+            <XCircle className="mt-0.5 h-4 w-4 text-destructive" />
+            <div>
+              <p className="font-semibold text-destructive">กู้คืนไม่สำเร็จ</p>
+              <p className="break-words text-muted-foreground">สาเหตุ: {failure}</p>
+            </div>
           </div>
         )}
 
