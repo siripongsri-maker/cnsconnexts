@@ -39,7 +39,7 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
     setWord("");
     setLoading(true);
     previewRestore({ data: { password: ADMIN_PASSWORD, backupId } })
-      .then(setPreview)
+      .then((r) => setPreview(r as RestorePreview))
       .catch((e: Error) => toast.error("ตรวจสอบผลกระทบไม่สำเร็จ", { description: e.message }))
       .finally(() => setLoading(false));
   }, [backupId]);
