@@ -147,6 +147,25 @@ function AdminBackups() {
         ))}
       </select>
 
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={exporting}
+          onClick={() => void onExport("json")}
+          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-[12px] font-bold disabled:opacity-60"
+        >
+          <FileJson className="size-4" /> ดาวน์โหลด JSON
+        </button>
+        <button
+          type="button"
+          disabled={exporting}
+          onClick={() => void onExport("csv")}
+          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-[12px] font-bold disabled:opacity-60"
+        >
+          <Download className="size-4" /> ดาวน์โหลด CSV
+        </button>
+      </div>
+
       {rows.length === 0 && !loading ? (
         <p className="rounded-2xl bg-muted p-4 text-[12px] text-muted-foreground">
           ยังไม่มีรายการสำรองข้อมูล
