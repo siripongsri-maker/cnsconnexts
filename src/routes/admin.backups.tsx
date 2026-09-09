@@ -202,6 +202,17 @@ function AdminBackups() {
           </li>
         ))}
       </ul>
+
+      <RestoreDialog
+        backupId={restoreTarget?.id ?? null}
+        title={
+          restoreTarget
+            ? `${OP_TH[restoreTarget.operation] ?? restoreTarget.operation} · ${label(restoreTarget)}`
+            : ""
+        }
+        onClose={() => setRestoreTarget(null)}
+        onDone={() => void load()}
+      />
     </div>
   );
 }
