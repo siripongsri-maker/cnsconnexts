@@ -46,6 +46,88 @@ export const listBackups = createServerFn({ method: "POST" })
     return { rows: (rows ?? []) as unknown as BackupRow[], total: count ?? 0 };
   });
 
+export type BackupPolicy = {
+  max_rows: number;
+  max_age_days: number;
+  auto_prune: boolean;
+  updated_at?: string;
+};
+
+export const getBackupPolicy = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string }) => {
+    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+    return input;
+  })
+  .handler(async ({ data }) => {
+    checkPassword(data.password);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        select: (c: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown; error: { message: string } | null }> } };
+      };
+    };
+    const { data: row, error } = await db
+      .from("backup_settings")
+      .select("max_rows, max_age_days, auto_prune, updated_at")
+      .eq("id", "default")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return (row as BackupPolicy | null) ?? { max_rows: 2000, max_age_days: 90, auto_prune: true };
+  });
+
+export const saveBackupPolicy = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string; maxRows: number; maxAgeDays: number; autoPrune: boolean }) => {
+    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+    const maxRows = Math.max(0, Math.min(Math.floor(Number(input.maxRows) || 0), 100000));
+    const maxAgeDays = Math.max(0, Math.min(Math.floor(Number(input.maxAgeDays) || 0), 3650));
+    return { password: input.password, maxRows, maxAgeDays, autoPrune: Boolean(input.autoPrune) };
+  })
+  .handler(async ({ data }) => {
+    checkPassword(data.password);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      from: (t: string) => {
+        upsert: (v: unknown, o?: unknown) => Promise<{ error: { message: string } | null }>;
+      };
+      rpc: (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>;
+    };
+
+    const { error } = await db.from("backup_settings").upsert(
+      {
+        id: "default",
+        max_rows: data.maxRows,
+        max_age_days: data.maxAgeDays,
+        auto_prune: data.autoPrune,
+      },
+      { onConflict: "id" },
+    );
+    if (error) throw new Error(error.message);
+
+    let removed = 0;
+    if (data.autoPrune) {
+      const { data: n, error: pruneErr } = await db.rpc("prune_data_backups");
+      if (pruneErr) throw new Error(pruneErr.message);
+      removed = Number(n ?? 0);
+    }
+    return { ok: true, removed };
+  });
+
+export const pruneBackupsNow = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string }) => {
+    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+    return input;
+  })
+  .handler(async ({ data }) => {
+    checkPassword(data.password);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as {
+      rpc: (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>;
+    };
+    const { data: n, error } = await db.rpc("prune_data_backups");
+    if (error) throw new Error(error.message);
+    return { removed: Number(n ?? 0) };
+  });
+
 export const restoreBackup = createServerFn({ method: "POST" })
   .inputValidator((input: { password: string; backupId: string }) => {
     if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
