@@ -32,6 +32,7 @@ import { Route as StartRouteImport } from './routes/start'
 import { Route as SubmitRouteImport } from './routes/submit'
 import { Route as UpdateRouteImport } from './routes/update'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminBackupPolicyRouteImport } from './routes/admin.backup-policy'
 import { Route as AdminBackupsRouteImport } from './routes/admin.backups'
 import { Route as AdminCommitmentsRouteImport } from './routes/admin.commitments'
@@ -165,6 +166,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBackupPolicyRoute = AdminBackupPolicyRouteImport.update({
   id: '/backup-policy',
   path: '/backup-policy',
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/backup-policy': typeof AdminBackupPolicyRoute
   '/admin/backups': typeof AdminBackupsRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
@@ -315,6 +322,7 @@ export interface FileRoutesByTo {
   '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/backup-policy': typeof AdminBackupPolicyRoute
   '/admin/backups': typeof AdminBackupsRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/start': typeof StartRoute
   '/submit': typeof SubmitRoute
   '/update': typeof UpdateRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/backup-policy': typeof AdminBackupPolicyRoute
   '/admin/backups': typeof AdminBackupsRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
@@ -402,6 +411,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/submit'
     | '/update'
+    | '/admin/audit'
     | '/admin/backup-policy'
     | '/admin/backups'
     | '/admin/commitments'
@@ -443,6 +453,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/submit'
     | '/update'
+    | '/admin/audit'
     | '/admin/backup-policy'
     | '/admin/backups'
     | '/admin/commitments'
@@ -485,6 +496,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/submit'
     | '/update'
+    | '/admin/audit'
     | '/admin/backup-policy'
     | '/admin/backups'
     | '/admin/commitments'
@@ -696,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/backup-policy': {
       id: '/admin/backup-policy'
       path: '/backup-policy'
@@ -819,6 +838,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
   AdminBackupPolicyRoute: typeof AdminBackupPolicyRoute
   AdminBackupsRoute: typeof AdminBackupsRoute
   AdminCommitmentsRoute: typeof AdminCommitmentsRoute
@@ -837,6 +857,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
   AdminBackupPolicyRoute: AdminBackupPolicyRoute,
   AdminBackupsRoute: AdminBackupsRoute,
   AdminCommitmentsRoute: AdminCommitmentsRoute,
