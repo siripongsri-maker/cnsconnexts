@@ -217,3 +217,60 @@ export const restoreBackup = createServerFn({ method: "POST" })
 
     return { ok: true, table: row.table_name };
   });
+
+export type AuditRow = {
+  id: string;
+  table_name: string;
+  operation: string;
+  row_id: string | null;
+  actor: string | null;
+  actor_source: string | null;
+  label: string;
+  created_at: string;
+};
+
+/** ประวัติการเปลี่ยนแปลงข้อมูล: ใครทำอะไร ตอนไหน (จากระบบสำรองอัตโนมัติ) */
+export const listAuditLog = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string; table?: string; actor?: string; operation?: string; limit?: number }) => {
+    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+    return input;
+  })
+  .handler(async ({ data }) => {
+    checkPassword(data.password);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    let query = supabaseAdmin
+      .from("data_backups")
+      .select("id, table_name, operation, row_id, old_data, new_data, created_at, actor, actor_source")
+      .order("created_at", { ascending: false })
+      .limit(Math.min(data.limit ?? 200, 1000));
+
+    if (data.table) query = query.eq("table_name", data.table);
+    if (data.operation) query = query.eq("operation", data.operation);
+    if (data.actor) query = query.eq("actor" as "table_name", data.actor);
+
+    const { data: rows, error } = await query;
+    if (error) throw new Error(error.message);
+
+    const list = (rows ?? []) as unknown as (BackupRow & { actor: string | null; actor_source: string | null })[];
+
+    const out: AuditRow[] = list.map((r) => {
+      const snap = (r.new_data ?? r.old_data ?? {}) as Record<string, Json>;
+      const name = (snap["name"] as string) || (snap["title"] as string) || r.row_id?.slice(0, 8) || "-";
+      return {
+        id: r.id,
+        table_name: r.table_name,
+        operation: r.operation,
+        row_id: r.row_id,
+        actor: r.actor ?? null,
+        actor_source: r.actor_source ?? null,
+        label: name,
+        created_at: r.created_at,
+      };
+    });
+
+    const actors = Array.from(new Set(out.map((r) => r.actor).filter((a): a is string => !!a))).sort();
+    const last = out[0]?.created_at ?? null;
+
+    return { rows: out, actors, total: out.length, lastBackupAt: last };
+  });
