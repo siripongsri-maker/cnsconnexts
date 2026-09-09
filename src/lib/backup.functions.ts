@@ -134,8 +134,6 @@ export type RestorePreview = {
   mode: "overwrite" | "insert";
   changes: { field: string; current: string; restored: string }[];
   unchanged: number;
-  snapshot: Record<string, unknown>;
-  current: Record<string, unknown> | null;
 };
 
 const fmt = (v: unknown) =>
@@ -188,8 +186,6 @@ export const previewRestore = createServerFn({ method: "POST" })
       mode: current ? "overwrite" : "insert",
       changes,
       unchanged,
-      snapshot,
-      current,
     };
   });
 
