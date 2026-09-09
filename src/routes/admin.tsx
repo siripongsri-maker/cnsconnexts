@@ -10,6 +10,7 @@ import {
   Home,
   LayoutDashboard,
   Lightbulb,
+  History,
   Lock,
   LogOut,
   Map,
