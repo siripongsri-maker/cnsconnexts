@@ -210,12 +210,21 @@ export const restoreBackup = createServerFn({ method: "POST" })
     const snapshot = (row.old_data ?? row.new_data) as Record<string, unknown> | null;
     if (!snapshot) throw new Error("ไม่มีข้อมูลสำหรับกู้คืน");
 
+    const rowId = (snapshot["id"] as string | undefined) ?? null;
     const { error: upErr } = await supabaseAdmin
       .from(row.table_name as "participants")
       .upsert(snapshot as never, { onConflict: "id" });
-    if (upErr) throw new Error(upErr.message);
+    if (upErr) {
+      const detail = [upErr.message, upErr.details, upErr.hint].filter(Boolean).join(" · ");
+      throw new Error(`${detail || "ไม่ทราบสาเหตุ"}${upErr.code ? ` (รหัส ${upErr.code})` : ""}`);
+    }
 
-    return { ok: true, table: row.table_name };
+    return {
+      ok: true,
+      table: row.table_name,
+      rowId,
+      at: new Date().toISOString(),
+    };
   });
 
 export type AuditRow = {
