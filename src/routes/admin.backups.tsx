@@ -58,15 +58,10 @@ function AdminBackups() {
     void load();
   }, [load]);
 
-  const onRestore = async (row: BackupRow) => {
-    if (!confirm(`กู้คืนข้อมูลนี้กลับเข้าระบบ? (${label(row)})`)) return;
-    try {
-      await restoreBackup({ data: { password: ADMIN_PASSWORD, backupId: row.id } });
-      toast.success("กู้คืนข้อมูลสำเร็จ");
-      void load();
-    } catch (e) {
-      toast.error("กู้คืนไม่สำเร็จ", { description: (e as Error).message });
-    }
+  const [restoreTarget, setRestoreTarget] = useState<BackupRow | null>(null);
+
+  const onRestore = (row: BackupRow) => {
+    setRestoreTarget(row);
   };
 
   const [exporting, setExporting] = useState(false);
