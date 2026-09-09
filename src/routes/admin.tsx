@@ -53,6 +53,7 @@ export const ADMIN_MENU = [
   { to: "/admin/qr", label: "QR/ป้าย", icon: QrCode },
   { to: "/admin/logs", label: "Log การใช้งาน", icon: ShieldCheck },
   { to: "/admin/backups", label: "สำรองข้อมูล", icon: DatabaseBackup },
+  { to: "/admin/backup-policy", label: "นโยบายสำรอง", icon: ShieldCheck },
   { to: "/admin/export", label: "ส่งออกข้อมูล", icon: Download },
   { to: "/admin/settings", label: "ตั้งค่า", icon: Settings },
 ] as const;

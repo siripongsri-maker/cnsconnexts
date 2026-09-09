@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Broom, Save, ShieldCheck } from "lucide-react";
+import { Save, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
@@ -137,7 +137,7 @@ function AdminBackupPolicy() {
             onClick={() => void onPrune()}
             className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-sm font-bold"
           >
-            <Broom className="size-4" /> ล้างตอนนี้
+            <Trash2 className="size-4" /> ล้างตอนนี้
           </button>
         </div>
       </section>
