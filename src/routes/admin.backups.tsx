@@ -185,6 +185,14 @@ function AdminBackups() {
               </button>
               <button
                 type="button"
+                onClick={() => onExportOne(row)}
+                aria-label="ดาวน์โหลดสแนปช็อตนี้"
+                className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-[11px] font-bold"
+              >
+                <Download className="size-3.5" />
+              </button>
+              <button
+                type="button"
                 onClick={() => void onRestore(row)}
                 className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-[11px] font-bold"
               >
