@@ -111,6 +111,8 @@ export type Database = {
       }
       data_backups: {
         Row: {
+          actor: string | null
+          actor_source: string | null
           created_at: string
           id: string
           new_data: Json | null
@@ -120,6 +122,8 @@ export type Database = {
           table_name: string
         }
         Insert: {
+          actor?: string | null
+          actor_source?: string | null
           created_at?: string
           id?: string
           new_data?: Json | null
@@ -129,6 +133,8 @@ export type Database = {
           table_name: string
         }
         Update: {
+          actor?: string | null
+          actor_source?: string | null
           created_at?: string
           id?: string
           new_data?: Json | null
