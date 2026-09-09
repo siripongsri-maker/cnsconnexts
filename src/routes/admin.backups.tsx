@@ -4,7 +4,8 @@ import { DatabaseBackup, Download, FileJson, RefreshCw, RotateCcw } from "lucide
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
-import { listBackups, restoreBackup, type BackupRow } from "@/lib/backup.functions";
+import { RestoreDialog } from "@/components/restore-dialog";
+import { listBackups, type BackupRow } from "@/lib/backup.functions";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 
 export const Route = createFileRoute("/admin/backups")({
