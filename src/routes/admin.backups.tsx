@@ -4,7 +4,8 @@ import { DatabaseBackup, Download, FileJson, RefreshCw, RotateCcw } from "lucide
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
-import { listBackups, restoreBackup, type BackupRow } from "@/lib/backup.functions";
+import { RestoreDialog } from "@/components/restore-dialog";
+import { listBackups, type BackupRow } from "@/lib/backup.functions";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 
 export const Route = createFileRoute("/admin/backups")({
@@ -58,15 +59,10 @@ function AdminBackups() {
     void load();
   }, [load]);
 
-  const onRestore = async (row: BackupRow) => {
-    if (!confirm(`กู้คืนข้อมูลนี้กลับเข้าระบบ? (${label(row)})`)) return;
-    try {
-      await restoreBackup({ data: { password: ADMIN_PASSWORD, backupId: row.id } });
-      toast.success("กู้คืนข้อมูลสำเร็จ");
-      void load();
-    } catch (e) {
-      toast.error("กู้คืนไม่สำเร็จ", { description: (e as Error).message });
-    }
+  const [restoreTarget, setRestoreTarget] = useState<BackupRow | null>(null);
+
+  const onRestore = (row: BackupRow) => {
+    setRestoreTarget(row);
   };
 
   const [exporting, setExporting] = useState(false);
@@ -207,6 +203,17 @@ function AdminBackups() {
           </li>
         ))}
       </ul>
+
+      <RestoreDialog
+        backupId={restoreTarget?.id ?? null}
+        title={
+          restoreTarget
+            ? `${OP_TH[restoreTarget.operation] ?? restoreTarget.operation} · ${label(restoreTarget)}`
+            : ""
+        }
+        onClose={() => setRestoreTarget(null)}
+        onDone={() => void load()}
+      />
     </div>
   );
 }

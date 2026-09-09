@@ -128,6 +128,67 @@ export const pruneBackupsNow = createServerFn({ method: "POST" })
     return { removed: Number(n ?? 0) };
   });
 
+export type RestorePreview = {
+  table: string;
+  rowId: string | null;
+  mode: "overwrite" | "insert";
+  changes: { field: string; current: string; restored: string }[];
+  unchanged: number;
+};
+
+const fmt = (v: unknown) =>
+  v === null || v === undefined ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v);
+
+/** ตรวจผลกระทบก่อนกู้คืน — บอกว่าข้อมูลจะถูกทับหรือเพิ่มใหม่ และฟิลด์ไหนเปลี่ยนบ้าง */
+export const previewRestore = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string; backupId: string }) => {
+    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+    if (typeof input?.backupId !== "string" || !input.backupId) throw new Error("invalid id");
+    return input;
+  })
+  .handler(async ({ data }): Promise<RestorePreview> => {
+    checkPassword(data.password);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: row, error } = await supabaseAdmin
+      .from("data_backups")
+      .select("table_name, row_id, old_data, new_data")
+      .eq("id", data.backupId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("not found");
+
+    const snapshot = (row.old_data ?? row.new_data) as Record<string, unknown> | null;
+    if (!snapshot) throw new Error("ไม่มีข้อมูลสำหรับกู้คืน");
+
+    const id = (snapshot["id"] as string | undefined) ?? row.row_id ?? null;
+    let current: Record<string, unknown> | null = null;
+    if (id) {
+      const { data: cur } = await supabaseAdmin
+        .from(row.table_name as "participants")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      current = (cur as Record<string, unknown> | null) ?? null;
+    }
+
+    const changes: RestorePreview["changes"] = [];
+    let unchanged = 0;
+    for (const [field, value] of Object.entries(snapshot)) {
+      const cur = current ? current[field] : undefined;
+      if (current && fmt(cur) === fmt(value)) unchanged += 1;
+      else changes.push({ field, current: current ? fmt(cur) : "—", restored: fmt(value) });
+    }
+
+    return {
+      table: row.table_name,
+      rowId: id,
+      mode: current ? "overwrite" : "insert",
+      changes,
+      unchanged,
+    };
+  });
+
 export const restoreBackup = createServerFn({ method: "POST" })
   .inputValidator((input: { password: string; backupId: string }) => {
     if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
