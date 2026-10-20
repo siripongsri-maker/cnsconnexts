@@ -103,7 +103,7 @@ function PrintKit() {
   }, [regionPeople]);
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="editorial-print min-h-screen bg-background">
       <style>{PAGE_CSS[sheet]}</style>
       <div className="no-print sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">

@@ -116,6 +116,9 @@
   --gradient-holo: linear-gradient(120deg, oklch(0.62 0.18 255), oklch(0.85 0.1 215));
   --mission-hero-scrim: linear-gradient(90deg, oklch(0.07 0.01 262 / 0.82), transparent 78%), linear-gradient(0deg, var(--background), transparent 35%);
   --mission-map-scrim: linear-gradient(90deg, var(--background), oklch(0.105 0.012 262 / 0.55) 55%, transparent), linear-gradient(0deg, var(--background), transparent 25%, transparent 75%, var(--background));
+  --paper: oklch(0.99 0 0);
+  --paper-ink: oklch(0.22 0.01 250);
+  --paper-muted: oklch(0.46 0.01 250);
 }
 
 .dark {
@@ -486,7 +489,15 @@ body::after { background-size: 100% 100%; opacity: 0.35; }
 .app-content h2 { font-weight: 500; }
 .admin-experience main { padding-top: 40px; }
 .admin-experience h1 { font-size: 32px; font-weight: 500; }
-.mission-home { overflow: clip; padding-bottom: 80px; }
+.mission-home { padding-bottom: 80px; }
+.editorial-auth { padding-top: 64px; }
+.editorial-auth > div { max-width: 520px; }
+.editorial-auth form { padding-top: 16px; }
+.editorial-guide h2 { font-size: 24px; font-weight: 500; }
+.editorial-guide p { font-size: 16px; line-height: 1.8; }
+.editorial-journey main > .card-soft { background: transparent; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; padding-block: 40px; }
+.editorial-journey main > section > h1 { font-size: 32px; font-weight: 500; }
+.editorial-print .print-sheet { --card: var(--paper); --background: var(--paper); --foreground: var(--paper-ink); --muted-foreground: var(--paper-muted); --muted: oklch(0.93 0.01 250); --border: oklch(0.8 0.01 250); color-scheme: light; }
 .mission-container { width: calc(100% - 12%); max-width: 1200px; margin-inline: auto; }
 .mission-hero { position: relative; isolation: isolate; min-height: min(900px, 92svh); display: flex; flex-direction: column; justify-content: center; padding-top: 88px; }
 .mission-hero-media { position: absolute; inset: 0; z-index: -2; overflow: hidden; }
@@ -540,9 +551,9 @@ body::after { background-size: 100% 100%; opacity: 0.35; }
   .app-page-title { font-size: 28px; }
   .app-content { padding: 20px 20px 0; }
   .mission-container { width: calc(100% - 48px); }
-  .mission-hero { min-height: 88svh; padding-top: 66px; }
+  .mission-hero { min-height: 82svh; padding-top: 66px; }
   .mission-hero-image { object-position: 62% center; }
-  .mission-hero-copy { width: calc(100% - 48px); padding-block: 70px; }
+  .mission-hero-copy { width: calc(100% - 48px); padding-block: 48px; }
   .mission-wordmark { font-size: 46px; line-height: 1.02; }
   .mission-hero-bottom { width: calc(100% - 48px); padding-bottom: 36px; }
   .mission-scroll { gap: 8px; font-size: 10px; }

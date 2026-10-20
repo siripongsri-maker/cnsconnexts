@@ -34,7 +34,7 @@ export function AppShell({
       <SpaceNav />
       {title && (
         <header className="app-page-heading">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <Link
               to="/"
               className="hidden"
