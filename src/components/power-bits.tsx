@@ -90,8 +90,8 @@ export function ScoreRing({ score }: { score: number }) {
         aria-label={`แมตช์พลัง ${pct}%, Power Match`}
         className="relative grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full"
         style={{
-          background: `conic-gradient(from -90deg, oklch(0.51 0.25 296), oklch(0.62 0.2 250) ${pct * 0.6}%, oklch(0.68 0.19 25) ${pct}%, var(--muted) ${pct}% 100%)`,
-          boxShadow: "0 8px 24px -10px oklch(0.51 0.25 296 / 0.7)",
+          background: `conic-gradient(from -90deg, var(--primary), var(--coral) ${pct}%, var(--muted) ${pct}% 100%)`,
+          boxShadow: "var(--shadow-glow)",
         }}
       >
         <div className="flex h-[56px] w-[56px] flex-col items-center justify-center rounded-full bg-card text-center">
