@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
-
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
 import { getSession } from "@/lib/session";
@@ -32,7 +31,6 @@ function Onboarding() {
   const [showIntro, setShowIntro] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
-
   useEffect(() => {
     setShowIntro(!hasSeenIntro());
   }, []);
@@ -42,7 +40,6 @@ function Onboarding() {
     if (!hydrated || !me) return;
     void navigate({ to: "/matches", replace: true });
   }, [hydrated, me, navigate]);
-
 
   return (
     <div className="editorial-focused min-h-screen">
@@ -57,12 +54,9 @@ function Onboarding() {
           </Link>
           <div className="min-w-0">
             <h1 className="truncate text-[17px] font-extrabold leading-tight">
-              {me ? "แก้ไขโปรไฟล์ของฉัน" : "สร้างโปรไฟล์พลังของคุณ"}
+              {me ? "แก้ไขโปรไฟล์" : "สร้างโปรไฟล์พลัง"}
             </h1>
-            <p className="text-[12px] text-muted-foreground">
-              ตอบคำถามสั้น ๆ ไม่ถึง 2 นาที แล้วไปเจอคนที่ใช่กัน{" "}
-              <span lang="en">· A few quick questions, then meet your people</span>
-            </p>
+            <p className="text-[12px] text-muted-foreground">ไม่ถึง 2 นาที แล้วไปเจอคนที่ใช่</p>
           </div>
         </div>
       </header>
@@ -71,23 +65,17 @@ function Onboarding() {
         {hydrated && !me && showIntro && <IntroGuide onDone={() => setShowIntro(false)} />}
         {hydrated && !me && (
           <p className="mb-4 rounded-2xl border border-border bg-card/80 px-4 py-3 text-[12px] leading-relaxed text-muted-foreground">
-            โปรไฟล์นี้จะโชว์ให้เพื่อนในงานเห็นเพื่อจับคู่กัน ใช้ชื่อเล่นหรือนามแฝงก็ได้
-            และเลือกเฉพาะเรื่องที่สบายใจจะแชร์นะ ·{" "}
-            <span lang="en">
-              Your profile is visible to other participants for matching. A nickname is fine, so
-              share only what you&apos;re comfortable with.
-            </span>{" "}
+            ผู้ร่วมงานเห็นโปรไฟล์นี้เพื่อจับคู่ ใช้นามแฝงและแชร์เฉพาะที่สบายใจได้{" "}
             <Link to="/auth" className="font-bold text-primary">
-              ผูกบัญชีทีหลัง
+              ผูกบัญชี
             </Link>{" "}
-            ได้เมื่อพร้อม
+            ภายหลังได้
           </p>
         )}
         {hydrated && (
           <ProfileForm
             initial={me}
-            submitLabel={me ? "บันทึกและดูคู่พลัง" : "ค้นหาคู่พลังของฉัน"}
-            submitLabelEn={me ? undefined : "Find My Power Matches"}
+            submitLabel={me ? "บันทึกและดูคู่พลัง" : "ค้นหาคู่พลัง"}
             onSubmit={async (draft) => {
               const session = getSession();
               try {
@@ -104,9 +92,10 @@ function Onboarding() {
           />
         )}
         {syncing && (
-          <p className="mt-3 text-center text-[12px] font-bold text-primary">กำลังเชื่อมข้อมูลขึ้นระบบ…</p>
+          <p className="mt-3 text-center text-[12px] font-bold text-primary">
+            กำลังเชื่อมข้อมูลขึ้นระบบ…
+          </p>
         )}
-
       </main>
     </div>
   );

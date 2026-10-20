@@ -19,9 +19,9 @@ export const Route = createFileRoute("/commitments")({
       },
       { property: "og:title", content: "จะทำอะไรต่อดี? — คนส. Connexts" },
       { property: "og:description", content: "รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: Commitments,
 });
@@ -39,9 +39,7 @@ function Commitments() {
   const { connections, commitments, users, me, updateCommitment } = useStore();
 
   const mine = connections.filter((c) => c.user_a === "me" || c.user_b === "me");
-  const myCommitments = commitments.filter((m) =>
-    mine.some((c) => c.id === m.connection_id),
-  );
+  const myCommitments = commitments.filter((m) => mine.some((c) => c.id === m.connection_id));
   const shown = myCommitments;
   const shownConnections = mine;
   const ready = mine.filter((c) => !commitments.some((m) => m.connection_id === c.id));
@@ -59,38 +57,22 @@ function Commitments() {
   };
 
   return (
-    <AppShell
-      title="จะทำอะไรต่อดี?"
-      subtitle="ก้าวต่อไปของเรา"
-    >
+    <AppShell title="ก้าวต่อไปของเรา" titleEn="Next steps">
       <FollowUpTabs />
-      <section className="px-5 pt-5">
-        <p lang="en" className="font-tech text-xs font-bold uppercase tracking-widest text-primary">
-          What happens next?
-        </p>
-        <h2 className="mt-1 text-2xl font-extrabold leading-tight [text-wrap:balance]">
-          รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?
-        </h2>
-      </section>
-
       <div className="px-5 pt-3">
         <LiveProgress />
       </div>
 
       <div className="grid grid-cols-2 gap-3 px-5 py-4">
         <div className="card-soft p-4">
-          <p className="font-tech text-3xl font-extrabold text-gradient">{shownConnections.length}</p>
-          <p className="text-xs font-bold text-muted-foreground">คอนเนกชันของฉัน</p>
-          <p lang="en" className="font-tech text-xs text-muted-foreground">
-            My connections
+          <p className="font-tech text-3xl font-extrabold text-gradient">
+            {shownConnections.length}
           </p>
+          <p className="text-xs font-bold text-muted-foreground">คอนเนกชันของฉัน</p>
         </div>
         <div className="card-soft p-4">
           <p className="font-tech text-3xl font-extrabold text-gradient">{shown.length}</p>
           <p className="text-xs font-bold text-muted-foreground">คำมั่นสัญญาของฉัน</p>
-          <p lang="en" className="font-tech text-xs text-muted-foreground">
-            My commitments
-          </p>
         </div>
       </div>
 
@@ -99,9 +81,6 @@ function Commitments() {
           <h2 id="ready-heading" className="text-base font-extrabold">
             ชวนกันตั้งก้าวแรก
           </h2>
-          <p lang="en" className="text-xs text-muted-foreground">
-            Start a first step together
-          </p>
           <ul className="mt-3 space-y-2">
             {ready.map((c) => {
               const partner = partnerOf(c.id)?.other;
@@ -117,7 +96,7 @@ function Commitments() {
                     aria-label={`วางแผนก้าวแรกกับ ${partner?.name ?? "คอนเนกชันนี้"}`}
                     className="tap inline-flex min-h-11 shrink-0 items-center rounded-xl bg-primary px-3 text-xs font-extrabold text-primary-foreground"
                   >
-                    วางแผนด้วยกัน →
+                    วางแผน →
                   </Link>
                 </li>
               );
@@ -129,12 +108,9 @@ function Commitments() {
       <div id="my-commitments" className="scroll-mt-20 space-y-3 px-5 pb-6">
         {mine.length === 0 ? (
           <div className="card-soft p-5 text-center">
-            <h2 className="text-lg font-extrabold">ยังไม่มีคอนเนกชันเลย</h2>
-            <p lang="en" className="text-xs text-muted-foreground">
-              No connections yet
-            </p>
+            <h2 className="text-lg font-extrabold">ยังไม่มีคอนเนกชัน</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              เริ่มจากทักคนที่พลังเสริมกับเราสักคน แล้วค่อยชวนกันคิดว่าจะทำอะไรด้วยกัน
+              หาคนที่พลังเสริมกัน แล้ววางแผนร่วมทำ
             </p>
             <Link
               to="/matches"
@@ -148,7 +124,7 @@ function Commitments() {
             to="/calendar"
             className="tap card-soft flex min-h-11 items-center justify-between gap-2 p-4 text-sm font-bold"
           >
-            <span>เชื่อมต่อแล้ว ลองชวนกันตั้งก้าวแรกที่จะทำด้วยกัน</span>
+            <span>เชื่อมต่อแล้ว ชวนกันนัดก้าวแรก</span>
             <span aria-hidden className="text-primary">
               →
             </span>
@@ -195,7 +171,7 @@ function Commitments() {
                       to="/calendar"
                       className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-bold"
                     >
-                      <CalendarDays className="h-4 w-4" aria-hidden /> ยังไม่ได้นัดวัน · เลือกวันกันเลย
+                      <CalendarDays className="h-4 w-4" aria-hidden /> นัดวันลงมือ
                     </Link>
                   )}
                   <Link
@@ -203,7 +179,7 @@ function Commitments() {
                     params={{ id: m.connection_id }}
                     className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold text-primary"
                   >
-                    <MessageCircle className="h-4 w-4" aria-hidden /> คุยต่อในแชท
+                    <MessageCircle className="h-4 w-4" aria-hidden /> คุยต่อ
                   </Link>
                 </div>
               )}
@@ -244,7 +220,7 @@ function Commitments() {
             to="/matches"
             className="tap flex h-14 items-center justify-center rounded-2xl border border-dashed border-primary/50 text-sm font-extrabold text-primary"
           >
-            + สร้างคอนเนกชันเพิ่มอีกสักคน
+            + เพิ่มคอนเนกชัน
           </Link>
         )}
       </div>
