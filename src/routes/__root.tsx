@@ -116,7 +116,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Discover who to connect with at Thailand's National Health Assembly. Everyone brings a different kind of power.",
       },
-      { name: "theme-color", content: "#6d28d9" },
+      { name: "theme-color", content: "#05070b" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -161,7 +161,7 @@ function RootComponent() {
         <StoreProvider>
           <HydrationGate>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
+            <div className="site-experience"><Outlet /></div>
           </HydrationGate>
           <NotificationHost />
           <CommitmentReminders />

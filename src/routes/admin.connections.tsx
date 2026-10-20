@@ -8,6 +8,14 @@ import { STATUS_TH } from "@/lib/i18n";
 import type { ConnectionStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/connections")({
+  head: () => ({ meta: [
+    { title: "จัดการคู่เชื่อม — คนส. Connexts" },
+    { name: "description", content: "จัดการคู่เชื่อมสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "จัดการคู่เชื่อม — คนส. Connexts" },
+    { property: "og:description", content: "จัดการคู่เชื่อมสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminConnections,
 });
 

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 
 import { SponsorFooter } from "@/components/sponsor-footer";
+import { AppShell } from "@/components/app-shell";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -80,21 +82,9 @@ const FAQ = [
 
 function GuidePage() {
   return (
-    <div className="min-h-dvh bg-background">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/95 px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur">
-        <div className="mx-auto flex max-w-xl items-center gap-3">
-          <Link to="/" aria-label="กลับหน้าแรก" className="tap grid h-9 w-9 place-items-center rounded-full bg-muted">
-            <Home className="h-4 w-4" />
-          </Link>
-          <div className="min-w-0">
-            <h1 className="truncate text-[17px] font-extrabold">คู่มือใช้งาน</h1>
-            <p className="text-[12px] text-muted-foreground">อ่าน 1 นาที แล้วใช้งานได้เลย</p>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-xl space-y-4 px-5 pb-16 pt-5">
-        <section className="card-soft rounded-3xl p-5">
+    <AppShell title="คู่มือใช้งาน" titleEn="Your mission guide">
+      <div className="editorial-guide mx-auto w-full space-y-8 pb-8">
+        <section className="border-b border-border py-8">
           <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/12 px-3 py-1 text-[12px] font-bold text-primary">
             <Compass className="h-3.5 w-3.5" /> แอปนี้มีไว้ทำอะไร
           </p>
@@ -108,7 +98,7 @@ function GuidePage() {
         </section>
 
         {STEPS.map(({ icon: Icon, title, body, to, cta }) => (
-          <section key={title} className="card-soft rounded-3xl p-5">
+          <section key={title} className="border-b border-border py-8">
             <div className="flex items-start gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/12">
                 <Icon className="h-5 w-5 text-primary" />
@@ -116,18 +106,13 @@ function GuidePage() {
               <div className="min-w-0">
                 <h2 className="text-[17px] font-extrabold leading-snug">{title}</h2>
                 <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted-foreground">{body}</p>
-                <Link
-                  to={to}
-                  className="tap mt-3 inline-flex h-11 items-center rounded-2xl bg-accent px-4 text-[14px] font-extrabold text-foreground"
-                >
-                  {cta}
-                </Link>
+                <Button asChild variant="outline" className="mt-5"><Link to={to}>{cta}</Link></Button>
               </div>
             </div>
           </section>
         ))}
 
-        <section className="card-soft rounded-3xl p-5">
+        <section className="border-b border-border py-8">
           <h2 className="flex items-center gap-2 text-[17px] font-extrabold">
             <Hand className="h-5 w-5 text-primary" /> วิธีใช้การ์ดคู่เชื่อม
           </h2>
@@ -147,7 +132,7 @@ function GuidePage() {
           </div>
         </section>
 
-        <section className="card-soft rounded-3xl p-5">
+        <section className="border-b border-border py-8">
           <h2 className="text-[17px] font-extrabold">คำถามที่พบบ่อย</h2>
           <div className="mt-3 space-y-3">
             {FAQ.map((f) => (
@@ -159,7 +144,7 @@ function GuidePage() {
           </div>
         </section>
 
-        <section className="card-soft rounded-3xl p-5">
+        <section className="border-b border-border py-8">
           <h2 className="text-[17px] font-extrabold">เมนูอื่นที่น่าลอง</h2>
           <ul className="mt-3 space-y-2 text-[14.5px]">
             <li className="flex items-center gap-2">
@@ -174,15 +159,8 @@ function GuidePage() {
           </ul>
         </section>
 
-        <Link
-          to="/onboarding"
-          className="tap flex h-14 items-center justify-center rounded-3xl gradient-power text-base font-extrabold text-primary-foreground"
-        >
-          เริ่มใช้งานเลย
-        </Link>
-
-        <SponsorFooter />
-      </main>
-    </div>
+        <Button asChild variant="mission" className="h-14"><Link to="/onboarding">เริ่มใช้งานเลย</Link></Button>
+      </div>
+    </AppShell>
   );
 }

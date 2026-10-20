@@ -7,6 +7,7 @@ import { Wordmark } from "@/components/wordmark";
 import { Avatar } from "@/components/power-bits";
 import { SponsorFooter } from "@/components/sponsor-footer";
 import { BottomNav } from "@/components/bottom-nav";
+import { SpaceNav } from "@/components/space-nav";
 import { PendingSyncBanner } from "@/components/pending-sync-banner";
 import type { ReactNode } from "react";
 
@@ -29,29 +30,30 @@ export function AppShell({
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="app-shell min-h-screen pb-24">
+      <SpaceNav />
       {title && (
-        <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 px-5 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))] backdrop-blur-xl">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
+        <header className="app-page-heading">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <Link
               to="/"
-              className="tap relative inline-grid h-10 w-10 after:absolute after:-inset-1 after:content-[''] shrink-0 place-items-center rounded-full bg-accent text-foreground"
+              className="hidden"
               aria-label="กลับหน้าแรก"
             >
               <Home className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
             </Link>
             <div className="min-w-0 flex-1">
               <div className="flex min-w-0 items-center gap-1.5">
-                <Link to="/" className="block shrink-0" aria-label="คนส. Connexts">
+                <Link to="/" className="hidden" aria-label="คนส. Connexts">
                   <Wordmark size="xs" withMark />
                 </Link>
                 {titleEn && (
-                  <span lang="en" className="truncate text-xs font-semibold text-muted-foreground">
-                    · {titleEn}
+                  <span lang="en" className="mb-3 block font-tech text-xs uppercase text-electric-ink">
+                    {titleEn}
                   </span>
                 )}
               </div>
-              <h1 className="line-clamp-2 break-words text-[17px] font-extrabold leading-tight tracking-tight sm:text-xl">
+              <h1 className="app-page-title">
                 {title}
               </h1>
             </div>
@@ -65,7 +67,7 @@ export function AppShell({
                 {unread > 0 && (
                   <span
                     aria-hidden
-                    className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-coral-ink px-1 text-xs font-extrabold text-white"
+                    className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-coral-ink px-1 text-xs font-extrabold text-coral-foreground"
                   >
                     {unread > 9 ? "9+" : unread}
                   </span>
@@ -93,17 +95,17 @@ export function AppShell({
             </div>
           </div>
           {subtitle && (
-            <p className="mt-1.5 line-clamp-2 break-words text-[12.5px] leading-snug text-muted-foreground">
+            <p className="mt-5 max-w-2xl break-words text-sm leading-relaxed text-muted-foreground">
               {subtitle}
             </p>
           )}
-          {action && <div className="mt-2.5 flex flex-wrap items-center gap-2">{action}</div>}
+          {action && <div className="mt-6 flex flex-wrap items-center gap-2">{action}</div>}
         </header>
       )}
       <PendingSyncBanner />
-      <main className="mx-auto w-full max-w-xl">{children}</main>
+      <main className="app-content mx-auto w-full max-w-5xl">{children}</main>
 
-      <div className="mx-auto w-full max-w-xl px-5">
+      <div className="mx-auto mt-12 w-full max-w-5xl border-t border-border px-5">
         <SponsorFooter />
       </div>
 

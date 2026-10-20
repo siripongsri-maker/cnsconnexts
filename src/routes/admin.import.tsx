@@ -17,7 +17,9 @@ export const Route = createFileRoute("/admin/import")({
       },
       { property: "og:title", content: "นำเข้ารายชื่อจาก สช." },
       { property: "og:description", content: "อัปโหลด CSV แล้วขึ้นหมุดบนแผนที่ทันที" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: ImportPage,
 });

@@ -7,6 +7,14 @@ import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 import { provinceTh, REGION_LABEL, issueTh } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/export")({
+  head: () => ({ meta: [
+    { title: "ส่งออกข้อมูล — คนส. Connexts" },
+    { name: "description", content: "ส่งออกข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "ส่งออกข้อมูล — คนส. Connexts" },
+    { property: "og:description", content: "ส่งออกข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminExport,
 });
 

@@ -30,7 +30,9 @@ export const Route = createFileRoute("/marketplace")({
       },
       { property: "og:title", content: "ตลาดพลัง — คนส. Connexts" },
       { property: "og:description", content: "ตลาดแลกเปลี่ยนพลังและไอเดีย" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: Marketplace,
 });
@@ -211,7 +213,7 @@ function Marketplace() {
           return (
             <article
               key={idea.id}
-              className="card-soft animate-rise overflow-hidden"
+              className="mission-idea card-soft animate-rise overflow-hidden"
               style={{ animationDelay: `${idx * 50}ms` }}
             >
               <div className="p-4">
@@ -234,7 +236,7 @@ function Marketplace() {
                   {idea.description}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-electric/12 px-2.5 py-1 text-xs font-semibold text-[oklch(0.52_0.2_250)] dark:text-electric">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-electric/12 px-2.5 py-1 text-xs font-semibold text-electric-ink">
                     <span aria-hidden>📍</span> {REGION_LABEL[idea.region]}
                   </span>
                   {idea.issues.map((i) => (
@@ -254,8 +256,8 @@ function Marketplace() {
                 )}
 
                 <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-lime/20 p-3">
-                    <p className="mb-1.5 text-xs font-extrabold text-lime-foreground">
+                  <div className="border-t border-border p-3">
+                    <p className="mb-1.5 text-xs font-medium text-lime-ink">
                       เรามีให้{" "}
                       <span lang="en" className="font-semibold opacity-70">
                         · We have
@@ -269,7 +271,7 @@ function Marketplace() {
                       ))}
                     </ul>
                   </div>
-                  <div className="rounded-xl bg-coral/10 p-3">
+                  <div className="border-t border-border p-3">
                     <p className="mb-1.5 text-xs font-extrabold text-foreground">
                       เรากำลังตามหา{" "}
                       <span lang="en" className="font-semibold opacity-70">

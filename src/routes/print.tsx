@@ -19,7 +19,9 @@ export const Route = createFileRoute("/print")({
       },
       { property: "og:title", content: "ชุดไฟล์พิมพ์สำหรับหน้างาน" },
       { property: "og:description", content: "บอร์ด A0 · การ์ด A4 · ป้าย QR" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: PrintKit,
 });
@@ -103,7 +105,7 @@ function PrintKit() {
   }, [regionPeople]);
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="editorial-print min-h-screen bg-background">
       <style>{PAGE_CSS[sheet]}</style>
       <div className="no-print sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">

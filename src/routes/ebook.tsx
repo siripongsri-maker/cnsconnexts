@@ -17,7 +17,9 @@ export const Route = createFileRoute("/ebook")({
       },
       { property: "og:title", content: "หนังสือรวมผลงานเครือข่าย" },
       { property: "og:description", content: "ผลงานทั้งหมด จัดกลุ่มตามภาคและประเด็น" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: Ebook,
 });

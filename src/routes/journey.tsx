@@ -84,7 +84,7 @@ function Block({ title, items }: { title: string; items: string[] }) {
 
 function JourneyPage() {
   return (
-    <div className="min-h-dvh bg-muted/30">
+    <div className="editorial-journey min-h-dvh bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
           <Link to="/" aria-label="กลับหน้าแรก" className="tap grid h-9 w-9 place-items-center rounded-xl bg-muted">

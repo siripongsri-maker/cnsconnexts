@@ -7,6 +7,14 @@ import { ADMIN_PASSWORD } from "@/lib/admin-auth";
 import { getBackupPolicy, pruneBackupsNow, saveBackupPolicy } from "@/lib/backup.functions";
 
 export const Route = createFileRoute("/admin/backup-policy")({
+  head: () => ({ meta: [
+    { title: "นโยบายสำรองข้อมูล — คนส. Connexts" },
+    { name: "description", content: "นโยบายสำรองข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "นโยบายสำรองข้อมูล — คนส. Connexts" },
+    { property: "og:description", content: "นโยบายสำรองข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminBackupPolicy,
 });
 

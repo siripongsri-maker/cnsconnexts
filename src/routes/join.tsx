@@ -27,7 +27,9 @@ export const Route = createFileRoute("/join")({
         property: "og:description",
         content: "สแกนแล้วเข้าร่วมได้ทันที — สร้างโปรไฟล์พลังของคุณใน 2 นาที",
       },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: Join,
 });

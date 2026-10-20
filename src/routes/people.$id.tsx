@@ -14,7 +14,9 @@ export const Route = createFileRoute("/people/$id")({
       { name: "description", content: "ดูว่าคนนี้มีพลังอะไรมาแบ่งปัน และกำลังมองหาอะไรอยู่" },
       { property: "og:title", content: "โปรไฟล์พลัง — คนส. Connexts" },
       { property: "og:description", content: "ดูว่าเขามีพลังอะไร และกำลังมองหาอะไร" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: Person,
   notFoundComponent: () => (
@@ -58,19 +60,19 @@ function Person() {
   const theirIdeas = ideas.filter((i) => i.owner_id === user.id);
 
   return (
-    <div className="min-h-screen pb-32">
-      <div className="relative bg-primary px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-primary-foreground">
+    <div className="editorial-focused min-h-screen pb-32">
+      <div className="relative border-b border-border bg-background px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-foreground">
         <Link
           to="/matches"
           aria-label="กลับไปหน้าคนที่น่าเจอ"
-          className="tap mb-6 inline-grid h-11 w-11 place-items-center rounded-full bg-white/20"
+          className="tap mb-6 inline-grid h-11 w-11 place-items-center rounded-full bg-accent"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
         </Link>
         <div className="flex items-end gap-4">
           <Avatar user={user} size={72} />
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-extrabold">{user.name}</h1>
+            <h1 className="break-words text-2xl font-medium">{user.name}</h1>
             <p className="truncate text-sm">
               {[provinceTh(user.province), REGION_LABEL[user.region]].filter(Boolean).join(" · ")}
             </p>
