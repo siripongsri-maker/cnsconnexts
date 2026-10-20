@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useState } from "react";
+import { FollowUpTabs } from "@/components/follow-up-tabs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BellRing, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Clock, Download, MessageCircle, Send } from "lucide-react";
@@ -101,7 +102,8 @@ function CalendarPage() {
   );
 
   return (
-    <AppShell title="ปฏิทินนัดหมาย" subtitle="เสนอวันเวลา แล้วติดตามให้เกิดขึ้นจริง">
+    <AppShell title="จะทำอะไรต่อดี?" subtitle="ก้าวต่อไปของเรา">
+      <FollowUpTabs />
       <div className="space-y-4 px-5 py-4">
         <button
           type="button"
