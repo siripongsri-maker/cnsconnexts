@@ -37,7 +37,11 @@ export const PARTICIPANT: JourneyStep[] = [
     title: "หน้าแรก — เข้าใจงานภายใน 10 วินาที",
     shot: "index.png",
     goal: "อธิบายว่างานนี้คือพื้นที่จับคู่พลังของคนในสมัชชาสุขภาพแห่งชาติ และพาเข้าสู่ทางเข้าที่ถูกต้อง",
-    actions: ["กด “เริ่มสร้างโปรไฟล์พลัง”", "เปิดเมนูหลักจากปุ่มด้านบน", "ดูภาพเครือข่ายจุดเชื่อมบนแผนที่ประเทศไทย"],
+    actions: [
+      "กด “เริ่มสร้างโปรไฟล์พลัง”",
+      "เปิดเมนูหลักจากปุ่มด้านบน",
+      "ดูภาพเครือข่ายจุดเชื่อมบนแผนที่ประเทศไทย",
+    ],
     input: ["ไม่มี (หน้าอ่านอย่างเดียว)"],
     output: ["จำนวนสมาชิก/ไอเดียปัจจุบัน", "ทางลัดไปทุกเมนู"],
     backend: `อ่านสถิติสดจาก ${STORE} ผ่าน useStore() ไม่มีการเขียนข้อมูล`,
@@ -49,7 +53,11 @@ export const PARTICIPANT: JourneyStep[] = [
     title: "สแกน QR / ใส่รหัสห้อง",
     shot: "scan.png",
     goal: "ให้ผู้เข้าร่วมหน้างานเริ่มใช้ได้ทันทีโดยไม่ต้องล็อกอิน",
-    actions: ["สแกน QR จากป้ายในงาน", "พิมพ์รหัสห้อง (เช่น NHA26)", "กด “เริ่มออนบอร์ดดิ้งด้วยเดโม่”"],
+    actions: [
+      "สแกน QR จากป้ายในงาน",
+      "พิมพ์รหัสห้อง (เช่น NHA26)",
+      "กด “เริ่มออนบอร์ดดิ้งด้วยเดโม่”",
+    ],
     input: ["รหัสห้อง (code)"],
     output: ["ขั้นตอน 3 สเต็ปก่อนเริ่ม", "สถานะการเข้าร่วมสำเร็จ"],
     backend:
@@ -74,7 +82,11 @@ export const PARTICIPANT: JourneyStep[] = [
     title: "ล็อกอิน / สมัคร / ผูกโปรไฟล์เดิม",
     shot: "auth.png",
     goal: "กันข้อมูลหายเมื่อเปลี่ยนเครื่อง และรองรับผู้ใช้ที่อยากมีบัญชีจริง",
-    actions: ["สมัครหรือเข้าสู่ระบบด้วยอีเมล", "เข้าด้วย Google", "ผูกโปรไฟล์ guest เดิมเข้ากับบัญชี"],
+    actions: [
+      "สมัครหรือเข้าสู่ระบบด้วยอีเมล",
+      "เข้าด้วย Google",
+      "ผูกโปรไฟล์ guest เดิมเข้ากับบัญชี",
+    ],
     input: ["อีเมล/รหัสผ่าน หรือ Google OAuth"],
     output: ["สถานะเซสชันผู้ใช้", "แจ้งผลการผูกโปรไฟล์"],
     backend:
@@ -99,8 +111,7 @@ export const PARTICIPANT: JourneyStep[] = [
       "photo (data URL, ไม่บังคับ)",
     ],
     output: ["โปรไฟล์ที่บันทึกแล้ว", "พาไปหน้าคู่เชื่อมทันที"],
-    backend:
-      `saveProfile() ใน ${STORE} สร้าง user id = "me" พร้อม created_at/updated_at และส่งสัญญาณ emitLive('profile') ให้จอสด`,
+    backend: `saveProfile() ใน ${STORE} สร้าง user id = "me" พร้อม created_at/updated_at และส่งสัญญาณ emitLive('profile') ให้จอสด`,
   },
   {
     id: "matches",
@@ -109,7 +120,12 @@ export const PARTICIPANT: JourneyStep[] = [
     title: "คู่เชื่อมของฉัน — ปัดเร็ว / ทั้งหมด / ถูกใจ",
     shot: "matches.png",
     goal: "หาคนที่ควรคุยด้วยที่สุด พร้อมเหตุผลสั้น ๆ ว่าทำไมถึงแมตช์",
-    actions: ["ปัดขวา = ถูกใจ, ปัดซ้าย = ข้าม", "กด “ขอเชื่อมต่อ”", "กรองตามประเด็น", "แชร์การ์ดแมตช์เป็นรูปภาพ"],
+    actions: [
+      "ปัดขวา = ถูกใจ, ปัดซ้าย = ข้าม",
+      "กด “ขอเชื่อมต่อ”",
+      "กรองตามประเด็น",
+      "แชร์การ์ดแมตช์เป็นรูปภาพ",
+    ],
     input: ["likedUsers[], skippedUsers[]", "การกดขอเชื่อมต่อ"],
     output: [
       "คะแนนแมตช์ % ต่อคน",
@@ -160,7 +176,8 @@ export const PARTICIPANT: JourneyStep[] = [
     actions: ["ส่งข้อความ", "รับการ์ดนัดหมายที่ส่งมาจากหน้าปฏิทิน"],
     input: ["ข้อความแชท"],
     output: ["ประวัติสนทนา + การ์ดนัดหมายพร้อมปุ่มไปหน้ารายละเอียด"],
-    backend: "messages เก็บใน store ต่อ connection id (เดโม่มีระบบตอบกลับอัตโนมัติเพื่อจำลองบทสนทนา)",
+    backend:
+      "messages เก็บใน store ต่อ connection id (เดโม่มีระบบตอบกลับอัตโนมัติเพื่อจำลองบทสนทนา)",
   },
   {
     id: "map",
@@ -172,7 +189,8 @@ export const PARTICIPANT: JourneyStep[] = [
     actions: ["แตะจังหวัดเพื่อดูสมาชิก", "เพิ่มบันทึก/สถานการณ์ของจังหวัด", "กรองตามภาค/ประเด็น"],
     input: ["ProvinceNote: province, title, detail, issues[]"],
     output: ["จำนวนคนต่อจังหวัด", "รายการบันทึกของจังหวัดนั้น"],
-    backend: "รูปทรงจังหวัดจาก lib/thailand-geo.ts · บันทึกเก็บที่ provinceNotes ใน store และแก้ไขได้ที่ /admin/map",
+    backend:
+      "รูปทรงจังหวัดจาก lib/thailand-geo.ts · บันทึกเก็บที่ provinceNotes ใน store และแก้ไขได้ที่ /admin/map",
   },
   {
     id: "marketplace",
@@ -196,7 +214,8 @@ export const PARTICIPANT: JourneyStep[] = [
     actions: ["อัปเดตสถานะ", "ตั้ง/แก้วันนัด", "ดูแผงความคืบหน้าสด"],
     input: ["สถานะคำมั่นสัญญา (ยังไม่เริ่ม → กำลังทำ → เสร็จ)"],
     output: ["สัดส่วนความคืบหน้า", "ข้อความนำทางขั้นถัดไป (live-progress)"],
-    backend: "components/live-progress.tsx อ่าน store + live event bus แล้วคำนวณคำแนะนำขั้นถัดไปแบบเรียลไทม์",
+    backend:
+      "components/live-progress.tsx อ่าน store + live event bus แล้วคำนวณคำแนะนำขั้นถัดไปแบบเรียลไทม์",
   },
   {
     id: "calendar-me",
@@ -205,10 +224,16 @@ export const PARTICIPANT: JourneyStep[] = [
     title: "ปฏิทินนัดหมาย",
     shot: "calendar-me.png",
     goal: "จัดตารางนัดต่อเนื่องหลังงาน และเตือนก่อนถึงเวลา",
-    actions: ["เลือกวันบนปฏิทิน พ.ศ.", "RSVP", "ส่งนัดเข้าห้องแชท", "ดาวน์โหลด .ics / เปิด Google Calendar"],
+    actions: [
+      "เลือกวันบนปฏิทิน พ.ศ.",
+      "RSVP",
+      "ส่งนัดเข้าห้องแชท",
+      "ดาวน์โหลด .ics / เปิด Google Calendar",
+    ],
     input: ["due_date, rsvp"],
     output: ["นัดของแต่ละวัน", "ชิปนับถอยหลังก่อนถึงนัด", "ไฟล์ iCal"],
-    backend: "lib/ical.ts สร้างไฟล์ .ics ฝั่งเบราว์เซอร์ · components/commitment-reminders.tsx ยิงเสียง/เตือนตามเวลา",
+    backend:
+      "lib/ical.ts สร้างไฟล์ .ics ฝั่งเบราว์เซอร์ · components/commitment-reminders.tsx ยิงเสียง/เตือนตามเวลา",
   },
   {
     id: "dashboard-me",
@@ -217,7 +242,13 @@ export const PARTICIPANT: JourneyStep[] = [
     title: "แดชบอร์ดกิจกรรมสด",
     shot: "dashboard-me.png",
     goal: "ให้ผู้จัดและผู้เข้าร่วมเห็นพลังของงานแบบเรียลไทม์",
-    actions: ["กรองตามภาค/ประเด็น/ประเภทพลัง", "เรียงตามความเกี่ยวข้อง", "บันทึกชุดตัวกรอง", "แชร์ลิงก์ผลลัพธ์", "ส่งออก CSV/JSON"],
+    actions: [
+      "กรองตามภาค/ประเด็น/ประเภทพลัง",
+      "เรียงตามความเกี่ยวข้อง",
+      "บันทึกชุดตัวกรอง",
+      "แชร์ลิงก์ผลลัพธ์",
+      "ส่งออก CSV/JSON",
+    ],
     input: ["ตัวกรอง (sync กับ URL search params)", "ชุดตัวกรองที่บันทึก"],
     output: ["จำนวนแมตช์/คู่เชื่อม/คำมั่นสัญญา", "ตัวหนังสือวิ่งกิจกรรมสด", "ไฟล์ส่งออก"],
     backend:
@@ -233,7 +264,8 @@ export const PARTICIPANT: JourneyStep[] = [
     actions: ["อ่าน/ล้างการแจ้งเตือน", "กดไปยังคู่เชื่อมที่เกี่ยวข้อง"],
     input: ["สถานะอ่านแล้ว"],
     output: ["รายการแจ้งเตือนพร้อมเวลา"],
-    backend: "lib/notify.ts เล่นเสียง “ปิ๊ง” + เสียงพูด “connext” · filter-alerts.tsx เตือนเมื่อมีคนตรงชุดตัวกรองที่บันทึกไว้",
+    backend:
+      "lib/notify.ts เล่นเสียง “ปิ๊ง” + เสียงพูด “connext” · filter-alerts.tsx เตือนเมื่อมีคนตรงชุดตัวกรองที่บันทึกไว้",
   },
   {
     id: "submit",
@@ -305,10 +337,11 @@ export const ADMIN: JourneyStep[] = [
     title: "ประตูหลังบ้าน + ภาพรวม",
     shot: "admin.png",
     goal: "ผู้ดูแลเข้าจุดเดียวเห็นทุกตัวเลขของงาน",
-    actions: ["ล็อกอินด้วย connexts / cns2026", "ดูสถิติรวม", "กดเข้าเมนูย่อยทั้ง 12 เมนู"],
+    actions: ["ล็อกอินด้วย connexts / cns2026", "ดูสถิติรวม", "เปิดเมนูผู้ดูแลทั้งหมด"],
     input: ["ชื่อผู้ใช้/รหัสผ่านผู้ดูแล"],
     output: ["จำนวนสมาชิก ไอเดีย ผลงาน คู่เชื่อม คำมั่นสัญญา บันทึกจังหวัด", "ฟีดกิจกรรมสดล่าสุด"],
-    backend: "lib/admin-auth.ts เก็บสถานะที่ localStorage คีย์ connext-admin-session (ประตูกั้นระดับหน้าจอสำหรับเดโม่)",
+    backend:
+      "lib/admin-auth.ts เก็บสถานะที่ localStorage คีย์ connext-admin-session (ประตูกั้นระดับหน้าจอสำหรับเดโม่)",
   },
   {
     id: "admin-people",
@@ -320,7 +353,8 @@ export const ADMIN: JourneyStep[] = [
     actions: ["ค้นหา", "แก้ชื่อ องค์กร จังหวัด ประเด็น คำอธิบาย", "ลบสมาชิก"],
     input: ["patch ของ User"],
     output: ["รายชื่อพร้อมข้อมูลล่าสุด"],
-    backend: "updateUser / removeUser ใน store — ผลกระทบเห็นทันทีที่ฝั่งผู้ใช้เพราะใช้ state ก้อนเดียวกัน",
+    backend:
+      "updateUser / removeUser ใน store — ผลกระทบเห็นทันทีที่ฝั่งผู้ใช้เพราะใช้ state ก้อนเดียวกัน",
   },
   {
     id: "admin-ideas",
@@ -442,6 +476,75 @@ export const ADMIN: JourneyStep[] = [
     output: ["สรุปจำนวนข้อมูลปัจจุบัน"],
     backend: "reset() เขียนทับ store ด้วยชุด DEMO_* ทั้งหมด (ย้อนกลับไม่ได้ — ควรส่งออกก่อน)",
   },
+  {
+    id: "admin-logs",
+    no: "A13",
+    path: "/admin/logs",
+    title: "สถิติการใช้งาน",
+    shot: "admin-logs.png",
+    goal: "ดูการใช้งานและจัดการอายุบันทึกในเครื่องนี้",
+    actions: ["กรองประเภทหรือค้นหา", "ส่งออก CSV/JSON", "ตั้งอายุหรือล้างบันทึกตามสิทธิ์"],
+    input: ["ตัวกรองบันทึก", "ระยะเวลาเก็บข้อมูล"],
+    output: ["สถิติการเข้าชมและการยินยอม", "รายการใช้งานและไฟล์ส่งออก"],
+    backend:
+      "useUsageLogs / useRetention ใน lib/usage-log.ts อ่านบันทึกในเครื่องและจำกัดการจัดการตามสิทธิ์ผู้ดูแล",
+  },
+  {
+    id: "admin-backups",
+    no: "A14",
+    path: "/admin/backups",
+    title: "สำรองและกู้คืนข้อมูล",
+    shot: "admin-backups.png",
+    goal: "ตรวจสแนปช็อตและผลกระทบก่อนกู้คืน",
+    actions: ["กรองตาราง", "ดาวน์โหลดรายการสำรอง", "ตรวจผลกระทบและยืนยันกู้คืน"],
+    input: ["ตารางที่เลือก", "รายการสำรองและคำยืนยัน"],
+    output: ["สแนปช็อตและข้อมูลก่อน/หลัง", "ผลการกู้คืน"],
+    backend:
+      "listBackups / previewRestore / restoreBackup ใน lib/backup.functions.ts; RestoreDialog แสดงผลกระทบก่อนยืนยัน",
+  },
+  {
+    id: "admin-backup-policy",
+    no: "A15",
+    path: "/admin/backup-policy",
+    title: "นโยบายสำรองข้อมูล",
+    shot: "admin-backup-policy.png",
+    goal: "กำหนดจำนวนและอายุของรายการสำรอง",
+    actions: ["ตั้งจำนวนและอายุสูงสุด", "เปิดการล้างอัตโนมัติ", "ล้างรายการที่เกินนโยบาย"],
+    input: ["จำนวนรายการ", "อายุเป็นวัน", "การล้างอัตโนมัติ"],
+    output: ["นโยบายล่าสุด", "จำนวนรายการที่ล้าง"],
+    backend:
+      "getBackupPolicy / saveBackupPolicy / pruneBackupsNow ใน lib/backup.functions.ts จัดการนโยบายและรายการสำรองบนเซิร์ฟเวอร์",
+  },
+  {
+    id: "admin-audit",
+    no: "A16",
+    path: "/admin/audit",
+    title: "ประวัติการแก้ไข",
+    shot: "admin-audit.png",
+    goal: "ติดตามว่าใครแก้ข้อมูลใด เมื่อไร",
+    actions: ["กรองตาราง การกระทำ และผู้ทำรายการ", "ดูเวลาสำรองล่าสุด", "ส่งออก CSV"],
+    input: ["ตัวกรองประวัติ"],
+    output: ["เวลา ผู้ทำรายการ ช่องทาง และรายการที่เปลี่ยน", "ไฟล์ประวัติ CSV"],
+    backend:
+      "listAuditLog ใน lib/backup.functions.ts อ่านประวัติการเปลี่ยนแปลงและเวลาสำรองล่าสุดจากฐานข้อมูล",
+  },
+  {
+    id: "admin-costs",
+    no: "A17",
+    path: "/admin/costs",
+    title: "สรุปค่าใช้จ่าย",
+    shot: "admin-costs.png",
+    goal: "รวมค่าเครดิตและใบแจ้งหนี้เป็นเงินบาทจากเอกสารอ้างอิง",
+    actions: [
+      "แนบไฟล์สูงสุด 6 ไฟล์",
+      "ระบุอัตราแลกเปลี่ยนและหมายเหตุถ้ามี",
+      "ดูยอดรวม รายการ และสมมติฐาน",
+    ],
+    input: ["ไฟล์เครดิต ใบแจ้งหนี้ หรือรูปภาพ", "อัตราแลกเปลี่ยนและหมายเหตุ (ไม่บังคับ)"],
+    output: ["ยอดรวมและรายรายการเป็นเงินบาท", "ชื่อไฟล์อ้างอิง สมมติฐาน และข้อสังเกต"],
+    backend:
+      "summarizeCosts ใน lib/cost-summary.functions.ts เรียก AI Gateway ฝั่งเซิร์ฟเวอร์; หน้านี้สำหรับเจ้าของโปรเจกต์",
+  },
 ];
 
 export const SECTIONS: JourneySection[] = [
@@ -460,11 +563,41 @@ export const SECTIONS: JourneySection[] = [
 ];
 
 export const DATA_MODEL = [
-  { name: "User", fields: "id, name, avatar, photo?, province, region, organization, generation, bio, interests[], powers_have[], powers_need[], linked_email?", note: "โปรไฟล์ของฉันใช้ id = \"me\"" },
-  { name: "Connection", fields: "id, user_a, user_b, match_score, match_reason, status, created_at", note: "สถานะ 4 ระดับ" },
-  { name: "Commitment", fields: "id, connection_id, text, due_date, status, rsvp", note: "ผูกกับปฏิทินและ iCal" },
-  { name: "Idea", fields: "id, title, description, owner_id, region, issues[], resources_have[], resources_need[]", note: "ตลาดนัดพลัง" },
-  { name: "Submission", fields: "id, title, summary, issues[], province, links, showcase", note: "showcase = ขึ้น e-book" },
-  { name: "ProvinceNote", fields: "id, province, author_id, author_name, title, detail, issues[]", note: "บันทึกบนแผนที่" },
-  { name: "AppNotification", fields: "id, title, detail, created_at, read", note: "แจ้งเตือนในแอป" },
+  {
+    name: "User",
+    fields:
+      "id, name, avatar, photo?, province, region, organization, generation, bio, interests[], powers_have[], powers_need[], linked_email?",
+    note: 'โปรไฟล์ของฉันใช้ id = "me"',
+  },
+  {
+    name: "Connection",
+    fields: "id, user_a, user_b, match_score, match_reason, status, created_at",
+    note: "สถานะ 4 ระดับ",
+  },
+  {
+    name: "Commitment",
+    fields: "id, connection_id, text, due_date, status, rsvp",
+    note: "ผูกกับปฏิทินและ iCal",
+  },
+  {
+    name: "Idea",
+    fields:
+      "id, title, description, owner_id, region, issues[], resources_have[], resources_need[]",
+    note: "ตลาดนัดพลัง",
+  },
+  {
+    name: "Submission",
+    fields: "id, title, summary, issues[], province, links, showcase",
+    note: "showcase = ขึ้น e-book",
+  },
+  {
+    name: "ProvinceNote",
+    fields: "id, province, author_id, author_name, title, detail, issues[]",
+    note: "บันทึกบนแผนที่",
+  },
+  {
+    name: "AppNotification",
+    fields: "id, title, detail, created_at, read",
+    note: "แจ้งเตือนในแอป",
+  },
 ];
