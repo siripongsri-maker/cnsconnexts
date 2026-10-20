@@ -1,6 +1,11 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "./styles/mission-system.css";
+@import "./styles/focused-pages.css";
+@import "./styles/core-pages.css";
+@import "./styles/admin-pages.css";
+@import "./styles/secondary-pages.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -773,6 +778,9 @@ body::after {
 .mission-hero {
   position: relative;
   isolation: isolate;
+  /* Keep the image reveal's scaled layer inside its full-width frame. */
+  overflow: hidden;
+  overflow: clip;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
