@@ -99,7 +99,7 @@ function Welcome() {
           width={1024}
           height={1280}
           fetchPriority="high"
-          className="hero-3d absolute inset-0 -z-10 h-full w-full scale-[1.12] object-cover object-top opacity-80"
+          className="absolute inset-0 -z-10 h-full w-full animate-hero-drift object-cover object-top opacity-80"
         />
         <div
           className="absolute inset-0 -z-10"
