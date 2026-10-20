@@ -119,6 +119,7 @@
   --paper: oklch(0.99 0 0);
   --paper-ink: oklch(0.22 0.01 250);
   --paper-muted: oklch(0.46 0.01 250);
+  --profile-scrim: linear-gradient(to top, oklch(0.08 0.01 262 / 0.95), transparent);
 }
 
 .dark {
@@ -493,6 +494,10 @@ body::after { background-size: 100% 100%; opacity: 0.35; }
 .editorial-auth { padding-top: 64px; }
 .editorial-auth > div { max-width: 520px; }
 .editorial-auth form { padding-top: 16px; }
+.mission-profile-scrim { background: var(--profile-scrim); }
+.mission-idea h3 { font-weight: 500; }
+.mission-idea > div { padding: 24px; }
+.mission-deck > div:last-of-type { gap: 16px; }
 .editorial-focused > :is(header, div:first-child) { max-width: 1024px; margin-inline: auto; }
 .editorial-focused > header { border-bottom: 1px solid var(--border); padding-block: 28px; }
 .editorial-focused > header h1 { font-size: 26px; font-weight: 500; white-space: normal; }

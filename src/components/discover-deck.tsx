@@ -7,6 +7,7 @@ import { useStore } from "@/lib/store";
 import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
 import { Avatar, Chip, ConnectBurst, PowerChip, ScoreRing } from "./power-bits";
 import { SwipeCoach } from "./swipe-coach";
+import { Button } from "@/components/ui/button";
 
 /** สำรับ "ปัดเร็ว" — ข้าม / ถูกใจ / เชื่อมต่อ ได้ในแตะเดียว */
 export function DiscoverDeck({
@@ -136,19 +137,19 @@ export function DiscoverDeck({
   const stampOpacity = Math.min(Math.abs(drag) / 90, 1);
 
   return (
-    <div className="px-4">
+    <div className="mission-deck mx-auto max-w-2xl px-4">
       <SwipeCoach />
       <div className="relative h-[calc(100dvh-300px)] min-h-[440px]">
         {next && (
           <div
-            className="absolute inset-x-3 top-3 bottom-0 scale-[0.96] rounded-[2rem] bg-card opacity-70 shadow-[var(--shadow-card)]"
+            className="absolute inset-x-3 top-3 bottom-0 scale-[0.96] rounded-lg bg-card opacity-70"
             aria-hidden
           />
         )}
 
         <article
           key={u.id}
-          className="absolute inset-0 flex touch-pan-y flex-col overflow-hidden rounded-[2rem] bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
+          className="absolute inset-0 flex touch-pan-y flex-col overflow-hidden rounded-lg bg-card ring-1 ring-border"
           style={{
             transform,
             transition: fly || drag === 0 ? "transform 220ms cubic-bezier(0.22,1,0.36,1)" : undefined,
@@ -198,14 +199,13 @@ export function DiscoverDeck({
               </div>
             )}
             <div
-              className="absolute inset-x-0 bottom-0 h-2/3"
-              style={{ background: "linear-gradient(to top, oklch(0.15 0.01 286 / 0.78), transparent)" }}
+              className="mission-profile-scrim absolute inset-x-0 bottom-0 h-2/3"
               aria-hidden
             />
             <span className="absolute right-4 top-4 rounded-full bg-card/90 px-3 py-1.5 font-tech text-sm font-bold text-primary shadow-sm backdrop-blur">
               {top.score}% <span className="text-xs text-muted-foreground">แมตช์</span>
             </span>
-            <div className="absolute inset-x-0 bottom-0 p-5 text-primary-foreground">
+            <div className="absolute inset-x-0 bottom-0 p-5 text-foreground">
               <h3 className="line-clamp-2 break-words text-[28px] font-bold leading-tight">{u.name}</h3>
               <p className="mt-1 line-clamp-1 text-sm font-medium opacity-90">
                 {place}
@@ -261,15 +261,17 @@ export function DiscoverDeck({
       </div>
 
       <div className="mt-5 flex items-center justify-center gap-5">
-        <button
+        <Button
           type="button"
           aria-label="ข้ามคนนี้"
+          variant="outline"
+          size="icon"
           onClick={doSkip}
           disabled={busy}
           className="tap grid h-16 w-16 place-items-center rounded-full bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
         >
           <X className="h-7 w-7 text-muted-foreground" strokeWidth={2.6} aria-hidden />
-        </button>
+        </Button>
 
         {existing ? (
           <Link
@@ -280,25 +282,28 @@ export function DiscoverDeck({
             เชื่อมแล้ว · ดูต่อ
           </Link>
         ) : (
-          <button
+          <Button
             type="button"
             onClick={doConnect}
+            variant="mission"
             disabled={busy}
             className="tap inline-flex h-16 items-center justify-center rounded-full cta-holo px-8 text-base font-extrabold text-primary-foreground"
           >
             ขอเชื่อมต่อ
-          </button>
+          </Button>
         )}
 
-        <button
+        <Button
           type="button"
           aria-label="สนใจ เก็บไว้ก่อน"
+          variant="outline"
+          size="icon"
           onClick={doLike}
           disabled={busy}
           className="tap grid h-16 w-16 place-items-center rounded-full bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
         >
           <Heart className="h-7 w-7 text-primary" fill="currentColor" aria-hidden />
-        </button>
+        </Button>
       </div>
 
       <p className="mt-3 text-center text-xs text-muted-foreground">เหลืออีก {matches.length - 1} คน</p>

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -73,13 +74,13 @@ function AdminLayout() {
 
   if (!authed) {
     return (
-      <main className="grid min-h-dvh place-items-center bg-muted/40 px-5">
+      <main className="editorial-auth grid min-h-dvh place-items-center bg-background px-5">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             if (!signIn(user, password)) setError(true);
           }}
-          className="card-soft w-full max-w-sm space-y-4 rounded-3xl bg-card p-6"
+          className="w-full max-w-sm space-y-6 border-t border-border py-8"
         >
           <div className="flex items-center gap-2">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/12 text-primary">
@@ -120,12 +121,13 @@ function AdminLayout() {
 
           {error && <p className="text-[12px] font-bold text-destructive">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>}
 
-          <button
+          <Button
             type="submit"
+            variant="mission"
             className="tap w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-extrabold text-primary-foreground"
           >
             เข้าสู่ระบบผู้ดูแล
-          </button>
+          </Button>
 
           <p className="rounded-xl bg-muted/60 p-3 text-xs leading-relaxed text-muted-foreground">
             บทบาท: <b>ผู้ดูแลสูงสุด</b> ดู/ค้นหา/ส่งออก/ล้าง Log ได้ทั้งหมด ·{" "}
@@ -153,13 +155,14 @@ function AdminLayout() {
               คนส. Connexts · {adminUser ?? "-"} · {role ? ROLE_TH[role] : "-"}
             </p>
           </div>
-          <button
+          <Button
             type="button"
             onClick={signOut}
+            variant="outline"
             className="tap ml-auto inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-[12px] font-bold"
           >
             <LogOut className="h-3.5 w-3.5" /> ออกจากระบบ
-          </button>
+          </Button>
         </div>
         <nav className="no-scrollbar mx-auto flex max-w-5xl gap-1.5 overflow-x-auto px-4 pb-3">
           {ADMIN_MENU.map(({ to, label, icon: Icon, ...rest }) => (
