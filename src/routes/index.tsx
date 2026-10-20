@@ -27,6 +27,7 @@ import { TOUR_EVENT } from "@/components/guided-tour";
 import { PdpaConsent } from "@/components/pdpa-consent";
 import { SponsorFooter } from "@/components/sponsor-footer";
 import { BottomNav } from "@/components/bottom-nav";
+import { useScrollReveal } from "@/lib/use-scroll-reveal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -42,6 +43,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   loader: async () => {
@@ -71,6 +74,7 @@ const NAV_LINKS = [
 ] as const;
 
 function Welcome() {
+  const revealRef = useScrollReveal();
   const { stats } = Route.useLoaderData();
   const { users, ideas, connections } = useStore();
   const live = {
@@ -86,39 +90,41 @@ function Welcome() {
     { n: live.regions, th: "ภาค", en: "Regions" },
   ];
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div ref={revealRef} className="relative min-h-screen overflow-hidden">
       <PdpaConsent />
       <TopNav />
       <BottomNav />
 
       {/* HERO — ภาพเต็มจอแบบภารกิจอวกาศ */}
       <section className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden px-6 pb-[max(7rem,env(safe-area-inset-bottom)+6rem)] pt-28">
+        <div data-reveal="image" className="absolute inset-0 -z-10">
         <img
           src={heroOrbit}
           alt=""
           width={1024}
           height={1280}
           fetchPriority="high"
-          className="absolute inset-0 -z-10 h-full w-full animate-hero-drift object-cover object-top opacity-80"
+          className="h-full w-full animate-hero-drift object-cover object-top opacity-80"
         />
+        </div>
         <div
           className="absolute inset-0 -z-10"
           style={{ background: "linear-gradient(to top, var(--background) 18%, transparent 65%)" }}
           aria-hidden
         />
-        <div className="mx-auto w-full max-w-xl animate-rise">
-          <p lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">
+        <div className="mx-auto w-full max-w-xl">
+          <p data-reveal lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">
             Find your people. Act together.
           </p>
-          <h1 className="mt-3 text-[clamp(2.6rem,13vw,4.5rem)] font-extrabold uppercase leading-[0.92] tracking-tight">
+          <h1 data-reveal data-reveal-order="1" className="mt-3 text-[clamp(2.6rem,13vw,4.5rem)] font-extrabold uppercase leading-[0.92] tracking-tight">
             <span lang="en" className="font-tech block">Connecting</span>
             <span lang="en" className="font-tech block text-gradient">Power</span>
           </h1>
-          <p className="mt-4 text-lg font-bold">เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ</p>
-          <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
+          <p data-reveal data-reveal-order="2" className="mt-4 text-lg font-bold">เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ</p>
+          <p data-reveal data-reveal-order="3" className="mt-2 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
             ทุกคนมีพลังไม่เหมือนกัน ปัดหาคนที่ใช่ในงานนี้ ใช้เวลาไม่ถึง 2 นาที
           </p>
-          <div className="mt-6 flex flex-col gap-3 min-[420px]:flex-row">
+          <div data-reveal data-reveal-order="4" className="mt-6 flex flex-col gap-3 min-[420px]:flex-row">
             <Link
               to="/onboarding"
               className="tap inline-flex h-14 shrink-0 items-center justify-between min-[420px]:flex-1 rounded-full cta-holo px-6 text-base font-extrabold text-primary-foreground"
@@ -138,13 +144,13 @@ function Welcome() {
       <div className="relative z-10 mx-auto max-w-xl px-6 pb-[max(7rem,env(safe-area-inset-bottom)+6rem)]">
         {/* ตัวเลขสดแบบสเปกชีต */}
         <section aria-label="สถิติสดในงาน" className="border-y border-border">
-          <p className="flex items-center gap-2 pt-4 font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">
+          <p data-reveal className="flex items-center gap-2 pt-4 font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">
             <span className="h-1.5 w-1.5 rounded-full bg-electric motion-safe:animate-pulse" aria-hidden />
             Live now · สดในงาน
           </p>
           <div className="grid grid-cols-2 min-[420px]:grid-cols-4">
             {tiles.map((t) => (
-              <Link key={t.en} to="/dashboard" className="tap block py-4 pr-3">
+              <Link data-reveal data-reveal-order={tiles.indexOf(t) + 1} key={t.en} to="/dashboard" className="tap block py-4 pr-3">
                 <p className="font-tech text-4xl font-bold tracking-tight">{t.n}</p>
                 <p className="mt-1 text-xs font-semibold text-muted-foreground">
                   {t.th} · <span lang="en">{t.en}</span>
@@ -156,22 +162,22 @@ function Welcome() {
 
         {/* โจทย์ / ทางออก */}
         <section className="py-14">
-          <p lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">The Challenge</p>
-          <h2 className="mt-3 text-[26px] leading-snug">
+          <p data-reveal lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">The Challenge</p>
+          <h2 data-reveal data-reveal-order="1" className="mt-3 text-[26px] leading-snug">
             คนเก่งมาอยู่ในงานเดียวกันเป็นพัน <span className="text-muted-foreground">แต่ไม่รู้จะคุยกับใคร แลกนามบัตรแล้วก็จบแค่นั้น</span>
           </h2>
-          <p lang="en" className="mt-12 font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">The Solution</p>
-          <h2 className="mt-3 text-[26px] leading-snug">
+          <p data-reveal lang="en" className="mt-12 font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">The Solution</p>
+          <h2 data-reveal data-reveal-order="1" className="mt-3 text-[26px] leading-snug">
             บอกว่าคุณมีพลังอะไร ต้องการอะไร <span className="text-gradient">แล้วระบบจับคู่คนที่เติมกันได้พอดี</span>
           </h2>
         </section>
 
         {/* เส้นทางภารกิจ 4 ขั้น */}
         <section className="pb-14">
-          <p lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">Mission lifecycle</p>
+          <p data-reveal lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">Mission lifecycle</p>
           <ol className="mt-4">
             {STEPS.map((st, i) => (
-              <li key={st.en}>
+              <li data-reveal data-reveal-order={i + 1} key={st.en}>
                 <Link to={st.to} className="tap group flex items-baseline gap-5 border-t border-border py-5">
                   <span className="font-tech text-sm font-bold text-muted-foreground">0{i + 1}</span>
                   <span className="min-w-0 flex-1">
@@ -185,7 +191,7 @@ function Welcome() {
           </ol>
         </section>
 
-        <section className="card-soft holo-border rounded-[2rem] p-7 text-center">
+        <section data-reveal className="card-soft holo-border rounded-[2rem] p-7 text-center">
           <h2 className="text-[28px] uppercase leading-tight">
             <span lang="en" className="font-tech">Ready to launch?</span>
           </h2>
@@ -201,7 +207,7 @@ function Welcome() {
           </Link>
         </section>
 
-        <SponsorFooter className="mt-10" />
+        <div data-reveal><SponsorFooter className="mt-10" /></div>
       </div>
     </div>
   );
