@@ -64,11 +64,10 @@ const NAV_LINKS = [
   { to: "/map", label: "แผนที่พลัง", icon: Map },
   { to: "/marketplace", label: "ตลาดนัด", icon: Store },
   { to: "/commitments", label: "ก้าวต่อไป", icon: CheckCircle2 },
-  { to: "/calendar", label: "ปฏิทินนัด", icon: CalendarDays },
   { to: "/dashboard", label: "ภาพรวมสด", icon: Radio },
   { to: "/submit", label: "ส่งผลงาน", icon: FileText },
   { to: "/ebook", label: "รวมผลงาน", icon: BookOpen },
-  { to: "/update", label: "แก้โปรไฟล์", icon: UserCircle },
+  { to: "/update", label: "โปรไฟล์ของฉัน", icon: UserCircle },
   { to: "/scan", label: "สแกนเข้าร่วม", icon: QrCode },
 ] as const;
 
@@ -130,13 +129,13 @@ function Welcome() {
               </p>
               <div className="grid grid-cols-2 gap-2 min-[400px]:grid-cols-4">
                 {tiles.map((t) => (
-                  <div key={t.en} className="card-soft px-2 py-3 text-center">
+                  <Link key={t.en} to="/dashboard" className="tap card-soft block px-2 py-3 text-center">
                     <p className="font-tech text-2xl font-bold text-primary">{t.n}</p>
                     <p className="text-xs font-bold text-muted-foreground">{t.th}</p>
                     <p lang="en" className="text-xs text-muted-foreground">
                       {t.en}
                     </p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </>

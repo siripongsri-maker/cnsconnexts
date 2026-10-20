@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, LogOut, QrCode } from "lucide-react";
@@ -84,6 +84,19 @@ function UpdateMe() {
   const formReady = hydrated && !!me && (photosLoaded || photoWaitOver);
 
   const lastUpdate = me?.updated_at ?? me?.created_at ?? null;
+  const navigate = useNavigate();
+
+  // หน้าเดียวสำหรับโปรไฟล์: ยังไม่มีโปรไฟล์ → ไปกรอกครั้งแรก
+  useEffect(() => {
+    if (!hydrated || me) return;
+    let has = false;
+    try {
+      has = !!localStorage.getItem("connexts-participant-id");
+    } catch {
+      has = false;
+    }
+    if (!has) void navigate({ to: "/onboarding", replace: true });
+  }, [hydrated, me, navigate]);
 
   if (hydrated && !me) {
     return (
@@ -108,7 +121,7 @@ function UpdateMe() {
   }
 
   return (
-    <AppShell title="อัปเดตข้อมูลของฉัน" subtitle="แก้ไขได้ตลอดงาน แล้วกดบันทึก">
+    <AppShell title="โปรไฟล์ของฉัน" subtitle="แก้ไขได้ตลอดงาน แล้วกดบันทึก">
       <div className="space-y-5 px-5 py-5">
         <div className="card-soft rounded-3xl bg-card p-4">
           <div className="flex items-center justify-between gap-3">

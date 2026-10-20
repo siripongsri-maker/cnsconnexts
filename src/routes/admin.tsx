@@ -57,6 +57,7 @@ export const ADMIN_MENU = [
   { to: "/admin/backup-policy", label: "นโยบายสำรอง", icon: ShieldCheck },
   { to: "/admin/audit", label: "ประวัติการแก้ไข", icon: HistoryIcon },
   { to: "/admin/export", label: "ส่งออกข้อมูล", icon: Download },
+  { to: "/journey", label: "Journey ทุกหน้า", icon: Map },
   { to: "/admin/settings", label: "ตั้งค่า", icon: Settings },
 ] as const;
 
