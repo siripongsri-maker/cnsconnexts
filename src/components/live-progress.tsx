@@ -34,37 +34,47 @@ export function LiveProgress() {
 
   const steps = [
     { icon: Handshake, label: "เชื่อมต่อ", value: mine.length, done: mine.length > 0 },
-    { icon: Sparkles, label: "นัดลงมือทำ", value: myCommitments.length, done: myCommitments.length > 0 },
-    { icon: CalendarClock, label: "นัดวันเวลา", value: scheduled.length, done: scheduled.length > 0 },
+    {
+      icon: Sparkles,
+      label: "นัดลงมือทำ",
+      value: myCommitments.length,
+      done: myCommitments.length > 0,
+    },
+    {
+      icon: CalendarClock,
+      label: "นัดวันเวลา",
+      value: scheduled.length,
+      done: scheduled.length > 0,
+    },
     { icon: CheckCircle2, label: "ทำสำเร็จ", value: done.length, done: done.length > 0 },
   ];
 
   const next =
     mine.length === 0
       ? {
-          title: "ก้าวต่อไป: หาคู่ที่ใช่แล้วกดเชื่อมต่อ",
-          detail: "เปิดหน้าแมตช์ของฉัน เลือกคนที่พลังเสริมกัน แล้วกด “ขอเชื่อมต่อ”",
+          title: "เริ่มจากคนที่พลังเสริมกัน",
+          detail: "ค้นหาคนที่ใช่ แล้วกดขอเชื่อมต่อ",
           to: "/matches" as const,
-          cta: "ไปหน้าแมตช์ของฉัน",
+          cta: "หาคนที่น่าเจอ",
         }
       : myCommitments.length === 0
         ? {
-            title: "ก้าวต่อไป: ชวนกันนัดลงมือทำเรื่องแรก",
-            detail: "คุยกับคนที่เพิ่งเชื่อมต่อ แล้วตกลงกันว่าจะทำอะไรด้วยกันเป็นอย่างแรก",
+            title: "ตกลงก้าวแรกด้วยกัน",
+            detail: "คุยกับคู่เชื่อม แล้วเลือกสิ่งแรกที่จะทำร่วมกัน",
             to: "/commitments" as const,
             cta: "ชวนกันตั้งก้าวแรก",
           }
         : scheduled.length === 0
           ? {
-              title: "ก้าวต่อไป: ใส่วันเวลานัดในปฏิทิน",
+              title: "กำหนดวันเริ่มลงมือ",
               detail: "กำหนดวันคุยต่อ แล้วส่งนัดเข้าห้องแชทให้คู่ของคุณตอบรับ",
               to: "/calendar" as const,
               cta: "เปิดปฏิทินนัดหมาย",
             }
           : done.length < myCommitments.length
             ? {
-                title: "ก้าวต่อไป: อัปเดตความคืบหน้า",
-                detail: "เมื่อทำตามนัดแล้ว เปลี่ยนสถานะเป็น “ทำสำเร็จ” เพื่อให้ขึ้นบนแดชบอร์ดงาน",
+                title: "อัปเดตสิ่งที่ทำร่วมกัน",
+                detail: "ทำตามนัดแล้ว เปลี่ยนสถานะเป็น “ทำสำเร็จ”",
                 to: "/commitments" as const,
                 cta: "อัปเดตสถานะ",
               }
@@ -80,13 +90,13 @@ export function LiveProgress() {
 
   return (
     <section
-      className={`card-soft rounded-3xl bg-card p-5 transition-shadow ${pulse ? "ring-2 ring-primary/40" : ""}`}
+      className={`core-live-progress card-soft rounded-3xl bg-card p-5 transition-shadow ${pulse ? "ring-2 ring-primary/40" : ""}`}
     >
       <div className="flex items-center gap-2">
         <span className="grid h-8 w-8 place-items-center rounded-xl bg-lime/25 text-ink">
           <Zap className="h-4 w-4" aria-hidden="true" />
         </span>
-        <h2 className="text-[15px] font-extrabold">ความคืบหน้าของฉัน (อัปเดตสด)</h2>
+        <h2 className="text-[15px] font-extrabold">จากรู้จัก สู่ลงมือทำ</h2>
       </div>
 
       <ol className="mt-4 grid grid-cols-4 gap-2">
@@ -113,7 +123,8 @@ export function LiveProgress() {
       <div aria-live="polite" aria-atomic="true">
         {latest && (
           <p className="mt-4 truncate rounded-xl bg-muted/60 px-3 py-2 text-[12px] text-muted-foreground">
-            ล่าสุด: <span className="font-bold text-foreground">{latest.title}</span> · {latest.detail}
+            ล่าสุด: <span className="font-bold text-foreground">{latest.title}</span> ·{" "}
+            {latest.detail}
           </p>
         )}
       </div>
@@ -122,11 +133,7 @@ export function LiveProgress() {
         <p className="text-[14px] font-extrabold">{next.title}</p>
         <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">{next.detail}</p>
         {mine.length > 0 && myCommitments.length === 0 && latestConn ? (
-          <Link
-            to="/connection/$id"
-            params={{ id: latestConn.id }}
-            className={ctaClass}
-          >
+          <Link to="/connection/$id" params={{ id: latestConn.id }} className={ctaClass}>
             {next.cta} <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         ) : next.to === "/commitments" && pathname === "/commitments" ? (

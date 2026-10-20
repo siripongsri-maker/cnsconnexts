@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { RotateCw } from "lucide-react";
+import { Wordmark } from "@/components/wordmark";
 
 import { MAP_VIEWBOX, PROVINCES } from "@/lib/thailand-geo";
 import { useMotionSettings } from "@/lib/motion";
 
-const COLORS = ["var(--primary)", "var(--electric)", "var(--coral)", "var(--lime)"];
+const COLORS = ["#139bff", "#62bdff", "#a0d9ff", "#28649a"];
 
 function rand(seed: number) {
   let s = seed;
@@ -33,49 +35,51 @@ export function LoadingScreen({ message = "กำลังเชื่อม" }:
   }, []);
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-busy="true"
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background px-6"
-    >
-      <div className="pointer-events-none absolute inset-0 opacity-40" aria-hidden>
-        <ThailandLoader reducedMotion={reducedMotion} lowSpec={lowSpec} />
+    <div role="status" aria-live="polite" className="connexts-loading-screen">
+      <div className="loading-screen-masthead">
+        <Wordmark size="sm" />
+        <span>NETWORK / CONNECTING</span>
       </div>
-
-      <div className="relative z-10 flex flex-col items-center text-center">
-        <div className="relative mb-8 h-48 w-48">
-          <div className="absolute inset-0 rounded-full bg-primary/10 blur-2xl" />
-          <div className="relative flex h-full w-full items-center justify-center rounded-3xl border border-border/60 bg-card/80 p-6 shadow-card backdrop-blur-xl">
-            <ThailandLoader reducedMotion={reducedMotion} lowSpec={lowSpec} className="text-primary" />
+      <div className="loading-screen-frame">
+        <div className="loading-map-stage" aria-hidden>
+          <span className="loading-map-label">PEOPLE / IDEAS / ACTION</span>
+          <div className="loading-map-art">
+            <ThailandLoader
+              reducedMotion={reducedMotion}
+              lowSpec={lowSpec}
+              className="text-primary"
+            />
           </div>
+          <i />
+          <i />
+          <i />
+          <i />
         </div>
-
-        <h2 className="text-2xl font-extrabold tracking-tight text-ink">
-          {message}
-          <span aria-hidden="true" className="inline-block w-6 text-left text-muted-foreground">
-            {".".repeat(dot)}
-          </span>
-        </h2>
-        <p className="mt-2 text-sm font-medium text-muted-foreground">
-          เชื่อมคน · เชื่อมไอเดีย · เชื่อมพื้นที่
-        </p>
-        {slow && (
-          <div className="mt-6 flex flex-col items-center">
-            <p className="text-sm font-semibold text-foreground">เน็ตช้านิดหน่อย รออีกแป๊บนะ</p>
-            <p lang="en" className="mt-0.5 text-sm text-muted-foreground">
-              Taking a little longer than usual…
-            </p>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="tap mt-4 min-h-11 rounded-full border border-border bg-card px-5 text-sm font-bold"
-            >
-              ลองใหม่ · <span lang="en">Try again</span>
-            </button>
+        <div className="loading-screen-copy">
+          <p className="mission-kicker">CONNECTING POWER</p>
+          <h2>
+            {message}
+            <span aria-hidden="true" className="loading-message-dots">
+              {".".repeat(dot)}
+            </span>
+          </h2>
+          <p>เชื่อมคน · เชื่อมไอเดีย · เชื่อมพื้นที่</p>
+          <div className="loading-screen-signal" aria-hidden>
+            {[0, 1, 2, 3].map((index) => (
+              <span key={index} className={index === dot ? "is-active" : ""} />
+            ))}
           </div>
-        )}
+          {slow && (
+            <div className="loading-slow-state">
+              <p>ใช้เวลานานกว่าปกติ ลองโหลดอีกครั้งได้</p>
+              <button type="button" onClick={() => window.location.reload()} className="tap">
+                <RotateCw className="h-4 w-4" aria-hidden /> โหลดอีกครั้ง
+              </button>
+            </div>
+          )}
+        </div>
       </div>
+      <span className="loading-screen-footer">ต่างพื้นที่ เชื่อมพลังเดียวกัน</span>
     </div>
   );
 }

@@ -6,9 +6,19 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, CheckCircle2, Compass, Handshake, Sparkles, UserPlus, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Compass,
+  Handshake,
+  Sparkles,
+  UserPlus,
+  X,
+} from "lucide-react";
 
 import { useStore } from "@/lib/store";
+import { MissionVisual } from "@/components/mission-ui";
 
 export const TOUR_EVENT = "connexts:start-tour";
 const KEY = "connext-tour-seen";
@@ -28,41 +38,41 @@ type Step = {
 const STEPS: Step[] = [
   {
     icon: UserPlus,
-    title: "สร้าง Power Profile",
-    body: "เริ่มจากกรอกชื่อ จังหวัด ประเด็นที่สนใจ และบอกว่าคุณ “มีอะไร” กับ “ต้องการอะไร” ใช้เวลาไม่ถึง 2 นาที",
-    tip: "ยิ่งใส่ครบ ระบบยิ่งจับคู่แม่น เพราะคะแนนแมตช์ให้น้ำหนัก มี/ต้องการ มากที่สุด",
+    title: "บอกพลังของคุณ",
+    body: "ชื่อ พื้นที่ ประเด็น และพลังที่มี/ต้องการ — ใช้ไม่ถึง 2 นาที",
+    tip: "สิ่งที่มีให้และต้องการช่วยให้จับคู่แม่นขึ้น เริ่มได้โดยไม่ต้องล็อกอิน",
     to: "/onboarding",
     cta: "ไปกรอกโปรไฟล์",
   },
   {
     icon: Compass,
-    title: "ค้นหาคู่เชื่อม",
-    body: "หน้า “คู่เชื่อม” จะเรียงคนที่เข้ากับคุณมากที่สุด พร้อมบอกเหตุผลสั้น ๆ ว่าทำไมถึงแมตช์",
-    tip: "ปัดการ์ดขวาเพื่อสนใจ ปัดซ้ายเพื่อข้าม หรือกรองตามภาค/ประเด็นได้",
+    title: "เลือกคนที่อยากคุย",
+    body: "พบคนที่เข้ากับคุณ พร้อมเหตุผลว่าทำไมควรคุยกัน",
+    tip: "ปัดขวาเพื่อสนใจ ซ้ายเพื่อข้าม กรองตามพื้นที่หรือประเด็นได้",
     to: "/matches",
-    cta: "ดูคู่เชื่อมของฉัน",
+    cta: "ค้นหาคู่เชื่อม",
   },
   {
     icon: Handshake,
-    title: "ส่งคำขอเชื่อม",
-    body: "กด “ขอเชื่อม” แล้วอีกฝ่ายจะได้รับแจ้งเตือนทันที เมื่อตอบรับจะเปิดห้องคุยให้คุยต่อได้เลย",
-    tip: "เปิดหน้าตลาดนัดไอเดียเพื่อหาเรื่องคุยเปิดบทสนทนา",
+    title: "ขอเชื่อมต่อ",
+    body: "ส่งคำขอให้อีกฝ่าย เมื่อตอบรับก็เริ่มคุยกันต่อได้เลย",
+    tip: "หาไอเดียเปิดบทสนทนาได้ที่ตลาดพลัง",
     to: "/marketplace",
-    cta: "ดูตลาดนัดไอเดีย",
+    cta: "สำรวจตลาดพลัง",
   },
   {
     icon: CheckCircle2,
-    title: "ตั้งคำมั่นและวันนัด",
-    body: "ทุกการเชื่อมควรจบด้วยก้าวต่อไปที่จับต้องได้ ระบุสิ่งที่จะทำ ใครรับผิดชอบ และนัดวันติดตามผล",
-    tip: "ส่งออกวันนัดเข้าปฏิทินได้ พร้อมรับการเตือนก่อนถึงเวลา",
+    title: "นัดก้าวต่อไป",
+    body: "ตกลงสิ่งที่จะทำ ผู้รับผิดชอบ และวันติดตามผล",
+    tip: "เพิ่มนัดเข้าปฏิทิน พร้อมรับการเตือนก่อนถึงเวลา",
     to: "/commitments",
-    cta: "ไปตั้งก้าวต่อไป",
+    cta: "นัดก้าวต่อไป",
   },
   {
     icon: Sparkles,
-    title: "พร้อมแล้ว!",
-    body: "ติดตามภาพรวมงานแบบสด ๆ ได้ที่หน้า “ภาพรวมสด” ทั้งจำนวนคู่เชื่อม คำมั่น และความคืบหน้าของทั้งงาน",
-    tip: "เปิดทัวร์นี้อีกครั้งได้จากเมนูหน้าแรก",
+    title: "พร้อมไปต่อด้วยกัน",
+    body: "ติดตามคู่เชื่อม นัดหมาย และความคืบหน้าของทั้งงานแบบสด ๆ",
+    tip: "เปิดคำแนะนำนี้อีกครั้งได้จากเมนู",
     to: "/dashboard",
     cta: "ดูภาพรวมสด",
   },
@@ -175,52 +185,48 @@ export function GuidedTour() {
       aria-modal="true"
       aria-labelledby="tour-title"
       aria-describedby="tour-body"
-      className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/60 p-4 backdrop-blur-sm sm:items-center"
+      className="guided-tour-dialog"
     >
-      <div
-        ref={cardRef}
-        tabIndex={-1}
-        className="card-soft w-full max-w-md rounded-3xl bg-card p-5 shadow-xl outline-none"
-      >
-        <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/12 text-primary">
+      <div ref={cardRef} tabIndex={-1} className="guided-tour-card">
+        <div className="guided-tour-heading">
+          <span className="guided-tour-icon">
             <Icon className="h-5 w-5" strokeWidth={2.2} aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1" aria-live="polite">
-            <p className="text-xs font-bold text-muted-foreground">
-              ทัวร์แนะนำ · ขั้นที่ {idx + 1}/{steps.length}
+            <p className="mission-kicker">
+              QUICK GUIDE / {String(idx + 1).padStart(2, "0")} —{" "}
+              {String(steps.length).padStart(2, "0")}
             </p>
-            <h2 id="tour-title" className="break-words text-[17px] font-extrabold leading-tight">
-              {last ? step.title : `${idx + 1} · ${step.title}`}
+            <h2 id="tour-title" className="guided-tour-title">
+              {step.title}
             </h2>
           </div>
           <button
             type="button"
             onClick={() => close()}
             aria-label="ปิดทัวร์แนะนำ"
-            className="tap -mr-1.5 -mt-1.5 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-accent text-foreground"
+            className="tap guided-tour-close"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
-        <p id="tour-body" className="mt-3 text-[13.5px] leading-relaxed text-foreground/90">
+        <MissionVisual variant="signal" className="guided-tour-visual" />
+        <p id="tour-body" className="guided-tour-body">
           {step.body}
         </p>
-        <p className="mt-2 rounded-2xl bg-accent px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
-          เคล็ดลับ: {step.tip}
-        </p>
+        <p className="guided-tour-tip">{step.tip}</p>
 
         <Link
           to={step.to}
           onClick={() => close({ restore: false })}
-          className="tap mt-3 flex h-11 items-center justify-center rounded-2xl bg-primary text-sm font-extrabold text-primary-foreground"
+          className="tap guided-tour-destination"
         >
           {step.cta}
         </Link>
 
-        <div className="mt-4 flex items-center gap-2">
-          <div className="flex flex-1 items-center gap-1.5" aria-hidden="true">
+        <div className="guided-tour-controls">
+          <div className="guided-tour-progress" aria-hidden="true">
             {steps.map((s, n) => (
               <span
                 key={s.title}
@@ -231,11 +237,7 @@ export function GuidedTour() {
             ))}
           </div>
           {idx > 0 && (
-            <button
-              type="button"
-              onClick={goBack}
-              className="tap inline-flex h-11 items-center gap-1 rounded-xl border border-border px-4 text-sm font-bold"
-            >
+            <button type="button" onClick={goBack} className="tap guided-tour-previous">
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> ก่อนหน้า
             </button>
           )}
@@ -243,7 +245,7 @@ export function GuidedTour() {
             ref={nextRef}
             type="button"
             onClick={() => (last ? close() : setI(idx + 1))}
-            className="tap inline-flex h-11 items-center gap-1 rounded-xl bg-foreground px-4 text-sm font-bold text-background"
+            className="tap guided-tour-next"
           >
             {last ? "เริ่มใช้งาน" : "ถัดไป"}
             {!last && <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />}
@@ -251,11 +253,7 @@ export function GuidedTour() {
         </div>
 
         {!last && (
-          <button
-            type="button"
-            onClick={() => close()}
-            className="tap mt-2 min-h-11 w-full rounded-xl text-center text-[13px] font-bold text-muted-foreground"
-          >
+          <button type="button" onClick={() => close()} className="tap guided-tour-skip">
             ข้ามทัวร์นี้
           </button>
         )}

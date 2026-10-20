@@ -57,6 +57,9 @@ export function SpaceNav() {
 
   return (
     <>
+      <a href="#main-content" className="mission-skip">
+        ข้ามไปเนื้อหา
+      </a>
       <header className="space-nav">
         <Link to="/" aria-label="คนส. Connexts หน้าแรก" className="space-nav-brand">
           <Wordmark size="sm" withMark />

@@ -20,7 +20,7 @@ export function Chip({
   };
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]} ${className}`}
+      className={`core-chip inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${tones[tone]} ${className}`}
     >
       {children}
     </span>
@@ -65,14 +65,14 @@ export function Avatar({
       <img
         src={user.photo}
         alt={user.name}
-        className="shrink-0 rounded-2xl border border-border object-cover"
+        className="core-avatar shrink-0 rounded-2xl border border-border object-cover"
         style={{ width: size, height: size }}
       />
     );
   }
   return (
     <span
-      className="grid shrink-0 place-items-center rounded-2xl border border-border bg-accent"
+      className="core-avatar grid shrink-0 place-items-center rounded-2xl border border-border bg-accent"
       style={{ width: size, height: size, fontSize: size * 0.5 }}
       aria-hidden
     >
@@ -88,7 +88,7 @@ export function ScoreRing({ score }: { score: number }) {
       <div
         role="img"
         aria-label={`แมตช์พลัง ${pct}%, Power Match`}
-        className="relative grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full"
+        className="core-score-ring relative grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full"
         style={{
           background: `conic-gradient(from -90deg, var(--primary), var(--coral) ${pct}%, var(--muted) ${pct}% 100%)`,
           boxShadow: "var(--shadow-glow)",
@@ -136,8 +136,22 @@ export function ConnectBurst({ name }: { name: string }) {
             strokeDasharray="200"
             className="animate-draw"
           />
-          <circle cx="12" cy="12" r="8" fill="var(--primary)" className="animate-pulse-node" style={nodeStyle} />
-          <circle cx="108" cy="12" r="8" fill="var(--coral)" className="animate-pulse-node" style={nodeStyle} />
+          <circle
+            cx="12"
+            cy="12"
+            r="8"
+            fill="var(--primary)"
+            className="animate-pulse-node"
+            style={nodeStyle}
+          />
+          <circle
+            cx="108"
+            cy="12"
+            r="8"
+            fill="var(--coral)"
+            className="animate-pulse-node"
+            style={nodeStyle}
+          />
         </svg>
         <p className="text-sm font-extrabold">เชื่อมกันแล้ว ✨</p>
         <p className="text-xs text-muted-foreground">

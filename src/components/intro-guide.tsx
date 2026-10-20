@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarCheck, HeartHandshake, Sparkles, UserCircle2 } from "lucide-react";
 
 export const INTRO_KEY = "connexts-intro-seen-v1";
@@ -49,24 +50,24 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <div className="card-soft mb-5 rounded-3xl p-5">
-      <div className="flex items-start gap-3">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/12">
+    <section className="intro-guide mission-panel" aria-label="แนะนำการเชื่อมพลัง">
+      <div className="intro-guide-heading">
+        <span className="intro-guide-icon">
           <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <p className="text-xs font-bold text-muted-foreground">
-            เริ่มต้น {step + 1}/{INTRO_STEPS.length}
-          </p>
-          <h2 className="mt-0.5 text-[18px] font-extrabold leading-snug">{item.title}</h2>
+          <p className="mission-kicker">QUICK START / {String(step + 1).padStart(2, "0")} — 03</p>
+          <h2 className="intro-guide-title">{item.title}</h2>
         </div>
       </div>
 
-      <p className="mt-3 text-[15px] font-semibold leading-relaxed">{item.body}</p>
-      <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted-foreground">{item.detail}</p>
+      <div className="intro-guide-copy" aria-live="polite">
+        <p>{item.body}</p>
+        <p>{item.detail}</p>
+      </div>
 
-      <div className="mt-4 flex items-center gap-2">
-        <div className="flex flex-1 gap-1.5" aria-hidden>
+      <div className="intro-guide-actions">
+        <div className="intro-guide-progress" aria-hidden>
           {INTRO_STEPS.map((s, i) => (
             <span
               key={s.title}
@@ -93,9 +94,11 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
       {last && (
         <p className="mt-3 flex items-center gap-1.5 text-[12px] text-muted-foreground">
           <CalendarCheck className="h-3.5 w-3.5" aria-hidden="true" /> ดูวิธีใช้เพิ่มเติมที่
-          “คู่มือใช้งาน”
+          <Link to="/guide" className="text-primary underline underline-offset-4">
+            คู่มือใช้งาน
+          </Link>
         </p>
       )}
-    </div>
+    </section>
   );
 }

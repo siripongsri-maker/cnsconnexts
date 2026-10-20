@@ -6,6 +6,7 @@ import type { MatchResult } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
 import { Avatar, Chip, ConnectBurst, PowerChip, ScoreRing } from "./power-bits";
+import { MissionVisual } from "@/components/mission-ui";
 import { SwipeCoach } from "./swipe-coach";
 import { Button } from "@/components/ui/button";
 
@@ -30,14 +31,12 @@ export function DiscoverDeck({
 
   if (!top) {
     return (
-      <div className="card-soft mx-5 grid place-items-center gap-3 p-8 text-center">
-        <span className="text-3xl" aria-hidden>
-          🎉
-        </span>
-        <p className="text-sm font-bold">ยังไม่มีใครให้ดูในหมวดนี้</p>
+      <div className="core-empty mission-empty">
+        <MissionVisual variant="network" className="core-empty-visual" />
+        <p className="mission-kicker">MORE CONNECTIONS AHEAD</p>
+        <h2>พื้นที่นี้รอคนใหม่อยู่</h2>
         <p className="text-[12px] text-muted-foreground">
-          ลองเปลี่ยนประเด็น ดูคนที่คุณถูกใจไว้ หรือชวนคนข้าง ๆ สแกน QR มาเข้าร่วม
-          จะได้มีคนให้เชื่อมเพิ่มขึ้น
+          เลือกประเด็นอื่น ดูคนที่ถูกใจ หรือชวนเพื่อนสแกน QR มาเชื่อมกัน
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {onShowLiked && (
@@ -139,7 +138,7 @@ export function DiscoverDeck({
   return (
     <div className="mission-deck mx-auto max-w-2xl px-4">
       <SwipeCoach />
-      <div className="relative h-[calc(100dvh-300px)] min-h-[440px]">
+      <div className="core-deck-stage relative h-[calc(100dvh-300px)] min-h-[440px]">
         {next && (
           <div
             className="absolute inset-x-3 top-3 bottom-0 scale-[0.96] rounded-lg bg-card opacity-70"
@@ -149,10 +148,11 @@ export function DiscoverDeck({
 
         <article
           key={u.id}
-          className="absolute inset-0 flex touch-pan-y flex-col overflow-hidden rounded-lg bg-card ring-1 ring-border"
+          className="core-deck-card absolute inset-0 flex touch-pan-y flex-col overflow-hidden rounded-lg bg-card ring-1 ring-border"
           style={{
             transform,
-            transition: fly || drag === 0 ? "transform 220ms cubic-bezier(0.22,1,0.36,1)" : undefined,
+            transition:
+              fly || drag === 0 ? "transform 220ms cubic-bezier(0.22,1,0.36,1)" : undefined,
           }}
           onPointerDown={(e) => {
             if (busy) return;
@@ -180,7 +180,7 @@ export function DiscoverDeck({
           }}
         >
           {/* ภาพเต็มการ์ดแบบแอปหาคู่ */}
-          <div className="relative min-h-0 flex-[1.15] overflow-hidden bg-accent">
+          <div className="core-deck-photo relative min-h-0 flex-[1.15] overflow-hidden bg-accent">
             {u.photo ? (
               <img
                 src={u.photo}
@@ -189,24 +189,20 @@ export function DiscoverDeck({
                 className="absolute inset-0 h-full w-full select-none object-cover"
               />
             ) : (
-              <div
-                className="absolute inset-0 grid place-items-center gradient-power"
-                aria-hidden
-              >
+              <div className="absolute inset-0 grid place-items-center gradient-power" aria-hidden>
                 <span className="text-[96px] leading-none drop-shadow-sm">
                   {u.avatar || u.name.slice(0, 1)}
                 </span>
               </div>
             )}
-            <div
-              className="mission-profile-scrim absolute inset-x-0 bottom-0 h-2/3"
-              aria-hidden
-            />
+            <div className="mission-profile-scrim absolute inset-x-0 bottom-0 h-2/3" aria-hidden />
             <span className="absolute right-4 top-4 rounded-full bg-card/90 px-3 py-1.5 font-tech text-sm font-bold text-primary shadow-sm backdrop-blur">
               {top.score}% <span className="text-xs text-muted-foreground">แมตช์</span>
             </span>
             <div className="absolute inset-x-0 bottom-0 p-5 text-foreground">
-              <h3 className="line-clamp-2 break-words text-[28px] font-bold leading-tight">{u.name}</h3>
+              <h3 className="line-clamp-2 break-words text-[28px] font-bold leading-tight">
+                {u.name}
+              </h3>
               <p className="mt-1 line-clamp-1 text-sm font-medium opacity-90">
                 {place}
                 {u.organization ? ` · ${u.organization}` : ""}
@@ -229,7 +225,7 @@ export function DiscoverDeck({
             </span>
           </div>
 
-          <div className="no-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
+          <div className="core-deck-copy no-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
             <p className="flex items-start gap-2 text-[15px] font-semibold leading-relaxed">
               <Sparkles className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
               {top.reason}
@@ -260,7 +256,7 @@ export function DiscoverDeck({
         </article>
       </div>
 
-      <div className="mt-5 flex items-center justify-center gap-5">
+      <div className="core-deck-actions mt-5 flex items-center justify-center gap-5">
         <Button
           type="button"
           aria-label="ข้ามคนนี้"
@@ -306,7 +302,9 @@ export function DiscoverDeck({
         </Button>
       </div>
 
-      <p className="mt-3 text-center text-xs text-muted-foreground">เหลืออีก {matches.length - 1} คน</p>
+      <p className="mt-3 text-center text-xs text-muted-foreground">
+        เหลืออีก {matches.length - 1} คน
+      </p>
     </div>
   );
 }

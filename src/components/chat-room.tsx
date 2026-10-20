@@ -58,7 +58,7 @@ export function ChatRoom({
   };
 
   return (
-    <div className="card-soft rounded-3xl bg-card p-4">
+    <div className="core-chat-room card-soft rounded-3xl bg-card p-4">
       {!hideHeader && (
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/12 text-primary">
@@ -86,9 +86,10 @@ export function ChatRoom({
         className={`${hideHeader ? "" : "mt-3"} space-y-2 overflow-y-auto pr-1 ${compact ? "max-h-64" : "max-h-[52vh]"}`}
       >
         {thread.length === 0 && (
-          <p className="rounded-2xl bg-muted/60 px-4 py-3 text-[12.5px] text-muted-foreground">
-            เริ่มบทสนทนาแรกได้เลย — ทักทาย เล่าสิ่งที่อยากทำร่วมกัน แล้วนัดเวลาคุยต่อ
-          </p>
+          <div className="core-chat-empty">
+            <MessageCircle className="h-9 w-9" aria-hidden="true" />
+            <p>เริ่มด้วยคำทักทาย แล้วเล่าสิ่งที่อยากทำร่วมกัน</p>
+          </div>
         )}
         {thread.map((m) => {
           const mine = m.from_id === "me";
