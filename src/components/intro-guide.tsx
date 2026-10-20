@@ -14,21 +14,21 @@ export function hasSeenIntro() {
 export const INTRO_STEPS = [
   {
     icon: Sparkles,
-    title: "แอปนี้มีไว้ทำอะไร",
-    body: "ช่วยให้คุณเจอ “คนที่ควรคุยด้วย” ในงานนี้ ภายในไม่กี่นาที แทนการเดินหาเอง",
-    detail: "เราจับคู่จากสิ่งที่คุณมี กับสิ่งที่อีกฝ่ายกำลังต้องการ และประเด็นที่สนใจตรงกัน",
+    title: "เจอคนที่ควรคุย",
+    body: "จับคู่จากพลังที่มี สิ่งที่ต้องการ และประเด็นที่สนใจ",
+    detail: "พร้อมเหตุผลว่าทำไมควรคุยกัน",
   },
   {
     icon: HeartHandshake,
-    title: "คุณจะได้อะไรกลับไป",
-    body: "รายชื่อคนที่เชื่อมกับคุณได้จริง พร้อมเหตุผลว่าทำไมถึงควรคุยกัน",
-    detail: "และนัดหมาย “ก้าวต่อไป” ที่ติดตามได้หลังจบงาน ไม่ใช่แค่แลกนามบัตร",
+    title: "เลือกคนที่ใช่",
+    body: "ปัดขวา = ถูกใจ · ปัดซ้าย = ข้าม",
+    detail: "กด “ขอเชื่อมต่อ” เพื่อเริ่มคุยและนัดก้าวต่อไป",
   },
   {
     icon: UserCircle2,
-    title: "ใช้งานแค่ 3 ขั้นตอน",
-    body: "1) สร้างโปรไฟล์พลัง  2) เลือกคนที่ใช่  3) นัดก้าวต่อไป",
-    detail: "ไม่ต้องล็อกอินก็เริ่มได้ทันที ใช้เวลาไม่ถึง 2 นาที",
+    title: "เริ่มใน 3 ขั้นตอน",
+    body: "สร้างโปรไฟล์ → เชื่อมต่อ → นัดร่วมทำ",
+    detail: "ไม่ถึง 2 นาที ไม่ต้องล็อกอิน ติดตามนัดได้หลังงาน",
   },
 ] as const;
 
@@ -56,7 +56,7 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
         </span>
         <div className="min-w-0">
           <p className="text-xs font-bold text-muted-foreground">
-            แนะนำก่อนเริ่ม {step + 1}/{INTRO_STEPS.length}
+            เริ่มต้น {step + 1}/{INTRO_STEPS.length}
           </p>
           <h2 className="mt-0.5 text-[18px] font-extrabold leading-snug">{item.title}</h2>
         </div>
@@ -92,7 +92,8 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
 
       {last && (
         <p className="mt-3 flex items-center gap-1.5 text-[12px] text-muted-foreground">
-          <CalendarCheck className="h-3.5 w-3.5" aria-hidden="true" /> อ่านคู่มือฉบับเต็มได้ที่หน้า “คู่มือใช้งาน”
+          <CalendarCheck className="h-3.5 w-3.5" aria-hidden="true" /> ดูวิธีใช้เพิ่มเติมที่
+          “คู่มือใช้งาน”
         </p>
       )}
     </div>

@@ -22,12 +22,10 @@ type Missing = { id: string; label: string };
 export function ProfileForm({
   initial,
   submitLabel,
-  submitLabelEn,
   onSubmit,
 }: {
   initial?: User | null;
   submitLabel: string;
-  submitLabelEn?: string | undefined;
   onSubmit: (draft: ProfileDraft) => void | Promise<void>;
 }) {
   const { users } = useStore();
@@ -146,15 +144,9 @@ export function ProfileForm({
 
   return (
     <div className="space-y-7 pb-44">
-      <Block
-        id="pf-step-1"
-        step={1}
-        title="เราเรียกคุณว่าอะไรดี?"
-        en="What should we call you?"
-        hint="ชื่อเล่นก็ได้"
-      >
+      <Block id="pf-step-1" step={1} title="ชื่อของคุณ" hint="ต้องกรอก">
         <label htmlFor="pf-name" className="block text-[13px] font-bold">
-          ชื่อที่อยากให้เพื่อนเรียก <span className="text-primary">*</span>
+          ชื่อที่ใช้ในงาน <span className="text-primary">*</span>
         </label>
         <input
           id="pf-name"
@@ -167,7 +159,7 @@ export function ProfileForm({
           className="h-13 w-full rounded-2xl border border-border bg-card px-4 py-3 text-base font-semibold outline-none focus:ring-2 focus:ring-ring"
         />
         <p id="pf-name-hint" className="text-[12px] text-muted-foreground">
-          ใช้ชื่อเล่นหรือนามแฝงก็ได้ · <span lang="en">A nickname is fine</span>
+          ใช้ชื่อเล่นหรือนามแฝงได้
         </p>
 
         <details
@@ -184,7 +176,11 @@ export function ProfileForm({
               <div className="relative">
                 <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-3xl bg-accent text-3xl">
                   {photo ? (
-                    <img src={photo} alt="รูปโปรไฟล์ของฉัน" className="h-full w-full object-cover" />
+                    <img
+                      src={photo}
+                      alt="รูปโปรไฟล์ของฉัน"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <span aria-hidden>{avatar}</span>
                   )}
@@ -220,14 +216,7 @@ export function ProfileForm({
               </label>
             </div>
             <p role="status" aria-live="polite" className="text-[12px] text-muted-foreground">
-              {photoState === "error" ? (
-                <>
-                  เปิดรูปนี้ไม่ได้ ลองเลือกรูป JPG หรือ PNG อีกครั้งนะ ·{" "}
-                  <span lang="en">Couldn't open this photo. Try a JPG or PNG.</span>
-                </>
-              ) : (
-                ""
-              )}
+              {photoState === "error" ? <>เปิดรูปไม่ได้ ลองเลือก JPG หรือ PNG</> : ""}
             </p>
 
             {!photo && (
@@ -278,9 +267,8 @@ export function ProfileForm({
       <Block
         id="pf-step-2"
         step={2}
-        title="ตอนนี้คุณอยู่ภาคไหน?"
-        en="Where are you based?"
-        hint="เลือกภาค แล้วระบุจังหวัดถ้าอยากให้เพื่อนในพื้นที่เจอคุณง่ายขึ้น"
+        title="คุณอยู่ที่ไหน?"
+        hint="ระบุจังหวัดเพื่อให้คนในพื้นที่เจอคุณง่ายขึ้น"
       >
         <div className="flex flex-wrap gap-2" role="group" aria-label="ภูมิภาค">
           {REGIONS.map((r) => (
@@ -299,10 +287,7 @@ export function ProfileForm({
         {showProvince && (
           <>
             <label htmlFor="pf-province" className="block text-[13px] font-bold">
-              จังหวัด{" "}
-              <span className="font-medium text-muted-foreground">
-                (ไม่บังคับ · <span lang="en">optional</span>)
-              </span>
+              จังหวัด <span className="font-medium text-muted-foreground">(ไม่บังคับ)</span>
             </label>
             <select
               id="pf-province"
@@ -325,8 +310,7 @@ export function ProfileForm({
         id="pf-step-3"
         step={3}
         required
-        title="คุณใส่ใจประเด็นไหนบ้าง?"
-        en="What issues do you care about?"
+        title="ประเด็นที่คุณใส่ใจ"
         hint={countHint("เลือกได้หลายข้อ", interests.length)}
       >
         <div className="flex flex-wrap gap-2" role="group" aria-label="ประเด็นที่คุณใส่ใจ">
@@ -346,9 +330,8 @@ export function ProfileForm({
         id="pf-step-4"
         step={4}
         required
-        title="คุณมีพลังอะไรมาแบ่งปัน?"
-        en="What power do you bring?"
-        hint={countHint("สิ่งที่คุณแบ่งปันให้เพื่อนได้", have.length)}
+        title="พลังที่พร้อมแบ่งปัน"
+        hint={countHint("เลือกได้หลายข้อ", have.length)}
       >
         <PowerGrid
           label="พลังที่คุณมี"
@@ -361,9 +344,8 @@ export function ProfileForm({
       <Block
         id="pf-step-5"
         step={5}
-        title="คุณกำลังมองหาพลังแบบไหน?"
-        en="What power are you looking for?"
-        hint={countHint("สิ่งที่อยากได้จากเพื่อนในเครือข่าย", need.length)}
+        title="พลังที่กำลังมองหา"
+        hint={countHint("เลือกได้หลายข้อ · ไม่บังคับ", need.length)}
       >
         <PowerGrid
           label="พลังที่คุณกำลังมองหา"
@@ -376,9 +358,8 @@ export function ProfileForm({
       <Block
         id="pf-step-6"
         step={6}
-        title="สุดท้าย! เล่าสั้น ๆ 1 ประโยคว่ากำลังทำอะไรอยู่"
-        en="Tell us in one sentence what you're working on"
-        hint="ไม่บังคับ แต่ช่วยให้เพื่อนรู้จักคุณเร็วขึ้น"
+        title="ตอนนี้กำลังทำอะไร?"
+        hint="เล่า 1 ประโยคให้เพื่อนรู้จัก · ไม่บังคับ"
       >
         <label htmlFor="pf-bio" className="sr-only">
           เล่าสั้น ๆ ว่าคุณกำลังทำอะไรอยู่ (ไม่บังคับ)
@@ -421,8 +402,8 @@ export function ProfileForm({
           >
             <span aria-hidden>✨ </span>
             {[
-              sameIssue > 0 && `มี ${sameIssue} คนในงานสนใจเรื่องเดียวกับคุณ`,
-              canHelp > 0 && `${canHelp} คนมีพลังที่คุณกำลังหา`,
+              sameIssue > 0 && `${sameIssue} คนสนใจเรื่องเดียวกัน`,
+              canHelp > 0 && `${canHelp} คนมีพลังที่คุณหา`,
             ]
               .filter(Boolean)
               .join(" · ")}
@@ -436,18 +417,7 @@ export function ProfileForm({
           onClick={submit}
           className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo text-base font-extrabold text-primary-foreground disabled:bg-none disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none aria-disabled:bg-none aria-disabled:bg-muted aria-disabled:text-muted-foreground aria-disabled:shadow-none"
         >
-          {sending ? (
-            "กำลังบันทึก…"
-          ) : (
-            <span className="flex flex-col items-center leading-tight">
-              {submitLabel}
-              {submitLabelEn && (
-                <span lang="en" className="text-[12px] font-semibold opacity-90">
-                  {submitLabelEn}
-                </span>
-              )}
-            </span>
-          )}
+          {sending ? "กำลังบันทึก…" : submitLabel}
         </button>
         <p
           id="pf-hint"
@@ -455,10 +425,8 @@ export function ProfileForm({
           className="mx-auto mt-1.5 min-h-4 max-w-xl text-center text-xs text-muted-foreground"
         >
           {valid
-            ? "ครบแล้ว พร้อมไปต่อ!"
-            : `ครบ ${answered}/3 ข้อที่ต้องตอบ · อีกนิดเดียว! ยังขาด: ${missing
-                .map((m) => m.label)
-                .join(" · ")}`}
+            ? "ครบแล้ว พร้อมไปต่อ"
+            : `ตอบแล้ว ${answered}/3 · ยังขาด: ${missing.map((m) => m.label).join(" · ")}`}
         </p>
       </div>
     </div>
@@ -469,7 +437,6 @@ function Block({
   id,
   step,
   title,
-  en,
   hint,
   required,
   children,
@@ -477,7 +444,6 @@ function Block({
   id: string;
   step: number;
   title: string;
-  en?: string;
   hint: string;
   required?: boolean;
   children: React.ReactNode;
@@ -501,15 +467,10 @@ function Block({
             {title}
             {required && (
               <span className="ml-1.5 inline-block rounded-full bg-primary/12 px-2 py-0.5 align-middle text-xs font-bold text-primary">
-                ต้องเลือก · <span lang="en">required</span>
+                ต้องเลือก
               </span>
             )}
           </h2>
-          {en && (
-            <p lang="en" className="text-[12px] font-semibold text-muted-foreground">
-              {en}
-            </p>
-          )}
           <p className="text-[12px] text-muted-foreground">{hint}</p>
         </div>
       </div>
