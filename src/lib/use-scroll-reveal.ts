@@ -20,7 +20,7 @@ export function useScrollReveal() {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         const element = entry.target as HTMLElement;
-        element.dataset.revealState = "visible";
+        element.dataset['revealState'] = "visible";
         observer.unobserve(element);
       });
     }, { threshold: 0.08 });
@@ -29,7 +29,7 @@ export function useScrollReveal() {
       const bounds = element.getBoundingClientRect();
       // Do not conceal sections already scrolled past (restored scroll position).
       if (bounds.bottom <= 0) return;
-      element.dataset.revealState = "pending";
+      element.dataset['revealState'] = "pending";
       observer.observe(element);
     });
 
