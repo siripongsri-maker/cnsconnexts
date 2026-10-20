@@ -21,8 +21,7 @@ import { LoadingScreen } from "@/components/loading-screen";
 import { GuidedTour } from "@/components/guided-tour";
 import { UsageTracker } from "@/components/usage-tracker";
 import { CacheRefresher } from "@/components/cache-refresher";
-
-
+import { useMotionSettings } from "@/lib/motion";
 
 function NotFoundComponent() {
   return (
@@ -105,7 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Prompt:wght@500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Prompt:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap",
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
@@ -148,6 +147,7 @@ function RootComponent() {
           <GuidedTour />
           <UsageTracker />
           <CacheRefresher />
+          <LowSpecFlag />
 
           <Toaster position="top-center" />
         </StoreProvider>
@@ -156,9 +156,17 @@ function RootComponent() {
   );
 }
 
+/** ติดธง data-lowspec ที่ <html> เพื่อให้ CSS ปิดเบลอ/แอนิเมชันตกแต่งบนเครื่องสเปกต่ำ */
+function LowSpecFlag() {
+  const { lowSpec } = useMotionSettings();
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-lowspec", lowSpec);
+  }, [lowSpec]);
+  return null;
+}
+
 function HydrationGate({ children }: { children: ReactNode }) {
   const { hydrated } = useStore();
   if (!hydrated) return <LoadingScreen message="กำลังเชื่อม" />;
   return children;
 }
-

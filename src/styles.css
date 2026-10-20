@@ -14,6 +14,8 @@
   --radius-4xl: calc(var(--radius) + 32px);
   --font-sans: "Noto Sans Thai", "IBM Plex Sans Thai", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Prompt", "Noto Sans Thai", ui-sans-serif, system-ui, sans-serif;
+  /* ตัวเลข/ป้ายละตินสไตล์เทค — ไม่มีอักษรไทย จึงตกไปใช้ Prompt อัตโนมัติ */
+  --font-tech: "Space Grotesk", "Prompt", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -97,6 +99,14 @@
   --gradient-soft: linear-gradient(160deg, oklch(0.97 0.03 300), oklch(0.985 0.006 85));
   --shadow-card: 0 2px 4px -2px oklch(0.19 0.03 292 / 0.08), 0 12px 28px -12px oklch(0.19 0.03 292 / 0.18);
   --shadow-glow: 0 18px 50px -18px oklch(0.51 0.25 296 / 0.65);
+  /* Holographic layer */
+  --glass: oklch(1 0 0 / 0.66);
+  --glass-edge: oklch(1 0 0 / 0.85);
+  --aurora-1: oklch(0.8 0.14 296 / 0.45);
+  --aurora-2: oklch(0.85 0.12 230 / 0.4);
+  --aurora-3: oklch(0.88 0.1 25 / 0.35);
+  --grid-line: oklch(0.51 0.25 296 / 0.07);
+  --gradient-holo: linear-gradient(120deg, oklch(0.7 0.2 296), oklch(0.75 0.16 230), oklch(0.85 0.17 130), oklch(0.75 0.17 25), oklch(0.7 0.2 296));
 }
 
 .dark {
@@ -121,6 +131,12 @@
   /* โหมดมืด: เพิ่มความสว่าง/ลดความอิ่มสี ให้อ่านชัดบนพื้นเข้ม (≥ 4.5:1) */
   --gradient-brand-text: linear-gradient(135deg, oklch(0.82 0.15 300), oklch(0.85 0.12 250) 55%, oklch(0.84 0.13 40));
   --brand-mark-shadow: drop-shadow(0 0 10px oklch(0.68 0.2 296 / 0.45));
+  --glass: oklch(0.24 0.05 292 / 0.6);
+  --glass-edge: oklch(1 0 0 / 0.12);
+  --aurora-1: oklch(0.45 0.2 296 / 0.4);
+  --aurora-2: oklch(0.45 0.16 250 / 0.35);
+  --aurora-3: oklch(0.45 0.15 25 / 0.25);
+  --grid-line: oklch(1 0 0 / 0.05);
 }
 
 @keyframes float {
@@ -145,6 +161,17 @@
 @keyframes draw {
   from { stroke-dashoffset: 200; }
   to { stroke-dashoffset: 0; }
+}
+@keyframes shimmer {
+  0% { transform: translateX(-120%); }
+  55%, 100% { transform: translateX(120%); }
+}
+@keyframes holo-shift {
+  to { background-position: 300% 0; }
+}
+@keyframes aurora-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-3%, 2%, 0) scale(1.06); }
 }
 @keyframes swipe-hint {
   0%, 100% { transform: translateX(-34px) rotate(-10deg); opacity: 0.75; }
@@ -177,10 +204,68 @@
 }
 
 @utility card-soft {
-  background-color: var(--card);
+  background-color: var(--glass);
   border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
-  border: 1px solid var(--border);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    var(--shadow-card);
+  border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+}
+
+/* ขอบเส้นเกรเดียนต์แบบโฮโลแกรม — ใช้กับการ์ดเด่น (ต้องมี border-radius อยู่แล้ว) */
+@utility holo-border {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: var(--gradient-holo);
+    background-size: 300% 100%;
+    animation: holo-shift 8s linear infinite;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/* ปุ่มหลัก: เกรเดียนต์แบรนด์ + แสงวิ่งผ่าน + เรืองแสง */
+@utility cta-holo {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-image: var(--gradient-power);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.35),
+    0 10px 30px -10px oklch(0.51 0.25 296 / 0.7),
+    0 6px 24px -12px oklch(0.62 0.2 250 / 0.6);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 30%, oklch(1 0 0 / 0.38) 50%, transparent 70%);
+    transform: translateX(-120%);
+    animation: shimmer 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+  }
+  &:disabled::after {
+    animation: none;
+  }
+}
+
+@utility font-tech {
+  font-family: var(--font-tech);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 @utility glow {
@@ -208,6 +293,33 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     overscroll-behavior-y: none;
+  }
+
+  /* ฉากหลังโฮโลแกรม: ออโรราสีแบรนด์ + ตารางกริดจาง ๆ (อยู่หลังทุกอย่าง) */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: -10%;
+    z-index: -1;
+    pointer-events: none;
+  }
+  body::before {
+    background:
+      radial-gradient(40% 35% at 15% 10%, var(--aurora-1), transparent 70%),
+      radial-gradient(45% 35% at 90% 25%, var(--aurora-2), transparent 70%),
+      radial-gradient(50% 40% at 60% 95%, var(--aurora-3), transparent 70%);
+    filter: blur(20px);
+    animation: aurora-drift 22s ease-in-out infinite;
+  }
+  body::after {
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 85%);
   }
 
   h1, h2, h3, .font-display {
@@ -289,9 +401,27 @@ textarea.input-line {
   .animate-rise,
   .animate-pop,
   .animate-draw,
-  .animate-swipe-hint {
+  .animate-swipe-hint,
+  .cta-holo::after,
+  .holo-border::before,
+  body::before {
     animation: none !important;
   }
+}
+
+/* เครื่องสเปกต่ำ / ประหยัดดาต้า: ปิดเบลอและแอนิเมชันตกแต่ง ให้เลื่อนลื่น */
+html[data-lowspec] .card-soft {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: var(--card);
+}
+html[data-lowspec] body::before {
+  animation: none;
+  filter: none;
+}
+html[data-lowspec] .cta-holo::after,
+html[data-lowspec] .holo-border::before {
+  animation: none;
 }
 
 /*

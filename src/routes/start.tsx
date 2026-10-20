@@ -52,7 +52,7 @@ function StartPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-background px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]">
+    <div className="relative min-h-screen px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]">
       <div
         className="absolute inset-0"
         style={{ backgroundImage: "var(--gradient-soft)" }}

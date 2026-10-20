@@ -81,7 +81,7 @@ function Welcome() {
   const { stats } = Route.useLoaderData();
   return (
 
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-screen overflow-hidden">
       <PdpaConsent />
       <div
         className="absolute inset-0"
@@ -114,8 +114,8 @@ function Welcome() {
             { n: stats.ideas, l: "ไอเดีย" },
             { n: stats.connections, l: "การเชื่อม" },
           ].map((s) => (
-            <div key={s.l} className="card-soft px-2 py-3 text-center">
-              <p className="text-xl font-extrabold text-gradient">{s.n}</p>
+            <div key={s.l} className="card-soft holo-border px-2 py-3 text-center">
+              <p className="font-tech text-2xl font-bold text-gradient">{s.n}</p>
               <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 {s.l}
               </p>
@@ -127,7 +127,7 @@ function Welcome() {
         <div className="animate-rise mt-8 space-y-3" style={{ animationDelay: "240ms" }}>
           <Link
             to="/onboarding"
-            className="tap glow flex h-16 items-center justify-between rounded-3xl gradient-power px-6 text-primary-foreground"
+            className="tap flex h-16 items-center justify-between rounded-3xl cta-holo px-6 text-primary-foreground"
           >
             <span className="text-left">
               <span className="block text-base font-extrabold">ค้นหาคนที่ควรเชื่อมต่อ</span>

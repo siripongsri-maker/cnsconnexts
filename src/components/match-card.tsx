@@ -107,7 +107,7 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
                 action: { label: "ก้าวต่อไป", onClick: () => (window.location.href = `/connection/${c.id}`) },
               });
             }}
-            className="tap inline-flex h-11 items-center justify-center rounded-xl gradient-power px-4 text-sm font-bold text-primary-foreground"
+            className="tap inline-flex h-11 items-center justify-center rounded-xl cta-holo px-4 text-sm font-bold text-primary-foreground"
           >
             เชื่อมต่อ
           </button>

@@ -29,7 +29,7 @@ function ChatPage() {
   if (hydrated && !conn) throw notFound();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <header className="sticky top-0 z-20 bg-background/90 px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <Link

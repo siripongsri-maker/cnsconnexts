@@ -125,7 +125,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-5 pb-16 pt-[max(2rem,env(safe-area-inset-top))]">
+    <div className="min-h-screen px-5 pb-16 pt-[max(2rem,env(safe-area-inset-top))]">
       <div className="mx-auto w-full max-w-md">
         <Link to="/" className="text-[13px] font-semibold text-muted-foreground">
           ← กลับหน้าแรก

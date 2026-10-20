@@ -40,7 +40,7 @@ function Person() {
   const theirIdeas = ideas.filter((i) => i.owner_id === user.id);
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen pb-32">
       <div className="relative gradient-power px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-primary-foreground">
         <Link
           to="/matches"

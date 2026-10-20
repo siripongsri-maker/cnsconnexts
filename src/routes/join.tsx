@@ -43,7 +43,7 @@ function Join() {
   }, [c, source, navigate]);
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background px-8 text-center">
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-8 text-center">
       <div
         className="absolute inset-0"
         style={{ backgroundImage: "var(--gradient-soft)" }}

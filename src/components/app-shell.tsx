@@ -25,7 +25,7 @@ export function AppShell({
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24">
       {title && (
         <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 px-5 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))] backdrop-blur-xl">
           <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">

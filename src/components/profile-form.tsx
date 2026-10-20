@@ -232,7 +232,7 @@ export function ProfileForm({
           disabled={!valid || sending}
           aria-describedby={!valid ? "pf-hint" : undefined}
           onClick={submit}
-          className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground disabled:opacity-40"
+          className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo text-base font-extrabold text-primary-foreground disabled:bg-none disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
         >
           {sending ? "กำลังบันทึก…" : submitLabel}
         </button>

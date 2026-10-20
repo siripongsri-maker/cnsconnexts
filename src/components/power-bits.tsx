@@ -27,7 +27,13 @@ export function Chip({
   );
 }
 
-export function PowerChip({ name, tone = "muted" }: { name: string; tone?: "muted" | "primary" | "coral" | "electric" | "lime" }) {
+export function PowerChip({
+  name,
+  tone = "muted",
+}: {
+  name: string;
+  tone?: "muted" | "primary" | "coral" | "electric" | "lime";
+}) {
   return (
     <Chip tone={tone}>
       <span aria-hidden>{POWER_EMOJI[name] ?? "✨"}</span>
@@ -65,10 +71,25 @@ export function Avatar({
 }
 
 export function ScoreRing({ score }: { score: number }) {
+  const pct = Math.max(0, Math.min(100, score));
   return (
-    <div className="grid shrink-0 place-items-center rounded-2xl gradient-power px-3 py-2 text-primary-foreground">
-      <span className="text-lg font-extrabold leading-none">{score}%</span>
-      <span className="text-[9px] font-bold uppercase tracking-widest opacity-90">แมตช์</span>
+    <div
+      role="img"
+      aria-label={`แมตช์ ${pct}%`}
+      className="relative grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full"
+      style={{
+        background: `conic-gradient(from -90deg, oklch(0.51 0.25 296), oklch(0.62 0.2 250) ${pct * 0.6}%, oklch(0.68 0.19 25) ${pct}%, var(--muted) ${pct}% 100%)`,
+        boxShadow: "0 8px 24px -10px oklch(0.51 0.25 296 / 0.7)",
+      }}
+    >
+      <div className="grid h-[56px] w-[56px] place-items-center rounded-full bg-card text-center">
+        <span aria-hidden className="font-tech text-lg font-bold leading-none text-gradient">
+          {pct}%
+        </span>
+        <span aria-hidden className="-mt-2 text-[10px] font-bold text-muted-foreground">
+          แมตช์
+        </span>
+      </div>
     </div>
   );
 }

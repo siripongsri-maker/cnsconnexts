@@ -55,7 +55,7 @@ function ConnectionDetail() {
 
 
   return (
-    <div className="min-h-screen bg-background pb-36">
+    <div className="min-h-screen pb-36">
       <div className="relative overflow-hidden gradient-power px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-primary-foreground">
         <Link
           to="/matches"

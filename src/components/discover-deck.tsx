@@ -86,7 +86,7 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
         )}
 
         <article
-          className="card-soft relative touch-pan-y overflow-hidden p-4"
+          className="card-soft holo-border relative touch-pan-y overflow-hidden p-4"
           style={{
             transform,
             transition: fly || drag === 0 ? "transform 180ms ease-out" : undefined,
@@ -207,7 +207,7 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
         ) : (
           <button
             onClick={doConnect}
-            className="tap inline-flex h-16 items-center justify-center rounded-2xl gradient-power px-4 text-base font-extrabold text-primary-foreground"
+            className="tap inline-flex h-16 items-center justify-center rounded-2xl cta-holo px-4 text-base font-extrabold text-primary-foreground"
           >
             ขอเชื่อมต่อ
           </button>
