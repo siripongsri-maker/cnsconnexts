@@ -48,7 +48,7 @@ function QrPoster() {
         </p>
 
         <div className="card-soft mt-8 rounded-3xl bg-card p-6">
-          <QRCodeSVG value={url} size={232} level="M" bgColor="transparent" fgColor="#1d1d1f" />
+          <QRCodeSVG value={url} size={232} level="M" bgColor="#ffffff" fgColor="#0b1020" />
         </div>
 
         <p className="mt-5 text-xs text-muted-foreground">
