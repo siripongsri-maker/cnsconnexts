@@ -38,7 +38,7 @@ function Join() {
 
   useEffect(() => {
     createSession(sourceFromSearch(new URLSearchParams({ source })), c || code || null);
-    const t = setTimeout(() => navigate({ to: "/start" }), 600);
+    const t = setTimeout(() => navigate({ to: "/start", replace: true }), 250);
     return () => clearTimeout(t);
   }, [c, code, source, navigate]);
 

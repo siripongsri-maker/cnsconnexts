@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { FollowUpTabs } from "@/components/follow-up-tabs";
 import { toast } from "sonner";
 import { CalendarDays, Check, MessageCircle } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -59,15 +60,8 @@ function Commitments() {
     <AppShell
       title="จะทำอะไรต่อดี?"
       subtitle="ก้าวต่อไปของเรา"
-      action={
-        <Link
-          to="/calendar"
-          className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-bold"
-        >
-          <CalendarDays className="h-4 w-4" aria-hidden /> ปฏิทินนัดของฉัน
-        </Link>
-      }
     >
+      <FollowUpTabs />
       <section className="px-5 pt-5">
         <p lang="en" className="font-tech text-xs font-bold uppercase tracking-widest text-primary">
           What happens next?
