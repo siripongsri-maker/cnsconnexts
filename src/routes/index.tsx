@@ -11,16 +11,15 @@ import {
   Radio,
   FileText,
   BookOpen,
-  Printer,
   UserCircle,
   CalendarDays,
-  Palette,
   Compass,
   BookOpenCheck,
 } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
+import { useStore } from "@/lib/store";
 import { useMotionSettings } from "@/lib/motion";
 import { getPublicStats } from "@/lib/stats.functions";
 import { ThailandNetwork } from "@/components/thailand-network";
@@ -66,28 +65,32 @@ const NAV_LINKS = [
   { to: "/marketplace", label: "ตลาดนัด", icon: Store },
   { to: "/commitments", label: "ก้าวต่อไป", icon: CheckCircle2 },
   { to: "/calendar", label: "ปฏิทินนัด", icon: CalendarDays },
-  { to: "/dashboard", label: "สด", icon: Radio },
+  { to: "/dashboard", label: "ภาพรวมสด", icon: Radio },
   { to: "/submit", label: "ส่งผลงาน", icon: FileText },
   { to: "/ebook", label: "รวมผลงาน", icon: BookOpen },
-  { to: "/print", label: "ไฟล์พิมพ์", icon: Printer },
-  { to: "/update", label: "อัปเดตข้อมูล", icon: UserCircle },
+  { to: "/update", label: "แก้โปรไฟล์", icon: UserCircle },
   { to: "/scan", label: "สแกนเข้าร่วม", icon: QrCode },
-  { to: "/brand-preview", label: "ตัวอย่างแบรนด์", icon: Palette },
-
 ] as const;
 
 function Welcome() {
   const { reducedMotion, lowSpec } = useMotionSettings();
   const { stats } = Route.useLoaderData();
+  const { users, ideas, connections } = useStore();
+  const live = {
+    people: Math.max(stats.participants, users.length),
+    ideas: Math.max(stats.ideas, ideas.length),
+    connections: Math.max(stats.connections, connections.length),
+    regions: new Set(users.map((u) => u.region).filter((r) => r && r !== "Nationwide")).size,
+  };
+  const tiles = [
+    { n: live.people, th: "คน", en: "People" },
+    { n: live.ideas, th: "ไอเดีย", en: "Ideas" },
+    { n: live.connections, th: "การเชื่อม", en: "Connections" },
+    { n: live.regions, th: "ภาค", en: "Regions" },
+  ];
   return (
-
     <div className="relative min-h-screen overflow-hidden">
       <PdpaConsent />
-      <div
-        className="absolute inset-0"
-        style={{ backgroundImage: "var(--gradient-soft)" }}
-        aria-hidden
-      />
       <div className="pointer-events-none absolute inset-x-0 top-[10%] bottom-0 z-0 text-primary opacity-55">
         <ThailandNetwork count={18} reducedMotion={reducedMotion} lowSpec={lowSpec} />
       </div>
@@ -98,6 +101,9 @@ function Welcome() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 pb-[max(6.5rem,env(safe-area-inset-bottom)+5rem)] pt-[max(6rem,env(safe-area-inset-top)+4.5rem)]">
 
         <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
+          <p lang="en" className="mb-2 font-tech text-sm font-bold uppercase tracking-wide text-primary">
+            Connecting Power
+          </p>
           <h1 className="min-w-0">
             <Wordmark size="hero" />
           </h1>
@@ -107,22 +113,42 @@ function Welcome() {
           <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
             ทุกคนมีพลังไม่เหมือนกัน มาค้นหากันเถอะว่าวันนี้คุณควรเชื่อมต่อกับใคร
           </p>
+          <p lang="en" className="mt-1.5 max-w-sm text-[14px] leading-relaxed text-muted-foreground">
+            Everyone brings a different kind of power. Let's discover who you should connect with
+            today.
+          </p>
         </div>
-        <div className="animate-rise grid grid-cols-3 gap-2" style={{ animationDelay: "160ms" }}>
-          {[
-            { n: stats.participants, l: "ผู้เข้าร่วม" },
-            { n: stats.ideas, l: "ไอเดีย" },
-            { n: stats.connections, l: "การเชื่อม" },
-          ].map((s) => (
-            <div key={s.l} className="card-soft holo-border px-2 py-3 text-center">
-              <p className="font-tech text-2xl font-bold text-gradient">{s.n}</p>
-              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-                {s.l}
+        <div className="animate-rise" style={{ animationDelay: "160ms" }}>
+          {live.people > 0 ? (
+            <>
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                <span
+                  className="h-2 w-2 rounded-full bg-primary motion-safe:animate-pulse"
+                  aria-hidden="true"
+                />
+                สด · <span lang="en">Live</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2 min-[400px]:grid-cols-4">
+                {tiles.map((t) => (
+                  <div key={t.en} className="card-soft px-2 py-3 text-center">
+                    <p className="font-tech text-2xl font-bold text-primary">{t.n}</p>
+                    <p className="text-xs font-bold text-muted-foreground">{t.th}</p>
+                    <p lang="en" className="text-xs text-muted-foreground">
+                      {t.en}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="card-soft px-4 py-3">
+              <p className="text-sm font-bold">เพิ่งเปิดงาน มาเป็นคนแรกที่เชื่อมพลังกันนะ</p>
+              <p lang="en" className="text-xs text-muted-foreground">
+                We're just getting started. Be the first to connect!
               </p>
             </div>
-          ))}
+          )}
         </div>
-
 
         <div className="animate-rise mt-8 space-y-3" style={{ animationDelay: "240ms" }}>
           <Link
@@ -131,25 +157,42 @@ function Welcome() {
           >
             <span className="text-left">
               <span className="block text-base font-extrabold">ค้นหาคนที่ควรเชื่อมต่อ</span>
-              <span className="block text-[12px] opacity-90">Find My Connections</span>
+              <span lang="en" className="block text-[12px] opacity-90">
+                Find My Connections
+              </span>
             </span>
-            <ArrowRight className="h-5 w-5 shrink-0" />
+            <ArrowRight className="h-5 w-5 shrink-0" aria-hidden="true" />
           </Link>
           <Link
-            to="/scan"
-            className="tap flex h-14 items-center justify-center gap-2 rounded-3xl border border-border bg-card/80 text-sm font-bold backdrop-blur"
+            to="/map"
+            className="tap flex h-14 items-center gap-3 rounded-3xl border border-border bg-card/80 px-5 backdrop-blur"
           >
-            <QrCode className="h-4 w-4" />
-            สแกน QR เข้าร่วมทันที (ไม่ต้องล็อกอิน)
+            <Map className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+            <span className="text-left leading-tight">
+              <span className="block text-sm font-bold">สำรวจแผนที่พลัง</span>
+              <span lang="en" className="block text-xs text-muted-foreground">
+                Explore the Power Map
+              </span>
+            </span>
+            <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </Link>
 
-          <Link
-            to="/guide"
-            className="tap flex h-12 items-center justify-center gap-2 rounded-3xl bg-accent text-sm font-bold text-foreground"
-          >
-            <BookOpenCheck className="h-4 w-4 text-primary" />
-            ใช้งานยังไง? อ่านคู่มือ 1 นาที
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Link
+              to="/scan"
+              className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-primary"
+            >
+              <QrCode className="h-4 w-4" aria-hidden="true" />
+              มี QR จากบอร์ด? สแกนเลย
+            </Link>
+            <Link
+              to="/guide"
+              className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-primary"
+            >
+              <BookOpenCheck className="h-4 w-4" aria-hidden="true" />
+              ดูวิธีใช้ใน 1 นาที
+            </Link>
+          </div>
 
           <p className="pt-1 text-center text-xs text-muted-foreground">
             ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
@@ -175,14 +218,14 @@ function TopNav() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+          className="tap inline-grid h-11 w-11 place-items-center rounded-full bg-accent text-foreground"
           aria-label={open ? "ปิดเมนู" : "เปิดเมนู"}
           aria-expanded={open}
         >
           {open ? (
-            <X className="h-5 w-5" strokeWidth={2.2} />
+            <X className="h-5 w-5" strokeWidth={2.2} aria-hidden="true" />
           ) : (
-            <Menu className="h-5 w-5" strokeWidth={2.2} />
+            <Menu className="h-5 w-5" strokeWidth={2.2} aria-hidden="true" />
           )}
         </button>
       </div>
@@ -197,7 +240,7 @@ function TopNav() {
                   onClick={() => setOpen(false)}
                   className="tap flex flex-col items-center gap-1.5 rounded-2xl bg-accent p-3 text-center text-xs font-semibold text-foreground"
                 >
-                  <Icon className="h-5 w-5 text-primary" strokeWidth={2} />
+                  <Icon className="h-5 w-5 text-primary" strokeWidth={2} aria-hidden="true" />
                   {label}
                 </Link>
               </li>
@@ -212,7 +255,7 @@ function TopNav() {
             }}
             className="tap mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-border text-sm font-bold text-foreground"
           >
-            <Compass className="h-4 w-4 text-primary" /> ทัวร์แนะนำการใช้งาน
+            <Compass className="h-4 w-4 text-primary" aria-hidden="true" /> ทัวร์แนะนำการใช้งาน
           </button>
 
           <div className="mt-3 border-t border-border/60 pt-3">
@@ -233,7 +276,7 @@ function TopNav() {
                     setOpen(false);
                     void signOut();
                   }}
-                  className="tap shrink-0 text-sm font-bold text-primary"
+                  className="tap inline-flex min-h-11 shrink-0 items-center text-sm font-bold text-primary"
                 >
                   ออกจากระบบ
                 </button>

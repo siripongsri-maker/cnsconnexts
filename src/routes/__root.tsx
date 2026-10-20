@@ -4,10 +4,11 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -23,25 +24,40 @@ import { UsageTracker } from "@/components/usage-tracker";
 import { CacheRefresher } from "@/components/cache-refresher";
 import { useMotionSettings } from "@/lib/motion";
 
+/* ปุ่มแบบสีทึบ (ไม่ใช้เกรเดียนต์) สำหรับหน้าแจ้งปัญหา — สูง 48px กดง่าย */
+const BTN_PRIMARY =
+  "tap inline-flex h-12 min-w-[44px] items-center justify-center rounded-2xl bg-primary px-5 text-sm font-bold text-primary-foreground hover:bg-primary/90";
+const BTN_SECONDARY =
+  "tap inline-flex h-12 items-center justify-center rounded-2xl border border-border bg-card px-5 text-sm font-bold text-foreground hover:bg-accent";
+
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <main className="grid min-h-screen place-items-center bg-background px-4 py-16">
+      <div className="card-soft mx-auto w-full max-w-md rounded-3xl p-6 text-center">
+        <h1 className="text-xl font-bold text-foreground">อ๊ะ หาหน้านี้ไม่เจอ</h1>
+        <p lang="en" className="mt-1 text-sm text-muted-foreground">
+          We couldn't find this page
         </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
+        <p className="mt-4 text-sm text-foreground">
+          ลิงก์อาจพิมพ์ผิดหรือหมดอายุแล้ว ไม่เป็นไรนะ ไปดูคนที่คุณน่าจะอยากเจอกันต่อ
+        </p>
+        <p lang="en" className="mt-1 text-sm text-muted-foreground">
+          The link may be mistyped or expired. Let's find people you should meet.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link to="/matches" className={BTN_PRIMARY}>
+            <span>
+              ไปดูคนที่ควรเจอ · <span lang="en">People to meet</span>
+            </span>
+          </Link>
+          <Link to="/" className={BTN_SECONDARY}>
+            <span>
+              กลับหน้าแรก · <span lang="en">Home</span>
+            </span>
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -53,33 +69,39 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
+    <main className="grid min-h-screen place-items-center bg-background px-4">
+      <div className="card-soft mx-auto w-full max-w-md rounded-3xl p-6 text-center">
+        <div role="alert">
+          <h1 className="text-xl font-bold text-foreground">หน้านี้โหลดไม่สำเร็จ</h1>
+          <p lang="en" className="mt-1 text-sm text-muted-foreground">
+            This page didn't load
+          </p>
+          <p className="mt-4 text-sm text-foreground">อาจเป็นที่สัญญาณ ลองอีกครั้งได้เลยนะ</p>
+          <p lang="en" className="mt-1 text-sm text-muted-foreground">
+            It might be the connection. Give it another try.
+          </p>
+        </div>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
+            type="button"
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className={BTN_PRIMARY}
           >
-            Try again
+            <span>
+              ลองอีกครั้ง · <span lang="en">Try again</span>
+            </span>
           </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
+          <a href="/" className={BTN_SECONDARY}>
+            <span>
+              กลับหน้าแรก · <span lang="en">Home</span>
+            </span>
           </a>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -165,8 +187,27 @@ function LowSpecFlag() {
   return null;
 }
 
+/** หน้าที่ไม่ต้องรอข้อมูลจากฐานข้อมูล — สแกน QR แล้วเห็นหน้าทันที */
+const OPEN_ROUTES = new Set(["/", "/join", "/guide", "/qr"]);
+/** หน้าที่ต้องรอข้อมูลครบก่อนเสมอ (ตัดสินใจพาไปหน้าอื่นจากข้อมูลโปรไฟล์ / หลังบ้าน) */
+const ALWAYS_GATED = ["/auth", "/onboarding", "/admin"];
+/** ถ้าเน็ตช้า ให้เปิดหน้าได้หลังเวลานี้ แล้วโหลดข้อมูลต่อเบื้องหลัง */
+const GATE_TIMEOUT_MS = 2500;
+
 function HydrationGate({ children }: { children: ReactNode }) {
-  const { hydrated } = useStore();
-  if (!hydrated) return <LoadingScreen message="กำลังเชื่อม" />;
-  return children;
+  const { hydrated, booted } = useStore();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [waitedEnough, setWaitedEnough] = useState(false);
+
+  useEffect(() => {
+    if (hydrated) return;
+    const t = setTimeout(() => setWaitedEnough(true), GATE_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [hydrated]);
+
+  if (hydrated || OPEN_ROUTES.has(pathname)) return children;
+  const gatedAlways = ALWAYS_GATED.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  // อ่านข้อมูลในเครื่องเสร็จแล้ว + รอนานพอ → เปิดหน้าได้ (แต่ละหน้ามีสถานะ "กำลังโหลด" ของตัวเอง)
+  if (booted && waitedEnough && !gatedAlways) return children;
+  return <LoadingScreen message="กำลังเชื่อม" />;
 }

@@ -14,7 +14,7 @@ export const REMINDER_STAGES = [
 const CHECK_MS = 20_000;
 
 /**
- * เฝ้าดูวันนัดหมายของทุก commitment แล้วแจ้งเตือนแบบเรียลไทม์
+ * เฝ้าดูวันนัดหมายของ commitment ที่เป็นของฉัน แล้วแจ้งเตือนแบบเรียลไทม์
  * (เสียง connext + ปิ๊ง + ฟีดสด) ตามช่วงเตือนล่วงหน้า — แจ้งครั้งเดียวต่อช่วง
  */
 export function CommitmentReminders() {
@@ -37,11 +37,14 @@ export function CommitmentReminders() {
         // เลยนัดเกิน 1 วันแล้วไม่ต้องเตือนซ้ำ
         if (remaining < -24 * 60 * 60 * 1000) continue;
 
+        const conn = connections.find((c) => c.id === m.connection_id);
+        // เตือนเฉพาะนัดของฉันเอง ไม่เตือนนัดของคนอื่นในงาน
+        if (!conn || (conn.user_a !== "me" && conn.user_b !== "me")) continue;
+
         const refId = `${m.id}:${stage.key}`;
         if (notifications.some((n) => n.kind === "reminder" && n.ref_id === refId)) continue;
 
-        const conn = connections.find((c) => c.id === m.connection_id);
-        const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
+        const otherId = conn.user_a === "me" ? conn.user_b : conn.user_a;
         const name = users.find((u) => u.id === otherId)?.name ?? "เพื่อนร่วมงาน";
         const when = new Date(due).toLocaleString("th-TH", {
           day: "numeric",

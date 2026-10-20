@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Heart, Layers, List } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
@@ -13,7 +13,7 @@ import { issueTh } from "@/lib/i18n";
 export const Route = createFileRoute("/matches")({
   head: () => ({
     meta: [
-      { title: "คนที่คุณควรเจอ — คนส. Connexts" },
+      { title: "คนที่คุณควรเจอวันนี้ — คนส. Connexts" },
       {
         name: "description",
         content: "ปัดเพื่อค้นหาคนที่ใช่ กดถูกใจหรือขอเชื่อมต่อได้ทันที พร้อมเหตุผลที่แมตช์กันแบบสั้นๆ",
@@ -63,18 +63,55 @@ function Matches() {
 
   if (!me) {
     return (
-      <AppShell title="คู่เชื่อมพลังของฉัน">
-        <p className="p-6 text-sm text-muted-foreground">กำลังโหลดรายชื่อคู่เชื่อม…</p>
+      <AppShell title="คนที่คุณควรเจอวันนี้">
+        {!hydrated ? (
+          <p className="p-6 text-sm text-muted-foreground">กำลังโหลดรายชื่อคู่เชื่อม…</p>
+        ) : (
+          <div role="status" className="card-soft m-5 grid gap-3 p-6 text-center">
+            <p className="text-sm font-bold">ยังโหลดโปรไฟล์ของคุณไม่ขึ้น ลองอีกครั้งนะ</p>
+            <p className="text-[12px] text-muted-foreground">
+              <span lang="en">Couldn&apos;t load your profile yet.</span> สัญญาณอาจช้าอยู่
+              ข้อมูลของคุณยังอยู่ครบ
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="tap inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+            >
+              ลองอีกครั้ง
+            </button>
+            <Link
+              to="/onboarding"
+              className="tap inline-flex min-h-11 items-center justify-center text-sm font-bold text-primary underline underline-offset-4"
+            >
+              กรอกโปรไฟล์อีกครั้ง
+            </Link>
+          </div>
+        )}
       </AppShell>
     );
   }
 
   return (
     <AppShell
-      title="คนที่คุณควรเจอ"
-      subtitle="ปัดเร็ว · ถูกใจ · ขอเชื่อมต่อ"
+      title="คนที่คุณควรเจอวันนี้"
+      subtitle="People you should meet today"
       action={
-        <ShareCardButton me={me} matches={all} kind="matches" label="แชร์" />
+        <>
+          <ShareCardButton
+            me={me}
+            matches={all}
+            kind="matches"
+            label="แชร์คู่เชื่อม"
+            className="min-h-11 bg-secondary text-secondary-foreground"
+          />
+          <ShareCardButton
+            me={me}
+            kind="profile"
+            label="แชร์โปรไฟล์"
+            className="min-h-11 bg-secondary text-secondary-foreground"
+          />
+        </>
       }
     >
       <div className="px-5 pt-3">
@@ -91,11 +128,6 @@ function Matches() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 px-5 pt-3">
-        <ShareCardButton me={me} kind="profile" label="แชร์โปรไฟล์เป็นภาพ" />
-        <ShareCardButton me={me} matches={all} kind="matches" label="แชร์คู่เชื่อมเป็นภาพ" className="bg-secondary text-secondary-foreground" />
-      </div>
-
       <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-5 py-3">
         <FilterPill active={!issue} onClick={() => setIssue(null)}>
           ทุกประเด็น
@@ -109,7 +141,7 @@ function Matches() {
 
       {mode === "deck" ? (
         <div className="pb-8">
-          <DiscoverDeck matches={deck} />
+          <DiscoverDeck matches={deck} onShowLiked={() => setMode("liked")} />
         </div>
       ) : (
         <div className="space-y-3 px-5 pb-6">
@@ -142,8 +174,10 @@ function ModeTab({
 }) {
   return (
     <button
+      type="button"
+      aria-pressed={active}
       onClick={onClick}
-      className={`tap inline-flex h-10 items-center justify-center gap-1.5 rounded-xl text-[12px] font-extrabold ${
+      className={`tap inline-flex h-11 items-center justify-center gap-1.5 rounded-xl text-[12px] font-extrabold ${
         active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
       }`}
     >
@@ -164,8 +198,10 @@ function FilterPill({
 }) {
   return (
     <button
+      type="button"
+      aria-pressed={active}
       onClick={onClick}
-      className={`tap shrink-0 rounded-full border px-3.5 py-1.5 text-[12px] font-bold ${
+      className={`tap inline-flex min-h-11 shrink-0 items-center rounded-full border px-4 text-[12px] font-bold ${
         active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
       }`}
     >

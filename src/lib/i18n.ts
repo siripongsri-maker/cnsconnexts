@@ -6,7 +6,7 @@ export const ISSUE_TH: Record<string, string> = {
   "Mental Health": "สุขภาพจิต",
   "LGBTQ+": "ความหลากหลายทางเพศ",
   "Gender Equality": "ความเท่าเทียมทางเพศ",
-  "Gender-Based Violence": "ความรุนแรงทางเพศ",
+  "Gender-Based Violence": "ความรุนแรงบนฐานเพศ",
   "Sexual Health": "สุขภาวะทางเพศ",
   "Silver Age": "ผู้สูงวัย",
   "Economic Inequality": "ความเหลื่อมล้ำ",
@@ -57,4 +57,5 @@ export const ACTION_TYPES_TH = [
 
 export const issueTh = (i: string) => ISSUE_TH[i] ?? i;
 export const powerTh = (p: string) => POWER_TH[p] ?? p;
-export const provinceTh = (p: string) => PROVINCE_TH[p] ?? p;
+export const provinceTh = (p: string) =>
+  PROVINCE_TH[p] ?? PROVINCE_TH[p === "Bangkok" ? "Bangkok Metropolis" : p] ?? p;

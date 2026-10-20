@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
 
-/** แจ้งเตือนเมื่อพบโปรไฟล์ที่ค้างอยู่ในเครื่องและยังไม่ถูกส่งขึ้นฐานข้อมูลกลาง */
+/** ชวนให้กดส่งโปรไฟล์ที่ยังค้างอยู่ในเครื่อง — ถ้ายังไม่ส่ง คนอื่นจะยังค้นไม่เจอเรา */
 export function PendingSyncBanner() {
   const { pendingProfile, syncPendingProfile, dismissPendingProfile } = useStore();
   const [busy, setBusy] = useState(false);
@@ -15,9 +15,9 @@ export function PendingSyncBanner() {
     setBusy(true);
     try {
       await syncPendingProfile();
-      toast.success("ซิงก์โปรไฟล์ขึ้นระบบเรียบร้อยแล้ว");
+      toast.success("ส่งแล้ว! ตอนนี้คนอื่นเจอคุณได้แล้ว");
     } catch {
-      toast.error("ซิงก์ไม่สำเร็จ ลองใหม่อีกครั้งเมื่อสัญญาณดีขึ้น");
+      toast.error("ส่งไม่ผ่าน ลองใหม่อีกทีตอนสัญญาณดีขึ้นนะ");
     } finally {
       setBusy(false);
     }
@@ -26,30 +26,39 @@ export function PendingSyncBanner() {
   return (
     <div className="mx-auto w-full max-w-xl px-5 pt-3">
       <div className="flex items-start gap-3 rounded-2xl border border-coral/40 bg-coral/10 p-3.5">
-        <CloudUpload className="mt-0.5 h-5 w-5 shrink-0 text-coral" strokeWidth={2.2} />
+        <CloudUpload className="mt-0.5 h-5 w-5 shrink-0 text-coral-ink" strokeWidth={2.2} aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="text-[13.5px] font-extrabold leading-tight">
-            พบโปรไฟล์ค้างในเครื่อง ยังไม่ขึ้นระบบ
+            อีกนิดเดียว! โปรไฟล์ของ “{pendingProfile.name}” ยังไม่ถูกส่ง
           </p>
           <p className="mt-0.5 text-[12.5px] leading-snug text-muted-foreground">
-            โปรไฟล์ของ “{pendingProfile.name}” ถูกบันทึกไว้ในเครื่องเท่านั้น กดซิงก์เพื่อย้ายข้อมูลขึ้นฐานข้อมูลกลาง
+            ตอนนี้ยังไม่มีใครเห็นคุณ กดส่งเพื่อให้คนที่ควรเจอค้นเจอคุณได้
+            <span lang="en" className="block">
+              Others can't see you yet. Send it so people can find you.
+            </span>
           </p>
           <button
             type="button"
             onClick={() => void onSync()}
             disabled={busy}
-            className="tap mt-2.5 rounded-full bg-primary px-4 py-2 text-[13px] font-extrabold text-primary-foreground disabled:opacity-60"
+            className="tap mt-2.5 min-h-11 rounded-full bg-primary px-4 text-[13px] font-extrabold text-primary-foreground disabled:opacity-60"
           >
-            {busy ? "กำลังซิงก์…" : "ซิงก์ข้อมูลตอนนี้"}
+            {busy ? (
+              "กำลังส่ง…"
+            ) : (
+              <>
+                ส่งโปรไฟล์ตอนนี้ · <span lang="en">Send now</span>
+              </>
+            )}
           </button>
         </div>
         <button
           type="button"
           onClick={dismissPendingProfile}
-          className="tap -mr-1 -mt-1 inline-grid h-8 w-8 shrink-0 place-items-center rounded-full text-muted-foreground"
-          aria-label="ปิด"
+          className="tap -mr-2 -mt-2 inline-grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground"
+          aria-label="ปิดไว้ก่อน"
         >
-          <X className="h-4 w-4" strokeWidth={2.4} />
+          <X className="h-4 w-4" strokeWidth={2.4} aria-hidden />
         </button>
       </div>
     </div>

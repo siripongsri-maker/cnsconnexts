@@ -11,18 +11,23 @@ export function PdpaConsent() {
   if (!ready || consent) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4">
-      <div className="card-soft mx-auto max-w-xl rounded-2xl border border-border bg-card p-4 shadow-lg">
+    <div
+      role="region"
+      aria-labelledby="pdpa-title"
+      className="fixed inset-x-0 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] z-50 px-3"
+    >
+      <div className="card-soft mx-auto max-w-xl max-h-[60vh] overflow-y-auto rounded-2xl border border-border bg-card p-4 shadow-lg">
         <div className="flex items-start gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/12 text-primary">
-            <ShieldCheck className="h-5 w-5" />
+            <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <h2 className="text-[14px] font-extrabold">การเก็บข้อมูลการใช้งาน (PDPA)</h2>
-            <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
-              เว็บนี้เก็บบันทึกการใช้งาน เช่น หน้าที่เข้าชม เวลา และการกดใช้ฟีเจอร์
-              เพื่อปรับปรุงบริการและสรุปภาพรวมกิจกรรม ข้อมูลถูกเก็บในเครื่องของคุณ
-              ไม่มีการเก็บชื่อ-นามสกุลหรือข้อมูลติดต่อในบันทึกนี้ และคุณถอนความยินยอมได้ทุกเมื่อ
+            <h2 id="pdpa-title" className="text-[14px] font-extrabold">
+              ขอเก็บสถิติการใช้งานได้ไหม? <span lang="en">· Can we keep usage stats?</span>
+            </h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+              แค่หน้าไหนถูกเปิด ปุ่มไหนถูกกด เก็บไว้ในเครื่องนี้ ไม่มีชื่อหรือเบอร์ติดต่อ
+              เปลี่ยนใจได้ทุกเมื่อ
             </p>
 
             {open && (
@@ -37,25 +42,26 @@ export function PdpaConsent() {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className="mt-1.5 text-xs font-extrabold text-primary"
+              aria-expanded={open}
+              className="tap mt-1 inline-flex min-h-11 items-center text-xs font-extrabold text-primary"
             >
-              {open ? "ย่อรายละเอียด" : "อ่านรายละเอียดการเก็บข้อมูล"}
+              {open ? "ย่อ · Hide" : "ดูรายละเอียด · Details"}
             </button>
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-2 flex gap-2">
               <button
                 type="button"
                 onClick={() => decide("accepted")}
-                className="rounded-xl bg-primary px-4 py-2 text-[12px] font-extrabold text-primary-foreground"
+                className="tap h-11 flex-1 rounded-xl bg-primary px-3 text-sm font-extrabold text-primary-foreground"
               >
-                ยินยอมให้เก็บข้อมูล
+                ได้เลย <span lang="en">· Sure</span>
               </button>
               <button
                 type="button"
                 onClick={() => decide("declined")}
-                className="rounded-xl border border-border px-4 py-2 text-[12px] font-extrabold"
+                className="tap h-11 flex-1 rounded-xl border border-border bg-card px-3 text-sm font-extrabold text-foreground"
               >
-                ไม่ยินยอม
+                ไม่เป็นไร <span lang="en">· No thanks</span>
               </button>
             </div>
           </div>
@@ -63,9 +69,9 @@ export function PdpaConsent() {
             type="button"
             aria-label="ปิดและไม่ยินยอม"
             onClick={() => decide("declined")}
-            className="ml-auto shrink-0 text-muted-foreground"
+            className="tap -mr-2 -mt-2 ml-auto grid h-11 w-11 shrink-0 place-items-center rounded-full text-muted-foreground"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>

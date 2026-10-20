@@ -26,6 +26,48 @@ export const Route = createFileRoute("/submit")({
   component: SubmitPage,
 });
 
+/** ด้านยาวสุดของรูปผลงาน — พอสำหรับพิมพ์เต็มความกว้างหน้า แต่ไม่หนักเท่ารูปจากกล้องมือถือ */
+const SUBMISSION_PHOTO_MAX = 960;
+
+function readAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * ย่อรูปก่อนบันทึก (ไม่ขยายรูปเล็ก) แล้วแปลงเป็น JPEG
+ * ถ้าย่อไม่ได้ด้วยเหตุใดก็ตาม จะใช้รูปเดิม เพื่อไม่ให้รูปหาย
+ */
+async function shrinkImage(file: File, max: number, quality = 0.82): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("decode failed"));
+      el.src = url;
+    });
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no canvas");
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL("image/jpeg", quality);
+  } catch {
+    return readAsDataUrl(file);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 function SubmitPage() {
   const navigate = useNavigate();
   const { me, hydrated, addSubmission } = useStore();
@@ -38,14 +80,20 @@ function SubmitPage() {
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [stageReady, setStageReady] = useState(false);
   const [done, setDone] = useState(false);
+  const [shrinking, setShrinking] = useState(false);
 
-  const valid = Boolean(me && summary.trim());
+  const valid = Boolean(me && summary.trim()) && !shrinking;
 
-  const onPhoto = (file: File | undefined) => {
+  const onPhoto = async (file: File | undefined) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setPhoto(String(reader.result));
-    reader.readAsDataURL(file);
+    setShrinking(true);
+    try {
+      setPhoto(await shrinkImage(file, SUBMISSION_PHOTO_MAX));
+    } catch {
+      /* อ่านรูปไม่ได้ — ให้เลือกรูปใหม่ได้ */
+    } finally {
+      setShrinking(false);
+    }
   };
 
   const submit = () => {
@@ -229,28 +277,32 @@ function SubmitPage() {
                 className="h-40 w-40 rounded-2xl border border-border object-cover"
               />
               <button
+                type="button"
                 onClick={() => setPhoto(undefined)}
-                className="tap absolute -right-2 -top-2 grid h-8 w-8 place-items-center rounded-full bg-foreground text-background"
+                className="tap absolute -right-3 -top-3 grid h-11 w-11 place-items-center rounded-full bg-foreground text-background"
                 aria-label="ลบรูป"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden />
               </button>
             </div>
           ) : (
             <label className="tap flex h-28 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-card text-sm font-bold text-muted-foreground">
-              <Camera className="h-5 w-5" />
-              เลือกรูปจากเครื่อง
+              <Camera className="h-5 w-5" aria-hidden />
+              {shrinking ? "กำลังเตรียมรูป…" : "เลือกรูปจากเครื่อง"}
               <input
                 type="file"
                 accept="image/*"
-                className="hidden"
-                onChange={(e) => onPhoto(e.target.files?.[0])}
+                className="sr-only"
+                disabled={shrinking}
+                onChange={(e) => void onPhoto(e.target.files?.[0])}
               />
             </label>
           )}
         </Field>
 
         <button
+          type="button"
+          aria-pressed={stageReady}
           onClick={() => setStageReady((v) => !v)}
           className={`tap flex w-full items-center gap-3 rounded-2xl border p-4 text-left ${
             stageReady ? "border-lime bg-lime/15" : "border-border bg-card"
@@ -267,6 +319,7 @@ function SubmitPage() {
         </button>
 
         <button
+          type="button"
           onClick={submit}
           disabled={!valid}
           className="tap flex h-14 w-full items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground disabled:opacity-40"

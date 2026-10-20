@@ -15,7 +15,8 @@ function AdminQr() {
     setOrigin(window.location.origin);
   }, []);
 
-  const joinUrl = `${origin}/join?code=${encodeURIComponent(code)}`;
+  // ใช้พารามิเตอร์ c (ที่หน้า /join อ่าน) และติด source=qr เพื่อให้นับคนที่มาจากการสแกนได้
+  const joinUrl = `${origin}/join?c=${encodeURIComponent(code)}&source=qr`;
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(joinUrl)}`;
 
   return (

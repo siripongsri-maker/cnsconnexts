@@ -1,7 +1,8 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, Chip, PowerChip } from "@/components/power-bits";
+import { Avatar, Chip, ConnectBurst, PowerChip } from "@/components/power-bits";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { issueTh, provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
@@ -9,19 +10,36 @@ import { issueTh, provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
 export const Route = createFileRoute("/people/$id")({
   head: () => ({
     meta: [
-      { title: "โปรไฟล์ผู้เข้าร่วม — คนส. Connexts" },
+      { title: "โปรไฟล์พลัง — คนส. Connexts" },
       { name: "description", content: "ดูว่าคนนี้มีพลังอะไรมาแบ่งปัน และกำลังมองหาอะไรอยู่" },
-      { property: "og:title", content: "โปรไฟล์ผู้เข้าร่วม — คนส. Connexts" },
+      { property: "og:title", content: "โปรไฟล์พลัง — คนส. Connexts" },
       { property: "og:description", content: "ดูว่าเขามีพลังอะไร และกำลังมองหาอะไร" },
     ],
   }),
   component: Person,
-  notFoundComponent: () => <p className="p-8 text-center text-sm">ไม่พบผู้เข้าร่วมคนนี้</p>,
+  notFoundComponent: () => (
+    <div className="grid min-h-screen place-items-center p-6">
+      <div className="card-soft max-w-sm space-y-3 p-6 text-center">
+        <p className="text-base font-extrabold">ไม่เจอโปรไฟล์นี้แล้ว</p>
+        <p className="text-sm text-muted-foreground">
+          อาจถูกลบไป หรือลิงก์ไม่ครบ · <span lang="en">This profile isn&apos;t available</span>
+        </p>
+        <Link
+          to="/matches"
+          className="tap inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+        >
+          กลับไปดูคนที่น่าเจอ
+        </Link>
+      </div>
+    </div>
+  ),
 });
 
 function Person() {
   const { id } = Route.useParams();
   const { users, me, connect, connections, ideas, hydrated } = useStore();
+  const navigate = useNavigate();
+  const [burst, setBurst] = useState(false);
   const user = users.find((u) => u.id === id);
   if (!hydrated && !user) {
     return (
@@ -41,21 +59,22 @@ function Person() {
 
   return (
     <div className="min-h-screen pb-32">
-      <div className="relative gradient-power px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-primary-foreground">
+      <div className="relative bg-primary px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-primary-foreground">
         <Link
           to="/matches"
-          className="tap mb-6 inline-grid h-9 w-9 place-items-center rounded-full bg-white/20"
+          aria-label="กลับไปหน้าคนที่น่าเจอ"
+          className="tap mb-6 inline-grid h-11 w-11 place-items-center rounded-full bg-white/20"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden />
         </Link>
         <div className="flex items-end gap-4">
           <Avatar user={user} size={72} />
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-extrabold">{user.name}</h1>
-            <p className="truncate text-sm opacity-90">
-              {provinceTh(user.province)} · {REGION_LABEL[user.region]}
+            <p className="truncate text-sm">
+              {[provinceTh(user.province), REGION_LABEL[user.region]].filter(Boolean).join(" · ")}
             </p>
-            <p className="truncate text-[12px] opacity-80">
+            <p className="truncate text-[12px]">
               {user.organization} · {GENERATION_TH[user.generation]}
             </p>
           </div>
@@ -92,7 +111,7 @@ function Person() {
 
         {theirIdeas.length > 0 && (
           <div className="card-soft p-4">
-            <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+            <p className="mb-2 text-xs font-extrabold text-muted-foreground">
               ไอเดียในตลาดพลัง
             </p>
             {theirIdeas.map((i) => (
@@ -108,6 +127,12 @@ function Person() {
         )}
       </div>
 
+      {burst && (
+        <div className="pointer-events-none fixed inset-0 z-40">
+          <ConnectBurst name={user.name} />
+        </div>
+      )}
+
       <div className="fixed inset-x-0 bottom-0 border-t border-border/60 bg-background/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         {existing ? (
           <Link
@@ -117,14 +142,30 @@ function Person() {
           >
             เปิดการ์ดคอนเนกชัน
           </Link>
+        ) : !me ? (
+          <Link
+            to="/onboarding"
+            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo px-4 text-center text-base font-extrabold text-primary-foreground"
+          >
+            สร้างโปรไฟล์สั้น ๆ แล้วมาเชื่อมกับ {user.name} กัน
+          </Link>
         ) : (
           <button
+            type="button"
             onClick={() => {
-              if (!me || !match) return;
-              connect(user.id, match.score, match.reason);
-              toast.success("เชื่อมต่อสำเร็จแล้ว! ✨");
+              if (!match) return;
+              const c = connect(user.id, match.score, match.reason);
+              setBurst(true);
+              setTimeout(() => setBurst(false), 1200);
+              toast.success("เชื่อมกันแล้ว! ✨", {
+                description: `คุณกับ ${user.name} เป็นคอนเนกชันใหม่ · New connection created`,
+                action: {
+                  label: "ก้าวต่อไป",
+                  onClick: () => navigate({ to: "/connection/$id", params: { id: c.id } }),
+                },
+              });
             }}
-            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground"
+            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo px-4 text-base font-extrabold text-primary-foreground"
           >
             เชื่อมต่อกับ {user.name}
           </button>
@@ -137,7 +178,7 @@ function Person() {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card-soft p-4">
-      <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
+      <p className="mb-2 text-xs font-extrabold text-muted-foreground">
         {title}
       </p>
       <div className="flex flex-wrap gap-1.5">{children}</div>

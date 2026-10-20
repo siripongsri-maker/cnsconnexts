@@ -10,6 +10,8 @@ export type MatchResult = {
   highlights: string[];
   theyBring: string[];
   theyNeed: string[];
+  /** ความต้องการของเขาที่คุณมีให้ได้ */
+  youCanGive: string[];
 };
 
 /**
@@ -33,19 +35,19 @@ export function scoreMatch(me: User, other: User): MatchResult {
 
   const score = Math.round(Math.min(96, 42 + (supply + issues + complement + geo) * 0.55));
 
-  const bits: string[] = [];
+  // เหตุผลสั้น ๆ อ่านเป็นประโยคเดียว (ไม่ต่อกันเป็นลิสต์ยาว)
+  const parts: string[] = [];
   if (sharedIssues.length)
-    bits.push(`สนใจเรื่อง${sharedIssues.slice(0, 2).map(issueTh).join("และ")}เหมือนกัน`);
-  if (theyGiveMe.length) bits.push(`เขามี “${powerTh(theyGiveMe[0]!)}” ที่คุณกำลังมองหา`);
-  if (iGiveThem.length) bits.push(`คุณมี “${powerTh(iGiveThem[0]!)}” ที่เขาต้องการพอดี`);
-  if (!bits.length) bits.push("คุณสองคนทำงานคนละโลก — จุดเริ่มต้นของไอเดียใหม่มักอยู่ตรงนี้");
-
+    parts.push(`คุณสองคนสนใจเรื่อง${sharedIssues.slice(0, 2).map(issueTh).join("และ")}เหมือนกัน`);
+  if (theyGiveMe.length) parts.push(`เขามี “${powerTh(theyGiveMe[0]!)}” ที่คุณกำลังมองหา`);
+  else if (iGiveThem.length) parts.push(`คุณมี “${powerTh(iGiveThem[0]!)}” ที่เขาต้องการพอดี`);
   const geoBit =
     me.region === other.region
-      ? ` ทำงานอยู่${REGION_LABEL[me.region]}เหมือนกัน`
-      : ` การเชื่อม ${REGION_LABEL[me.region]} × ${REGION_LABEL[other.region]} ไปได้ไกล`;
-
-  const reason = bits.join(" · ") + geoBit;
+      ? `ทำงานอยู่${REGION_LABEL[me.region]}เหมือนกัน`
+      : `ได้เชื่อม${REGION_LABEL[me.region]}กับ${REGION_LABEL[other.region]}`;
+  const reason = parts.length
+    ? parts.join(" แถม")
+    : `ทำงานคนละแบบ แต่${geoBit} ไอเดียใหม่มักเริ่มตรงนี้`;
 
   const highlights: string[] = [];
   if (sharedIssues.length) highlights.push(`ประเด็นร่วม: ${issueTh(sharedIssues[0]!)}`);
@@ -54,14 +56,14 @@ export function scoreMatch(me: User, other: User): MatchResult {
   if (me.region === other.region) highlights.push(`ภาคเดียวกัน: ${REGION_LABEL[me.region]}`);
   else highlights.push(`ข้ามภาค: ${REGION_LABEL[other.region]}`);
 
-
   return {
     user: other,
     score,
     reason,
     highlights: highlights.slice(0, 3),
     theyBring: theyGiveMe.length ? theyGiveMe : other.powers_have.slice(0, 2),
-    theyNeed: other.powers_need.slice(0, 2),
+    theyNeed: [...iGiveThem, ...other.powers_need.filter((p) => !iGiveThem.includes(p))].slice(0, 2),
+    youCanGive: iGiveThem,
   };
 }
 

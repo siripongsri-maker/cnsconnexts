@@ -18,14 +18,14 @@ export function useMotionSettings() {
         connection?: { saveData?: boolean };
       };
       const memory = nav.deviceMemory;
-      const cores = navigator.hardwareConcurrency;
       const saveData = nav.connection?.saveData;
 
+      // ไม่ใช้ hardwareConcurrency: iOS Safari รายงานค่าต่ำเสมอ (กันการ fingerprint)
+      // ทำให้ iPhone ทุกเครื่องถูกมองว่าเป็นเครื่องสเปกต่ำ
       const isLowSpec =
         reduced ||
         !!saveData ||
-        (typeof memory === "number" && memory <= 4) ||
-        (typeof cores === "number" && cores <= 4);
+        (typeof memory === "number" && memory <= 2);
 
       setLowSpec(isLowSpec);
     };

@@ -25,6 +25,10 @@ const LEGACY_KEY = "connecting-power-v1";
 const LEGACY_MIGRATED_KEY = "connexts-legacy-migrated";
 /** โปรไฟล์ที่ค้างอยู่ในเครื่อง ยังส่งขึ้นฐานข้อมูลกลางไม่สำเร็จ */
 const PENDING_KEY = "connexts-pending-profile";
+/** สำเนาโปรไฟล์ของฉัน (ไม่รวมรูป) ไว้แสดงทันทีตอนเปิดแอป ระหว่างรอข้อมูลจากฐานข้อมูล */
+const ME_CACHE_KEY = "connexts-me-cache";
+/** รีเฟรชข้อมูลจาก realtime แบบหน่วงเวลา เพื่อไม่ให้ดึงข้อมูลทั้งชุดถี่เกินไป */
+const REALTIME_DEBOUNCE_MS = 800;
 
 
 type LocalState = {
@@ -75,7 +79,12 @@ export type PendingProfile = {
 
 
 type Store = State & {
+  /** โหลดข้อมูลรอบแรกจากฐานข้อมูลเสร็จแล้ว (หรือโหลดไม่สำเร็จ) */
   hydrated: boolean;
+  /** อ่านข้อมูลในเครื่องเสร็จแล้ว (เช่น รหัสโปรไฟล์ของฉัน) — ยังอาจรอข้อมูลจากฐานข้อมูลอยู่ */
+  booted: boolean;
+  /** โหลดรูปโปรไฟล์/รูปผลงานเบื้องหลังเสร็จแล้ว */
+  photosLoaded: boolean;
   saveProfile: (u: ProfileInput) => Promise<User>;
   /** โปรไฟล์ที่บันทึกไว้ในเครื่องแต่ยังไม่ถูกส่งขึ้นฐานข้อมูล */
   pendingProfile: PendingProfile | null;
@@ -186,22 +195,40 @@ function attachDeviceHeader() {
   }
 }
 
-/** คอลัมน์สาธารณะของโปรไฟล์ (ไม่ดึง device_id / linked_email / linked_user_id) */
+/**
+ * คอลัมน์สาธารณะของโปรไฟล์ (ไม่ดึง device_id / linked_email / linked_user_id)
+ * ไม่ดึง photo ในรอบหลัก — รูปเป็น base64 ขนาดใหญ่ จึงโหลดแยกเบื้องหลังหลังหน้าแรกขึ้นแล้ว
+ */
 const PARTICIPANT_PUBLIC_COLS =
-  "id,name,avatar,photo,province,region,organization,generation,bio,interests,powers_have,powers_need,source,linked_at,created_at,updated_at";
+  "id,name,avatar,province,region,organization,generation,bio,interests,powers_have,powers_need,source,linked_at,created_at,updated_at";
 
 const SUBMISSION_PUBLIC_COLS =
-  "id,name,course,batch,region,province,policy_issues,summary,highlight,wanted,photo,stage_ready,showcase,created_at,updated_at";
+  "id,name,course,batch,region,province,policy_issues,summary,highlight,wanted,stage_ready,showcase,created_at,updated_at";
+
+/** ขนาดชุด id ต่อคำขอเมื่อดึงรูปเฉพาะรายการที่เปลี่ยน */
+const PHOTO_CHUNK = 100;
+
+type PhotoCache = {
+  /** รูปโปรไฟล์ ตาม id ในฐานข้อมูล */
+  p: Map<string, string>;
+  /** รูปผลงาน ตาม id ในฐานข้อมูล */
+  s: Map<string, string>;
+  /** เวลาอัปเดตล่าสุดที่รู้สถานะรูปแล้ว (ใช้ตรวจว่าต้องดึงรูปใหม่ไหม) */
+  seenP: Map<string, string>;
+  seenS: Map<string, string>;
+};
+
+const rowStamp = (r: Row) => String(r.updated_at ?? r.created_at ?? "");
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = any;
 
-function rowToUser(r: Row, myId: string | null): User {
+function rowToUser(r: Row, myId: string | null, photos?: Map<string, string>): User {
   return {
     id: r.id === myId ? "me" : r.id,
     name: r.name,
     avatar: r.avatar || "✨",
-    photo: r.photo ?? undefined,
+    photo: r.photo ?? photos?.get(r.id) ?? undefined,
     province: r.province ?? "",
     region: r.region,
     organization: r.organization ?? "",
@@ -219,11 +246,36 @@ function rowToUser(r: Row, myId: string | null): User {
 
 const idOut = (id: string, myId: string | null) => (id === myId ? "me" : id);
 
+function readMeCache(myId: string | null): User | null {
+  if (!myId) return null;
+  const cached = readLocal<{ dbId: string; user: User }>(ME_CACHE_KEY);
+  return cached && cached.dbId === myId && cached.user?.name ? { ...cached.user, id: "me" } : null;
+}
+
+function writeMeCache(myId: string | null, me: User | null) {
+  if (!myId || !me) return;
+  try {
+    const { photo: _photo, ...rest } = me;
+    localStorage.setItem(ME_CACHE_KEY, JSON.stringify({ dbId: myId, user: rest }));
+  } catch {
+    /* ignore */
+  }
+}
+
 /* ---------------- provider ---------------- */
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initial);
   const [hydrated, setHydrated] = useState(false);
+  const [booted, setBooted] = useState(false);
+  const [photosLoaded, setPhotosLoaded] = useState(false);
+  const photosLoadedRef = useRef(false);
+  const photoRef = useRef<PhotoCache>({
+    p: new Map(),
+    s: new Map(),
+    seenP: new Map(),
+    seenS: new Map(),
+  });
   const [pendingProfile, setPendingProfile] = useState<PendingProfile | null>(null);
   const myIdRef = useRef<string | null>(null);
   const localRef = useRef<LocalState>({
@@ -232,6 +284,48 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     skippedUsers: [],
     notifications: [],
   });
+
+  /**
+   * ดึงรูปเฉพาะแถวที่ยังไม่รู้สถานะ หรือถูกแก้ไขหลังจากที่ดึงรูปไปแล้ว
+   * (เช่น มีคนใหม่เข้ามา หรือมีคนเปลี่ยนรูป) — ไม่ดึงรูปทุกคนซ้ำทุกครั้ง
+   */
+  const fetchChangedPhotos = useCallback(async (pRows: Row[], sRows: Row[]) => {
+    const cache = photoRef.current;
+    const pending = async (
+      table: "participants" | "submissions",
+      rows: Row[],
+      photos: Map<string, string>,
+      seen: Map<string, string>,
+    ) => {
+      const stale = rows.filter((r) => seen.get(r.id) !== rowStamp(r));
+      for (let k = 0; k < stale.length; k += PHOTO_CHUNK) {
+        const chunk = stale.slice(k, k + PHOTO_CHUNK);
+        const { data, error } = await db
+          .from(table)
+          .select("id,photo")
+          .in(
+            "id",
+            chunk.map((r) => r.id as string),
+          );
+        if (error) return;
+        const got = new Map(((data as Row[]) ?? []).map((r) => [r.id as string, r.photo as string | null]));
+        for (const r of chunk) {
+          const photo = got.get(r.id);
+          if (photo) photos.set(r.id, photo);
+          else photos.delete(r.id);
+          seen.set(r.id, rowStamp(r));
+        }
+      }
+    };
+    try {
+      await Promise.all([
+        pending("participants", pRows, cache.p, cache.seenP),
+        pending("submissions", sRows, cache.s, cache.seenS),
+      ]);
+    } catch {
+      /* รูปไม่ใช่ข้อมูลหลัก — ถ้าดึงไม่ได้ก็แสดงอวตารแทน */
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
     attachDeviceHeader();
@@ -246,8 +340,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       db.from("province_notes").select("*").order("created_at", { ascending: false }),
     ]);
 
-    const users = ((p.data as Row[]) ?? []).map((r) => rowToUser(r, myId));
+    const pRows = (p.data as Row[]) ?? [];
+    const sRows = (sb.data as Row[]) ?? [];
+    // หลังโหลดรูปรอบแรกแล้ว ดึงรูปเพิ่มเฉพาะแถวใหม่/แถวที่ถูกแก้
+    if (photosLoadedRef.current) await fetchChangedPhotos(pRows, sRows);
+    const photos = photoRef.current;
+
+    const users = pRows.map((r) => rowToUser(r, myId, photos.p));
     const fetchedMe = users.find((u) => u.id === "me") ?? null;
+    if (fetchedMe) writeMeCache(myId, fetchedMe);
     // ถ้าอ่านฐานข้อมูลไม่ทัน/ไม่สำเร็จ อย่าล้างโปรไฟล์ที่มีอยู่ทิ้ง
     // (เคยทำให้ผู้ใช้ถูกเด้งกลับไปกรอกโปรไฟล์ซ้ำ)
     const keepMe = !fetchedMe && !!myId;
@@ -295,7 +396,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         text: r.text,
         created_at: r.created_at,
       })),
-      submissions: ((sb.data as Row[]) ?? []).map((r) => ({
+      submissions: sRows.map((r) => ({
         id: r.id,
         name: r.name,
         course: r.course,
@@ -306,7 +407,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         summary: r.summary ?? "",
         highlight: r.highlight ?? "",
         wanted: r.wanted ?? "",
-        photo: r.photo ?? undefined,
+        photo: r.photo ?? photos.s.get(r.id) ?? undefined,
         stage_ready: !!r.stage_ready,
         showcase: !!r.showcase,
         created_at: r.created_at,
@@ -322,6 +423,47 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         created_at: r.created_at,
       })),
     }));
+  }, [fetchChangedPhotos]);
+
+  /**
+   * โหลดรูปทั้งหมดเบื้องหลัง "ครั้งเดียว" หลังหน้าแอปแสดงแล้ว
+   * จะได้ไม่บล็อกการเปิดหน้าแรกด้วยรูป base64 ขนาดใหญ่
+   */
+  const loadPhotos = useCallback(async () => {
+    try {
+      const [pIdx, sIdx, pp, ss] = await Promise.all([
+        db.from("participants").select("id,created_at,updated_at"),
+        db.from("submissions").select("id,created_at,updated_at"),
+        db.from("participants").select("id,photo").not("photo", "is", null),
+        db.from("submissions").select("id,photo").not("photo", "is", null),
+      ]);
+      if (pp.error || ss.error || pIdx.error || sIdx.error) return;
+      const cache = photoRef.current;
+      for (const r of (pp.data as Row[]) ?? []) if (r.photo) cache.p.set(r.id, r.photo);
+      for (const r of (ss.data as Row[]) ?? []) if (r.photo) cache.s.set(r.id, r.photo);
+      for (const r of (pIdx.data as Row[]) ?? []) cache.seenP.set(r.id, rowStamp(r));
+      for (const r of (sIdx.data as Row[]) ?? []) cache.seenS.set(r.id, rowStamp(r));
+      photosLoadedRef.current = true;
+      setPhotosLoaded(true);
+
+      const myId = myIdRef.current;
+      const withPhoto = (u: User): User => {
+        const key = u.id === "me" ? myId ?? u.id : u.id;
+        const photo = u.photo ?? cache.p.get(key);
+        return photo === u.photo ? u : { ...u, photo };
+      };
+      setState((s) => ({
+        ...s,
+        me: s.me ? withPhoto(s.me) : s.me,
+        users: s.users.map(withPhoto),
+        submissions: s.submissions.map((x) => {
+          const photo = x.photo ?? cache.s.get(x.id);
+          return photo === x.photo ? x : { ...x, photo };
+        }),
+      }));
+    } catch {
+      /* ไม่เป็นไร — แสดงอวตารแทนรูปไปก่อน */
+    }
   }, []);
 
   // hydrate: local prefs + migrate legacy profile + first load + realtime
@@ -341,75 +483,96 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, ...localRef.current }));
       }
 
-      myIdRef.current = localStorage.getItem(MY_ID_KEY);
+      try {
+        myIdRef.current = localStorage.getItem(MY_ID_KEY);
+      } catch {
+        myIdRef.current = null;
+      }
+      // แสดงโปรไฟล์ของฉันจากสำเนาในเครื่องทันที เพื่อไม่ให้หน้าต่าง ๆ คิดว่ายังไม่มีโปรไฟล์
+      const cachedMe = readMeCache(myIdRef.current);
+      if (cachedMe) setState((s) => (s.me ? s : { ...s, me: cachedMe }));
+      if (!cancelled) setBooted(true);
 
-      // ย้ายโปรไฟล์เดิมที่อยู่ในเครื่อง (Phase 1) ขึ้นฐานข้อมูลกลาง "ครั้งเดียวเท่านั้น"
-      // ถ้าไม่กันไว้ จะสร้างโปรไฟล์ซ้ำและชนกับการบันทึกของผู้ใช้ จนถูกเด้งกลับไปกรอกใหม่
-      if (!myIdRef.current && localStorage.getItem(LEGACY_MIGRATED_KEY) !== "1") {
-        const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
-        if (legacy?.me?.name) {
-          const id = uuid();
-          const payload = {
-            id,
-            device_id: getDeviceId(),
-            name: legacy.me.name,
-            avatar: legacy.me.avatar || "✨",
-            photo: legacy.me.photo ?? null,
-            province: legacy.me.province ?? "",
-            region: legacy.me.region,
-            organization: legacy.me.organization ?? "",
-            generation: legacy.me.generation,
-            bio: legacy.me.bio ?? "",
-            interests: legacy.me.interests ?? [],
-            powers_have: legacy.me.powers_have ?? [],
-            powers_need: legacy.me.powers_need ?? [],
-            source: legacy.me.source ?? "direct",
-          };
-          const { error } = await db.from("participants").insert(payload);
-          if (!error) {
-            myIdRef.current = id;
-            localStorage.setItem(MY_ID_KEY, id);
-          } else {
-            // ส่งไม่สำเร็จ → เก็บไว้ให้ผู้ใช้กดซิงก์เองภายหลัง
-            writePending({
+      try {
+        // ย้ายโปรไฟล์เดิมที่อยู่ในเครื่อง (Phase 1) ขึ้นฐานข้อมูลกลาง "ครั้งเดียวเท่านั้น"
+        // ถ้าไม่กันไว้ จะสร้างโปรไฟล์ซ้ำและชนกับการบันทึกของผู้ใช้ จนถูกเด้งกลับไปกรอกใหม่
+        if (!myIdRef.current && localStorage.getItem(LEGACY_MIGRATED_KEY) !== "1") {
+          const legacy = readLocal<{ me?: User }>(LEGACY_KEY);
+          if (legacy?.me?.name) {
+            const id = uuid();
+            const payload = {
               id,
-              name: payload.name,
-              savedAt: new Date().toISOString(),
-              payload,
-              mode: "insert",
-            });
+              device_id: getDeviceId(),
+              name: legacy.me.name,
+              avatar: legacy.me.avatar || "✨",
+              photo: legacy.me.photo ?? null,
+              province: legacy.me.province ?? "",
+              region: legacy.me.region,
+              organization: legacy.me.organization ?? "",
+              generation: legacy.me.generation,
+              bio: legacy.me.bio ?? "",
+              interests: legacy.me.interests ?? [],
+              powers_have: legacy.me.powers_have ?? [],
+              powers_need: legacy.me.powers_need ?? [],
+              source: legacy.me.source ?? "direct",
+            };
+            const { error } = await db.from("participants").insert(payload);
+            if (!error) {
+              myIdRef.current = id;
+              localStorage.setItem(MY_ID_KEY, id);
+            } else {
+              // ส่งไม่สำเร็จ → เก็บไว้ให้ผู้ใช้กดซิงก์เองภายหลัง
+              writePending({
+                id,
+                name: payload.name,
+                savedAt: new Date().toISOString(),
+                payload,
+                mode: "insert",
+              });
+            }
+          }
+          try {
+            localStorage.setItem(LEGACY_MIGRATED_KEY, "1");
+            localStorage.removeItem(LEGACY_KEY);
+          } catch {
+            /* ignore */
           }
         }
-        try {
-          localStorage.setItem(LEGACY_MIGRATED_KEY, "1");
-          localStorage.removeItem(LEGACY_KEY);
-        } catch {
-          /* ignore */
-        }
+
+        const pending = readLocal<PendingProfile>(PENDING_KEY);
+        if (pending?.payload) setPendingProfile(pending);
+
+        await refresh();
+      } catch (e) {
+        console.error("[store] boot failed", e);
+      } finally {
+        // ไม่ว่าสำเร็จหรือไม่ ห้ามค้างหน้าโหลดไว้ตลอดไป
+        if (!cancelled) setHydrated(true);
       }
 
-      const pending = readLocal<PendingProfile>(PENDING_KEY);
-      if (pending?.payload) setPendingProfile(pending);
-
-      await refresh();
-
-      if (!cancelled) setHydrated(true);
+      if (!cancelled) void loadPhotos();
     };
 
     void boot();
 
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const channel = supabase
       .channel("connexts-sync")
       .on("postgres_changes", { event: "*", schema: "public" }, () => {
-        void refresh();
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          timer = null;
+          void refresh();
+        }, REALTIME_DEBOUNCE_MS);
       })
       .subscribe();
 
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
       void supabase.removeChannel(channel);
     };
-  }, [refresh]);
+  }, [refresh, loadPhotos]);
 
   // persist device-local preferences only
   useEffect(() => {
@@ -449,12 +612,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         /* ignore */
       }
 
+      // รูปโหลดแยกเบื้องหลัง: ถ้ายังโหลดไม่เสร็จแล้วฟอร์มไม่มีรูป อย่าส่ง photo
+      // (ไม่งั้นจะเขียนทับรูปเดิมด้วย null) และถ้ารูปไม่เปลี่ยนก็ไม่ต้องส่งซ้ำ
+      const cachedPhoto = existingId ? photoRef.current.p.get(existingId) : undefined;
+      const photoUnknown = data.photo === undefined && !!existingId && !photosLoadedRef.current;
+      const photoUnchanged = data.photo !== undefined && data.photo === cachedPhoto;
+      const includePhoto = !photoUnknown && !photoUnchanged;
+      const keptPhoto = photoUnknown || photoUnchanged ? cachedPhoto : undefined;
+
       const payload = {
         id,
         device_id: getDeviceId(),
         name: data.name,
         avatar: data.avatar || "✨",
-        photo: data.photo ?? null,
+        ...(includePhoto ? { photo: data.photo ?? null } : {}),
         province: data.province,
         region: data.region,
         organization: data.organization,
@@ -466,8 +637,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         source: resolvedSource ?? "direct",
       };
 
+      if (includePhoto) {
+        if (data.photo) photoRef.current.p.set(id, data.photo);
+        else photoRef.current.p.delete(id);
+      }
+
       const saved: User = {
         ...data,
+        photo: data.photo ?? keptPhoto,
         avatar: payload.avatar,
         id: "me",
         created_at: now,
@@ -480,6 +657,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         me: saved,
         users: [saved, ...s.users.filter((u) => u.id !== "me")],
       }));
+      writeMeCache(id, saved);
 
       const sync = (async () => {
         try {
@@ -1103,6 +1281,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       hydrated,
+      booted,
+      photosLoaded,
       saveProfile,
       pendingProfile,
       syncPendingProfile,
@@ -1138,7 +1318,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, booted, photosLoaded, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);

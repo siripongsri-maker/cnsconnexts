@@ -22,10 +22,11 @@ export const Route = createFileRoute("/qr")({
 
 function QrPoster() {
   const joinCode = makeJoinCode();
-  const [url, setUrl] = useState(`/join?c=${joinCode}`);
+  // source=qr ให้ระบบนับได้ว่าคนเข้ามาจากการสแกนโปสเตอร์
+  const [url, setUrl] = useState(`/join?c=${joinCode}&source=qr`);
 
   useEffect(() => {
-    setUrl(`${window.location.origin}/join?c=${joinCode}`);
+    setUrl(`${window.location.origin}/join?c=${joinCode}&source=qr`);
   }, [joinCode]);
 
   return (
@@ -37,7 +38,7 @@ function QrPoster() {
       />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center text-center">
         <span className="rounded-full border border-border bg-card/80 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur">
-          สแกนเพื่อเข้าร่วม · Scan to join
+          สแกนเพื่อเข้าร่วม · <span lang="en">Scan to join</span>
         </span>
         <h1 className="mt-5 flex justify-center">
           <Wordmark size="md" withMark />
@@ -59,7 +60,7 @@ function QrPoster() {
 
         <Link
           to="/join"
-          search={{ c: joinCode }}
+          search={{ c: joinCode, source: "link" }}
           className="tap mt-8 flex h-14 w-full max-w-xs items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground"
         >
           เข้าร่วมด้วยเครื่องนี้

@@ -1,8 +1,20 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Handshake, Heart, MessageCircle, Radio, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  Handshake,
+  Heart,
+  MessageCircle,
+  Pause,
+  Play,
+  Radio,
+  Sparkles,
+} from "lucide-react";
 
 import { useLiveEvents, type LiveEvent, type LiveKind } from "@/lib/live";
+import { useMotionSettings } from "@/lib/motion";
 import { playConnext } from "@/lib/notify";
+import { issueTh, REGION_LABEL, STATUS_TH } from "@/lib/i18n";
+import type { Commitment, Connection, User } from "@/lib/types";
 
 const ICON: Record<LiveKind, typeof Handshake> = {
   match: Sparkles,
@@ -24,7 +36,7 @@ const KIND_TH: Record<LiveKind, string> = {
   match: "แมตช์",
   like: "ถูกใจ",
   connect: "เชื่อมต่อ",
-  commitment: "คำมั่นสัญญา",
+  commitment: "นัดลงมือทำ",
   message: "แชท",
 };
 
@@ -36,8 +48,11 @@ function ago(iso: string, now: number) {
   return `${Math.floor(diff / 3600)} ชม.`;
 }
 
-/** ฟีดกิจกรรมสด + ป๊อปอัปแจ้งเตือนแบบเรียลไทม์ในแดชบอร์ด */
-export function LiveTicker() {
+/**
+ * กิจกรรมของฉัน (จาก BroadcastChannel ในเครื่องนี้) + ป๊อปอัปแจ้งเตือน
+ * toastOnly: แสดงเฉพาะป๊อปอัป เมื่อหน้านั้นมีฟีดจากข้อมูลทั้งงานอยู่แล้ว
+ */
+export function LiveTicker({ toastOnly = false }: { toastOnly?: boolean } = {}) {
   const events = useLiveEvents(12);
   const [now, setNow] = useState(() => Date.now());
   const [toast, setToast] = useState<LiveEvent | null>(null);
@@ -61,21 +76,24 @@ export function LiveTicker() {
 
   return (
     <>
+      {!toastOnly && (
       <div className="card-soft rounded-3xl bg-card p-5">
         <div className="flex items-center gap-2">
           <span className="relative grid h-8 w-8 place-items-center rounded-xl bg-coral/15 text-coral">
-            <Radio className="h-4 w-4" />
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse-node rounded-full bg-coral" />
+            <Radio className="h-4 w-4" aria-hidden="true" />
+            <span
+              aria-hidden="true"
+              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse-node rounded-full bg-coral"
+            />
           </span>
-          <h2 className="text-[15px] font-extrabold">แจ้งเตือนสดในงาน</h2>
-          <span className="ml-auto text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            live
-          </span>
+          <h2 className="text-[15px] font-extrabold">
+            กิจกรรมของฉันตอนนี้ <span lang="en" className="text-muted-foreground">· My live activity</span>
+          </h2>
         </div>
 
         {events.length === 0 ? (
           <p className="mt-3 text-[13px] text-muted-foreground">
-            ยังไม่มีสัญญาณสด — เมื่อมีการแมตช์ ถูกใจ เชื่อมต่อ หรืออัปเดตคำมั่นสัญญา จะขึ้นที่นี่ทันที
+            ยังเงียบอยู่ — พอคุณแมตช์ กดถูกใจ เชื่อมต่อ หรืออัปเดตนัดลงมือทำ จะขึ้นตรงนี้ทันที
           </p>
         ) : (
           <ul className="mt-3 space-y-2.5">
@@ -84,12 +102,12 @@ export function LiveTicker() {
               return (
                 <li key={e.id} className="flex items-start gap-3 animate-rise">
                   <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${TONE[e.kind]}`}>
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-bold">
                       {e.title}
-                      <span className="ml-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      <span className="ml-2 text-xs font-bold text-muted-foreground">
                         {KIND_TH[e.kind]}
                       </span>
                     </p>
@@ -104,6 +122,7 @@ export function LiveTicker() {
           </ul>
         )}
       </div>
+      )}
 
       {toast && (
         <div
@@ -115,7 +134,7 @@ export function LiveTicker() {
             <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${TONE[toast.kind]}`}>
               {(() => {
                 const Icon = ICON[toast.kind];
-                return <Icon className="h-4 w-4" />;
+                return <Icon className="h-4 w-4" aria-hidden="true" />;
               })()}
             </span>
             <div className="min-w-0">
@@ -127,4 +146,166 @@ export function LiveTicker() {
       )}
     </>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* ข้อความหมุนเวียน "วันนี้พลังของคุณจะไปเชื่อมกับใคร?"                     */
+/* ------------------------------------------------------------------ */
+
+const PROMPT_LINES = [
+  { th: "วันนี้พลังของคุณจะไปเชื่อมกับใคร?", en: "Who will you connect with next?" },
+  { th: "ใครมีพลังที่คุณกำลังตามหา?", en: "Who has the power you're looking for?" },
+  { th: "ทักคนข้าง ๆ แล้วลองแลกพลังกันดู", en: "Say hi to the person next to you and swap powers" },
+];
+
+export function RotatingPrompt({
+  size = "md",
+  tone = "brand",
+}: {
+  size?: "md" | "lg";
+  /** brand = บนพื้นสีแบรนด์ (ตัวอักษรขาว), card = บนการ์ดสีอ่อน */
+  tone?: "brand" | "card";
+}) {
+  const { reducedMotion } = useMotionSettings();
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [hover, setHover] = useState(false);
+
+  useEffect(() => {
+    if (reducedMotion || paused || hover) return;
+    const t = setInterval(() => setI((n) => (n + 1) % PROMPT_LINES.length), 6000);
+    return () => clearInterval(t);
+  }, [reducedMotion, paused, hover]);
+
+  const l = PROMPT_LINES[i]!;
+  const lg = size === "lg";
+  return (
+    <div
+      className="relative flex items-start gap-2"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <p className="sr-only">
+        {PROMPT_LINES[0]!.th} / <span lang="en">{PROMPT_LINES[0]!.en}</span>
+      </p>
+      <div aria-hidden="true" className={lg ? "min-h-[5.5rem] flex-1" : "min-h-[4rem] flex-1"}>
+        <p
+          key={i}
+          className={`${reducedMotion ? "" : "animate-rise "}${
+            lg ? "text-[clamp(1.5rem,4vw,2.5rem)]" : "text-lg"
+          } font-extrabold leading-snug`}
+        >
+          {l.th}
+        </p>
+        <p
+          key={`en${i}`}
+          lang="en"
+          className={`${lg ? "text-base" : "text-sm"} font-bold ${
+            tone === "brand" ? "opacity-90" : "text-muted-foreground"
+          }`}
+        >
+          {l.en}
+        </p>
+      </div>
+      {!reducedMotion && (
+        <button
+          type="button"
+          onClick={() => setPaused((p) => !p)}
+          aria-pressed={paused}
+          aria-label={paused ? "เล่นข้อความต่อ / Resume messages" : "หยุดข้อความ / Pause messages"}
+          className={`tap grid h-11 w-11 shrink-0 place-items-center rounded-full ${
+            tone === "brand" ? "bg-white/15" : "bg-muted text-foreground"
+          }`}
+        >
+          {paused ? (
+            <Play className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Pause className="h-4 w-4" aria-hidden="true" />
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* ฟีดจากข้อมูลในสโตร์ (ซิงก์เรียลไทม์ทุกเครื่อง)                          */
+/* ------------------------------------------------------------------ */
+
+export type FeedItem = {
+  id: string;
+  icon: "connect" | "commit";
+  title: string;
+  detail: string;
+  created_at: string;
+};
+
+/**
+ * สร้างฟีดกิจกรรมจากคู่เชื่อมและนัดลงมือทำ
+ * anonymous: ใช้บนจอสาธารณะ — ไม่แสดงชื่อคนหรือรายละเอียดนัด บอกแค่ภาคและประเด็นที่สนใจร่วมกัน
+ */
+export function buildFeed({
+  connections,
+  commitments,
+  allConnections,
+  userMap,
+  anonymous,
+  limit = 12,
+}: {
+  connections: Connection[];
+  commitments: Commitment[];
+  allConnections: Connection[];
+  userMap: Record<string, User | undefined>;
+  anonymous: boolean;
+  limit?: number;
+}): FeedItem[] {
+  const items: FeedItem[] = [];
+  connections.forEach((c) => {
+    const a = userMap[c.user_a];
+    const b = userMap[c.user_b];
+    if (anonymous) {
+      const shared = a?.interests.find((i) => b?.interests.includes(i));
+      items.push({
+        id: `c-${c.id}`,
+        icon: "connect",
+        title: `คนจาก${a ? REGION_LABEL[a.region] : "ในงาน"} 🤝 คนจาก${b ? REGION_LABEL[b.region] : "ในงาน"}`,
+        detail: `${shared ? `สนใจเรื่อง${issueTh(shared)} · ` : ""}แมตช์ ${c.match_score}%`,
+        created_at: c.created_at,
+      });
+    } else {
+      items.push({
+        id: `c-${c.id}`,
+        icon: "connect",
+        title: `${a?.name ?? "ผู้เข้าร่วม"} × ${b?.name ?? "ผู้เข้าร่วม"}`,
+        detail: `แมตช์ ${c.match_score}% · ${STATUS_TH[c.status]}`,
+        created_at: c.created_at,
+      });
+    }
+  });
+  commitments.forEach((m) => {
+    if (anonymous) {
+      items.push({
+        id: `m-${m.id}`,
+        icon: "commit",
+        title: "คู่เชื่อมคู่หนึ่งนัดลงมือทำด้วยกัน",
+        detail: `${m.action_type} · ${STATUS_TH[m.status]}`,
+        created_at: m.created_at,
+      });
+      return;
+    }
+    const conn = allConnections.find((c) => c.id === m.connection_id);
+    const pair = conn
+      ? `${userMap[conn.user_a]?.name ?? "?"} × ${userMap[conn.user_b]?.name ?? "?"}`
+      : "คู่เชื่อม";
+    items.push({
+      id: `m-${m.id}`,
+      icon: "commit",
+      title: `${pair} นัดลงมือทำ`,
+      detail: `${m.description} · ${STATUS_TH[m.status]}`,
+      created_at: m.created_at,
+    });
+  });
+  return items
+    .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
+    .slice(0, limit);
 }

@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, QrCode } from "lucide-react";
+import { Check, LogOut, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 import { getSession } from "@/lib/session";
 
 export const Route = createFileRoute("/update")({
@@ -42,14 +43,45 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString("th-TH", { dateStyle: "medium" });
 }
 
+/** ปุ่มออกจากระบบ — ย้ายมาไว้ท้ายหน้าโปรไฟล์ แทนการกินที่ในส่วนหัวทุกหน้า */
+function SignOutButton() {
+  const { mode, signOut } = useAuth();
+  if (mode !== "user" && mode !== "guest") return null;
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (window.confirm("ออกจากระบบตอนนี้ใช่ไหม?")) void signOut();
+      }}
+      className="tap mx-auto mt-6 flex min-h-11 items-center gap-2 px-4 text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
+    >
+      <LogOut className="h-4 w-4" aria-hidden />
+      ออกจากระบบ · <span lang="en">Sign out</span>
+    </button>
+  );
+}
+
+/** รอรูปโปรไฟล์ที่โหลดเบื้องหลังไม่เกินเวลานี้ ก่อนเปิดฟอร์มให้แก้ */
+const PHOTO_WAIT_MS = 3000;
+
 function UpdateMe() {
-  const { me, hydrated, saveProfile } = useStore();
+  const { me, hydrated, photosLoaded, saveProfile } = useStore();
   const [saved, setSaved] = useState(false);
   const [qrUrl, setQrUrl] = useState("/update");
+  const [photoWaitOver, setPhotoWaitOver] = useState(false);
 
   useEffect(() => {
     setQrUrl(`${window.location.origin}/update`);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated || photosLoaded) return;
+    const t = setTimeout(() => setPhotoWaitOver(true), PHOTO_WAIT_MS);
+    return () => clearTimeout(t);
+  }, [hydrated, photosLoaded]);
+
+  // เปิดฟอร์มเมื่อรูปเดิมโหลดมาแล้ว เพื่อไม่ให้การบันทึกลบรูปเดิมโดยไม่ตั้งใจ
+  const formReady = hydrated && !!me && (photosLoaded || photoWaitOver);
 
   const lastUpdate = me?.updated_at ?? me?.created_at ?? null;
 
@@ -69,6 +101,7 @@ function UpdateMe() {
               สร้างโปรไฟล์ของฉัน
             </Link>
           </div>
+          <SignOutButton />
         </div>
       </AppShell>
     );
@@ -109,9 +142,15 @@ function UpdateMe() {
           </div>
         </div>
 
-        {hydrated && me && (
+        {hydrated && me && !formReady && (
+          <p role="status" className="card-soft rounded-3xl p-5 text-center text-sm font-semibold text-muted-foreground">
+            กำลังโหลดรูปโปรไฟล์ของคุณ…
+          </p>
+        )}
+
+        {formReady && me && (
           <ProfileForm
-            key={me.updated_at ?? me.created_at}
+            key={`${me.updated_at ?? me.created_at}-${photosLoaded ? "photo" : "nophoto"}`}
             initial={me}
             submitLabel="บันทึกข้อมูลของฉัน"
             onSubmit={async (draft) => {
@@ -140,6 +179,8 @@ function UpdateMe() {
             </p>
           </div>
         </div>
+
+        <SignOutButton />
       </div>
     </AppShell>
   );

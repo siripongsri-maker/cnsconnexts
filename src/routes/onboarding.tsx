@@ -15,7 +15,7 @@ export const Route = createFileRoute("/onboarding")({
       { title: "สร้างโปรไฟล์พลังของคุณ — คนส. Connexts" },
       {
         name: "description",
-        content: "กรอกข้อมูลครั้งเดียวจบในหน้าเดียว แล้วใช้ต่อได้ทั้งการจับคู่ แผนที่ และการส่งผลงาน",
+        content: "ตอบคำถามสั้น ๆ ไม่ถึง 2 นาที แล้วไปเจอคนที่ใช่ในงานกัน",
       },
       { property: "og:title", content: "สร้างโปรไฟล์พลังของคุณ" },
       { property: "og:description", content: "กรอกครั้งเดียว ใช้ได้ทั้งงาน" },
@@ -48,15 +48,20 @@ function Onboarding() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 bg-background/90 px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <Link to="/" className="tap grid h-9 w-9 place-items-center rounded-full bg-muted">
-            <ArrowLeft className="h-4 w-4" />
+          <Link
+            to="/"
+            aria-label="กลับหน้าแรก"
+            className="tap relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-muted after:absolute after:-inset-1 after:content-['']"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden />
           </Link>
           <div className="min-w-0">
             <h1 className="truncate text-[17px] font-extrabold leading-tight">
               {me ? "แก้ไขโปรไฟล์ของฉัน" : "สร้างโปรไฟล์พลังของคุณ"}
             </h1>
             <p className="text-[12px] text-muted-foreground">
-              กรอกครั้งเดียวจบ ใช้ได้ทั้งการจับคู่ แผนที่ และส่งผลงาน
+              ตอบคำถามสั้น ๆ ไม่ถึง 2 นาที แล้วไปเจอคนที่ใช่กัน{" "}
+              <span lang="en">· A few quick questions, then meet your people</span>
             </p>
           </div>
         </div>
@@ -66,7 +71,12 @@ function Onboarding() {
         {hydrated && !me && showIntro && <IntroGuide onDone={() => setShowIntro(false)} />}
         {hydrated && !me && (
           <p className="mb-4 rounded-2xl border border-border bg-card/80 px-4 py-3 text-[12px] leading-relaxed text-muted-foreground">
-            กำลังใช้งานแบบไม่ต้องล็อกอิน — ข้อมูลเก็บในเครื่องนี้ก่อน{" "}
+            โปรไฟล์นี้จะโชว์ให้เพื่อนในงานเห็นเพื่อจับคู่กัน ใช้ชื่อเล่นหรือนามแฝงก็ได้
+            และเลือกเฉพาะเรื่องที่สบายใจจะแชร์นะ ·{" "}
+            <span lang="en">
+              Your profile is visible to other participants for matching. A nickname is fine, so
+              share only what you&apos;re comfortable with.
+            </span>{" "}
             <Link to="/auth" className="font-bold text-primary">
               ผูกบัญชีทีหลัง
             </Link>{" "}
@@ -77,6 +87,7 @@ function Onboarding() {
           <ProfileForm
             initial={me}
             submitLabel={me ? "บันทึกและดูคู่พลัง" : "ค้นหาคู่พลังของฉัน"}
+            submitLabelEn={me ? undefined : "Find My Power Matches"}
             onSubmit={async (draft) => {
               const session = getSession();
               try {

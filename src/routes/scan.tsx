@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, CameraOff, Clock, QrCode, ScanLine, Sparkles, Zap } from "lucide-react";
+import { toast } from "sonner";
 
 const GUIDE: { t: string; d: string }[] = [
   { t: "ส่อง QR หรือกรอกรหัสห้อง", d: "QR ติดอยู่ที่บอร์ดและป้ายในพื้นที่ คนส. Connexts" },
-  { t: "เข้าร่วมแบบไม่ต้องล็อกอิน", d: "ข้อมูลเก็บในเครื่องนี้ก่อน ผูกอีเมลภายหลังได้" },
+  { t: "เข้าร่วมแบบไม่ต้องล็อกอิน", d: "ไม่ต้องสมัคร โปรไฟล์ผูกกับเครื่องนี้ไว้ก่อน ผูกอีเมลภายหลังได้" },
   { t: "สร้าง Power Profile", d: "กรอกครั้งเดียวจบ แล้วระบบจับคู่คนที่ควรเจอให้ทันที" },
 ];
 
@@ -71,7 +72,8 @@ function ScanPage() {
       stop();
       enterGuest();
       createSession(source, code);
-      navigate({ to: "/start" });
+      toast.success("เข้าห้องแล้ว! ไปสร้าง Power Profile กันเลย");
+      navigate({ to: "/onboarding" });
     },
     [enterGuest, navigate, stop],
   );
@@ -118,31 +120,26 @@ function ScanPage() {
 
   return (
     <div className="relative min-h-screen px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]">
-      <div
-        className="absolute inset-0"
-        style={{ backgroundImage: "var(--gradient-soft)" }}
-        aria-hidden
-      />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur">
-          <ScanLine className="h-3.5 w-3.5" />
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-xs font-bold text-primary backdrop-blur">
+          <ScanLine className="h-3.5 w-3.5" aria-hidden />
           สแกนเพื่อเข้าร่วม
         </span>
-        <h1 className="mt-4 text-[clamp(1.9rem,8vw,2.6rem)] font-extrabold leading-tight tracking-tighter">
-          <span className="text-gradient">สแกน QR เข้าร่วมงาน</span>
+        <h1 className="mt-4 text-[clamp(1.9rem,8vw,2.6rem)] font-extrabold leading-tight">
+          <span className="text-foreground">สแกน QR เข้าร่วมงาน</span>
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           ยกกล้องส่อง QR ที่ติดในห้อง เข้าร่วมได้ทันที ไม่ต้องสมัครสมาชิก
         </p>
 
-        {/* คำแนะนำก่อนเริ่มออนบอร์ดดิ้ง */}
+        {/* คำแนะนำก่อนเริ่ม */}
         <ol className="card-soft mt-5 space-y-3 rounded-3xl bg-card p-5">
-          <li className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <li className="text-xs font-bold text-muted-foreground">
             3 ขั้นตอนก่อนเริ่ม
           </li>
           {GUIDE.map((g, i) => (
             <li key={g.t} className="flex items-start gap-3">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full gradient-power text-[12px] font-extrabold text-primary-foreground">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/12 text-[12px] font-extrabold text-primary">
                 {i + 1}
               </span>
               <span>
@@ -152,7 +149,7 @@ function ScanPage() {
             </li>
           ))}
           <li className="flex items-center gap-2 rounded-2xl bg-muted/60 px-3 py-2 text-[12px] font-semibold text-muted-foreground">
-            <Clock className="h-3.5 w-3.5 shrink-0 text-primary" />
+            <Clock className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
             ใช้เวลารวมประมาณ 2 นาที · เตรียมชื่อ จังหวัด และสิ่งที่คุณให้ได้/ต้องการ
           </li>
         </ol>
@@ -201,7 +198,7 @@ function ScanPage() {
               onClick={() => void startCamera()}
               className="tap mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-background py-3.5 text-sm font-bold"
             >
-              <Camera className="h-4 w-4" />
+              <Camera className="h-4 w-4" aria-hidden />
               เปิดกล้องสแกน
             </button>
           )}
@@ -210,48 +207,44 @@ function ScanPage() {
         <button
           type="button"
           onClick={() => join(makeJoinCode(), "direct")}
-          className="tap glow mt-5 flex h-16 items-center justify-between rounded-3xl gradient-power px-6 text-primary-foreground"
+          className="tap mt-5 flex h-16 items-center justify-between rounded-3xl cta-holo px-6 text-primary-foreground"
         >
           <span className="text-left">
             <span className="block text-base font-extrabold">เข้าร่วมทันที ไม่ต้องล็อกอิน</span>
-            <span className="block text-[12px] opacity-90">Join now · no login required</span>
+            <span lang="en" className="block text-[12px] opacity-90">
+              Join now · no login required
+            </span>
           </span>
-          <Zap className="h-5 w-5 shrink-0" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => join("DEMO", "direct")}
-          className="tap mt-3 flex h-14 items-center justify-between rounded-3xl border-2 border-dashed border-primary/60 bg-card/80 px-6 text-primary backdrop-blur"
-        >
-          <span className="text-left">
-            <span className="block text-sm font-extrabold">เริ่มออนบอร์ดดิ้งด้วยเดโม่</span>
-            <span className="block text-[12px] opacity-80">ลองกรอกโปรไฟล์ตัวอย่างก่อนใช้จริง</span>
-          </span>
-          <Sparkles className="h-5 w-5 shrink-0" />
+          <Zap className="h-5 w-5 shrink-0" aria-hidden />
         </button>
 
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          ข้อมูลจะเก็บไว้ในเครื่องนี้ก่อน · ผูกกับอีเมลภายหลังได้ที่หน้าเข้าสู่ระบบ
+          ไม่ต้องสมัคร · โปรไฟล์ผูกกับเครื่องนี้ไว้ก่อน ผูกอีเมลภายหลังเพื่อใช้ในเครื่องอื่นได้ ·{" "}
+          <span lang="en">No sign-up needed. Link an email later to use it on other devices</span>
         </p>
 
         <div className="card-soft mt-6 rounded-3xl bg-card p-4">
-          <label htmlFor="room" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <label htmlFor="room" className="text-xs font-bold text-muted-foreground">
             หรือกรอกรหัสห้อง
           </label>
           <div className="mt-2 flex gap-2">
             <input
               id="room"
               value={manual}
-              onChange={(e) => setManual(e.target.value.toUpperCase())}
+              aria-invalid={!!hint}
+              aria-describedby={hint ? "room-hint" : undefined}
+              onChange={(e) => {
+                setManual(e.target.value.toUpperCase());
+                setHint(null);
+              }}
               placeholder="เช่น NHA26"
-              className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-sm font-bold tracking-widest outline-none focus:border-primary"
+              className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-ring"
             />
             <button
               type="button"
               onClick={() => {
                 if (!manual.trim()) {
-                  setHint("กรุณากรอกรหัสห้องที่แสดงในงาน");
+                  setHint("ใส่รหัสห้องที่เห็นบนป้ายในงานก่อนนะ · Enter the room code from the event sign");
                   return;
                 }
                 join(manual.trim(), "direct");
@@ -261,15 +254,19 @@ function ScanPage() {
               เข้าร่วม
             </button>
           </div>
-          {hint && <p className="mt-2 text-[12px] font-semibold text-coral">{hint}</p>}
+          {hint && (
+            <p id="room-hint" role="alert" className="mt-2 text-[12px] font-semibold text-coral-ink">
+              {hint}
+            </p>
+          )}
         </div>
 
         <div className="mt-6 flex items-center justify-center gap-4 text-[12px] font-bold text-muted-foreground">
-          <Link to="/qr" className="tap inline-flex items-center gap-1.5">
-            <QrCode className="h-4 w-4" /> แสดง QR สำหรับติดในห้อง
+          <Link to="/qr" className="tap inline-flex min-h-11 items-center gap-1.5">
+            <QrCode className="h-4 w-4" aria-hidden /> แสดง QR สำหรับติดในห้อง
           </Link>
-          <Link to="/auth" className="tap inline-flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4" /> เข้าสู่ระบบ
+          <Link to="/auth" className="tap inline-flex min-h-11 items-center gap-1.5">
+            <Sparkles className="h-4 w-4" aria-hidden /> เข้าสู่ระบบ
           </Link>
         </div>
       </div>

@@ -42,6 +42,10 @@
   --color-electric-foreground: var(--electric-foreground);
   --color-lime: var(--lime);
   --color-lime-foreground: var(--lime-foreground);
+  /* สีเน้นสำหรับ "ตัวอักษร" — เข้มพอให้คอนทราสต์ ≥ 4.5:1 บนพื้นขาว/พื้นจาง (ใช้แทน text-coral/text-electric) */
+  --color-coral-ink: var(--coral-ink);
+  --color-electric-ink: var(--electric-ink);
+  --color-lime-ink: var(--lime-ink);
   --color-ink: var(--ink);
   --color-chart-1: var(--primary);
   --color-chart-2: var(--coral);
@@ -92,7 +96,11 @@
   --electric-foreground: oklch(0.99 0 0);
   --lime: oklch(0.85 0.21 130);
   --lime-foreground: oklch(0.22 0.08 140);
-  --gradient-power: linear-gradient(135deg, oklch(0.51 0.25 296), oklch(0.62 0.2 250) 55%, oklch(0.68 0.19 25));
+  --coral-ink: oklch(0.5 0.17 30);
+  --electric-ink: oklch(0.48 0.19 255);
+  --lime-ink: oklch(0.45 0.13 140);
+  /* เข้มพอให้ตัวอักษรสีขาวผ่าน 4.5:1 ทุกช่วงสี */
+  --gradient-power: linear-gradient(135deg, oklch(0.47 0.25 296), oklch(0.5 0.2 262) 55%, oklch(0.52 0.19 28));
   /* เกรเดียนต์สำหรับตัวอักษรแบรนด์ (คอนทราสต์ ≥ 4.5:1 บนพื้นสว่าง) */
   --gradient-brand-text: linear-gradient(135deg, oklch(0.45 0.24 296), oklch(0.5 0.19 250) 55%, oklch(0.52 0.19 25));
   --brand-mark-shadow: none;
@@ -102,10 +110,10 @@
   /* Holographic layer */
   --glass: oklch(1 0 0 / 0.66);
   --glass-edge: oklch(1 0 0 / 0.85);
-  --aurora-1: oklch(0.8 0.14 296 / 0.45);
-  --aurora-2: oklch(0.85 0.12 230 / 0.4);
-  --aurora-3: oklch(0.88 0.1 25 / 0.35);
-  --grid-line: oklch(0.51 0.25 296 / 0.07);
+  --aurora-1: oklch(0.8 0.14 296 / 0.3);
+  --aurora-2: oklch(0.85 0.12 230 / 0.25);
+  --aurora-3: oklch(0.88 0.1 25 / 0.2);
+  --grid-line: oklch(0.51 0.25 296 / 0.04);
   --gradient-holo: linear-gradient(120deg, oklch(0.7 0.2 296), oklch(0.75 0.16 230), oklch(0.85 0.17 130), oklch(0.75 0.17 25), oklch(0.7 0.2 296));
 }
 
@@ -128,6 +136,9 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
   --ring: oklch(0.68 0.2 296);
+  --coral-ink: oklch(0.8 0.13 30);
+  --electric-ink: oklch(0.8 0.12 250);
+  --lime-ink: oklch(0.88 0.17 130);
   /* โหมดมืด: เพิ่มความสว่าง/ลดความอิ่มสี ให้อ่านชัดบนพื้นเข้ม (≥ 4.5:1) */
   --gradient-brand-text: linear-gradient(135deg, oklch(0.82 0.15 300), oklch(0.85 0.12 250) 55%, oklch(0.84 0.13 40));
   --brand-mark-shadow: drop-shadow(0 0 10px oklch(0.68 0.2 296 / 0.45));
@@ -136,7 +147,7 @@
   --aurora-1: oklch(0.45 0.2 296 / 0.4);
   --aurora-2: oklch(0.45 0.16 250 / 0.35);
   --aurora-3: oklch(0.45 0.15 25 / 0.25);
-  --grid-line: oklch(1 0 0 / 0.05);
+  --grid-line: oklch(1 0 0 / 0.035);
 }
 
 @keyframes float {
@@ -165,13 +176,6 @@
 @keyframes shimmer {
   0% { transform: translateX(-120%); }
   55%, 100% { transform: translateX(120%); }
-}
-@keyframes holo-shift {
-  to { background-position: 300% 0; }
-}
-@keyframes aurora-drift {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(-3%, 2%, 0) scale(1.06); }
 }
 @keyframes swipe-hint {
   0%, 100% { transform: translateX(-34px) rotate(-10deg); opacity: 0.75; }
@@ -226,8 +230,7 @@
     padding: 1.5px;
     border-radius: inherit;
     background: var(--gradient-holo);
-    background-size: 300% 100%;
-    animation: holo-shift 8s linear infinite;
+    /* เส้นขอบนิ่ง — ไม่วิ่งวนตลอดเวลา (ใช้เกรเดียนต์อย่างพอดี) */
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
@@ -237,7 +240,7 @@
   }
 }
 
-/* ปุ่มหลัก: เกรเดียนต์แบรนด์ + แสงวิ่งผ่าน + เรืองแสง */
+/* ปุ่มหลัก (ใช้ 1 ปุ่มต่อหน้าจอ): เกรเดียนต์แบรนด์ + แสงวิ่งผ่านครั้งเดียว + เรืองแสงเบา ๆ */
 @utility cta-holo {
   position: relative;
   overflow: hidden;
@@ -245,16 +248,16 @@
   background-image: var(--gradient-power);
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 0.35),
-    0 10px 30px -10px oklch(0.51 0.25 296 / 0.7),
-    0 6px 24px -12px oklch(0.62 0.2 250 / 0.6);
+    0 10px 30px -10px oklch(0.47 0.25 296 / 0.55),
+    0 6px 24px -12px oklch(0.5 0.2 262 / 0.45);
   &::after {
     content: "";
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(105deg, transparent 30%, oklch(1 0 0 / 0.38) 50%, transparent 70%);
+    background: linear-gradient(105deg, transparent 30%, oklch(1 0 0 / 0.22) 50%, transparent 70%);
     transform: translateX(-120%);
-    animation: shimmer 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: shimmer 3.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s 1 both;
     pointer-events: none;
   }
   &:disabled::after {
@@ -295,7 +298,7 @@
     overscroll-behavior-y: none;
   }
 
-  /* ฉากหลังโฮโลแกรม: ออโรราสีแบรนด์ + ตารางกริดจาง ๆ (อยู่หลังทุกอย่าง) */
+  /* ฉากหลัง: ออโรราสีแบรนด์แบบนิ่งและจาง + ตารางกริดบางมาก (อยู่หลังทุกอย่าง) */
   body::before,
   body::after {
     content: "";
@@ -310,7 +313,6 @@
       radial-gradient(45% 35% at 90% 25%, var(--aurora-2), transparent 70%),
       radial-gradient(50% 40% at 60% 95%, var(--aurora-3), transparent 70%);
     filter: blur(20px);
-    animation: aurora-drift 22s ease-in-out infinite;
   }
   body::after {
     inset: 0;
@@ -416,7 +418,6 @@ html[data-lowspec] .card-soft {
   background-color: var(--card);
 }
 html[data-lowspec] body::before {
-  animation: none;
   filter: none;
 }
 html[data-lowspec] .cta-holo::after,

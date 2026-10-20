@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { BellRing, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Clock, Download, MessageCircle, Send } from "lucide-react";
@@ -9,7 +9,7 @@ import { commitmentToEvent, downloadICS, googleCalendarUrl } from "@/lib/ical";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { ACTION_TYPES_TH, STATUS_TH } from "@/lib/i18n";
-import type { Commitment, ConnectionStatus } from "@/lib/types";
+import type { Commitment, ConnectionStatus, User } from "@/lib/types";
 
 export const Route = createFileRoute("/calendar")({
   head: () => ({
@@ -58,7 +58,7 @@ function CalendarPage() {
   const [selected, setSelected] = useState(() => dayKey(new Date()));
 
   const mine = connections.filter((c) => c.user_a === "me" || c.user_b === "me");
-  const shownConnections = mine.length ? mine : connections;
+  const shownConnections = mine;
   const connIds = new Set(shownConnections.map((c) => c.id));
   const shown = commitments.filter((m) => connIds.has(m.connection_id));
 
@@ -106,21 +106,21 @@ function CalendarPage() {
         <button
           type="button"
           onClick={() => {
-            const events = commitments
+            const events = shown
               .map((m) => commitmentToEvent(m, partnerOf(m.connection_id)?.name))
               .filter((e): e is NonNullable<typeof e> => Boolean(e));
             if (events.length === 0) {
               toast.error("ยังไม่มีนัดที่ระบุวันเวลา");
               return;
             }
-            downloadICS("นัดหมายทั้งหมด", events);
-            toast.success(`ส่งออกปฏิทิน ${events.length} นัดแล้ว`, {
+            downloadICS("นัดของฉัน", events);
+            toast.success(`บันทึก ${events.length} นัดของคุณแล้ว`, {
               description: "เปิดไฟล์ .ics เพื่อบันทึกลงปฏิทินของคุณ",
             });
           }}
-          className="tap flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-xs font-extrabold text-foreground"
+          className="tap flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-xs font-extrabold text-foreground"
         >
-          <Download className="h-4 w-4 text-primary" /> ส่งออกนัดทั้งหมดเป็นไฟล์ปฏิทิน (.ics)
+          <Download className="h-4 w-4 text-primary" aria-hidden /> บันทึกนัดของฉันลงปฏิทิน (.ics)
         </button>
 
         <div className="card-soft p-4">
@@ -129,9 +129,9 @@ function CalendarPage() {
               type="button"
               aria-label="เดือนก่อนหน้า"
               onClick={() => setCursor(new Date(year, month - 1, 1))}
-              className="tap rounded-full bg-accent p-2"
+              className="tap inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" aria-hidden />
             </button>
             <p className="text-sm font-extrabold">
               {MONTHS_TH[month]} {year + 543}
@@ -140,9 +140,9 @@ function CalendarPage() {
               type="button"
               aria-label="เดือนถัดไป"
               onClick={() => setCursor(new Date(year, month + 1, 1))}
-              className="tap rounded-full bg-accent p-2"
+              className="tap inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4" aria-hidden />
             </button>
           </div>
 
@@ -161,6 +161,9 @@ function CalendarPage() {
                 <button
                   key={k}
                   type="button"
+                  aria-label={`${d.getDate()} ${MONTHS_TH[month]}${count ? ` · มีนัด ${count} รายการ` : ""}`}
+                  aria-pressed={isSel}
+                  aria-current={k === todayKey ? "date" : undefined}
                   onClick={() => setSelected(k)}
                   className={`tap flex aspect-square flex-col items-center justify-center rounded-xl text-xs font-semibold ${
                     isSel
@@ -172,6 +175,7 @@ function CalendarPage() {
                 >
                   {d.getDate()}
                   <span
+                    aria-hidden="true"
                     className={`mt-0.5 h-1.5 w-1.5 rounded-full ${
                       count ? (isSel ? "bg-primary-foreground" : "bg-primary") : "bg-transparent"
                     }`}
@@ -184,11 +188,19 @@ function CalendarPage() {
 
         <section className="card-soft p-4">
           <h2 className="flex items-center gap-2 text-sm font-extrabold">
-            <CalendarDays className="h-4 w-4 text-primary" />
-            นัดหมายวันที่ {selected.split("-").reverse().join("/")}
+            <CalendarDays className="h-4 w-4 text-primary" aria-hidden />
+            นัดหมายวันที่{" "}
+            {(() => {
+              const [y = 0, mo = 1, da = 1] = selected.split("-").map(Number);
+              return new Date(y, mo - 1, da).toLocaleDateString("th-TH", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              });
+            })()}
           </h2>
           {selectedList.length === 0 ? (
-            <p className="mt-2 text-xs text-muted-foreground">ยังไม่มีนัดหมายในวันนี้</p>
+            <p className="mt-2 text-xs text-muted-foreground">ยังไม่มีนัดในวันที่เลือก ลองแตะวันอื่น หรือเสนอเวลาใหม่ด้านล่างได้เลย</p>
           ) : (
             <ul className="mt-3 space-y-3">
               {selectedList.map((m) => (
@@ -198,6 +210,7 @@ function CalendarPage() {
                     partner={partnerOf(m.connection_id)}
                     onUpdate={updateCommitment}
                     onSend={sendMessage}
+                    onScheduled={(iso) => setSelected(dayKey(new Date(iso)))}
                   />
                 </li>
               ))}
@@ -208,7 +221,7 @@ function CalendarPage() {
         {unscheduled.length > 0 && (
           <section className="card-soft p-4">
             <h2 className="flex items-center gap-2 text-sm font-extrabold">
-              <Clock className="h-4 w-4 text-primary" />
+              <Clock className="h-4 w-4 text-primary" aria-hidden />
               รอเสนอวันเวลา ({unscheduled.length})
             </h2>
             <ul className="mt-3 space-y-3">
@@ -219,6 +232,7 @@ function CalendarPage() {
                     partner={partnerOf(m.connection_id)}
                     onUpdate={updateCommitment}
                     onSend={sendMessage}
+                    onScheduled={(iso) => setSelected(dayKey(new Date(iso)))}
                   />
                 </li>
               ))}
@@ -243,8 +257,30 @@ function CalendarPage() {
             </ul>
           </section>
         )}
+
+        {mine.length === 0 && <NoConnectionsCard />}
       </div>
     </AppShell>
+  );
+}
+
+function NoConnectionsCard() {
+  return (
+    <div className="card-soft p-5 text-center">
+      <h2 className="text-lg font-extrabold">ยังไม่มีคอนเนกชันเลย</h2>
+      <p lang="en" className="text-xs text-muted-foreground">
+        No connections yet
+      </p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        เริ่มจากทักคนที่พลังเสริมกับเราสักคน แล้วค่อยชวนกันคิดว่าจะทำอะไรด้วยกัน
+      </p>
+      <Link
+        to="/matches"
+        className="tap mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-extrabold text-primary-foreground"
+      >
+        ไปหาคนที่น่าเจอ
+      </Link>
+    </div>
   );
 }
 
@@ -252,7 +288,7 @@ function PartnerHead({
   partner,
   label,
 }: {
-  partner: any;
+  partner: User | null;
   label: string;
 }) {
   return (
@@ -278,11 +314,13 @@ function CommitmentRow({
   partner,
   onUpdate,
   onSend,
+  onScheduled,
 }: {
   m: Commitment;
-  partner: any;
+  partner: User | null;
   onUpdate: ReturnType<typeof useStore>["updateCommitment"];
   onSend: ReturnType<typeof useStore>["sendMessage"];
+  onScheduled?: (iso: string) => void;
 }) {
   const [when, setWhen] = useState(() => toLocalInput(m.follow_up_date));
   return (
@@ -303,24 +341,37 @@ function CommitmentRow({
           type="datetime-local"
           value={when}
           onChange={(e) => setWhen(e.target.value)}
-          className="min-w-0 flex-1 rounded-xl border border-border bg-background px-2 py-2 text-xs"
+          aria-label={`เลือกวันเวลานัดกับ ${partner?.name ?? "คอนเนกชัน"}`}
+          className="min-h-11 min-w-0 flex-1 rounded-xl border border-border bg-background px-2 py-2 text-base"
         />
         <button
           type="button"
           disabled={!when}
-          onClick={() => onUpdate(m.id, { follow_up_date: new Date(when).toISOString() })}
-          className="tap rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground disabled:opacity-50"
+          onClick={() => {
+            const iso = new Date(when).toISOString();
+            onUpdate(m.id, { follow_up_date: iso });
+            onScheduled?.(iso);
+            toast.success("เสนอเวลาแล้ว", {
+              description: `กด “ส่งเข้าห้องแชท” ให้ ${partner?.name ?? "อีกฝ่าย"} ตอบรับได้เลย`,
+            });
+          }}
+          className="tap min-h-11 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground disabled:opacity-50"
         >
           เสนอเวลา
         </button>
       </div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
+      <div className="mt-2 flex flex-wrap gap-2">
         {STATUSES.map((s) => (
           <button
             key={s}
             type="button"
-            onClick={() => onUpdate(m.id, { status: s })}
-            className={`tap rounded-full px-2.5 py-1 text-xs font-bold ${
+            aria-pressed={m.status === s}
+            onClick={() => {
+              if (m.status === s) return;
+              onUpdate(m.id, { status: s });
+              toast.success(`อัปเดตเป็น “${STATUS_TH[s]}” แล้ว`);
+            }}
+            className={`tap inline-flex min-h-11 items-center rounded-full px-3 text-xs font-bold ${
               m.status === s
                 ? "bg-primary text-primary-foreground"
                 : "bg-background text-muted-foreground"
@@ -332,7 +383,7 @@ function CommitmentRow({
         <Link
           to="/connection/$id"
           params={{ id: m.connection_id }}
-          className="tap ml-auto rounded-full bg-background px-2.5 py-1 text-xs font-bold text-primary"
+          className="tap ml-auto inline-flex min-h-11 items-center rounded-full bg-background px-3 text-xs font-bold text-primary"
         >
           เปิดคอนเนกชัน
         </Link>
@@ -355,16 +406,16 @@ function CommitmentRow({
               description: partner?.name ?? undefined,
             });
           }}
-          className="tap inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
+          className="tap inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 text-xs font-bold text-primary-foreground"
         >
-          <Send className="h-3 w-3" /> ส่งเข้าห้องแชท
+          <Send className="h-3 w-3" aria-hidden /> ส่งเข้าห้องแชท
         </button>
         <Link
           to="/chat/$id"
           params={{ id: m.connection_id }}
-          className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-bold text-primary"
+          className="tap inline-flex min-h-11 items-center gap-1 rounded-full bg-background px-3 text-xs font-bold text-primary"
         >
-          <MessageCircle className="h-3 w-3" /> เปิดแชท
+          <MessageCircle className="h-3 w-3" aria-hidden /> เปิดแชท
         </Link>
         {m.follow_up_date && (
           <>
@@ -374,9 +425,9 @@ function CommitmentRow({
                 const ev = commitmentToEvent(m, partner?.name);
                 if (ev) downloadICS("นัดหมาย", [ev]);
               }}
-              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-bold text-foreground"
+              className="tap inline-flex min-h-11 items-center gap-1 rounded-full bg-background px-3 text-xs font-bold text-foreground"
             >
-              <Download className="h-3 w-3" /> .ics
+              <Download className="h-3 w-3" aria-hidden /> .ics
             </button>
             <a
               href={(() => {
@@ -385,9 +436,9 @@ function CommitmentRow({
               })()}
               target="_blank"
               rel="noreferrer"
-              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-bold text-foreground"
+              className="tap inline-flex min-h-11 items-center gap-1 rounded-full bg-background px-3 text-xs font-bold text-foreground"
             >
-              <CalendarPlus className="h-3 w-3" /> Google
+              <CalendarPlus className="h-3 w-3" aria-hidden /> Google
             </a>
           </>
         )}
@@ -403,20 +454,27 @@ function NewCommitmentRow({
   onCreated,
 }: {
   connectionId: string;
-  partner: any;
+  partner: User | null;
   onCreate: ReturnType<typeof useStore>["addCommitment"];
   onCreated: (iso: string) => void;
 }) {
   const [action, setAction] = useState<string>(ACTION_TYPES_TH[0] ?? "นัดเจอกันอีกครั้ง");
   const [when, setWhen] = useState("");
+  const [note, setNote] = useState("");
+  const selId = useId();
+  const noteId = useId();
   return (
     <div className="rounded-2xl bg-accent/50 p-3">
       <PartnerHead partner={partner} label="ยังไม่มีก้าวต่อไป" />
       <div className="mt-2 space-y-2">
+        <label htmlFor={selId} className="block text-xs font-bold">
+          อยากทำอะไรด้วยกัน
+        </label>
         <select
+          id={selId}
           value={action}
           onChange={(e) => setAction(e.target.value)}
-          className="w-full rounded-xl border border-border bg-background px-2 py-2 text-xs"
+          className="min-h-11 w-full rounded-xl border border-border bg-background px-2 py-2 text-base"
         >
           {ACTION_TYPES_TH.map((a) => (
             <option key={a} value={a}>
@@ -424,12 +482,23 @@ function NewCommitmentRow({
             </option>
           ))}
         </select>
+        <label htmlFor={noteId} className="block text-xs font-bold">
+          เล่าเพิ่มอีกนิด (ไม่ใส่ก็ได้)
+        </label>
+        <input
+          id={noteId}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="เช่น ลองทำแคมเปญออนไลน์ให้เยาวชนด้วยกัน"
+          className="min-h-11 w-full rounded-xl border border-border bg-background px-2 py-2 text-base"
+        />
         <div className="flex gap-2">
           <input
             type="datetime-local"
             value={when}
             onChange={(e) => setWhen(e.target.value)}
-            className="min-w-0 flex-1 rounded-xl border border-border bg-background px-2 py-2 text-xs"
+            aria-label="เลือกวันเวลาที่สะดวก"
+            className="min-h-11 min-w-0 flex-1 rounded-xl border border-border bg-background px-2 py-2 text-base"
           />
           <button
             type="button"
@@ -439,14 +508,16 @@ function NewCommitmentRow({
               onCreate({
                 connection_id: connectionId,
                 action_type: action,
-                description: `นัดหมาย ${action}`,
+                description: note.trim() || `${action} กับ ${partner?.name ?? "เพื่อนใหม่"}`,
                 status: "Planning",
                 follow_up_date: iso,
               });
               onCreated(iso);
               setWhen("");
+              setNote("");
+              toast.success("เสนอนัดแล้ว", { description: partner?.name ?? undefined });
             }}
-            className="tap rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground disabled:opacity-50"
+            className="tap min-h-11 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground disabled:opacity-50"
           >
             เสนอนัด
           </button>
@@ -472,7 +543,7 @@ function ReminderChip({ iso, done }: { iso: string; done: boolean }) {
   if (diff <= 0) {
     return (
       <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-bold text-destructive">
-        <BellRing className="h-3 w-3" /> ถึงเวลานัดแล้ว
+        <BellRing className="h-3 w-3" aria-hidden /> ถึงเวลานัดแล้ว
       </p>
     );
   }
@@ -488,7 +559,7 @@ function ReminderChip({ iso, done }: { iso: string; done: boolean }) {
 
   return (
     <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
-      <BellRing className="h-3 w-3" /> {left}
+      <BellRing className="h-3 w-3" aria-hidden /> {left}
       {next ? ` · เตือน${next.label}` : " · เตือนแล้ว"}
     </p>
   );

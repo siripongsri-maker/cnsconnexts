@@ -52,10 +52,10 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
     <div className="card-soft mb-5 rounded-3xl p-5">
       <div className="flex items-start gap-3">
         <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/12">
-          <Icon className="h-6 w-6 text-primary" />
+          <Icon className="h-6 w-6 text-primary" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-bold text-muted-foreground">
             แนะนำก่อนเริ่ม {step + 1}/{INTRO_STEPS.length}
           </p>
           <h2 className="mt-0.5 text-[18px] font-extrabold leading-snug">{item.title}</h2>
@@ -77,7 +77,7 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
         <button
           type="button"
           onClick={finish}
-          className="tap px-2 text-[13px] font-bold text-muted-foreground"
+          className="tap inline-flex h-11 items-center rounded-xl px-3 text-[13px] font-bold text-muted-foreground"
         >
           ข้าม
         </button>
@@ -86,13 +86,13 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
           onClick={() => (last ? finish() : setStep((v) => v + 1))}
           className="tap inline-flex h-11 items-center gap-1.5 rounded-2xl gradient-power px-5 text-[14px] font-extrabold text-primary-foreground"
         >
-          {last ? "เริ่มเลย" : "ถัดไป"} <ArrowRight className="h-4 w-4" />
+          {last ? "เริ่มเลย" : "ถัดไป"} <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
       {last && (
         <p className="mt-3 flex items-center gap-1.5 text-[12px] text-muted-foreground">
-          <CalendarCheck className="h-3.5 w-3.5" /> อ่านคู่มือฉบับเต็มได้ที่หน้า “คู่มือใช้งาน”
+          <CalendarCheck className="h-3.5 w-3.5" aria-hidden="true" /> อ่านคู่มือฉบับเต็มได้ที่หน้า “คู่มือใช้งาน”
         </p>
       )}
     </div>

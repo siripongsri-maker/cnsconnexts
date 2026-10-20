@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { CalendarDays, Check, MessageCircle } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { LiveProgress } from "@/components/live-progress";
 import { Avatar } from "@/components/power-bits";
@@ -31,52 +33,137 @@ const DOT: Record<ConnectionStatus, string> = {
 const STATUSES: ConnectionStatus[] = ["Connected", "Planning", "In Progress", "Completed"];
 
 function Commitments() {
-  const { connections, commitments, users, me, setConnectionStatus } = useStore();
+  const { connections, commitments, users, me, updateCommitment } = useStore();
 
   const mine = connections.filter((c) => c.user_a === "me" || c.user_b === "me");
   const myCommitments = commitments.filter((m) =>
     mine.some((c) => c.id === m.connection_id),
   );
-  const shown = myCommitments.length ? myCommitments : commitments;
-  const shownConnections = mine.length ? mine : connections;
+  const shown = myCommitments;
+  const shownConnections = mine;
+  const ready = mine.filter((c) => !commitments.some((m) => m.connection_id === c.id));
 
   const partnerOf = (connId: string) => {
     const c = connections.find((x) => x.id === connId);
     if (!c) return null;
+    const isMine = c.user_a === "me" || c.user_b === "me";
     const otherId = c.user_a === "me" ? c.user_b : c.user_a;
     return {
       other: users.find((u) => u.id === otherId) ?? null,
-      first: users.find((u) => u.id === c.user_a) ?? me,
+      first: isMine ? me : (users.find((u) => u.id === c.user_a) ?? me),
       conn: c,
     };
   };
 
   return (
-    <AppShell title="จะทำอะไรต่อดี?" subtitle="รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?">
-      <div className="px-5 pt-4">
+    <AppShell
+      title="จะทำอะไรต่อดี?"
+      subtitle="ก้าวต่อไปของเรา"
+      action={
+        <Link
+          to="/calendar"
+          className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-bold"
+        >
+          <CalendarDays className="h-4 w-4" aria-hidden /> ปฏิทินนัดของฉัน
+        </Link>
+      }
+    >
+      <section className="px-5 pt-5">
+        <p lang="en" className="font-tech text-xs font-bold uppercase tracking-widest text-primary">
+          What happens next?
+        </p>
+        <h2 className="mt-1 text-2xl font-extrabold leading-tight [text-wrap:balance]">
+          รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?
+        </h2>
+      </section>
+
+      <div className="px-5 pt-3">
         <LiveProgress />
       </div>
 
       <div className="grid grid-cols-2 gap-3 px-5 py-4">
         <div className="card-soft p-4">
-          <p className="text-3xl font-extrabold text-gradient">{shownConnections.length}</p>
-          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            คอนเนกชันของฉัน
+          <p className="font-tech text-3xl font-extrabold text-gradient">{shownConnections.length}</p>
+          <p className="text-xs font-bold text-muted-foreground">คอนเนกชันของฉัน</p>
+          <p lang="en" className="font-tech text-xs text-muted-foreground">
+            My connections
           </p>
         </div>
         <div className="card-soft p-4">
-          <p className="text-3xl font-extrabold text-gradient">{shown.length}</p>
-          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            คำมั่นสัญญาของฉัน
+          <p className="font-tech text-3xl font-extrabold text-gradient">{shown.length}</p>
+          <p className="text-xs font-bold text-muted-foreground">คำมั่นสัญญาของฉัน</p>
+          <p lang="en" className="font-tech text-xs text-muted-foreground">
+            My commitments
           </p>
         </div>
       </div>
 
-      <div className="space-y-3 px-5 pb-6">
+      {ready.length > 0 && (
+        <section className="px-5 pb-4" aria-labelledby="ready-heading">
+          <h2 id="ready-heading" className="text-base font-extrabold">
+            ชวนกันตั้งก้าวแรก
+          </h2>
+          <p lang="en" className="text-xs text-muted-foreground">
+            Start a first step together
+          </p>
+          <ul className="mt-3 space-y-2">
+            {ready.map((c) => {
+              const partner = partnerOf(c.id)?.other;
+              return (
+                <li key={c.id} className="card-soft flex items-center gap-3 p-3">
+                  {partner && <Avatar user={partner} size={34} />}
+                  <p className="min-w-0 flex-1 truncate text-sm font-bold">
+                    {partner?.name ?? "คอนเนกชันใหม่"}
+                  </p>
+                  <Link
+                    to="/connection/$id"
+                    params={{ id: c.id }}
+                    aria-label={`วางแผนก้าวแรกกับ ${partner?.name ?? "คอนเนกชันนี้"}`}
+                    className="tap inline-flex min-h-11 shrink-0 items-center rounded-xl bg-primary px-3 text-xs font-extrabold text-primary-foreground"
+                  >
+                    วางแผนด้วยกัน →
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      <div id="my-commitments" className="scroll-mt-20 space-y-3 px-5 pb-6">
+        {mine.length === 0 ? (
+          <div className="card-soft p-5 text-center">
+            <h2 className="text-lg font-extrabold">ยังไม่มีคอนเนกชันเลย</h2>
+            <p lang="en" className="text-xs text-muted-foreground">
+              No connections yet
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              เริ่มจากทักคนที่พลังเสริมกับเราสักคน แล้วค่อยชวนกันคิดว่าจะทำอะไรด้วยกัน
+            </p>
+            <Link
+              to="/matches"
+              className="tap mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-extrabold text-primary-foreground"
+            >
+              ไปหาคนที่น่าเจอ
+            </Link>
+          </div>
+        ) : shown.length === 0 ? (
+          <Link
+            to="/calendar"
+            className="tap card-soft flex min-h-11 items-center justify-between gap-2 p-4 text-sm font-bold"
+          >
+            <span>เชื่อมต่อแล้ว ลองชวนกันตั้งก้าวแรกที่จะทำด้วยกัน</span>
+            <span aria-hidden className="text-primary">
+              →
+            </span>
+          </Link>
+        ) : null}
+
         {shown.map((m, idx) => {
           const info = partnerOf(m.connection_id);
           const other = info?.other;
           const first = info?.first;
+          const isMine = !!info && (info.conn.user_a === "me" || info.conn.user_b === "me");
           return (
             <article
               key={m.id}
@@ -87,25 +174,68 @@ function Commitments() {
                 {first && <Avatar user={first} size={34} />}
                 {other && <Avatar user={other} size={34} />}
                 <p className="min-w-0 flex-1 truncate text-sm font-extrabold uppercase">
-                  {(first?.name ?? "คุณ")} + {other?.name ?? "พาร์ตเนอร์"}
+                  {first?.name ?? "คุณ"} + {other?.name ?? "พาร์ตเนอร์"}
                 </p>
               </div>
-              <p className="mt-2 text-[15px] font-semibold leading-snug">"{m.description}"</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                {m.action_type}
+              <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-extrabold text-primary">
+                <span aria-hidden>{DOT[m.status]}</span> สถานะ: {STATUS_TH[m.status]}
               </p>
-              <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto">
+              <p className="mt-2 text-[15px] font-semibold leading-snug">"{m.description}"</p>
+              <p className="mt-1 text-xs font-bold text-muted-foreground">{m.action_type}</p>
+              {m.follow_up_date ? (
+                <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+                  <CalendarDays className="h-4 w-4" aria-hidden /> นัดไว้{" "}
+                  {new Date(m.follow_up_date).toLocaleString("th-TH", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}{" "}
+                  น.
+                </p>
+              ) : null}
+              {isMine && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {!m.follow_up_date && m.status !== "Completed" && (
+                    <Link
+                      to="/calendar"
+                      className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-bold"
+                    >
+                      <CalendarDays className="h-4 w-4" aria-hidden /> ยังไม่ได้นัดวัน · เลือกวันกันเลย
+                    </Link>
+                  )}
+                  <Link
+                    to="/chat/$id"
+                    params={{ id: m.connection_id }}
+                    className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold text-primary"
+                  >
+                    <MessageCircle className="h-4 w-4" aria-hidden /> คุยต่อในแชท
+                  </Link>
+                </div>
+              )}
+              <div role="group" aria-label="เปลี่ยนสถานะ" className="mt-3 grid grid-cols-2 gap-2">
                 {STATUSES.map((s) => (
                   <button
                     key={s}
-                    onClick={() => info && setConnectionStatus(info.conn.id, s)}
-                    className={`tap shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
+                    type="button"
+                    aria-pressed={m.status === s}
+                    onClick={() => {
+                      if (m.status === s) return;
+                      updateCommitment(m.id, { status: s });
+                      toast.success(`อัปเดตเป็น “${STATUS_TH[s]}” แล้ว`, {
+                        description: other?.name,
+                      });
+                    }}
+                    className={`tap inline-flex min-h-11 items-center justify-center gap-1 rounded-full border px-3 text-xs font-bold ${
                       m.status === s
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border bg-card text-muted-foreground"
                     }`}
                   >
-                    {DOT[s]} {STATUS_TH[s]}
+                    {m.status === s ? (
+                      <Check className="h-3.5 w-3.5" aria-hidden />
+                    ) : (
+                      <span aria-hidden>{DOT[s]}</span>
+                    )}
+                    {STATUS_TH[s]}
                   </button>
                 ))}
               </div>
@@ -113,12 +243,14 @@ function Commitments() {
           );
         })}
 
-        <Link
-          to="/matches"
-          className="tap flex h-14 items-center justify-center rounded-2xl border border-dashed border-primary/50 text-sm font-extrabold text-primary"
-        >
-          + สร้างคอนเนกชันเพิ่มอีกสักคน
-        </Link>
+        {mine.length > 0 && (
+          <Link
+            to="/matches"
+            className="tap flex h-14 items-center justify-center rounded-2xl border border-dashed border-primary/50 text-sm font-extrabold text-primary"
+          >
+            + สร้างคอนเนกชันเพิ่มอีกสักคน
+          </Link>
+        )}
       </div>
     </AppShell>
   );

@@ -13,9 +13,12 @@ function rand(seed: number) {
   };
 }
 
+const SLOW_AFTER_MS = 8000;
+
 export function LoadingScreen({ message = "กำลังเชื่อม" }: { message?: string }) {
   const { reducedMotion, lowSpec } = useMotionSettings();
   const [dot, setDot] = useState(0);
+  const [slow, setSlow] = useState(false);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -23,8 +26,19 @@ export function LoadingScreen({ message = "กำลังเชื่อม" }:
     return () => clearInterval(id);
   }, [reducedMotion]);
 
+  // เน็ตช้าเกิน 8 วินาที → บอกให้รู้ และมีปุ่มลองใหม่ ไม่ปล่อยให้รอเงียบ ๆ
+  useEffect(() => {
+    const id = setTimeout(() => setSlow(true), SLOW_AFTER_MS);
+    return () => clearTimeout(id);
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background px-6">
+    <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background px-6"
+    >
       <div className="pointer-events-none absolute inset-0 opacity-40" aria-hidden>
         <ThailandLoader reducedMotion={reducedMotion} lowSpec={lowSpec} />
       </div>
@@ -39,13 +53,28 @@ export function LoadingScreen({ message = "กำลังเชื่อม" }:
 
         <h2 className="text-2xl font-extrabold tracking-tight text-ink">
           {message}
-          <span className="inline-block w-6 text-left text-muted-foreground">
+          <span aria-hidden="true" className="inline-block w-6 text-left text-muted-foreground">
             {".".repeat(dot)}
           </span>
         </h2>
         <p className="mt-2 text-sm font-medium text-muted-foreground">
           เชื่อมคน · เชื่อมไอเดีย · เชื่อมพื้นที่
         </p>
+        {slow && (
+          <div className="mt-6 flex flex-col items-center">
+            <p className="text-sm font-semibold text-foreground">เน็ตช้านิดหน่อย รออีกแป๊บนะ</p>
+            <p lang="en" className="mt-0.5 text-sm text-muted-foreground">
+              Taking a little longer than usual…
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="tap mt-4 min-h-11 rounded-full border border-border bg-card px-5 text-sm font-bold"
+            >
+              ลองใหม่ · <span lang="en">Try again</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
