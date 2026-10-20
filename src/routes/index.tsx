@@ -121,7 +121,7 @@ function Welcome() {
           <div className="mt-6 flex flex-col gap-3 min-[420px]:flex-row">
             <Link
               to="/onboarding"
-              className="tap inline-flex h-14 flex-1 items-center justify-between rounded-full cta-holo px-6 text-base font-extrabold text-primary-foreground"
+              className="tap inline-flex h-14 shrink-0 items-center justify-between min-[420px]:flex-1 rounded-full cta-holo px-6 text-base font-extrabold text-primary-foreground"
             >
               เริ่มหาคนที่ใช่ <ArrowRight className="h-5 w-5" aria-hidden />
             </Link>
