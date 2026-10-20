@@ -180,6 +180,13 @@
   0%, 100% { transform: translateX(-34px) rotate(-10deg); opacity: 0.75; }
   50% { transform: translateX(34px) rotate(10deg); opacity: 1; }
 }
+@keyframes hero-drift {
+  0%, 100% { transform: scale(1.12) translate3d(0, 0, 0); }
+  50% { transform: scale(1.16) translate3d(0, -1.5%, 0); }
+}
+@utility animate-hero-drift {
+  animation: hero-drift 26s ease-in-out infinite;
+}
 @utility animate-swipe-hint {
   animation: swipe-hint 1.8s ease-in-out infinite;
 }
@@ -408,6 +415,7 @@ textarea.input-line {
   .animate-pop,
   .animate-draw,
   .animate-swipe-hint,
+  .animate-hero-drift,
   .cta-holo::after,
   .holo-border::before,
   body::before {

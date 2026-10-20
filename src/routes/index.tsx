@@ -21,7 +21,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { getPublicStats } from "@/lib/stats.functions";
-import heroOrbit from "@/assets/hero-orbit.jpg";
+import heroOrbit from "@/assets/hero-orbit-3d.jpg";
 import { Wordmark } from "@/components/wordmark";
 import { TOUR_EVENT } from "@/components/guided-tour";
 import { PdpaConsent } from "@/components/pdpa-consent";
@@ -99,7 +99,7 @@ function Welcome() {
           width={1024}
           height={1280}
           fetchPriority="high"
-          className="absolute inset-0 -z-10 h-full w-full object-cover object-top opacity-80"
+          className="absolute inset-0 -z-10 h-full w-full animate-hero-drift object-cover object-top opacity-80"
         />
         <div
           className="absolute inset-0 -z-10"
