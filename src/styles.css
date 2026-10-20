@@ -493,6 +493,10 @@ body::after { background-size: 100% 100%; opacity: 0.35; }
 .editorial-auth { padding-top: 64px; }
 .editorial-auth > div { max-width: 520px; }
 .editorial-auth form { padding-top: 16px; }
+.editorial-focused > :is(header, div:first-child) { max-width: 1024px; margin-inline: auto; }
+.editorial-focused > header { border-bottom: 1px solid var(--border); padding-block: 28px; }
+.editorial-focused > header h1 { font-size: 26px; font-weight: 500; white-space: normal; }
+.editorial-focused > main { padding-top: 32px; }
 .editorial-guide h2 { font-size: 24px; font-weight: 500; }
 .editorial-guide p { font-size: 16px; line-height: 1.8; }
 .editorial-journey main > .card-soft { background: transparent; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; padding-block: 40px; }

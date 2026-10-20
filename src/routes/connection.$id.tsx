@@ -85,21 +85,21 @@ function ConnectionDetail() {
   ].map(powerTh);
 
   return (
-    <div className="min-h-screen pb-36">
-      <div className="relative overflow-hidden gradient-power px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-primary-foreground">
+    <div className="editorial-focused min-h-screen pb-36">
+      <div className="relative border-b border-border bg-background px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-foreground">
         <button
           type="button"
           aria-label="ย้อนกลับ"
           onClick={() => (canGoBack ? router.history.back() : navigate({ to: "/matches" }))}
-          className="tap mb-6 inline-grid h-11 w-11 place-items-center rounded-full bg-white/20"
+          className="tap mb-6 inline-grid h-11 w-11 place-items-center rounded-full bg-accent"
         >
           <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         </button>
         <div className="flex items-center justify-center gap-3">
           <Avatar user={a} size={64} />
-          <span className="h-0.5 w-8 bg-white/60" />
-          <span className="animate-pulse-node h-3 w-3 rounded-full bg-white" />
-          <span className="h-0.5 w-8 bg-white/60" />
+          <span className="h-0.5 w-8 bg-border" />
+          <span className="h-3 w-3 rounded-full bg-electric" />
+          <span className="h-0.5 w-8 bg-border" />
           <Avatar user={b} size={64} />
         </div>
         <h1 className="mt-4 text-center text-2xl font-extrabold">
