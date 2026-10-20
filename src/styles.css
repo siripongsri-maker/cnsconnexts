@@ -69,50 +69,51 @@
 }
 
 :root {
-  /* Apple-light neutrals + Tinder-style pink→orange accent */
-  --radius: 1.1rem;
-  --background: oklch(0.988 0.002 286);
-  --foreground: oklch(0.21 0.006 286);
-  --ink: oklch(0.17 0.006 286);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.006 286);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.006 286);
-  --primary: oklch(0.58 0.22 14);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.962 0.004 286);
-  --secondary-foreground: oklch(0.21 0.006 286);
-  --muted: oklch(0.962 0.004 286);
-  --muted-foreground: oklch(0.48 0.008 286);
-  --accent: oklch(0.96 0.025 14);
-  --accent-foreground: oklch(0.45 0.18 14);
-  --destructive: oklch(0.56 0.22 27);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.915 0.004 286);
-  --input: oklch(0.9 0.004 286);
-  --ring: oklch(0.58 0.22 14);
-  --coral: oklch(0.72 0.17 50);
-  --coral-foreground: oklch(0.99 0 0);
-  --electric: oklch(0.6 0.17 250);
-  --electric-foreground: oklch(0.99 0 0);
-  --lime: oklch(0.84 0.17 145);
-  --lime-foreground: oklch(0.25 0.07 150);
-  --coral-ink: oklch(0.5 0.15 45);
-  --electric-ink: oklch(0.47 0.17 255);
-  --lime-ink: oklch(0.45 0.12 150);
-  --gradient-power: linear-gradient(120deg, oklch(0.57 0.22 8), oklch(0.6 0.19 35));
-  --gradient-brand-text: linear-gradient(120deg, oklch(0.55 0.22 8), oklch(0.58 0.18 38));
-  --brand-mark-shadow: none;
-  --gradient-soft: linear-gradient(180deg, oklch(1 0 0), oklch(0.975 0.003 286));
-  --shadow-card: 0 1px 2px oklch(0.21 0.006 286 / 0.04), 0 8px 24px -12px oklch(0.21 0.006 286 / 0.12);
-  --shadow-glow: 0 14px 36px -16px oklch(0.58 0.22 14 / 0.55);
-  --glass: oklch(1 0 0 / 0.78);
-  --glass-edge: oklch(0.21 0.006 286 / 0.06);
-  --aurora-1: oklch(0.85 0.09 14 / 0.18);
-  --aurora-2: oklch(0.9 0.06 50 / 0.14);
+  /* Deep-space theme: near-black navy, electric orbit blue, cyan glow */
+  color-scheme: dark;
+  --radius: 0.9rem;
+  --background: oklch(0.12 0.02 262);
+  --foreground: oklch(0.96 0.005 250);
+  --ink: oklch(0.98 0.004 250);
+  --card: oklch(0.17 0.03 262);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.17 0.03 262);
+  --popover-foreground: oklch(0.96 0.005 250);
+  --primary: oklch(0.7 0.16 245);
+  --primary-foreground: oklch(0.12 0.02 262);
+  --secondary: oklch(0.22 0.035 262);
+  --secondary-foreground: oklch(0.96 0.005 250);
+  --muted: oklch(0.22 0.035 262);
+  --muted-foreground: oklch(0.72 0.02 255);
+  --accent: oklch(0.25 0.06 255);
+  --accent-foreground: oklch(0.9 0.06 240);
+  --destructive: oklch(0.65 0.21 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(1 0 0 / 0.1);
+  --input: oklch(1 0 0 / 0.14);
+  --ring: oklch(0.7 0.16 245);
+  --coral: oklch(0.72 0.17 40);
+  --coral-foreground: oklch(0.12 0.02 262);
+  --electric: oklch(0.8 0.13 220);
+  --electric-foreground: oklch(0.12 0.02 262);
+  --lime: oklch(0.86 0.17 150);
+  --lime-foreground: oklch(0.2 0.06 150);
+  --coral-ink: oklch(0.8 0.13 45);
+  --electric-ink: oklch(0.82 0.12 225);
+  --lime-ink: oklch(0.86 0.15 150);
+  --gradient-power: linear-gradient(120deg, oklch(0.62 0.18 255), oklch(0.78 0.13 220));
+  --gradient-brand-text: linear-gradient(120deg, oklch(0.75 0.15 250), oklch(0.88 0.1 215));
+  --brand-mark-shadow: drop-shadow(0 0 10px oklch(0.7 0.16 245 / 0.45));
+  --gradient-soft: radial-gradient(120% 60% at 50% -10%, oklch(0.32 0.1 255), oklch(0.12 0.02 262) 70%);
+  --shadow-card: 0 1px 0 oklch(1 0 0 / 0.05) inset, 0 20px 40px -24px oklch(0 0 0 / 0.8);
+  --shadow-glow: 0 0 40px -10px oklch(0.7 0.16 245 / 0.6);
+  --glass: oklch(0.17 0.03 262 / 0.72);
+  --glass-edge: oklch(1 0 0 / 0.08);
+  --aurora-1: oklch(0.45 0.15 255 / 0.55);
+  --aurora-2: oklch(0.35 0.12 240 / 0.35);
   --aurora-3: transparent;
-  --grid-line: transparent;
-  --gradient-holo: linear-gradient(120deg, oklch(0.62 0.21 10), oklch(0.7 0.17 40));
+  --grid-line: oklch(1 0 0 / 0.025);
+  --gradient-holo: linear-gradient(120deg, oklch(0.62 0.18 255), oklch(0.85 0.1 215));
 }
 
 .dark {
@@ -307,26 +308,29 @@
     pointer-events: none;
   }
   body::before {
+    /* ขอบฟ้าดาวเคราะห์เรืองแสงด้านบน */
     background:
-      radial-gradient(40% 35% at 15% 10%, var(--aurora-1), transparent 70%),
-      radial-gradient(45% 35% at 90% 25%, var(--aurora-2), transparent 70%),
-      radial-gradient(50% 40% at 60% 95%, var(--aurora-3), transparent 70%);
-    filter: blur(20px);
+      radial-gradient(140% 60% at 30% -18%, var(--aurora-1), transparent 62%),
+      radial-gradient(60% 40% at 95% 10%, var(--aurora-2), transparent 70%);
   }
   body::after {
     inset: 0;
+    /* ดาวจุดเล็ก ๆ แบบนิ่ง */
     background-image:
-      linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size: 32px 32px;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 85%);
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 85%);
+      radial-gradient(1px 1px at 12% 22%, oklch(1 0 0 / 0.55), transparent 60%),
+      radial-gradient(1px 1px at 68% 14%, oklch(1 0 0 / 0.45), transparent 60%),
+      radial-gradient(1.5px 1.5px at 84% 48%, oklch(1 0 0 / 0.5), transparent 60%),
+      radial-gradient(1px 1px at 32% 66%, oklch(1 0 0 / 0.35), transparent 60%),
+      radial-gradient(1px 1px at 52% 88%, oklch(1 0 0 / 0.4), transparent 60%),
+      radial-gradient(1px 1px at 8% 82%, oklch(1 0 0 / 0.3), transparent 60%),
+      radial-gradient(var(--grid-line) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 22px 22px;
   }
 
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
-    font-weight: 700;
+    letter-spacing: -0.035em;
+    font-weight: 800;
   }
 }
 
