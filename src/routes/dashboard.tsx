@@ -6,12 +6,36 @@ import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { buildFeed, LiveTicker, RotatingPrompt } from "@/components/live-ticker";
 import { LiveProgress } from "@/components/live-progress";
-import { Activity, ArrowUpDown, Bell, BellOff, BookmarkPlus, CheckCircle2, Handshake, Link2, LogOut, MonitorPlay, Search, Share2, SlidersHorizontal, Sparkles, Users, X } from "lucide-react";
+import {
+  Activity,
+  ArrowUpDown,
+  Bell,
+  BellOff,
+  BookmarkPlus,
+  CheckCircle2,
+  Handshake,
+  Link2,
+  LogOut,
+  MonitorPlay,
+  Search,
+  Share2,
+  SlidersHorizontal,
+  Sparkles,
+  Users,
+  X,
+} from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
 import { LiveNetwork, NetworkBackground } from "@/components/network-background";
 import { useStore, useUserMap } from "@/lib/store";
-import { ISSUES, POWER_EMOJI, POWERS, REGIONS, type ConnectionStatus, type User } from "@/lib/types";
+import {
+  ISSUES,
+  POWER_EMOJI,
+  POWERS,
+  REGIONS,
+  type ConnectionStatus,
+  type User,
+} from "@/lib/types";
 import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 import { makeJoinCode } from "@/lib/session";
 import {
@@ -129,7 +153,7 @@ function Dashboard() {
   const [powerMode, setPowerMode] = useState<"any" | "have" | "need">(search.powerMode ?? "any");
   const [showFilters, setShowFilters] = useState(false);
   const [sort, setSort] = useState<SortKey>(
-    (SORT_OPTIONS.some((s) => s.key === search.sort) ? (search.sort as SortKey) : "relevance"),
+    SORT_OPTIONS.some((s) => s.key === search.sort) ? (search.sort as SortKey) : "relevance",
   );
 
   // --- ชุดตัวกรองที่บันทึกไว้ ---
@@ -233,7 +257,6 @@ function Dashboard() {
     }
   };
 
-
   const matchUser = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return (u: User | undefined) => {
@@ -245,8 +268,7 @@ function Dashboard() {
       if (power !== "all") {
         const inHave = u.powers_have.includes(power);
         const inNeed = u.powers_need.includes(power);
-        const ok =
-          powerMode === "have" ? inHave : powerMode === "need" ? inNeed : inHave || inNeed;
+        const ok = powerMode === "have" ? inHave : powerMode === "need" ? inNeed : inHave || inNeed;
         if (!ok) return false;
       }
       if (needle) {
@@ -410,12 +432,12 @@ function Dashboard() {
         <header className="flex flex-wrap items-center gap-4">
           <div className="min-w-0 flex-1">
             <h1 className="text-[clamp(1.75rem,3.5vw,3.25rem)] font-extrabold leading-tight">
-              ใครเชื่อมกับใครได้บ้าง <span lang="en" className="text-muted-foreground">· Who's connecting right now</span>
+              พลังที่เชื่อมถึงกัน
             </h1>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-[18px] font-extrabold text-primary-foreground">
             <span aria-hidden="true" className="h-3 w-3 animate-pulse-node rounded-full bg-lime" />
-            สด <span lang="en">· LIVE</span>
+            LIVE
           </span>
           <button
             type="button"
@@ -423,7 +445,7 @@ function Dashboard() {
             className="tap inline-flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-card px-4 text-[16px] font-extrabold"
           >
             <LogOut className="h-5 w-5" aria-hidden="true" />
-            ออกจากจอใหญ่ <span lang="en">· Exit</span>
+            ออกจากจอใหญ่
           </button>
         </header>
 
@@ -432,51 +454,77 @@ function Dashboard() {
         </div>
 
         <div className="mt-[2vh] grid grid-cols-2 gap-[2vw] lg:grid-cols-4">
-          <BigCard n={stats.people} th="คน" en="people" />
-          <BigCard n={stats.connections} th="คู่เชื่อม" en="connections" />
-          <BigCard n={stats.ideas} th="ไอเดีย" en="ideas" />
-          <BigCard n={stats.commitments} th="นัดลงมือทำ" en="commitments" />
+          <BigCard n={stats.people} label="คน" />
+          <BigCard n={stats.connections} label="คู่เชื่อม" />
+          <BigCard n={stats.ideas} label="ไอเดีย" />
+          <BigCard n={stats.commitments} label="นัดลงมือทำ" />
         </div>
 
         <div className="mt-[2vh] grid grid-cols-1 gap-[2vw] lg:grid-cols-3">
           <section className="card-soft relative p-5 lg:col-span-2">
-            <h2 className="text-[22px] font-extrabold">
-              เครือข่ายที่กำลังเกิดขึ้น <span lang="en" className="text-muted-foreground">· Connections happening now</span>
-            </h2>
+            <h2 className="text-[22px] font-extrabold">เครือข่ายที่เกิดขึ้น</h2>
             <div className="mt-3 h-[58vh] min-h-[320px]">
               <LiveNetwork users={fUsers} connections={fConnections} className="h-full" />
             </div>
           </section>
 
           <div className="space-y-[2vh]">
-            <Panel size="lg" title={<>ประเด็นที่คนสนใจที่สุด <span lang="en">· Top issues</span></>}>
+            <Panel size="lg" title="ประเด็นยอดนิยม">
               {topIssues.slice(0, 4).map(([issue, count]) => (
-                <Bar key={issue} size="lg" label={issueTh(issue)} value={count} max={topIssues[0]![1]} tone="primary" />
+                <Bar
+                  key={issue}
+                  size="lg"
+                  label={issueTh(issue)}
+                  value={count}
+                  max={topIssues[0]![1]}
+                  tone="primary"
+                />
               ))}
             </Panel>
-            <Panel size="lg" title={<>พลังที่ยังตามหา <span lang="en">· Most needed power</span></>}>
+            <Panel size="lg" title="พลังที่ยังตามหา">
               {needRank.slice(0, 3).map(([p, c]) => (
-                <Bar key={p} size="lg" label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`} value={c} max={needRank[0]![1]} tone="coral" />
+                <Bar
+                  key={p}
+                  size="lg"
+                  label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                  value={c}
+                  max={needRank[0]![1]}
+                  tone="coral"
+                />
               ))}
             </Panel>
-            <Panel size="lg" title={<>พลังที่พร้อมแบ่งปัน <span lang="en">· Most shared power</span></>}>
+            <Panel size="lg" title="พลังพร้อมแบ่งปัน">
               {haveRank.slice(0, 3).map(([p, c]) => (
-                <Bar key={p} size="lg" label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`} value={c} max={haveRank[0]![1]} tone="lime" />
+                <Bar
+                  key={p}
+                  size="lg"
+                  label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                  value={c}
+                  max={haveRank[0]![1]}
+                  tone="lime"
+                />
               ))}
             </Panel>
-            <Panel size="lg" title={<>คู่เชื่อมจากแต่ละภาค <span lang="en">· Connections by region</span></>}>
-              {byRegion.filter((r) => r.count > 0).slice(0, 5).map((r) => (
-                <Bar key={r.region} size="lg" label={REGION_LABEL[r.region]} value={r.count} max={maxRegion} tone="electric" />
-              ))}
+            <Panel size="lg" title="คู่เชื่อมแต่ละภาค">
+              {byRegion
+                .filter((r) => r.count > 0)
+                .slice(0, 5)
+                .map((r) => (
+                  <Bar
+                    key={r.region}
+                    size="lg"
+                    label={REGION_LABEL[r.region]}
+                    value={r.count}
+                    max={maxRegion}
+                    tone="electric"
+                  />
+                ))}
             </Panel>
             <div className="card-soft flex items-center gap-4 p-4">
               <div className="shrink-0 rounded-2xl bg-white p-3">
                 <QRCodeSVG value={joinUrl} size={160} level="M" />
               </div>
-              <p className="text-[20px] font-extrabold leading-snug">
-                สแกนแล้วมาเชื่อมพลังกัน
-                <span lang="en" className="block text-[16px] text-muted-foreground">Scan to join</span>
-              </p>
+              <p className="text-[20px] font-extrabold leading-snug">สแกนแล้วมาเชื่อมพลังกัน</p>
             </div>
           </div>
         </div>
@@ -485,17 +533,7 @@ function Dashboard() {
   }
 
   const feedPanel = (
-    <Panel
-      title={
-        view === "me" ? (
-          "กิจกรรมล่าสุดของคุณและทั้งงาน"
-        ) : (
-          <>
-            ใครกำลังเชื่อมกันอยู่ตอนนี้ <span lang="en">· Happening now</span>
-          </>
-        )
-      }
-    >
+    <Panel title={view === "me" ? "กิจกรรมของคุณและทั้งงาน" : <>การเชื่อมต่อล่าสุด</>}>
       {feed.length === 0 && (
         <p className="text-[13px] text-muted-foreground">ยังไม่มีกิจกรรม — เริ่มเชื่อมต่อกันเลย</p>
       )}
@@ -527,13 +565,7 @@ function Dashboard() {
   );
 
   const progressPanel = (
-    <Panel
-      title={
-        <>
-          ลงมือทำไปถึงไหนแล้ว <span lang="en">· How far we've gone</span>
-        </>
-      }
-    >
+    <Panel title={<>ความคืบหน้า</>}>
       <div className="mb-3 flex items-end justify-between">
         <p className="font-tech text-3xl font-extrabold text-primary">{completion}%</p>
         <p className="text-[12px] font-bold text-muted-foreground">
@@ -560,7 +592,7 @@ function Dashboard() {
           to="/admin/export"
           className="tap mt-1 inline-flex min-h-11 items-center text-[12px] font-bold text-muted-foreground underline underline-offset-4"
         >
-          ทีมผู้จัดดาวน์โหลดข้อมูลได้ที่หน้าแอดมิน <span lang="en">&nbsp;· Organizers: export in Admin</span>
+          ผู้จัด: ดาวน์โหลดข้อมูล
         </Link>
       )}
     </Panel>
@@ -572,7 +604,7 @@ function Dashboard() {
   return (
     <AppShell
       title="พลังในงานตอนนี้"
-      subtitle="ตอนนี้ใครเชื่อมกับใคร · Who's connecting right now"
+      titleEn="Live dashboard"
       action={
         view === "organizer" ? (
           <button
@@ -581,7 +613,7 @@ function Dashboard() {
             className="tap inline-flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-card px-4 text-[13px] font-extrabold"
           >
             <MonitorPlay className="h-4 w-4" aria-hidden="true" />
-            เปิดจอใหญ่ <span lang="en">· Present</span>
+            เปิดจอใหญ่
           </button>
         ) : undefined
       }
@@ -618,7 +650,7 @@ function Dashboard() {
           <summary className="tap flex min-h-11 cursor-pointer items-center justify-between gap-2 px-4 text-sm font-extrabold">
             <span className="flex items-center gap-2">
               <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              ค้นหาและกรอง <span lang="en" className="text-muted-foreground">· Search &amp; filter</span>
+              ค้นหาและกรอง
             </span>
             {activeCount > 0 && (
               <span className="text-[12px] text-muted-foreground">{activeCount} ตัวกรอง</span>
@@ -731,7 +763,9 @@ function Dashboard() {
                         onClick={() => setPowerMode(m.k)}
                         aria-pressed={powerMode === m.k}
                         className={`tap h-9 flex-1 rounded-lg text-xs font-extrabold ${
-                          powerMode === m.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                          powerMode === m.k
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground"
                         }`}
                       >
                         {m.l}
@@ -761,7 +795,7 @@ function Dashboard() {
                 </div>
                 {presets.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    ยังไม่มีชุดที่บันทึก — เลือกตัวกรองแล้วกด “บันทึกชุดนี้” จะได้รับแจ้งเตือนเมื่อมีคนใหม่ที่ตรงเงื่อนไข
+                    บันทึกตัวกรองเพื่อรับแจ้งเตือนเมื่อมีคนใหม่ที่ตรงเงื่อนไข
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -785,7 +819,9 @@ function Dashboard() {
                         </button>
                         <button
                           type="button"
-                          aria-label={p.alerts ? `ปิดแจ้งเตือนชุด ${p.name}` : `เปิดแจ้งเตือนชุด ${p.name}`}
+                          aria-label={
+                            p.alerts ? `ปิดแจ้งเตือนชุด ${p.name}` : `เปิดแจ้งเตือนชุด ${p.name}`
+                          }
                           aria-pressed={p.alerts}
                           title={p.alerts ? "แจ้งเตือนเปิดอยู่" : "แจ้งเตือนปิดอยู่"}
                           onClick={() => toggleAlerts(p.id)}
@@ -847,7 +883,7 @@ function Dashboard() {
               </h2>
               {results.length === 0 ? (
                 <p className="text-[12px] text-muted-foreground">
-                  ไม่เจอคนที่ตรงตัวกรอง — ลองล้างตัวกรองหรือเปลี่ยนคำค้นดูนะ
+                  ไม่พบคนที่ตรงตัวกรอง ลองล้างหรือเปลี่ยนคำค้น
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -920,7 +956,7 @@ function Dashboard() {
           </div>
           <div className="relative flex items-center gap-2 pb-3 text-[13px] font-bold">
             <span aria-hidden="true" className="h-2 w-2 rounded-full bg-lime animate-pulse-node" />
-            สด <span lang="en">· LIVE</span>
+            LIVE
           </div>
           <div className="relative pb-4">
             <RotatingPrompt />
@@ -928,17 +964,17 @@ function Dashboard() {
           <div className="relative grid grid-cols-2 gap-4">
             {view === "organizer" ? (
               <>
-                <Big n={stats.people} label={<>คน <span lang="en" className="opacity-80">· people</span></>} />
-                <Big n={stats.connections} label={<>คู่เชื่อม <span lang="en" className="opacity-80">· connections</span></>} />
-                <Big n={stats.ideas} label={<>ไอเดีย <span lang="en" className="opacity-80">· ideas</span></>} />
-                <Big n={stats.commitments} label={<>นัดลงมือทำ <span lang="en" className="opacity-80">· commitments</span></>} />
+                <Big n={stats.people} label="คน" />
+                <Big n={stats.connections} label="คู่เชื่อม" />
+                <Big n={stats.ideas} label="ไอเดีย" />
+                <Big n={stats.commitments} label="นัดลงมือทำ" />
               </>
             ) : (
               <>
-                <Big n={mine?.conns.length ?? 0} label={<>คู่เชื่อมของฉัน <span lang="en" className="opacity-80">· my connections</span></>} />
-                <Big n={mine?.comms.length ?? 0} label={<>นัดลงมือทำ <span lang="en" className="opacity-80">· commitments</span></>} />
-                <Big n={mine?.active ?? 0} label={<>กำลังทำ <span lang="en" className="opacity-80">· in progress</span></>} />
-                <Big n={mine?.done ?? 0} label={<>สำเร็จแล้ว <span lang="en" className="opacity-80">· done</span></>} />
+                <Big n={mine?.conns.length ?? 0} label="คู่เชื่อมของฉัน" />
+                <Big n={mine?.comms.length ?? 0} label="นัดลงมือทำ" />
+                <Big n={mine?.active ?? 0} label="กำลังทำ" />
+                <Big n={mine?.done ?? 0} label="สำเร็จแล้ว" />
               </>
             )}
           </div>
@@ -949,9 +985,7 @@ function Dashboard() {
         {view === "organizer" && (
           <>
             <section className="card-soft p-4">
-              <h2 className="text-[15px] font-extrabold">
-                เครือข่ายที่กำลังเกิดขึ้น <span lang="en" className="text-muted-foreground">· Connections happening now</span>
-              </h2>
+              <h2 className="text-[15px] font-extrabold">เครือข่ายที่เกิดขึ้น</h2>
               <p className="mt-0.5 text-[12px] text-muted-foreground">
                 {fConnections.length} คู่ในแผนที่นี้
               </p>
@@ -965,14 +999,14 @@ function Dashboard() {
                       to="/matches"
                       className="tap inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-[13px] font-extrabold text-primary-foreground"
                     >
-                      ไปหาคนที่ใช่ <span lang="en">&nbsp;· Find a match</span>
+                      หาคนที่ใช่
                     </Link>
                   }
                 />
               </div>
             </section>
 
-            <Panel title={<>ประเด็นที่คนสนใจที่สุด <span lang="en">· Top issues</span></>}>
+            <Panel title="ประเด็นยอดนิยม">
               {topIssues.map(([issue, count]) => (
                 <Bar
                   key={issue}
@@ -985,7 +1019,7 @@ function Dashboard() {
             </Panel>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Panel title={<>พลังที่ยังตามหา <span lang="en">· Most needed power</span></>}>
+              <Panel title="พลังที่ยังตามหา">
                 {needRank.map(([p, c]) => (
                   <Bar
                     key={p}
@@ -996,7 +1030,7 @@ function Dashboard() {
                   />
                 ))}
               </Panel>
-              <Panel title={<>พลังที่พร้อมแบ่งปัน <span lang="en">· Most shared power</span></>}>
+              <Panel title="พลังพร้อมแบ่งปัน">
                 {haveRank.map(([p, c]) => (
                   <Bar
                     key={p}
@@ -1009,7 +1043,7 @@ function Dashboard() {
               </Panel>
             </div>
 
-            <Panel title={<>คู่เชื่อมจากแต่ละภาค <span lang="en">· Connections by region</span></>}>
+            <Panel title="คู่เชื่อมแต่ละภาค">
               {byRegion.map((r) => (
                 <Bar
                   key={r.region}
@@ -1032,7 +1066,7 @@ function Dashboard() {
               <section className="card-soft p-5 text-center">
                 <p className="text-sm font-bold">ยังไม่มีโปรไฟล์ในเครื่องนี้</p>
                 <p className="mt-1 text-[13px] text-muted-foreground">
-                  สร้างโปรไฟล์แล้วมาดูว่าคุณเชื่อมกับใครไปแล้วบ้าง
+                  สร้างโปรไฟล์เพื่อดูคู่เชื่อมของคุณ
                 </p>
                 <Link
                   to="/onboarding"
@@ -1048,7 +1082,9 @@ function Dashboard() {
             {mine && (
               <Panel title="คู่เชื่อมของฉัน">
                 {mine.conns.length === 0 && (
-                  <p className="text-[13px] text-muted-foreground">ยังไม่มีคู่เชื่อม — ไปหาคนที่ใช่กันก่อน</p>
+                  <p className="text-[13px] text-muted-foreground">
+                    ยังไม่มีคู่เชื่อม — ไปหาคนที่ใช่กันก่อน
+                  </p>
                 )}
                 {mine.conns.map((c) => {
                   const other = userMap[c.user_a === me?.id ? c.user_b : c.user_a];
@@ -1063,12 +1099,17 @@ function Dashboard() {
                         <Users className="h-4 w-4" aria-hidden="true" />
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-[13px] font-bold">{other?.name ?? "ผู้เข้าร่วม"}</p>
+                        <p className="truncate text-[13px] font-bold">
+                          {other?.name ?? "ผู้เข้าร่วม"}
+                        </p>
                         <p className="truncate text-[12px] text-muted-foreground">
                           แมตช์ {c.match_score}% · {STATUS_TH[c.status]}
                         </p>
                       </div>
-                      <Sparkles className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      <Sparkles
+                        className="ml-auto h-4 w-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
                     </Link>
                   );
                 })}
@@ -1092,7 +1133,7 @@ function Dashboard() {
   );
 }
 
-function BigCard({ n, th, en }: { n: number; th: string; en: string }) {
+function BigCard({ n, label }: { n: number; label: string }) {
   const v = useCountUp(n);
   return (
     <div className="card-soft rounded-3xl p-[2vw]">
@@ -1102,9 +1143,7 @@ function BigCard({ n, th, en }: { n: number; th: string; en: string }) {
       >
         {v}
       </p>
-      <p className="mt-2 text-[clamp(1.125rem,1.8vw,1.75rem)] font-extrabold">
-        {th} <span lang="en" className="text-muted-foreground">· {en}</span>
-      </p>
+      <p className="mt-2 text-[clamp(1.125rem,1.8vw,1.75rem)] font-extrabold">{label}</p>
     </div>
   );
 }
@@ -1113,7 +1152,10 @@ function Big({ n, label }: { n: number; label: React.ReactNode }) {
   const v = useCountUp(n);
   return (
     <div>
-      <p key={n} className="font-tech animate-pop text-[clamp(2rem,11vw,3rem)] font-extrabold leading-none">
+      <p
+        key={n}
+        className="font-tech animate-pop text-[clamp(2rem,11vw,3rem)] font-extrabold leading-none"
+      >
         {v}
       </p>
       <p className="text-[13px] font-bold">{label}</p>

@@ -26,13 +26,14 @@ export const Route = createFileRoute("/marketplace")({
       { title: "ตลาดพลัง — คนส. Connexts" },
       {
         name: "description",
-        content: "จับคู่ไอเดียกับพลัง! เลือกโปรเจกต์ที่กำลังมองหาพาร์ตเนอร์ ทุน คอนเนกชัน หรือความรู้ท้องถิ่น",
+        content:
+          "จับคู่ไอเดียกับพลัง! เลือกโปรเจกต์ที่กำลังมองหาพาร์ตเนอร์ ทุน คอนเนกชัน หรือความรู้ท้องถิ่น",
       },
       { property: "og:title", content: "ตลาดพลัง — คนส. Connexts" },
       { property: "og:description", content: "ตลาดแลกเปลี่ยนพลังและไอเดีย" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: Marketplace,
 });
@@ -40,7 +41,8 @@ export const Route = createFileRoute("/marketplace")({
 type Scope = "all" | "fit" | "mine" | "saved";
 
 function Marketplace() {
-  const { ideas, users, savedIdeas, toggleSaveIdea, connect, connections, me, removeIdea } = useStore();
+  const { ideas, users, savedIdeas, toggleSaveIdea, connect, connections, me, removeIdea } =
+    useStore();
   const navigate = useNavigate();
   const [issue, setIssue] = useState<string | null>(null);
   const [region, setRegion] = useState<Region | null>(null);
@@ -55,7 +57,9 @@ function Marketplace() {
       ideas.some((i) => i.resources_need.includes(k)),
     );
     const extra = Array.from(
-      new Set(ideas.flatMap((i) => i.resources_need).filter((k) => !POWERS.some((p) => p.key === k))),
+      new Set(
+        ideas.flatMap((i) => i.resources_need).filter((k) => !POWERS.some((p) => p.key === k)),
+      ),
     );
     return [...known, ...extra];
   }, [ideas]);
@@ -111,24 +115,25 @@ function Marketplace() {
 
   const emptyText =
     scope === "saved"
-      ? "ยังไม่ได้บันทึกไอเดียไหนเลย กดบันทึกไอเดียที่สนใจไว้ดูทีหลังได้นะ"
+      ? "ยังไม่มีไอเดียที่บันทึก กดบันทึกไว้ดูภายหลังได้"
       : scope === "mine"
         ? "คุณยังไม่ได้ลงไอเดียเลย"
         : scope === "fit"
-          ? "ยังไม่มีไอเดียที่ตรงกับพลังของคุณ ลองเพิ่มพลังในโปรไฟล์ หรือดูไอเดียทั้งหมดก่อนนะ"
+          ? "ยังไม่มีไอเดียที่ตรงพลัง ลองเพิ่มพลังในโปรไฟล์หรือดูทั้งหมด"
           : "ยังไม่มีไอเดียในหมวดนี้";
 
   return (
     <AppShell
       title="ตลาดพลัง"
-      subtitle="Power Marketplace · ตลาดแลกเปลี่ยนพลังและไอเดีย"
+      titleEn="Marketplace"
+      subtitle="จับคู่ไอเดียกับพลัง"
       action={
         <button
           type="button"
           onClick={openNewIdea}
           className="tap inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-[13px] font-extrabold text-primary-foreground shadow-sm"
         >
-          <Plus className="h-4 w-4" aria-hidden="true" /> ลงไอเดียของคุณ
+          <Plus className="h-4 w-4" aria-hidden="true" /> ลงไอเดีย
         </button>
       }
     >
@@ -200,7 +205,7 @@ function Marketplace() {
           to="/onboarding"
           className="tap mx-5 mb-2 flex min-h-11 items-center rounded-xl bg-primary/10 px-3 text-[13px] font-semibold text-primary"
         >
-          สร้าง Power Profile แล้วเราจะบอกว่าไอเดียไหนคุณช่วยได้ →
+          สร้างโปรไฟล์ เพื่อดูไอเดียที่คุณช่วยได้ →
         </Link>
       )}
 
@@ -250,19 +255,15 @@ function Marketplace() {
                   <div className="mt-3 flex items-center gap-2">
                     <Avatar user={owner} size={32} />
                     <p className="min-w-0 flex-1 line-clamp-2 break-words text-[12px] font-semibold leading-snug">
-                      {owner.name} · <span className="text-muted-foreground">{owner.organization}</span>
+                      {owner.name} ·{" "}
+                      <span className="text-muted-foreground">{owner.organization}</span>
                     </p>
                   </div>
                 )}
 
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div className="border-t border-border p-3">
-                    <p className="mb-1.5 text-xs font-medium text-lime-ink">
-                      เรามีให้{" "}
-                      <span lang="en" className="font-semibold opacity-70">
-                        · We have
-                      </span>
-                    </p>
+                    <p className="mb-1.5 text-xs font-medium text-lime-ink">มีให้</p>
                     <ul className="space-y-0.5 text-[12px] font-semibold">
                       {idea.resources_have.map((r) => (
                         <li key={r}>
@@ -272,12 +273,7 @@ function Marketplace() {
                     </ul>
                   </div>
                   <div className="border-t border-border p-3">
-                    <p className="mb-1.5 text-xs font-extrabold text-foreground">
-                      เรากำลังตามหา{" "}
-                      <span lang="en" className="font-semibold opacity-70">
-                        · We need
-                      </span>
-                    </p>
+                    <p className="mb-1.5 text-xs font-extrabold text-foreground">ต้องการ</p>
                     <ul className="space-y-0.5 text-[12px] font-semibold">
                       {idea.resources_need.map((r) => (
                         <li key={r}>
@@ -313,7 +309,7 @@ function Marketplace() {
                 <div className="mt-4 flex gap-2">
                   {isMine ? (
                     <p className="flex h-12 flex-1 items-center rounded-xl bg-muted px-3 text-[13px] font-semibold text-muted-foreground">
-                      นี่คือไอเดียของคุณ รอเพื่อน ๆ มาขอเชื่อมได้เลย
+                      ไอเดียของคุณ · รอเพื่อนมาร่วมทำ
                     </p>
                   ) : me && !owner ? (
                     <button
@@ -322,7 +318,7 @@ function Marketplace() {
                       aria-disabled="true"
                       className="h-12 flex-1 rounded-xl bg-muted text-sm font-bold text-muted-foreground"
                     >
-                      ยังไม่รู้ว่าใครเป็นเจ้าของไอเดียนี้
+                      ไม่พบเจ้าของไอเดีย
                     </button>
                   ) : (
                     <button
@@ -339,7 +335,9 @@ function Marketplace() {
                             (c.user_b === "me" && c.user_a === owner.id),
                         );
                         if (existing) {
-                          toast(`คุณกับ ${owner.name} เชื่อมกันอยู่แล้ว ไปคุยต่อเรื่องไอเดียนี้กัน`);
+                          toast(
+                            `คุณกับ ${owner.name} เชื่อมกันอยู่แล้ว ไปคุยต่อเรื่องไอเดียนี้กัน`,
+                          );
                           navigate({ to: "/connection/$id", params: { id: existing.id } });
                           return;
                         }
@@ -356,17 +354,23 @@ function Marketplace() {
                       }}
                       className="tap h-12 flex-1 rounded-xl gradient-power text-sm font-extrabold text-primary-foreground"
                     >
-                      อยากเชื่อมต่อ
+                      ขอเชื่อมต่อ
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={() => {
                       toggleSaveIdea(idea.id);
-                      toast(saved ? "เอาออกจากที่บันทึกไว้แล้ว" : "บันทึกไว้แล้ว ดูได้ที่แท็บ “ที่บันทึกไว้”");
+                      toast(
+                        saved
+                          ? "เอาออกจากที่บันทึกไว้แล้ว"
+                          : "บันทึกไว้แล้ว ดูได้ที่แท็บ “ที่บันทึกไว้”",
+                      );
                     }}
                     aria-pressed={saved}
-                    aria-label={saved ? "เอาไอเดียนี้ออกจากที่บันทึกไว้" : "บันทึกไอเดียนี้ไว้ดูทีหลัง"}
+                    aria-label={
+                      saved ? "เอาไอเดียนี้ออกจากที่บันทึกไว้" : "บันทึกไอเดียนี้ไว้ดูทีหลัง"
+                    }
                     className={`tap inline-flex h-12 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-[13px] font-bold ${
                       saved ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
                     }`}
@@ -389,7 +393,7 @@ function Marketplace() {
             {hasFilters && (scope === "all" || scope === "fit") ? (
               <>
                 <p className="text-sm text-muted-foreground">
-                  ยังไม่เจอไอเดียที่ตรงกับตัวกรองนี้ ลองล้างตัวกรองดูนะ
+                  ไม่พบไอเดียที่ตรงตัวกรอง ลองล้างตัวกรอง
                 </p>
                 <button
                   type="button"
@@ -403,7 +407,7 @@ function Marketplace() {
                   onClick={openNewIdea}
                   className="tap mt-2 h-11 w-full rounded-xl border border-border bg-card text-sm font-bold"
                 >
-                  ลงไอเดียของคุณ
+                  ลงไอเดีย
                 </button>
               </>
             ) : (
@@ -423,7 +427,7 @@ function Marketplace() {
                     onClick={openNewIdea}
                     className="tap mt-3 h-11 w-full rounded-xl bg-primary text-sm font-extrabold text-primary-foreground"
                   >
-                    ลงไอเดียของคุณ
+                    ลงไอเดีย
                   </button>
                 )}
               </>

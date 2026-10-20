@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Bell, UserRound } from "lucide-react";
+import { Bell, UserRound } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { Wordmark } from "@/components/wordmark";
 import { Avatar } from "@/components/power-bits";
 import { SponsorFooter } from "@/components/sponsor-footer";
 import { BottomNav } from "@/components/bottom-nav";
@@ -20,7 +19,7 @@ export function AppShell({
 }: {
   children: ReactNode;
   title?: string;
-  /** ชื่อหน้าภาษาอังกฤษสั้น ๆ แสดงข้างโลโก้ (เช่น "People You Should Meet") */
+  /** ชื่อหน้าภาษาอังกฤษสั้น ๆ แสดงเหนือหัวเรื่อง */
   titleEn?: string;
   subtitle?: string;
   action?: ReactNode;
@@ -35,27 +34,16 @@ export function AppShell({
       {title && (
         <header className="app-page-heading">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-            <Link
-              to="/"
-              className="hidden"
-              aria-label="กลับหน้าแรก"
-            >
-              <Home className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
-            </Link>
             <div className="min-w-0 flex-1">
-              <div className="flex min-w-0 items-center gap-1.5">
-                <Link to="/" className="hidden" aria-label="คนส. Connexts">
-                  <Wordmark size="xs" withMark />
-                </Link>
-                {titleEn && (
-                  <span lang="en" className="mb-3 block font-tech text-xs uppercase text-electric-ink">
-                    {titleEn}
-                  </span>
-                )}
-              </div>
-              <h1 className="app-page-title">
-                {title}
-              </h1>
+              {titleEn && (
+                <span
+                  lang="en"
+                  className="mb-3 block font-tech text-xs uppercase text-electric-ink"
+                >
+                  {titleEn}
+                </span>
+              )}
+              <h1 className="app-page-title">{title}</h1>
             </div>
             <div className="flex items-center gap-2">
               <Link

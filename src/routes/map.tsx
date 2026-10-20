@@ -23,9 +23,9 @@ export const Route = createFileRoute("/map")({
       },
       { property: "og:title", content: "แผนที่พลังประเทศไทย" },
       { property: "og:description", content: "ดูคน ไอเดีย และเรื่องราวรายจังหวัดทั่วประเทศ" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: PowerMap,
 });
@@ -156,7 +156,8 @@ function PowerMap() {
   return (
     <AppShell
       title="แผนที่พลัง"
-      subtitle={`${filtered.length} คน · ${ideas.length} ไอเดีย · ${provinceNotes.length} เรื่องเล่าจากจังหวัด`}
+      titleEn="Power map"
+      subtitle={`${filtered.length} คน · ${ideas.length} ไอเดีย · ${provinceNotes.length} เรื่องเล่า`}
       action={
         <div
           role="group"
@@ -197,7 +198,7 @@ function PowerMap() {
             className="tap inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-card px-4 text-xs font-bold"
           >
             <X className="h-3.5 w-3.5" aria-hidden="true" />
-            ล้างตัวกรอง ({activeCount}) · <span lang="en">Clear</span>
+            ล้างตัวกรอง ({activeCount})
           </button>
         )}
         <FilterRow label="ภาค">
@@ -254,18 +255,13 @@ function PowerMap() {
 
       {filtered.length === 0 && (
         <div role="status" className="card-soft mx-5 mb-3 p-4 text-center">
-          <p className="text-sm font-extrabold">
-            ยังไม่เจอใครที่ตรงกับตัวกรองนี้ ลองเปิดกว้างขึ้นอีกนิดนะ
-          </p>
-          <p lang="en" className="mt-1 text-xs text-muted-foreground">
-            No one matches yet. Try widening your filters
-          </p>
+          <p className="text-sm font-extrabold">ไม่พบคนที่ตรงตัวกรอง ลองเลือกให้กว้างขึ้น</p>
           <button
             type="button"
             onClick={clearAll}
             className="tap mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-card px-5 text-sm font-bold"
           >
-            ล้างตัวกรอง · <span lang="en">Clear filters</span>
+            ล้างตัวกรอง
           </button>
         </div>
       )}
@@ -437,8 +433,7 @@ function PowerMap() {
               )}
             </svg>
             <p className="px-2 pb-1 pt-2 text-center text-xs text-muted-foreground">
-              แตะจังหวัดเพื่อดูว่าใครอยู่ที่นั่น แล้วชวนกันทำอะไรดี ๆ ·{" "}
-              <span lang="en">Tap a province to see who's there and what you can do together</span>
+              แตะจังหวัดเพื่อดูคนและงานในพื้นที่
             </p>
           </div>
 
@@ -457,9 +452,7 @@ function PowerMap() {
                       strokeLinecap="round"
                     />
                   </svg>
-                  <span>
-                    เส้นทึบ = คนที่คุณเชื่อมแล้ว · <span lang="en">Your connections</span>
-                  </span>
+                  <span>เส้นทึบ = เชื่อมแล้ว</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <svg width="28" height="8" aria-hidden="true" className="shrink-0">
@@ -474,10 +467,7 @@ function PowerMap() {
                       strokeDasharray="5 5"
                     />
                   </svg>
-                  <span>
-                    เส้นประ = คนที่น่าจะชวนกันทำอะไรได้ ·{" "}
-                    <span lang="en">People you could team up with</span>
-                  </span>
+                  <span>เส้นประ = คู่พลังที่แนะนำ</span>
                 </li>
               </ul>
             )
@@ -486,16 +476,11 @@ function PowerMap() {
               to="/onboarding"
               className="tap mt-3 flex min-h-11 items-center justify-center rounded-2xl border border-dashed border-primary/60 px-4 py-2 text-center text-sm font-bold text-primary"
             >
-              <span>
-                สร้างโปรไฟล์ แล้วดูว่าใครอยู่ใกล้พลังของคุณ ·{" "}
-                <span lang="en">Make a profile to see who you can team up with</span>
-              </span>
+              <span>สร้างโปรไฟล์ เพื่อดูคู่พลังของคุณ</span>
             </Link>
           )}
 
-          <h2 className="mt-4 text-sm font-extrabold">
-            จังหวัดที่มีคนอยู่ · <span lang="en">Provinces with people</span>
-          </h2>
+          <h2 className="mt-4 text-sm font-extrabold">จังหวัดที่มีผู้เข้าร่วม</h2>
           <p id="province-list-hint" className="sr-only">
             เลือกจังหวัดจากรายการด้านล่างเพื่อดูว่าใครอยู่ที่นั่น
           </p>
@@ -514,13 +499,13 @@ function PowerMap() {
             </div>
           ) : (
             <p className="mt-2 text-xs text-muted-foreground">
-              ยังไม่มีใครในตัวกรองนี้ ลองเปลี่ยนตัวกรองดูนะ
+              ไม่พบคนในตัวกรองนี้ ลองเปลี่ยนตัวกรอง
             </p>
           )}
 
           <section aria-labelledby="clusters-h" className="mt-4">
             <h2 id="clusters-h" className="mb-2 text-sm font-extrabold">
-              กลุ่มที่กำลังรวมพลัง · <span lang="en">Power clusters</span>
+              กลุ่มที่กำลังรวมพลัง
             </h2>
             <div className="grid grid-cols-2 gap-2">
               {CLUSTERS.map((c) => {
@@ -648,7 +633,7 @@ function ProvinceSheet({
       onClick={() => setShowAll(true)}
       className="tap mt-2 min-h-11 w-full rounded-2xl text-sm font-bold text-primary"
     >
-      ดูทุกคนในจังหวัดนี้ ({allPeople.length}) · <span lang="en">See everyone here</span>
+      ดูทุกคนในจังหวัด ({allPeople.length})
     </button>
   );
 
@@ -660,7 +645,10 @@ function ProvinceSheet({
         if (!o) onClose();
       }}
     >
-      <DrawerContent aria-describedby={undefined} className="max-h-[85vh] rounded-t-3xl border-0 bg-card">
+      <DrawerContent
+        aria-describedby={undefined}
+        className="max-h-[85vh] rounded-t-3xl border-0 bg-card"
+      >
         <div className="overflow-y-auto p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -713,25 +701,28 @@ function ProvinceSheet({
           {filtersOn && list.length === 0 && allPeople.length > 0 && (
             <div className="mt-4">
               <p className="rounded-2xl bg-muted p-3 text-[13px] text-muted-foreground">
-                ยังไม่มีคนที่ตรงตัวกรองในจังหวัดนี้ ·{" "}
-                <span lang="en">No one here matches your filters yet</span>
+                ไม่พบคนที่ตรงตัวกรองในจังหวัดนี้
               </p>
               {showAllButton}
             </div>
           )}
 
           <div className="mt-5">
-            <p className="mb-2 text-xs font-extrabold text-muted-foreground">เรื่องเล่าจากพื้นที่</p>
+            <p className="mb-2 text-xs font-extrabold text-muted-foreground">
+              เรื่องเล่าจากพื้นที่
+            </p>
             {notes.length === 0 && (
               <p className="rounded-2xl bg-accent/60 p-3 text-[13px] text-muted-foreground">
-                ยังไม่มีใครเล่าเรื่องจาก{province.th} มาเป็นคนแรกกันไหม?
+                ยังไม่มีเรื่องเล่าจาก{province.th} เริ่มเล่าได้เลย
               </p>
             )}
             <div className="space-y-2">
               {notes.map((n) => (
                 <article key={n.id} className="rounded-2xl border border-border p-3">
                   <p className="text-sm font-extrabold">{n.title}</p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{n.detail}</p>
+                  <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                    {n.detail}
+                  </p>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     {n.issues.map((i) => (
                       <Chip key={i} tone="primary">
@@ -755,7 +746,7 @@ function ProvinceSheet({
                 autoFocus
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="หัวข้อ เช่น กลุ่มเยาวชนอำเภอเมืองกำลังทำอะไรอยู่"
+                placeholder="เช่น กิจกรรมของกลุ่มเยาวชนอำเภอเมือง"
                 className="h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
               />
               <label htmlFor="province-note-detail" className="block text-xs font-bold">
