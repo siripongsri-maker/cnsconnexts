@@ -21,7 +21,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="เมนูหลัก"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/80 pb-[max(0.4rem,env(safe-area-inset-bottom))] backdrop-blur-xl"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 pb-[max(0.4rem,env(safe-area-inset-bottom))] backdrop-blur-lg lg:hidden"
     >
       <ul className="mx-auto flex max-w-xl items-stretch justify-between px-2 pt-2">
         {NAV.map(({ to, label, icon: Icon, match }) => {
@@ -31,16 +31,12 @@ export function BottomNav() {
               <Link
                 to={to}
                 aria-current={active ? "page" : undefined}
-                className={`tap flex min-h-11 flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-center text-xs font-semibold leading-tight ${
-                  active ? "text-primary" : "text-muted-foreground"
+                className={`tap flex min-h-11 flex-col items-center gap-1 border-t px-1 py-1.5 text-center text-xs font-semibold leading-tight ${
+                  active ? "border-primary text-primary" : "border-transparent text-muted-foreground"
                 }`}
               >
                 <span
-                  className={`relative grid h-8 w-12 shrink-0 place-items-center rounded-full transition-all duration-200 ${
-                    active
-                      ? "bg-primary/12 "
-                      : ""
-                  }`}
+                  className="relative grid h-7 w-10 shrink-0 place-items-center"
                 >
                   <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.6 : 2} aria-hidden />
                 </span>

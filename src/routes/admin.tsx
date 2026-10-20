@@ -141,8 +141,8 @@ function AdminLayout() {
   }
 
   return (
-    <div className="min-h-dvh bg-muted/30">
-      <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
+    <div className="admin-experience min-h-dvh bg-background">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
           <Link to="/" aria-label="กลับหน้าแรก" className="tap grid h-9 w-9 place-items-center rounded-xl bg-muted">
             <Home className="h-4 w-4" />
@@ -168,7 +168,7 @@ function AdminLayout() {
               to={to}
               activeOptions={{ exact: "exact" in rest ? Boolean(rest.exact) : false }}
               activeProps={{ className: "border-primary bg-primary/10 text-primary" }}
-              className="tap inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[12px] font-bold text-muted-foreground"
+              className="tap inline-flex min-h-11 shrink-0 items-center gap-1.5 border-b border-transparent px-3 py-1.5 text-xs font-medium text-muted-foreground"
             >
               <Icon className="h-3.5 w-3.5" /> {label}
             </Link>
