@@ -19,7 +19,9 @@ export const Route = createFileRoute("/commitments")({
       },
       { property: "og:title", content: "จะทำอะไรต่อดี? — คนส. Connexts" },
       { property: "og:description", content: "รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: Commitments,
 });

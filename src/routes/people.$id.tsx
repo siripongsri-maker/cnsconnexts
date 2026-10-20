@@ -14,7 +14,9 @@ export const Route = createFileRoute("/people/$id")({
       { name: "description", content: "ดูว่าคนนี้มีพลังอะไรมาแบ่งปัน และกำลังมองหาอะไรอยู่" },
       { property: "og:title", content: "โปรไฟล์พลัง — คนส. Connexts" },
       { property: "og:description", content: "ดูว่าเขามีพลังอะไร และกำลังมองหาอะไร" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: Person,
   notFoundComponent: () => (

@@ -7,6 +7,14 @@ import { useStore } from "@/lib/store";
 import { issueTh, provinceTh } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/map")({
+  head: () => ({ meta: [
+    { title: "จัดการบันทึกจังหวัด — คนส. Connexts" },
+    { name: "description", content: "จัดการบันทึกจังหวัดสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "จัดการบันทึกจังหวัด — คนส. Connexts" },
+    { property: "og:description", content: "จัดการบันทึกจังหวัดสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminMap,
 });
 

@@ -30,7 +30,9 @@ export const Route = createFileRoute("/marketplace")({
       },
       { property: "og:title", content: "ตลาดพลัง — คนส. Connexts" },
       { property: "og:description", content: "ตลาดแลกเปลี่ยนพลังและไอเดีย" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: Marketplace,
 });

@@ -7,6 +7,14 @@ import { STATUS_TH } from "@/lib/i18n";
 import { RSVP_TH, type ConnectionStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/commitments")({
+  head: () => ({ meta: [
+    { title: "จัดการคำมั่นและนัดหมาย — คนส. Connexts" },
+    { name: "description", content: "จัดการคำมั่นและนัดหมายสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "จัดการคำมั่นและนัดหมาย — คนส. Connexts" },
+    { property: "og:description", content: "จัดการคำมั่นและนัดหมายสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminCommitments,
 });
 

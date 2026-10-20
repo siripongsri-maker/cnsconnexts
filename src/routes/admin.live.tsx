@@ -6,6 +6,14 @@ import { useStore } from "@/lib/store";
 import { buildFeed, RotatingPrompt } from "@/components/live-ticker";
 
 export const Route = createFileRoute("/admin/live")({
+  head: () => ({ meta: [
+    { title: "จอสดผู้ดูแล — คนส. Connexts" },
+    { name: "description", content: "จอสดผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "จอสดผู้ดูแล — คนส. Connexts" },
+    { property: "og:description", content: "จอสดผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminLive,
 });
 

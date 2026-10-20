@@ -49,6 +49,14 @@ function buildTrend(dates: string[], bucket: Bucket) {
 }
 
 export const Route = createFileRoute("/admin/")({
+  head: () => ({ meta: [
+    { title: "ภาพรวมผู้ดูแล — คนส. Connexts" },
+    { name: "description", content: "ภาพรวมผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "ภาพรวมผู้ดูแล — คนส. Connexts" },
+    { property: "og:description", content: "ภาพรวมผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminOverview,
 });
 

@@ -15,7 +15,9 @@ export const Route = createFileRoute("/qr")({
       },
       { property: "og:title", content: "สแกนเพื่อเข้าร่วม คนส. Connexts" },
       { property: "og:description", content: "สแกนเพื่อเข้าร่วม แล้วสร้างโปรไฟล์พลังของคุณ" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: QrPoster,
 });

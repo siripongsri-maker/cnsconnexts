@@ -32,6 +32,14 @@ import {
 } from "@/lib/usage-log";
 
 export const Route = createFileRoute("/admin/logs")({
+  head: () => ({ meta: [
+    { title: "สถิติการใช้งาน — คนส. Connexts" },
+    { name: "description", content: "สถิติการใช้งานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "สถิติการใช้งาน — คนส. Connexts" },
+    { property: "og:description", content: "สถิติการใช้งานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminLogs,
 });
 

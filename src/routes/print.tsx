@@ -19,7 +19,9 @@ export const Route = createFileRoute("/print")({
       },
       { property: "og:title", content: "ชุดไฟล์พิมพ์สำหรับหน้างาน" },
       { property: "og:description", content: "บอร์ด A0 · การ์ด A4 · ป้าย QR" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: PrintKit,
 });

@@ -8,6 +8,14 @@ import { provinceTh, REGION_LABEL } from "@/lib/i18n";
 import type { Submission } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/submissions")({
+  head: () => ({ meta: [
+    { title: "จัดการผลงาน — คนส. Connexts" },
+    { name: "description", content: "จัดการผลงานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "จัดการผลงาน — คนส. Connexts" },
+    { property: "og:description", content: "จัดการผลงานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminSubmissions,
 });
 

@@ -9,6 +9,14 @@ import { listBackups, type BackupRow } from "@/lib/backup.functions";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 
 export const Route = createFileRoute("/admin/backups")({
+  head: () => ({ meta: [
+    { title: "สำรองและกู้คืนข้อมูล — คนส. Connexts" },
+    { name: "description", content: "สำรองและกู้คืนข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "สำรองและกู้คืนข้อมูล — คนส. Connexts" },
+    { property: "og:description", content: "สำรองและกู้คืนข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminBackups,
 });
 

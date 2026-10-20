@@ -8,6 +8,14 @@ import { issueTh, REGION_LABEL } from "@/lib/i18n";
 import { ISSUES, REGIONS, type Idea, type Region } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/ideas")({
+  head: () => ({ meta: [
+    { title: "จัดการไอเดีย — คนส. Connexts" },
+    { name: "description", content: "จัดการไอเดียสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "จัดการไอเดีย — คนส. Connexts" },
+    { property: "og:description", content: "จัดการไอเดียสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminIdeas,
 });
 

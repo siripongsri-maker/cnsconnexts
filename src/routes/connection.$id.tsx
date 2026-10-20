@@ -26,7 +26,9 @@ export const Route = createFileRoute("/connection/$id")({
       },
       { property: "og:title", content: "การ์ดคอนเนกชันของคุณ — คนส. Connexts" },
       { property: "og:description", content: "เจอกันแล้ว ทำอะไรต่อดี?" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: ConnectionDetail,
   notFoundComponent: () => (

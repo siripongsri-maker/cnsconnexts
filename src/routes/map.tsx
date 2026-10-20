@@ -23,7 +23,9 @@ export const Route = createFileRoute("/map")({
       },
       { property: "og:title", content: "แผนที่พลังประเทศไทย" },
       { property: "og:description", content: "ดูคน ไอเดีย และเรื่องราวรายจังหวัดทั่วประเทศ" },
-    ],
+          { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+],
   }),
   component: PowerMap,
 });

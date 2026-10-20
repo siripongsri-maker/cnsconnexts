@@ -6,6 +6,14 @@ import { useStore } from "@/lib/store";
 import { ADMIN_PASSWORD, ADMIN_USER } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/settings")({
+  head: () => ({ meta: [
+    { title: "ตั้งค่าผู้ดูแล — คนส. Connexts" },
+    { name: "description", content: "ตั้งค่าผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "ตั้งค่าผู้ดูแล — คนส. Connexts" },
+    { property: "og:description", content: "ตั้งค่าผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminSettings,
 });
 

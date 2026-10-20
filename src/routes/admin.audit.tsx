@@ -8,6 +8,14 @@ import { listAuditLog, type AuditRow } from "@/lib/backup.functions";
 import { downloadCSV, type Row } from "@/lib/export";
 
 export const Route = createFileRoute("/admin/audit")({
+  head: () => ({ meta: [
+    { title: "ประวัติการแก้ไข — คนส. Connexts" },
+    { name: "description", content: "ประวัติการแก้ไขสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "ประวัติการแก้ไข — คนส. Connexts" },
+    { property: "og:description", content: "ประวัติการแก้ไขสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminAudit,
 });
 

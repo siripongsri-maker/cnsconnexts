@@ -4,6 +4,14 @@ import { Copy, Printer, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/qr")({
+  head: () => ({ meta: [
+    { title: "QR และป้ายเข้าร่วม — คนส. Connexts" },
+    { name: "description", content: "QR และป้ายเข้าร่วมสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:title", content: "QR และป้ายเข้าร่วม — คนส. Connexts" },
+    { property: "og:description", content: "QR และป้ายเข้าร่วมสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: AdminQr,
 });
 
