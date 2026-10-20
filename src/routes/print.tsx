@@ -314,7 +314,7 @@ function PrintKit() {
               ยกกล้องมือถือส่อง QR แล้วเพิ่มโปรไฟล์ ผลงาน และหมุดจังหวัดของคุณขึ้นแผนที่ได้ทันที
             </p>
             <div className="mt-8 rounded-3xl border-4 border-primary p-6">
-              <QRCodeSVG value={url} size={280} level="M" bgColor="transparent" fgColor="#3b0f78" />
+              <QRCodeSVG value={url} size={280} level="M" bgColor="transparent" fgColor="#1d1d1f" />
             </div>
             <p className="mt-6 text-lg font-extrabold">รหัสห้อง {code}</p>
             <p className="mt-1 text-sm text-muted-foreground">{url}</p>
@@ -339,7 +339,7 @@ function Block({ label, children }: { label: string; children: React.ReactNode }
 function QrBlock({ url, code, size }: { url: string; code: string; size: number }) {
   return (
     <div className="shrink-0 text-center">
-      <QRCodeSVG value={url} size={size} level="M" bgColor="transparent" fgColor="#3b0f78" />
+      <QRCodeSVG value={url} size={size} level="M" bgColor="transparent" fgColor="#1d1d1f" />
       <p className="mt-1 text-xs font-bold text-muted-foreground">อัปเดตข้อมูล · {code}</p>
     </div>
   );
