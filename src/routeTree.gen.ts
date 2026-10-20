@@ -36,6 +36,7 @@ import { Route as AdminBackupPolicyRouteImport } from './routes/admin.backup-pol
 import { Route as AdminBackupsRouteImport } from './routes/admin.backups'
 import { Route as AdminCommitmentsRouteImport } from './routes/admin.commitments'
 import { Route as AdminConnectionsRouteImport } from './routes/admin.connections'
+import { Route as AdminCostsRouteImport } from './routes/admin.costs'
 import { Route as AdminExportRouteImport } from './routes/admin.export'
 import { Route as AdminIdeasRouteImport } from './routes/admin.ideas'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
@@ -185,6 +186,11 @@ const AdminConnectionsRoute = AdminConnectionsRouteImport.update({
   path: '/connections',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCostsRoute = AdminCostsRouteImport.update({
+  id: '/costs',
+  path: '/costs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminExportRoute = AdminExportRouteImport.update({
   id: '/export',
   path: '/export',
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/admin/backups': typeof AdminBackupsRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/costs': typeof AdminCostsRoute
   '/admin/export': typeof AdminExportRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
@@ -319,6 +326,7 @@ export interface FileRoutesByTo {
   '/admin/backups': typeof AdminBackupsRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/costs': typeof AdminCostsRoute
   '/admin/export': typeof AdminExportRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
@@ -362,6 +370,7 @@ export interface FileRoutesById {
   '/admin/backups': typeof AdminBackupsRoute
   '/admin/commitments': typeof AdminCommitmentsRoute
   '/admin/connections': typeof AdminConnectionsRoute
+  '/admin/costs': typeof AdminCostsRoute
   '/admin/export': typeof AdminExportRoute
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/backups'
     | '/admin/commitments'
     | '/admin/connections'
+    | '/admin/costs'
     | '/admin/export'
     | '/admin/ideas'
     | '/admin/import'
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/admin/backups'
     | '/admin/commitments'
     | '/admin/connections'
+    | '/admin/costs'
     | '/admin/export'
     | '/admin/ideas'
     | '/admin/import'
@@ -489,6 +500,7 @@ export interface FileRouteTypes {
     | '/admin/backups'
     | '/admin/commitments'
     | '/admin/connections'
+    | '/admin/costs'
     | '/admin/export'
     | '/admin/ideas'
     | '/admin/import'
@@ -723,6 +735,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConnectionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/costs': {
+      id: '/admin/costs'
+      path: '/costs'
+      fullPath: '/admin/costs'
+      preLoaderRoute: typeof AdminCostsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/export': {
       id: '/admin/export'
       path: '/export'
@@ -823,6 +842,7 @@ interface AdminRouteChildren {
   AdminBackupsRoute: typeof AdminBackupsRoute
   AdminCommitmentsRoute: typeof AdminCommitmentsRoute
   AdminConnectionsRoute: typeof AdminConnectionsRoute
+  AdminCostsRoute: typeof AdminCostsRoute
   AdminExportRoute: typeof AdminExportRoute
   AdminIdeasRoute: typeof AdminIdeasRoute
   AdminImportRoute: typeof AdminImportRoute
@@ -842,6 +862,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminBackupsRoute: AdminBackupsRoute,
   AdminCommitmentsRoute: AdminCommitmentsRoute,
   AdminConnectionsRoute: AdminConnectionsRoute,
+  AdminCostsRoute: AdminCostsRoute,
   AdminExportRoute: AdminExportRoute,
   AdminIdeasRoute: AdminIdeasRoute,
   AdminImportRoute: AdminImportRoute,
