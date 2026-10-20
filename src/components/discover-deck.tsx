@@ -97,7 +97,7 @@ export function DiscoverDeck({
     if (busy) return;
     finish("right", () => {
       toggleLikeUser(u.id);
-      toast.success("บันทึกไว้ในรายการถูกใจแล้ว 💜", { description: u.name });
+      toast.success("บันทึกไว้ในรายการถูกใจแล้ว ❤️", { description: u.name });
     });
   };
   const doConnect = () => {
@@ -132,20 +132,26 @@ export function DiscoverDeck({
     ? `translateX(${fly === "left" ? -420 : 420}px) rotate(${fly === "left" ? -14 : 14}deg)`
     : `translateX(${drag}px) rotate(${drag / 22}deg)`;
 
+  const place = provinceTh(u.province) || REGION_LABEL[u.region];
+  const stampOpacity = Math.min(Math.abs(drag) / 90, 1);
+
   return (
-    <div className="px-5">
+    <div className="px-4">
       <SwipeCoach />
-      <div className="relative">
+      <div className="relative h-[calc(100dvh-300px)] min-h-[440px]">
         {next && (
-          <div className="card-soft absolute inset-x-2 top-3 h-full scale-[0.97] opacity-50" aria-hidden />
+          <div
+            className="absolute inset-x-3 top-3 bottom-0 scale-[0.96] rounded-[2rem] bg-card opacity-70 shadow-[var(--shadow-card)]"
+            aria-hidden
+          />
         )}
 
         <article
           key={u.id}
-          className="card-soft holo-border relative touch-pan-y overflow-hidden p-4"
+          className="absolute inset-0 flex touch-pan-y flex-col overflow-hidden rounded-[2rem] bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
           style={{
             transform,
-            transition: fly || drag === 0 ? "transform 180ms ease-out" : undefined,
+            transition: fly || drag === 0 ? "transform 220ms cubic-bezier(0.22,1,0.36,1)" : undefined,
           }}
           onPointerDown={(e) => {
             if (busy) return;
@@ -154,7 +160,6 @@ export function DiscoverDeck({
           onPointerMove={(e) => {
             if (busy || start.current === null) return;
             const dx = e.clientX - start.current;
-            // จับ pointer เฉพาะตอนลากจริง ให้แตะลิงก์ในการ์ดได้ และปล่อยนอกการ์ดแล้วไม่ค้าง
             if (Math.abs(dx) > 8 && !e.currentTarget.hasPointerCapture(e.pointerId)) {
               e.currentTarget.setPointerCapture(e.pointerId);
             }
@@ -173,105 +178,113 @@ export function DiscoverDeck({
             if (!e.currentTarget.hasPointerCapture(e.pointerId)) resetDrag();
           }}
         >
-          <div className="flex items-start gap-3">
-            <Avatar user={u} size={64} />
-            <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-2 break-words text-lg font-extrabold leading-snug">{u.name}</h3>
-              <p className="line-clamp-2 break-words text-[12px] leading-snug text-muted-foreground">
-                {provinceTh(u.province) || REGION_LABEL[u.region]} · {u.organization}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {u.interests.slice(0, 2).map((i) => (
-                  <Chip key={i} tone="primary">
-                    {issueTh(i)}
-                  </Chip>
-                ))}
+          {/* ภาพเต็มการ์ดแบบแอปหาคู่ */}
+          <div className="relative min-h-0 flex-[1.15] overflow-hidden bg-accent">
+            {u.photo ? (
+              <img
+                src={u.photo}
+                alt={u.name}
+                draggable={false}
+                className="absolute inset-0 h-full w-full select-none object-cover"
+              />
+            ) : (
+              <div
+                className="absolute inset-0 grid place-items-center gradient-power"
+                aria-hidden
+              >
+                <span className="text-[96px] leading-none drop-shadow-sm">
+                  {u.avatar || u.name.slice(0, 1)}
+                </span>
               </div>
-            </div>
-            <ScoreRing score={top.score} />
-          </div>
-
-          {/* ทำไมควรเจอกัน — ประโยคเดียวสั้น ๆ */}
-          <p className="mt-3 flex items-start gap-1.5 text-[13px] font-semibold leading-relaxed text-foreground">
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-            {top.reason}
-          </p>
-
-          <div className="mt-3 grid grid-cols-2 gap-3">
-            <div>
-              <p className="mb-1.5 text-xs font-extrabold text-muted-foreground">
-                เขามีให้
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {top.theyBring.slice(0, 2).map((p) => (
-                  <PowerChip key={p} name={p} tone="lime" />
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="mb-1.5 text-xs font-extrabold text-muted-foreground">
-                เขากำลังหา
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {top.theyNeed.slice(0, 2).map((p) => (
-                  <PowerChip key={p} name={p} tone="coral" canHelp={top.youCanGive.includes(p)} />
-                ))}
-              </div>
-              {top.youCanGive.length > 0 && (
-                <p className="mt-1 text-xs font-semibold text-muted-foreground">✓ = เรื่องที่คุณช่วยเขาได้</p>
-              )}
-            </div>
-          </div>
-
-          <Link
-            to="/people/$id"
-            params={{ id: u.id }}
-            className="tap mt-1 inline-flex min-h-11 items-center text-[12px] font-bold text-primary underline underline-offset-4"
-          >
-            ดูโปรไฟล์เต็ม
-          </Link>
-
-          {drag < -40 && (
-            <span className="pointer-events-none absolute right-4 top-4 rounded-xl border-2 border-muted-foreground px-2 py-1 text-xs font-extrabold text-muted-foreground">
-              ข้าม
+            )}
+            <div
+              className="absolute inset-x-0 bottom-0 h-2/3"
+              style={{ background: "linear-gradient(to top, oklch(0.15 0.01 286 / 0.78), transparent)" }}
+              aria-hidden
+            />
+            <span className="absolute right-4 top-4 rounded-full bg-card/90 px-3 py-1.5 font-tech text-sm font-bold text-primary shadow-sm backdrop-blur">
+              {top.score}% <span className="text-xs text-muted-foreground">แมตช์</span>
             </span>
-          )}
-          {drag > 40 && (
-            <span className="pointer-events-none absolute left-4 top-4 rounded-xl border-2 border-primary px-2 py-1 text-xs font-extrabold text-primary">
+            <div className="absolute inset-x-0 bottom-0 p-5 text-primary-foreground">
+              <h3 className="line-clamp-2 break-words text-[28px] font-bold leading-tight">{u.name}</h3>
+              <p className="mt-1 line-clamp-1 text-sm font-medium opacity-90">
+                {place}
+                {u.organization ? ` · ${u.organization}` : ""}
+              </p>
+            </div>
+
+            <span
+              className="pointer-events-none absolute left-5 top-6 -rotate-12 rounded-xl border-[3px] border-primary bg-card/80 px-3 py-1 text-xl font-extrabold text-primary"
+              style={{ opacity: drag > 0 ? stampOpacity : 0 }}
+              aria-hidden
+            >
               สนใจ
             </span>
-          )}
+            <span
+              className="pointer-events-none absolute right-5 top-16 rotate-12 rounded-xl border-[3px] border-muted-foreground bg-card/80 px-3 py-1 text-xl font-extrabold text-muted-foreground"
+              style={{ opacity: drag < 0 ? stampOpacity : 0 }}
+              aria-hidden
+            >
+              ข้าม
+            </span>
+          </div>
+
+          <div className="no-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
+            <p className="flex items-start gap-2 text-[15px] font-semibold leading-relaxed">
+              <Sparkles className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
+              {top.reason}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {u.interests.slice(0, 2).map((i) => (
+                <Chip key={i} tone="primary">
+                  {issueTh(i)}
+                </Chip>
+              ))}
+              {top.theyBring.slice(0, 2).map((p) => (
+                <PowerChip key={p} name={p} tone="lime" />
+              ))}
+              {top.theyNeed.slice(0, 2).map((p) => (
+                <PowerChip key={p} name={p} tone="coral" canHelp={top.youCanGive.includes(p)} />
+              ))}
+            </div>
+            <Link
+              to="/people/$id"
+              params={{ id: u.id }}
+              className="tap inline-flex min-h-11 items-center text-sm font-bold text-primary"
+            >
+              ดูโปรไฟล์เต็ม →
+            </Link>
+          </div>
 
           {burst && <ConnectBurst name={u.name} />}
         </article>
       </div>
 
-      <div className="mt-4 grid grid-cols-[64px_1fr_64px] items-center gap-3">
+      <div className="mt-5 flex items-center justify-center gap-5">
         <button
           type="button"
           aria-label="ข้ามคนนี้"
           onClick={doSkip}
           disabled={busy}
-          className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-border bg-card"
+          className="tap grid h-16 w-16 place-items-center rounded-full bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
         >
-          <X className="h-5 w-5 text-muted-foreground" aria-hidden />
-          <span className="text-xs font-extrabold text-muted-foreground">ข้าม</span>
+          <X className="h-7 w-7 text-muted-foreground" strokeWidth={2.6} aria-hidden />
         </button>
 
         {existing ? (
           <Link
             to="/connection/$id"
             params={{ id: existing.id }}
-            className="tap inline-flex h-16 items-center justify-center rounded-2xl bg-lime px-4 text-sm font-extrabold text-lime-foreground"
+            className="tap inline-flex h-16 items-center justify-center rounded-full bg-lime px-6 text-sm font-extrabold text-lime-foreground"
           >
-            เชื่อมกันแล้ว ✨ ดูก้าวต่อไป
+            เชื่อมแล้ว · ดูต่อ
           </Link>
         ) : (
           <button
             type="button"
             onClick={doConnect}
             disabled={busy}
-            className="tap inline-flex h-16 items-center justify-center rounded-2xl cta-holo px-4 text-base font-extrabold text-primary-foreground"
+            className="tap inline-flex h-16 items-center justify-center rounded-full cta-holo px-8 text-base font-extrabold text-primary-foreground"
           >
             ขอเชื่อมต่อ
           </button>
@@ -282,16 +295,13 @@ export function DiscoverDeck({
           aria-label="สนใจ เก็บไว้ก่อน"
           onClick={doLike}
           disabled={busy}
-          className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-coral/40 bg-coral/10"
+          className="tap grid h-16 w-16 place-items-center rounded-full bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
         >
-          <Heart className="h-5 w-5 text-coral-ink" aria-hidden />
-          <span className="text-xs font-extrabold text-coral-ink">สนใจ</span>
+          <Heart className="h-7 w-7 text-primary" fill="currentColor" aria-hidden />
         </button>
       </div>
 
-      <p className="mt-2 text-center text-xs text-muted-foreground">
-        เหลืออีก {matches.length - 1} คน
-      </p>
+      <p className="mt-3 text-center text-xs text-muted-foreground">เหลืออีก {matches.length - 1} คน</p>
     </div>
   );
 }
