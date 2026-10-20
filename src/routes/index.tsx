@@ -20,9 +20,8 @@ import { useState } from "react";
 
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { useMotionSettings } from "@/lib/motion";
 import { getPublicStats } from "@/lib/stats.functions";
-import { ThailandNetwork } from "@/components/thailand-network";
+import heroOrbit from "@/assets/hero-orbit.jpg";
 import { Wordmark } from "@/components/wordmark";
 import { TOUR_EVENT } from "@/components/guided-tour";
 import { PdpaConsent } from "@/components/pdpa-consent";
@@ -72,7 +71,6 @@ const NAV_LINKS = [
 ] as const;
 
 function Welcome() {
-  const { reducedMotion, lowSpec } = useMotionSettings();
   const { stats } = Route.useLoaderData();
   const { users, ideas, connections } = useStore();
   const live = {
@@ -90,126 +88,138 @@ function Welcome() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       <PdpaConsent />
-      <div className="pointer-events-none absolute inset-x-0 top-[10%] bottom-0 z-0 text-primary opacity-55">
-        <ThailandNetwork count={18} reducedMotion={reducedMotion} lowSpec={lowSpec} />
-      </div>
-
       <TopNav />
       <BottomNav />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-xl flex-col justify-between px-6 pb-[max(6.5rem,env(safe-area-inset-bottom)+5rem)] pt-[max(6rem,env(safe-area-inset-top)+4.5rem)]">
-
-        <div className="animate-rise py-10" style={{ animationDelay: "80ms" }}>
-          <p lang="en" className="mb-2 font-tech text-sm font-bold uppercase tracking-wide text-primary">
-            Connecting Power
+      {/* HERO — ภาพเต็มจอแบบภารกิจอวกาศ */}
+      <section className="relative isolate flex min-h-[100svh] flex-col justify-end overflow-hidden px-6 pb-[max(7rem,env(safe-area-inset-bottom)+6rem)] pt-28">
+        <img
+          src={heroOrbit}
+          alt=""
+          width={1024}
+          height={1280}
+          fetchPriority="high"
+          className="absolute inset-0 -z-10 h-full w-full object-cover object-top opacity-80"
+        />
+        <div
+          className="absolute inset-0 -z-10"
+          style={{ background: "linear-gradient(to top, var(--background) 18%, transparent 65%)" }}
+          aria-hidden
+        />
+        <div className="mx-auto w-full max-w-xl animate-rise">
+          <p lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">
+            Find your people. Act together.
           </p>
-          <h1 className="min-w-0">
-            <Wordmark size="hero" />
+          <h1 className="mt-3 text-[clamp(2.6rem,13vw,4.5rem)] font-extrabold uppercase leading-[0.92] tracking-tight">
+            <span lang="en" className="font-tech block">Connecting</span>
+            <span lang="en" className="font-tech block text-gradient">Power</span>
           </h1>
-          <p className="mt-4 text-lg font-semibold text-primary">
-            เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ
+          <p className="mt-4 text-lg font-bold">เชื่อมคน เชื่อมไอเดีย เชื่อมพื้นที่ สู่การลงมือทำ</p>
+          <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
+            ทุกคนมีพลังไม่เหมือนกัน ปัดหาคนที่ใช่ในงานนี้ ใช้เวลาไม่ถึง 2 นาที
           </p>
-          <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-muted-foreground">
-            ทุกคนมีพลังไม่เหมือนกัน มาค้นหากันเถอะว่าวันนี้คุณควรเชื่อมต่อกับใคร
-          </p>
-          <p lang="en" className="mt-1.5 max-w-sm text-[14px] leading-relaxed text-muted-foreground">
-            Everyone brings a different kind of power. Let's discover who you should connect with
-            today.
-          </p>
-        </div>
-        <div className="animate-rise" style={{ animationDelay: "160ms" }}>
-          {live.people > 0 ? (
-            <>
-              <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                <span
-                  className="h-2 w-2 rounded-full bg-primary motion-safe:animate-pulse"
-                  aria-hidden="true"
-                />
-                สด · <span lang="en">Live</span>
-              </p>
-              <div className="grid grid-cols-2 gap-2 min-[400px]:grid-cols-4">
-                {tiles.map((t) => (
-                  <Link key={t.en} to="/dashboard" className="tap card-soft block px-2 py-3 text-center">
-                    <p className="font-tech text-2xl font-bold text-primary">{t.n}</p>
-                    <p className="text-xs font-bold text-muted-foreground">{t.th}</p>
-                    <p lang="en" className="text-xs text-muted-foreground">
-                      {t.en}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="card-soft px-4 py-3">
-              <p className="text-sm font-bold">เพิ่งเปิดงาน มาเป็นคนแรกที่เชื่อมพลังกันนะ</p>
-              <p lang="en" className="text-xs text-muted-foreground">
-                We're just getting started. Be the first to connect!
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="animate-rise mt-8 space-y-3" style={{ animationDelay: "240ms" }}>
-          <Link
-            to="/onboarding"
-            className="tap flex h-16 items-center justify-between rounded-3xl cta-holo px-6 text-primary-foreground"
-          >
-            <span className="text-left">
-              <span className="block text-base font-extrabold">ค้นหาคนที่ควรเชื่อมต่อ</span>
-              <span lang="en" className="block text-[12px] opacity-90">
-                Find My Connections
-              </span>
-            </span>
-            <ArrowRight className="h-5 w-5 shrink-0" aria-hidden="true" />
-          </Link>
-          <Link
-            to="/map"
-            className="tap flex h-14 items-center gap-3 rounded-3xl border border-border bg-card/80 px-5 backdrop-blur"
-          >
-            <Map className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-            <span className="text-left leading-tight">
-              <span className="block text-sm font-bold">สำรวจแผนที่พลัง</span>
-              <span lang="en" className="block text-xs text-muted-foreground">
-                Explore the Power Map
-              </span>
-            </span>
-            <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          </Link>
-
-          <div className="flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-6 flex flex-col gap-3 min-[420px]:flex-row">
+            <Link
+              to="/onboarding"
+              className="tap inline-flex h-14 shrink-0 items-center justify-between min-[420px]:flex-1 rounded-full cta-holo px-6 text-base font-extrabold text-primary-foreground"
+            >
+              เริ่มหาคนที่ใช่ <ArrowRight className="h-5 w-5" aria-hidden />
+            </Link>
             <Link
               to="/scan"
-              className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-primary"
+              className="tap inline-flex h-14 items-center justify-center gap-2 rounded-full border border-border bg-card/40 px-6 text-sm font-bold backdrop-blur"
             >
-              <QrCode className="h-4 w-4" aria-hidden="true" />
-              มี QR จากบอร์ด? สแกนเลย
-            </Link>
-            <Link
-              to="/guide"
-              className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-bold text-primary"
-            >
-              <BookOpenCheck className="h-4 w-4" aria-hidden="true" />
-              ดูวิธีใช้ใน 1 นาที
+              <QrCode className="h-4 w-4" aria-hidden /> สแกน QR
             </Link>
           </div>
-
-          <p className="pt-1 text-center text-xs text-muted-foreground">
-            ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
-          </p>
         </div>
+      </section>
 
-        <SponsorFooter className="mt-8" />
+      <div className="relative z-10 mx-auto max-w-xl px-6 pb-[max(7rem,env(safe-area-inset-bottom)+6rem)]">
+        {/* ตัวเลขสดแบบสเปกชีต */}
+        <section aria-label="สถิติสดในงาน" className="border-y border-border">
+          <p className="flex items-center gap-2 pt-4 font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">
+            <span className="h-1.5 w-1.5 rounded-full bg-electric motion-safe:animate-pulse" aria-hidden />
+            Live now · สดในงาน
+          </p>
+          <div className="grid grid-cols-2 min-[420px]:grid-cols-4">
+            {tiles.map((t) => (
+              <Link key={t.en} to="/dashboard" className="tap block py-4 pr-3">
+                <p className="font-tech text-4xl font-bold tracking-tight">{t.n}</p>
+                <p className="mt-1 text-xs font-semibold text-muted-foreground">
+                  {t.th} · <span lang="en">{t.en}</span>
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* โจทย์ / ทางออก */}
+        <section className="py-14">
+          <p lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">The Challenge</p>
+          <h2 className="mt-3 text-[26px] leading-snug">
+            คนเก่งมาอยู่ในงานเดียวกันเป็นพัน <span className="text-muted-foreground">แต่ไม่รู้จะคุยกับใคร แลกนามบัตรแล้วก็จบแค่นั้น</span>
+          </h2>
+          <p lang="en" className="mt-12 font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">The Solution</p>
+          <h2 className="mt-3 text-[26px] leading-snug">
+            บอกว่าคุณมีพลังอะไร ต้องการอะไร <span className="text-gradient">แล้วระบบจับคู่คนที่เติมกันได้พอดี</span>
+          </h2>
+        </section>
+
+        {/* เส้นทางภารกิจ 4 ขั้น */}
+        <section className="pb-14">
+          <p lang="en" className="font-tech text-xs font-bold uppercase tracking-[0.2em] text-electric-ink">Mission lifecycle</p>
+          <ol className="mt-4">
+            {STEPS.map((st, i) => (
+              <li key={st.en}>
+                <Link to={st.to} className="tap group flex items-baseline gap-5 border-t border-border py-5">
+                  <span className="font-tech text-sm font-bold text-muted-foreground">0{i + 1}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xl font-extrabold">{st.th}</span>
+                    <span className="mt-1 block text-sm text-muted-foreground">{st.d}</span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="card-soft holo-border rounded-[2rem] p-7 text-center">
+          <h2 className="text-[28px] uppercase leading-tight">
+            <span lang="en" className="font-tech">Ready to launch?</span>
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">สร้างโปรไฟล์พลัง แล้วเริ่มปัดหาคนที่ใช่ได้ทันที</p>
+          <Link
+            to="/onboarding"
+            className="tap mt-5 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full cta-holo text-base font-extrabold text-primary-foreground"
+          >
+            เริ่มเลย <ArrowRight className="h-5 w-5" aria-hidden />
+          </Link>
+          <Link to="/guide" className="tap mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-primary">
+            <BookOpenCheck className="h-4 w-4" aria-hidden /> ดูวิธีใช้ใน 1 นาที
+          </Link>
+        </section>
+
+        <SponsorFooter className="mt-10" />
       </div>
     </div>
   );
 }
+
+const STEPS = [
+  { th: "สร้างโปรไฟล์พลัง", en: "Profile", d: "บอกสิ่งที่ให้ได้และสิ่งที่ต้องการ", to: "/onboarding" },
+  { th: "ปัดหาคนที่ใช่", en: "Match", d: "การ์ดเต็มจอ พร้อมเหตุผลที่ควรเจอกัน", to: "/matches" },
+  { th: "เชื่อมและนัดคุย", en: "Connect", d: "แชท เสนอวันเวลา ในแอปเดียว", to: "/commitments" },
+  { th: "ลงมือทำด้วยกัน", en: "Act", d: "ไอเดียขึ้นตลาดพลัง และติดตามผลสด", to: "/marketplace" },
+] as const;
 
 function TopNav() {
   const [open, setOpen] = useState(false);
   const { mode, displayName, signOut } = useAuth();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-30 bg-background/40 backdrop-blur-md">
       <div className="mx-auto flex max-w-xl items-center justify-between px-4 pb-3 pt-[max(0.9rem,env(safe-area-inset-top))]">
         <Link to="/" className="min-w-0 shrink" aria-label="คนส. Connexts หน้าแรก">
           <Wordmark size="sm" withMark />
