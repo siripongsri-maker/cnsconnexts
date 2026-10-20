@@ -1,3 +1,4 @@
+import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
@@ -8,14 +9,19 @@ import { STATUS_TH } from "@/lib/i18n";
 import type { ConnectionStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/connections")({
-  head: () => ({ meta: [
-    { title: "จัดการคู่เชื่อม — คนส. Connexts" },
-    { name: "description", content: "จัดการคู่เชื่อมสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "จัดการคู่เชื่อม — คนส. Connexts" },
-    { property: "og:description", content: "จัดการคู่เชื่อมสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "จัดการคู่เชื่อม — คนส. Connexts" },
+      { name: "description", content: "จัดการคู่เชื่อมสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "จัดการคู่เชื่อม — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "จัดการคู่เชื่อมสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminConnections,
 });
 
@@ -25,24 +31,27 @@ function AdminConnections() {
   const { connections, users, me, setConnectionStatus, removeConnection } = useStore();
   const [filter, setFilter] = useState<ConnectionStatus | "all">("all");
 
-  const nameOf = (id: string) => (id === "me" ? (me?.name ?? "ฉัน") : (users.find((u) => u.id === id)?.name ?? "ไม่ระบุ"));
+  const nameOf = (id: string) =>
+    id === "me" ? (me?.name ?? "ฉัน") : (users.find((u) => u.id === id)?.name ?? "ไม่ระบุ");
   const shown = connections.filter((c) => filter === "all" || c.status === filter);
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-[18px] font-extrabold">จัดการคู่เชื่อม</h1>
-        <p className="text-[12px] text-muted-foreground">ดูและปรับสถานะคู่เชื่อมทั้งงาน · {connections.length} คู่</p>
-      </header>
+    <div className="admin-workspace admin-workspace-connections space-y-4">
+      <div className="admin-section-meta">
+        <span>สถานะคู่เชื่อม</span>
+        <span>{connections.length} คู่</span>
+      </div>
 
-      <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+      <div className="admin-filter-strip no-scrollbar flex gap-1.5 overflow-x-auto">
         {(["all", ...STATUSES] as const).map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setFilter(s)}
             className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-bold ${
-              filter === s ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground"
+              filter === s
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground"
             }`}
           >
             {s === "all" ? "ทั้งหมด" : STATUS_TH[s]}
@@ -50,7 +59,14 @@ function AdminConnections() {
         ))}
       </div>
 
-      <ul className="space-y-3">
+      {shown.length === 0 && (
+        <MissionEmpty
+          className="admin-empty"
+          title="ยังไม่มีคู่เชื่อมในสถานะนี้"
+          description="ลองเลือกสถานะอื่น หรือรอการเชื่อมต่อใหม่"
+        />
+      )}
+      <ul className="admin-records space-y-3">
         {shown.map((c) => (
           <li key={c.id} className="card-soft rounded-2xl bg-card p-4">
             <div className="flex items-start gap-2">

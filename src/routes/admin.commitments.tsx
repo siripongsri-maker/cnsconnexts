@@ -1,3 +1,4 @@
+import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -7,14 +8,22 @@ import { STATUS_TH } from "@/lib/i18n";
 import { RSVP_TH, type ConnectionStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/commitments")({
-  head: () => ({ meta: [
-    { title: "จัดการคำมั่นและนัดหมาย — คนส. Connexts" },
-    { name: "description", content: "จัดการคำมั่นและนัดหมายสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "จัดการคำมั่นและนัดหมาย — คนส. Connexts" },
-    { property: "og:description", content: "จัดการคำมั่นและนัดหมายสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "จัดการคำมั่นและนัดหมาย — คนส. Connexts" },
+      {
+        name: "description",
+        content: "จัดการคำมั่นและนัดหมายสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:title", content: "จัดการคำมั่นและนัดหมาย — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "จัดการคำมั่นและนัดหมายสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminCommitments,
 });
 
@@ -23,7 +32,8 @@ const STATUSES: ConnectionStatus[] = ["Connected", "Planning", "In Progress", "C
 function AdminCommitments() {
   const { commitments, connections, users, me, updateCommitment, removeCommitment } = useStore();
 
-  const nameOf = (id: string) => (id === "me" ? (me?.name ?? "ฉัน") : (users.find((u) => u.id === id)?.name ?? "ไม่ระบุ"));
+  const nameOf = (id: string) =>
+    id === "me" ? (me?.name ?? "ฉัน") : (users.find((u) => u.id === id)?.name ?? "ไม่ระบุ");
   const pairOf = (connectionId: string) => {
     const c = connections.find((x) => x.id === connectionId);
     return c ? `${nameOf(c.user_a)} ↔ ${nameOf(c.user_b)}` : "ไม่พบคู่เชื่อม";
@@ -34,21 +44,28 @@ function AdminCommitments() {
   );
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-[18px] font-extrabold">จัดการคำมั่นสัญญาและวันนัด</h1>
-        <p className="text-[12px] text-muted-foreground">
-          แก้ไขรายละเอียด วันนัด และสถานะ · {commitments.length} รายการ
-        </p>
-      </header>
+    <div className="admin-workspace admin-workspace-commitments space-y-4">
+      <div className="admin-section-meta">
+        <span>คำมั่นและนัดหมาย</span>
+        <span>{commitments.length} รายการ</span>
+      </div>
 
-      <ul className="space-y-3">
+      {sorted.length === 0 && (
+        <MissionEmpty
+          className="admin-empty"
+          title="ยังไม่มีคำมั่น"
+          description="นัดหมายและแผนร่วมกันจะปรากฏที่นี่"
+        />
+      )}
+      <ul className="admin-records space-y-3">
         {sorted.map((m) => (
           <li key={m.id} className="card-soft space-y-3 rounded-2xl bg-card p-4">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 <p className="break-words text-sm font-extrabold">{pairOf(m.connection_id)}</p>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{m.action_type}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  {m.action_type}
+                </p>
               </div>
               <button
                 type="button"

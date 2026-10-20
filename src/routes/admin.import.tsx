@@ -17,14 +17,15 @@ export const Route = createFileRoute("/admin/import")({
       },
       { property: "og:title", content: "นำเข้ารายชื่อจาก สช." },
       { property: "og:description", content: "อัปโหลด CSV แล้วขึ้นหมุดบนแผนที่ทันที" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: ImportPage,
 });
 
-const TEMPLATE = "ชื่อ,จังหวัด,องค์กร,หลักสูตร,ประเด็น,สรุปงาน\nสมชาย ใจดี,เชียงราย,สภาเยาวชน,คนส.,เยาวชน,ทำงานเยาวชนในพื้นที่";
+const TEMPLATE =
+  "ชื่อ,จังหวัด,องค์กร,หลักสูตร,ประเด็น,สรุปงาน\nสมชาย ใจดี,เชียงราย,สภาเยาวชน,คนส.,เยาวชน,ทำงานเยาวชนในพื้นที่";
 
 function splitLine(line: string) {
   const out: string[] = [];
@@ -118,15 +119,20 @@ function ImportPage() {
   const valid = rows.filter((r) => r.ok);
 
   return (
-    <AppShell title="นำเข้ารายชื่อ (CSV)" subtitle={`ฐานข้อมูลปัจจุบัน ${users.length} คน`}>
-      <div className="space-y-5 px-5 pb-32 pt-4">
-        <label className="tap flex h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-border bg-card text-sm font-bold text-muted-foreground">
+    <AppShell title="นำเข้ารายชื่อ (CSV)">
+      <div className="admin-workspace admin-workspace-import space-y-5">
+        <div className="admin-section-meta">
+          <span>นำเข้ารายชื่อ</span>
+          <span>สมาชิกปัจจุบัน {users.length} คน</span>
+        </div>
+        <label className="admin-upload-zone tap flex h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-border bg-card text-sm font-bold text-muted-foreground">
           <FileUp className="h-6 w-6 text-primary" />
-          {fileName || "เลือกไฟล์ CSV รายชื่อจาก สช."}
+          <span className="admin-upload-title">{fileName || "เลือกไฟล์ CSV"}</span>
+          <span className="admin-upload-hint">รายชื่อใหม่ พร้อมเชื่อมเข้าสู่เครือข่าย</span>
           <input
             type="file"
             accept=".csv,text/csv,text/plain"
-            className="hidden"
+            className="sr-only"
             onChange={(e) => onFile(e.target.files?.[0])}
           />
         </label>
@@ -180,7 +186,7 @@ function ImportPage() {
               disabled={valid.length === 0}
               className="tap flex h-14 w-full items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground disabled:opacity-40"
             >
-              นำเข้า {valid.length} รายชื่อ แล้วขึ้นหมุดบนแผนที่
+              นำเข้า {valid.length} รายชื่อ
             </button>
           </>
         )}

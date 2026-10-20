@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Heart, Layers, List } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { MissionVisual } from "@/components/mission-ui";
 import { MatchCard } from "@/components/match-card";
 import { ShareCardButton } from "@/components/share-card-button";
 import { DiscoverDeck } from "@/components/discover-deck";
@@ -63,19 +64,24 @@ function Matches() {
 
   if (!me) {
     return (
-      <AppShell title="คนที่คุณควรเจอวันนี้">
+      <AppShell title="คนที่คุณควรเจอวันนี้" titleEn="Discover">
         {!hydrated ? (
-          <p className="p-6 text-sm text-muted-foreground">กำลังโหลดรายชื่อคู่เชื่อม…</p>
+          <div role="status" aria-live="polite" className="core-empty mission-empty">
+            <MissionVisual variant="signal" className="core-empty-visual" />
+            <p className="mission-kicker">FINDING YOUR CONNECTIONS</p>
+            <h2>กำลังเชื่อมพลังของคุณ</h2>
+            <p className="text-sm text-muted-foreground">กำลังโหลดโปรไฟล์และรายชื่อคู่เชื่อม…</p>
+          </div>
         ) : (
-          <div role="status" className="card-soft m-5 grid gap-3 p-6 text-center">
-            <p className="text-sm font-bold">ยังโหลดโปรไฟล์ไม่ได้</p>
-            <p className="text-[12px] text-muted-foreground">
-              ลองโหลดอีกครั้ง ข้อมูลของคุณยังอยู่ครบ
-            </p>
+          <div role="status" className="core-empty mission-empty">
+            <MissionVisual variant="profile" className="core-empty-visual" />
+            <p className="mission-kicker">LET’S RECONNECT</p>
+            <h2>ยังโหลดโปรไฟล์ไม่ได้</h2>
+            <p className="text-sm text-muted-foreground">ลองโหลดอีกครั้ง ข้อมูลของคุณยังอยู่ครบ</p>
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="tap inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+              className="core-empty-action tap"
             >
               ลองอีกครั้ง
             </button>
@@ -105,61 +111,87 @@ function Matches() {
         />
       }
     >
-      <div className="px-5 pt-3">
-        <div className="grid grid-cols-3 gap-1 rounded-2xl bg-muted p-1">
-          <ModeTab
-            active={mode === "deck"}
-            onClick={() => setMode("deck")}
-            icon={<Layers className="h-4 w-4" />}
-          >
-            ปัดเร็ว
-          </ModeTab>
-          <ModeTab
-            active={mode === "list"}
-            onClick={() => setMode("list")}
-            icon={<List className="h-4 w-4" />}
-          >
-            รายการ
-          </ModeTab>
-          <ModeTab
-            active={mode === "liked"}
-            onClick={() => setMode("liked")}
-            icon={<Heart className="h-4 w-4" />}
-          >
-            ถูกใจ {liked.length > 0 ? `(${liked.length})` : ""}
-          </ModeTab>
+      <div className="core-page core-discover">
+        <div className="core-discover-toolbar px-5 pt-3">
+          <div className="core-section-head">
+            <div>
+              <p className="mission-kicker">FIND YOUR PEOPLE</p>
+              <h2>เลือกคนที่พลังเสริมกัน</h2>
+            </div>
+            <span className="core-data-count">
+              {all.length} <span>คนที่แนะนำ</span>
+            </span>
+          </div>
+          <div className="core-mode-tabs grid grid-cols-3 gap-1 rounded-2xl bg-muted p-1">
+            <ModeTab
+              active={mode === "deck"}
+              onClick={() => setMode("deck")}
+              icon={<Layers className="h-4 w-4" />}
+            >
+              ปัดเร็ว
+            </ModeTab>
+            <ModeTab
+              active={mode === "list"}
+              onClick={() => setMode("list")}
+              icon={<List className="h-4 w-4" />}
+            >
+              รายการ
+            </ModeTab>
+            <ModeTab
+              active={mode === "liked"}
+              onClick={() => setMode("liked")}
+              icon={<Heart className="h-4 w-4" />}
+            >
+              ถูกใจ {liked.length > 0 ? `(${liked.length})` : ""}
+            </ModeTab>
+          </div>
         </div>
-      </div>
 
-      <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-5 py-3">
-        <FilterPill active={!issue} onClick={() => setIssue(null)}>
-          ทุกประเด็น
-        </FilterPill>
-        {ISSUES.filter((i) => i !== "Other").map((i) => (
-          <FilterPill key={i} active={issue === i} onClick={() => setIssue(i)}>
-            {issueTh(i)}
+        <div className="core-filter-strip no-scrollbar flex gap-2 overflow-x-auto px-5 py-3">
+          <FilterPill active={!issue} onClick={() => setIssue(null)}>
+            ทุกประเด็น
           </FilterPill>
-        ))}
-      </div>
-
-      {mode === "deck" ? (
-        <div className="pb-8">
-          <DiscoverDeck matches={deck} onShowLiked={() => setMode("liked")} />
-        </div>
-      ) : (
-        <div className="space-y-3 px-5 pb-6">
-          {(mode === "liked" ? liked : all).length === 0 && (
-            <p className="card-soft p-6 text-center text-sm text-muted-foreground">
-              {mode === "liked"
-                ? "ยังไม่มีคนถูกใจ ลองโหมดปัดเร็ว"
-                : "ยังไม่มีใครในหมวดนี้ ลองประเด็นอื่น"}
-            </p>
-          )}
-          {(mode === "liked" ? liked : all).map((m, i) => (
-            <MatchCard key={m.user.id} match={m} index={i} />
+          {ISSUES.filter((i) => i !== "Other").map((i) => (
+            <FilterPill key={i} active={issue === i} onClick={() => setIssue(i)}>
+              {issueTh(i)}
+            </FilterPill>
           ))}
         </div>
-      )}
+
+        {mode === "deck" ? (
+          <div className="core-discovery-space pb-8">
+            <DiscoverDeck matches={deck} onShowLiked={() => setMode("liked")} />
+          </div>
+        ) : (
+          <div className="core-match-grid px-5 pb-6">
+            {(mode === "liked" ? liked : all).length === 0 && (
+              <div className="core-empty mission-empty">
+                <MissionVisual variant="network" className="core-empty-visual" />
+                <p className="mission-kicker">NEXT CONNECTION</p>
+                <h2>เปิดพื้นที่ให้คนใหม่</h2>
+                <p className="text-sm text-muted-foreground">
+                  {mode === "liked"
+                    ? "ยังไม่มีคนถูกใจ ลองโหมดปัดเร็ว"
+                    : "ยังไม่มีใครในหมวดนี้ ลองประเด็นอื่น"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIssue(null);
+                    setMode("deck");
+                  }}
+                  className="core-empty-action"
+                >
+                  ค้นหาต่อ <span aria-hidden="true">↗</span>
+                </button>
+              </div>
+            )}
+            {(mode === "liked" ? liked : all).map((m, i) => (
+              <MatchCard key={m.user.id} match={m} index={i} />
+            ))}
+          </div>
+        )}
+      </div>
     </AppShell>
   );
 }

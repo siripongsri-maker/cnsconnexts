@@ -2,8 +2,19 @@ import { useEffect, useId, useMemo, useState } from "react";
 import { FollowUpTabs } from "@/components/follow-up-tabs";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { BellRing, CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, Clock, Download, MessageCircle, Send } from "lucide-react";
+import {
+  BellRing,
+  CalendarDays,
+  CalendarPlus,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Download,
+  MessageCircle,
+  Send,
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { MissionVisual } from "@/components/mission-ui";
 import { REMINDER_STAGES } from "@/components/commitment-reminders";
 import { RsvpButtons } from "@/components/rsvp-buttons";
 import { commitmentToEvent, downloadICS, googleCalendarUrl } from "@/lib/ical";
@@ -35,8 +46,18 @@ export const Route = createFileRoute("/calendar")({
 const STATUSES: ConnectionStatus[] = ["Connected", "Planning", "In Progress", "Completed"];
 const DOW = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
 const MONTHS_TH = [
-  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+  "มกราคม",
+  "กุมภาพันธ์",
+  "มีนาคม",
+  "เมษายน",
+  "พฤษภาคม",
+  "มิถุนายน",
+  "กรกฎาคม",
+  "สิงหาคม",
+  "กันยายน",
+  "ตุลาคม",
+  "พฤศจิกายน",
+  "ธันวาคม",
 ];
 
 const dayKey = (d: Date) =>
@@ -54,7 +75,8 @@ const timeTh = (iso: string) =>
   new Date(iso).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
 
 function CalendarPage() {
-  const { connections, commitments, users, addCommitment, updateCommitment, sendMessage } = useStore();
+  const { connections, commitments, users, addCommitment, updateCommitment, sendMessage } =
+    useStore();
   const [cursor, setCursor] = useState(() => new Date());
   const [selected, setSelected] = useState(() => dayKey(new Date()));
 
@@ -97,170 +119,180 @@ function CalendarPage() {
   const selectedList = byDay.get(selected) ?? [];
   const todayKey = dayKey(new Date());
 
-  const noCommitment = shownConnections.filter(
-    (c) => !shown.some((m) => m.connection_id === c.id),
-  );
+  const noCommitment = shownConnections.filter((c) => !shown.some((m) => m.connection_id === c.id));
 
   return (
-    <AppShell title="จะทำอะไรต่อดี?" subtitle="ก้าวต่อไปของเรา">
-      <FollowUpTabs />
-      <div className="space-y-4 px-5 py-4">
-        <button
-          type="button"
-          onClick={() => {
-            const events = shown
-              .map((m) => commitmentToEvent(m, partnerOf(m.connection_id)?.name))
-              .filter((e): e is NonNullable<typeof e> => Boolean(e));
-            if (events.length === 0) {
-              toast.error("ยังไม่มีนัดที่ระบุวันเวลา");
-              return;
-            }
-            downloadICS("นัดของฉัน", events);
-            toast.success(`บันทึก ${events.length} นัดของคุณแล้ว`, {
-              description: "เปิดไฟล์ .ics เพื่อบันทึกลงปฏิทินของคุณ",
-            });
-          }}
-          className="tap flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-xs font-extrabold text-foreground"
-        >
-          <Download className="h-4 w-4 text-primary" aria-hidden /> บันทึกนัดของฉันลงปฏิทิน (.ics)
-        </button>
-
-        <div className="card-soft p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <button
-              type="button"
-              aria-label="เดือนก่อนหน้า"
-              onClick={() => setCursor(new Date(year, month - 1, 1))}
-              className="tap inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent"
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-            </button>
-            <p className="text-sm font-extrabold">
-              {MONTHS_TH[month]} {year + 543}
-            </p>
-            <button
-              type="button"
-              aria-label="เดือนถัดไป"
-              onClick={() => setCursor(new Date(year, month + 1, 1))}
-              className="tap inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent"
-            >
-              <ChevronRight className="h-4 w-4" aria-hidden />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-muted-foreground">
-            {DOW.map((d) => (
-              <span key={d}>{d}</span>
-            ))}
-          </div>
-          <div className="mt-1 grid grid-cols-7 gap-1">
-            {cells.map((d, i) => {
-              if (!d) return <span key={`e-${i}`} />;
-              const k = dayKey(d);
-              const count = byDay.get(k)?.length ?? 0;
-              const isSel = k === selected;
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  aria-label={`${d.getDate()} ${MONTHS_TH[month]}${count ? ` · มีนัด ${count} รายการ` : ""}`}
-                  aria-pressed={isSel}
-                  aria-current={k === todayKey ? "date" : undefined}
-                  onClick={() => setSelected(k)}
-                  className={`tap flex aspect-square flex-col items-center justify-center rounded-xl text-xs font-semibold ${
-                    isSel
-                      ? "bg-primary text-primary-foreground"
-                      : k === todayKey
-                        ? "bg-accent ring-1 ring-primary/40"
-                        : "bg-accent/60"
-                  }`}
-                >
-                  {d.getDate()}
-                  <span
-                    aria-hidden="true"
-                    className={`mt-0.5 h-1.5 w-1.5 rounded-full ${
-                      count ? (isSel ? "bg-primary-foreground" : "bg-primary") : "bg-transparent"
-                    }`}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <section className="card-soft p-4">
-          <h2 className="flex items-center gap-2 text-sm font-extrabold">
-            <CalendarDays className="h-4 w-4 text-primary" aria-hidden />
-            นัดหมายวันที่{" "}
-            {(() => {
-              const [y = 0, mo = 1, da = 1] = selected.split("-").map(Number);
-              return new Date(y, mo - 1, da).toLocaleDateString("th-TH", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
+    <AppShell
+      title="ปฏิทินนัดหมาย"
+      titleEn="Make it happen"
+      subtitle="กำหนดวัน แล้วเริ่มลงมือด้วยกัน"
+    >
+      <div className="core-page core-calendar">
+        <FollowUpTabs />
+        <div className="core-calendar-board px-5 py-4">
+          <button
+            type="button"
+            onClick={() => {
+              const events = shown
+                .map((m) => commitmentToEvent(m, partnerOf(m.connection_id)?.name))
+                .filter((e): e is NonNullable<typeof e> => Boolean(e));
+              if (events.length === 0) {
+                toast.error("ยังไม่มีนัดที่ระบุวันเวลา");
+                return;
+              }
+              downloadICS("นัดของฉัน", events);
+              toast.success(`บันทึก ${events.length} นัดของคุณแล้ว`, {
+                description: "เปิดไฟล์ .ics เพื่อบันทึกลงปฏิทินของคุณ",
               });
-            })()}
-          </h2>
-          {selectedList.length === 0 ? (
-            <p className="mt-2 text-xs text-muted-foreground">ยังไม่มีนัดในวันที่เลือก ลองแตะวันอื่น หรือเสนอเวลาใหม่ด้านล่างได้เลย</p>
-          ) : (
-            <ul className="mt-3 space-y-3">
-              {selectedList.map((m) => (
-                <li key={m.id}>
-                  <CommitmentRow
-                    m={m}
-                    partner={partnerOf(m.connection_id)}
-                    onUpdate={updateCommitment}
-                    onSend={sendMessage}
-                    onScheduled={(iso) => setSelected(dayKey(new Date(iso)))}
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+            }}
+            className="core-calendar-export tap flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-accent px-4 py-3 text-xs font-extrabold text-foreground"
+          >
+            <Download className="h-4 w-4 text-primary" aria-hidden /> บันทึกนัดลงปฏิทิน (.ics)
+          </button>
 
-        {unscheduled.length > 0 && (
-          <section className="card-soft p-4">
+          <div className="core-month card-soft p-4">
+            <p className="mission-kicker">PLAN YOUR NEXT STEP</p>
+            <div className="mb-3 flex items-center justify-between">
+              <button
+                type="button"
+                aria-label="เดือนก่อนหน้า"
+                onClick={() => setCursor(new Date(year, month - 1, 1))}
+                className="tap inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent"
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden />
+              </button>
+              <p className="text-sm font-extrabold">
+                {MONTHS_TH[month]} {year + 543}
+              </p>
+              <button
+                type="button"
+                aria-label="เดือนถัดไป"
+                onClick={() => setCursor(new Date(year, month + 1, 1))}
+                className="tap inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent"
+              >
+                <ChevronRight className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-muted-foreground">
+              {DOW.map((d) => (
+                <span key={d}>{d}</span>
+              ))}
+            </div>
+            <div className="mt-1 grid grid-cols-7 gap-1">
+              {cells.map((d, i) => {
+                if (!d) return <span key={`e-${i}`} />;
+                const k = dayKey(d);
+                const count = byDay.get(k)?.length ?? 0;
+                const isSel = k === selected;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    aria-label={`${d.getDate()} ${MONTHS_TH[month]}${count ? ` · มีนัด ${count} รายการ` : ""}`}
+                    aria-pressed={isSel}
+                    aria-current={k === todayKey ? "date" : undefined}
+                    onClick={() => setSelected(k)}
+                    className={`tap flex aspect-square flex-col items-center justify-center rounded-xl text-xs font-semibold ${
+                      isSel
+                        ? "bg-primary text-primary-foreground"
+                        : k === todayKey
+                          ? "bg-accent ring-1 ring-primary/40"
+                          : "bg-accent/60"
+                    }`}
+                  >
+                    {d.getDate()}
+                    <span
+                      aria-hidden="true"
+                      className={`mt-0.5 h-1.5 w-1.5 rounded-full ${
+                        count ? (isSel ? "bg-primary-foreground" : "bg-primary") : "bg-transparent"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <section className="core-selected-day card-soft p-4">
+            <p className="mission-kicker">DAILY AGENDA</p>
             <h2 className="flex items-center gap-2 text-sm font-extrabold">
-              <Clock className="h-4 w-4 text-primary" aria-hidden />
-              รอเสนอวันเวลา ({unscheduled.length})
+              <CalendarDays className="h-4 w-4 text-primary" aria-hidden />
+              นัดหมายวันที่{" "}
+              {(() => {
+                const [y = 0, mo = 1, da = 1] = selected.split("-").map(Number);
+                return new Date(y, mo - 1, da).toLocaleDateString("th-TH", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                });
+              })()}
             </h2>
-            <ul className="mt-3 space-y-3">
-              {unscheduled.map((m) => (
-                <li key={m.id}>
-                  <CommitmentRow
-                    m={m}
-                    partner={partnerOf(m.connection_id)}
-                    onUpdate={updateCommitment}
-                    onSend={sendMessage}
-                    onScheduled={(iso) => setSelected(dayKey(new Date(iso)))}
-                  />
-                </li>
-              ))}
-            </ul>
+            {selectedList.length === 0 ? (
+              <div className="core-day-empty">
+                <CalendarPlus className="h-10 w-10" aria-hidden="true" />
+                <h3>วันนี้ยังว่างอยู่</h3>
+                <p>เลือกวันอื่น หรือเสนอเวลาใหม่ด้านล่าง</p>
+              </div>
+            ) : (
+              <ul className="mt-3 space-y-3">
+                {selectedList.map((m) => (
+                  <li key={m.id}>
+                    <CommitmentRow
+                      m={m}
+                      partner={partnerOf(m.connection_id)}
+                      onUpdate={updateCommitment}
+                      onSend={sendMessage}
+                      onScheduled={(iso) => setSelected(dayKey(new Date(iso)))}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
-        )}
 
-        {noCommitment.length > 0 && (
-          <section className="card-soft p-4">
-            <h2 className="text-sm font-extrabold">คอนเนกชันที่ยังไม่มีก้าวต่อไป</h2>
-            <ul className="mt-3 space-y-3">
-              {noCommitment.map((c) => (
-                <li key={c.id}>
-                  <NewCommitmentRow
-                    connectionId={c.id}
-                    partner={partnerOf(c.id)}
-                    onCreate={addCommitment}
-                    onCreated={(iso) => setSelected(dayKey(new Date(iso)))}
-                  />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+          {unscheduled.length > 0 && (
+            <section className="core-calendar-pending card-soft p-4">
+              <h2 className="flex items-center gap-2 text-sm font-extrabold">
+                <Clock className="h-4 w-4 text-primary" aria-hidden />
+                รอเสนอวันเวลา ({unscheduled.length})
+              </h2>
+              <ul className="mt-3 space-y-3">
+                {unscheduled.map((m) => (
+                  <li key={m.id}>
+                    <CommitmentRow
+                      m={m}
+                      partner={partnerOf(m.connection_id)}
+                      onUpdate={updateCommitment}
+                      onSend={sendMessage}
+                      onScheduled={(iso) => setSelected(dayKey(new Date(iso)))}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
-        {mine.length === 0 && <NoConnectionsCard />}
+          {noCommitment.length > 0 && (
+            <section className="core-calendar-pending card-soft p-4">
+              <h2 className="text-sm font-extrabold">คอนเนกชันที่ยังไม่มีก้าวต่อไป</h2>
+              <ul className="mt-3 space-y-3">
+                {noCommitment.map((c) => (
+                  <li key={c.id}>
+                    <NewCommitmentRow
+                      connectionId={c.id}
+                      partner={partnerOf(c.id)}
+                      onCreate={addCommitment}
+                      onCreated={(iso) => setSelected(dayKey(new Date(iso)))}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {mine.length === 0 && <NoConnectionsCard />}
+        </div>
       </div>
     </AppShell>
   );
@@ -268,14 +300,11 @@ function CalendarPage() {
 
 function NoConnectionsCard() {
   return (
-    <div className="card-soft p-5 text-center">
+    <div className="core-empty core-calendar-no-connections mission-empty">
+      <MissionVisual variant="action" className="core-empty-visual" />
+      <p className="mission-kicker">START WITH A CONNECTION</p>
       <h2 className="text-lg font-extrabold">ยังไม่มีคอนเนกชันเลย</h2>
-      <p lang="en" className="text-xs text-muted-foreground">
-        No connections yet
-      </p>
-      <p className="mt-2 text-sm text-muted-foreground">
-        เริ่มจากทักคนที่พลังเสริมกับเราสักคน แล้วค่อยชวนกันคิดว่าจะทำอะไรด้วยกัน
-      </p>
+      <p className="mt-2 text-sm text-muted-foreground">เจอคนที่พลังเสริมกัน แล้วชวนวางแผนร่วมทำ</p>
       <Link
         to="/matches"
         className="tap mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-extrabold text-primary-foreground"
@@ -286,13 +315,7 @@ function NoConnectionsCard() {
   );
 }
 
-function PartnerHead({
-  partner,
-  label,
-}: {
-  partner: User | null;
-  label: string;
-}) {
+function PartnerHead({ partner, label }: { partner: User | null; label: string }) {
   return (
     <div className="flex items-center gap-2">
       <Avatar
@@ -331,14 +354,14 @@ function CommitmentRow({
       {m.follow_up_date && (
         <>
           <p className="mt-2 text-xs font-semibold text-primary">
-            นัดไว้ {new Date(m.follow_up_date).toLocaleDateString("th-TH", { dateStyle: "medium" })} ·{" "}
-            {timeTh(m.follow_up_date)} น.
+            นัดไว้ {new Date(m.follow_up_date).toLocaleDateString("th-TH", { dateStyle: "medium" })}{" "}
+            · {timeTh(m.follow_up_date)} น.
           </p>
           <ReminderChip iso={m.follow_up_date} done={m.status === "Completed"} />
           <RsvpButtons m={m} />
         </>
       )}
-      <div className="mt-2 flex gap-2">
+      <div className="core-date-proposal mt-2 flex gap-2">
         <input
           type="datetime-local"
           value={when}
@@ -494,7 +517,7 @@ function NewCommitmentRow({
           placeholder="เช่น ลองทำแคมเปญออนไลน์ให้เยาวชนด้วยกัน"
           className="min-h-11 w-full rounded-xl border border-border bg-background px-2 py-2 text-base"
         />
-        <div className="flex gap-2">
+        <div className="core-date-proposal flex gap-2">
           <input
             type="datetime-local"
             value={when}

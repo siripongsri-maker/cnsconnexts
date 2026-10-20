@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDownToLine, Home, Layers, Printer } from "lucide-react";
 
 import { DATA_MODEL, SECTIONS, type JourneyStep } from "@/lib/journey-data";
+import { MissionHeader } from "@/components/mission-ui";
 
 export const Route = createFileRoute("/journey")({
   head: () => ({
@@ -26,7 +27,10 @@ export const Route = createFileRoute("/journey")({
 
 function StepCard({ step }: { step: JourneyStep }) {
   return (
-    <article id={step.id} className="card-soft scroll-mt-20 overflow-hidden rounded-3xl bg-card">
+    <article
+      id={step.id}
+      className="journey-step-card card-soft scroll-mt-20 overflow-hidden rounded-3xl bg-card"
+    >
       <div className="grid gap-4 p-4 sm:grid-cols-[220px_1fr] sm:p-5">
         <a href={`/journey/${step.shot}`} target="_blank" rel="noreferrer" className="block">
           <img
@@ -45,7 +49,9 @@ function StepCard({ step }: { step: JourneyStep }) {
               <span className="rounded-full bg-primary/12 px-2 py-0.5 text-xs font-extrabold text-primary">
                 {step.no}
               </span>
-              <code className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-bold">{step.path}</code>
+              <code className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-bold">
+                {step.path}
+              </code>
             </div>
             <h3 className="mt-1.5 text-[15px] font-extrabold">{step.title}</h3>
             <p className="text-[12.5px] text-muted-foreground">{step.goal}</p>
@@ -70,7 +76,9 @@ function StepCard({ step }: { step: JourneyStep }) {
 function Block({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">{title}</p>
+      <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </p>
       <ul className="mt-1 space-y-1">
         {items.map((t) => (
           <li key={t} className="text-[12.5px] leading-snug">
@@ -87,12 +95,18 @@ function JourneyPage() {
     <div className="editorial-journey min-h-dvh bg-background">
       <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-          <Link to="/" aria-label="กลับหน้าแรก" className="tap grid h-9 w-9 place-items-center rounded-xl bg-muted">
+          <Link
+            to="/"
+            aria-label="กลับหน้าแรก"
+            className="tap grid h-9 w-9 place-items-center rounded-xl bg-muted"
+          >
             <Home className="h-4 w-4" />
           </Link>
           <div className="min-w-0">
             <p className="truncate text-[15px] font-extrabold">Journey ทุกฟังก์ชัน</p>
-            <p className="truncate text-xs text-muted-foreground">คนส. CoNnextS · เอกสารฉบับเดียวจบ</p>
+            <p className="truncate text-xs text-muted-foreground">
+              คนส. CoNnextS · เอกสารฉบับเดียวจบ
+            </p>
           </div>
           <button
             type="button"
@@ -104,24 +118,30 @@ function JourneyPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-6 px-4 pb-24 pt-5">
-        <section className="card-soft space-y-3 rounded-3xl bg-card p-5">
-          <h1 className="text-[20px] font-extrabold">
-            คู่มือเส้นทางการใช้งาน <span className="text-gradient">คนส. CoNnextS</span>
-          </h1>
+      <main id="main-content" className="journey-content mx-auto space-y-6 px-4 pb-24 pt-5">
+        <MissionHeader
+          kicker="The complete journey"
+          number="11"
+          title="ทุกเส้นทาง สู่การร่วมทำ"
+          description="สำรวจวิธีใช้แต่ละหน้า ตั้งแต่สร้างโปรไฟล์ไปจนถึงจัดการงาน"
+          variant="network"
+        />
+        <section className="journey-intro mission-panel space-y-3">
+          <h2 className="text-[20px] font-medium">เลือกเส้นทางของคุณ</h2>
           <p className="text-[13px] leading-relaxed text-muted-foreground">
-            เอกสารนี้รวบรวมทุกหน้าและทุกฟังก์ชันของแอป พร้อมภาพหน้าจอจริง อธิบายว่าแต่ละหน้ารับข้อมูลอะไรเข้า
-            ส่งอะไรออก และเชื่อมกับระบบหลังบ้านอย่างไร ใช้ได้ 3 แบบ:
+            รวมวิธีใช้ทุกหน้า พร้อมภาพจากข้อมูลตัวอย่าง เลือกอ่านตามบทบาทของคุณ:
           </p>
           <ul className="space-y-1 text-[13px]">
             <li>
-              <b>1. สช. และผู้สนับสนุน</b> — อ่านหัวข้อ “ภาพรวมแนวคิด” และเส้นทางผู้เข้าร่วม เพื่อเห็นคุณค่าของงาน
+              <b>1. สช. และผู้สนับสนุน</b> — อ่านหัวข้อ “ภาพรวมแนวคิด” และเส้นทางผู้เข้าร่วม
+              เพื่อเห็นคุณค่าของงาน
             </li>
             <li>
               <b>2. ผู้ทดลองใช้</b> — ทำตามลำดับ 1 → 20 ในเส้นทางผู้เข้าร่วมได้ทันที
             </li>
             <li>
-              <b>3. ทีมพัฒนา</b> — ดูชื่อไฟล์/ฟังก์ชันที่เกี่ยวข้องในบรรทัด “เชื่อมหลังบ้าน” และตารางโครงสร้างข้อมูลท้ายเอกสาร
+              <b>3. ทีมพัฒนา</b> — ดูชื่อไฟล์/ฟังก์ชันที่เกี่ยวข้องในบรรทัด “เชื่อมหลังบ้าน”
+              และตารางโครงสร้างข้อมูลท้ายเอกสาร
             </li>
           </ul>
           <div className="flex flex-wrap gap-2 pt-1">
@@ -143,11 +163,14 @@ function JourneyPage() {
           </div>
         </section>
 
-        <section className="card-soft space-y-2 rounded-3xl bg-card p-5">
-          <h2 className="text-[16px] font-extrabold">ภาพรวมแนวคิดและสถาปัตยกรรม</h2>
+        <details className="journey-architecture mission-panel space-y-2">
+          <summary className="cursor-pointer text-[16px] font-medium">
+            ภาพรวมแนวคิดและสถาปัตยกรรม
+          </summary>
           <p className="text-[13px] leading-relaxed text-muted-foreground">
-            แนวคิดคือเปลี่ยน “การเจอกันในงานสมัชชา” ให้กลายเป็น “ความร่วมมือที่มีเจ้าภาพและวันนัดจริง”
-            ระบบจึงไล่ผู้ใช้จากโปรไฟล์พลัง → คู่เชื่อมที่มีเหตุผลรองรับ → คำมั่นสัญญาที่ติดตามได้ → ผลงานที่กลายเป็นคลังความรู้
+            แนวคิดคือเปลี่ยน “การเจอกันในงานสมัชชา” ให้กลายเป็น
+            “ความร่วมมือที่มีเจ้าภาพและวันนัดจริง” ระบบจึงไล่ผู้ใช้จากโปรไฟล์พลัง →
+            คู่เชื่อมที่มีเหตุผลรองรับ → คำมั่นสัญญาที่ติดตามได้ → ผลงานที่กลายเป็นคลังความรู้
           </p>
           <pre className="overflow-x-auto rounded-2xl bg-muted/60 p-3 text-xs leading-relaxed">{`หน้าบ้าน (มือถือ)                    แกนข้อมูลกลาง                    หลังบ้าน /admin
 /scan → /start → /onboarding  ─┐
@@ -157,13 +180,18 @@ function JourneyPage() {
                                      └ lib/matching.ts: คะแนนแมตช์        └─ /live /qr /import /export
 บัญชี: /auth ─► Lovable Cloud (อีเมล/Google) ─► ผูกโปรไฟล์ guest เดิม`}</pre>
           <p className="text-[12px] leading-relaxed text-muted-foreground">
-            สถานะปัจจุบันเป็นโปรโตไทป์ที่เก็บข้อมูลไว้ในเครื่องผู้ใช้ (localStorage) เพื่อให้ทดลองใช้หน้างานได้โดยไม่ต้องรอระบบกลาง
-            ส่วนบัญชีผู้ใช้เชื่อมกับระบบคลาวด์แล้ว เฟสถัดไปคือย้ายข้อมูลกิจกรรมทั้งหมดขึ้นฐานข้อมูลกลางเพื่อซิงก์ข้ามอุปกรณ์
+            สถานะปัจจุบันเป็นโปรโตไทป์ที่เก็บข้อมูลไว้ในเครื่องผู้ใช้ (localStorage)
+            เพื่อให้ทดลองใช้หน้างานได้โดยไม่ต้องรอระบบกลาง ส่วนบัญชีผู้ใช้เชื่อมกับระบบคลาวด์แล้ว
+            เฟสถัดไปคือย้ายข้อมูลกิจกรรมทั้งหมดขึ้นฐานข้อมูลกลางเพื่อซิงก์ข้ามอุปกรณ์
           </p>
-        </section>
+        </details>
 
         {SECTIONS.map((section) => (
-          <section key={section.id} id={section.id} className="scroll-mt-20 space-y-3">
+          <section
+            key={section.id}
+            id={section.id}
+            className="journey-route-group scroll-mt-20 space-y-3"
+          >
             <header className="px-1">
               <h2 className="text-[17px] font-extrabold">{section.title}</h2>
               <p className="text-[12.5px] text-muted-foreground">{section.subtitle}</p>
@@ -199,10 +227,23 @@ function JourneyPage() {
             </table>
           </div>
           <ul className="space-y-1 text-[12.5px]">
-            <li>· คีย์ที่ใช้ในเครื่อง: <code>connecting-power-v1</code> (ข้อมูลทั้งหมด), <code>connecting-power-session</code> (เซสชันผู้เข้าร่วม), <code>connext-admin-session</code> (ประตูหลังบ้าน)</li>
-            <li>· สูตรจับคู่: need↔have 40% · ประเด็นร่วม 30% · ทักษะ 20% · ภูมิภาค 10% (แก้ที่ <code>src/lib/matching.ts</code>)</li>
-            <li>· เหตุการณ์สด: <code>emitLive()</code> ใน <code>src/lib/live.ts</code> ส่งผ่าน BroadcastChannel ให้ /dashboard และ /admin/live</li>
-            <li>· ไฟล์เอกสารฉบับข้อความอยู่ที่ <code>docs/JOURNEY.md</code> · ภาพหน้าจอทั้งหมดที่ <code>public/journey/</code></li>
+            <li>
+              · คีย์ที่ใช้ในเครื่อง: <code>connecting-power-v1</code> (ข้อมูลทั้งหมด),{" "}
+              <code>connecting-power-session</code> (เซสชันผู้เข้าร่วม),{" "}
+              <code>connext-admin-session</code> (ประตูหลังบ้าน)
+            </li>
+            <li>
+              · สูตรจับคู่: need↔have 40% · ประเด็นร่วม 30% · ทักษะ 20% · ภูมิภาค 10% (แก้ที่{" "}
+              <code>src/lib/matching.ts</code>)
+            </li>
+            <li>
+              · เหตุการณ์สด: <code>emitLive()</code> ใน <code>src/lib/live.ts</code> ส่งผ่าน
+              BroadcastChannel ให้ /dashboard และ /admin/live
+            </li>
+            <li>
+              · ไฟล์เอกสารฉบับข้อความอยู่ที่ <code>docs/JOURNEY.md</code> · ภาพหน้าจอทั้งหมดที่{" "}
+              <code>public/journey/</code>
+            </li>
           </ul>
         </section>
       </main>

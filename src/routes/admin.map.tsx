@@ -1,3 +1,4 @@
+import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { MapPin, Trash2 } from "lucide-react";
@@ -7,14 +8,22 @@ import { useStore } from "@/lib/store";
 import { issueTh, provinceTh } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/map")({
-  head: () => ({ meta: [
-    { title: "จัดการบันทึกจังหวัด — คนส. Connexts" },
-    { name: "description", content: "จัดการบันทึกจังหวัดสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "จัดการบันทึกจังหวัด — คนส. Connexts" },
-    { property: "og:description", content: "จัดการบันทึกจังหวัดสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "จัดการบันทึกจังหวัด — คนส. Connexts" },
+      {
+        name: "description",
+        content: "จัดการบันทึกจังหวัดสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:title", content: "จัดการบันทึกจังหวัด — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "จัดการบันทึกจังหวัดสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminMap,
 });
 
@@ -29,23 +38,27 @@ function AdminMap() {
   }, [users]);
 
   const notes = provinceNotes.filter((n) =>
-    [n.title, n.detail, n.author_name, provinceTh(n.province)].join(" ").toLowerCase().includes(q.trim().toLowerCase()),
+    [n.title, n.detail, n.author_name, provinceTh(n.province)]
+      .join(" ")
+      .toLowerCase()
+      .includes(q.trim().toLowerCase()),
   );
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-[18px] font-extrabold">จัดการแผนที่พลัง</h1>
-        <p className="text-[12px] text-muted-foreground">
-          ดูจำนวนสมาชิกรายจังหวัด และจัดการบันทึกรายจังหวัด · {provinceNotes.length} บันทึก
-        </p>
-      </header>
+    <div className="admin-workspace admin-workspace-map space-y-4">
+      <div className="admin-section-meta">
+        <span>บันทึกจากพื้นที่</span>
+        <span>{provinceNotes.length} บันทึก</span>
+      </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
         <h2 className="text-[14px] font-extrabold">จังหวัดที่มีสมาชิกมากที่สุด</h2>
         <ul className="mt-2 flex flex-wrap gap-1.5">
           {byProvince.map(([p, n]) => (
-            <li key={p} className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground">
+            <li
+              key={p}
+              className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground"
+            >
               {provinceTh(p)} · {n}
             </li>
           ))}
@@ -65,7 +78,14 @@ function AdminMap() {
         />
       </div>
 
-      <ul className="space-y-3">
+      {notes.length === 0 && (
+        <MissionEmpty
+          className="admin-empty"
+          title="ไม่พบบันทึกจากพื้นที่"
+          description="ลองค้นหาจังหวัดหรือคำอื่น"
+        />
+      )}
+      <ul className="admin-records space-y-3">
         {notes.map((n) => (
           <li key={n.id} className="card-soft flex items-start gap-3 rounded-2xl bg-card p-4">
             <div className="min-w-0 flex-1">

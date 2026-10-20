@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Printer } from "lucide-react";
@@ -7,6 +7,7 @@ import { MAP_VIEWBOX, PROVINCES } from "@/lib/thailand-geo";
 import { REGIONS, type Region } from "@/lib/types";
 import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
 import { makeJoinCode } from "@/lib/session";
+import { MissionHeader } from "@/components/mission-ui";
 
 export const Route = createFileRoute("/print")({
   head: () => ({
@@ -19,9 +20,9 @@ export const Route = createFileRoute("/print")({
       },
       { property: "og:title", content: "ชุดไฟล์พิมพ์สำหรับหน้างาน" },
       { property: "og:description", content: "บอร์ด A0 · การ์ด A4 · ป้าย QR" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: PrintKit,
 });
@@ -56,10 +57,7 @@ function PrintKit() {
   const [region, setRegion] = useState<Region>("North");
   const { url, code } = useJoinUrl();
 
-  const subByName = useMemo(
-    () => new Map(submissions.map((s) => [s.name, s])),
-    [submissions],
-  );
+  const subByName = useMemo(() => new Map(submissions.map((s) => [s.name, s])), [submissions]);
 
   const people = useMemo(() => {
     const fromUsers = users.map((u) => ({
@@ -107,9 +105,14 @@ function PrintKit() {
   return (
     <div className="editorial-print min-h-screen bg-background">
       <style>{PAGE_CSS[sheet]}</style>
-      <div className="no-print sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-3 backdrop-blur">
+      <div className="print-settings-bar no-print sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-2">
-          <h1 className="mr-2 text-base font-extrabold">ชุดไฟล์พิมพ์</h1>
+          <Link
+            to="/"
+            className="mr-2 inline-flex min-h-11 items-center text-sm font-medium text-primary"
+          >
+            คนส. Connexts ↗
+          </Link>
           <div className="flex rounded-2xl border border-border bg-card p-1">
             {(
               [
@@ -121,6 +124,7 @@ function PrintKit() {
               <button
                 key={k}
                 onClick={() => setSheet(k)}
+                aria-pressed={sheet === k}
                 className={`tap rounded-xl px-3.5 py-2 text-[13px] font-bold ${
                   sheet === k ? "gradient-power text-primary-foreground" : "text-muted-foreground"
                 }`}
@@ -131,6 +135,7 @@ function PrintKit() {
           </div>
           {sheet !== "sign" && (
             <select
+              aria-label="ภูมิภาคบนสื่อพิมพ์"
               value={region}
               onChange={(e) => setRegion(e.target.value as Region)}
               className="h-10 rounded-2xl border border-border bg-card px-3 text-[13px] font-bold"
@@ -152,97 +157,105 @@ function PrintKit() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-4 py-6">
+      <div className="print-kit-content mx-auto max-w-5xl px-4 py-6">
+        <div className="print-kit-intro no-print">
+          <MissionHeader
+            kicker="Take your power offline"
+            number="12"
+            title="พลังที่พร้อมส่งต่อ"
+            description="เลือกบอร์ด การ์ด หรือป้าย QR แล้วพิมพ์ไว้เชื่อมคนในงาน"
+            variant="archive"
+            compact
+          />
+        </div>
         {sheet === "board" && (
           <div className="board-scroll overflow-x-auto">
-          <section className="print-sheet board-sheet bg-card p-8 text-foreground">
-            <header className="flex items-start justify-between gap-6 border-b-4 border-primary pb-4">
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.3em] text-primary">
-                  คนส. CoNnextS
-                </p>
-                <h2 className="text-4xl font-extrabold">
-                  แผนที่พลัง{REGION_LABEL[region]}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {regionPeople.length} คน · {pins.length} จังหวัด · สมัชชาสุขภาพแห่งชาติ
-                </p>
-              </div>
-              <QrBlock url={url} code={code} size={130} />
-            </header>
+            <section className="print-sheet board-sheet bg-card p-8 text-foreground">
+              <header className="flex items-start justify-between gap-6 border-b-4 border-primary pb-4">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.3em] text-primary">
+                    คนส. CoNnextS
+                  </p>
+                  <h2 className="text-4xl font-extrabold">แผนที่พลัง{REGION_LABEL[region]}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {regionPeople.length} คน · {pins.length} จังหวัด · สมัชชาสุขภาพแห่งชาติ
+                  </p>
+                </div>
+                <QrBlock url={url} code={code} size={130} />
+              </header>
 
-            <div className="mt-6 grid grid-cols-[1.15fr_1fr] gap-8">
-              <svg viewBox={MAP_VIEWBOX} className="w-full">
-                {PROVINCES.map((p) => {
-                  const on = p.region === region;
-                  return (
-                    <path
-                      key={p.en}
-                      d={p.d}
-                      fill={on ? REGION_FILL[p.region] : "var(--color-muted)"}
-                      fillOpacity={on ? 0.22 : 0.35}
-                      stroke="var(--color-background)"
-                      strokeWidth={1.4}
-                    />
-                  );
-                })}
-                {pins.map((pin) => (
-                  <g key={pin.prov}>
-                    <circle
-                      cx={pin.cx}
-                      cy={pin.cy}
-                      r={10 + pin.list.length * 3}
-                      fill={REGION_FILL[region]}
-                      fillOpacity={0.95}
-                    />
-                    <text
-                      x={pin.cx}
-                      y={pin.cy + 6}
-                      textAnchor="middle"
-                      fontSize={16}
-                      fontWeight={800}
-                      fill="var(--color-background)"
-                    >
-                      {pin.list.length}
-                    </text>
-                    <text
-                      x={pin.cx + 18 + pin.list.length * 2}
-                      y={pin.cy + 6}
-                      fontSize={20}
-                      fontWeight={700}
-                      fill="var(--color-foreground)"
-                    >
-                      {provinceTh(pin.prov)}
-                    </text>
-                  </g>
-                ))}
-              </svg>
+              <div className="mt-6 grid grid-cols-[1.15fr_1fr] gap-8">
+                <svg viewBox={MAP_VIEWBOX} className="w-full">
+                  {PROVINCES.map((p) => {
+                    const on = p.region === region;
+                    return (
+                      <path
+                        key={p.en}
+                        d={p.d}
+                        fill={on ? REGION_FILL[p.region] : "var(--color-muted)"}
+                        fillOpacity={on ? 0.22 : 0.35}
+                        stroke="var(--color-background)"
+                        strokeWidth={1.4}
+                      />
+                    );
+                  })}
+                  {pins.map((pin) => (
+                    <g key={pin.prov}>
+                      <circle
+                        cx={pin.cx}
+                        cy={pin.cy}
+                        r={10 + pin.list.length * 3}
+                        fill={REGION_FILL[region]}
+                        fillOpacity={0.95}
+                      />
+                      <text
+                        x={pin.cx}
+                        y={pin.cy + 6}
+                        textAnchor="middle"
+                        fontSize={16}
+                        fontWeight={800}
+                        fill="var(--color-background)"
+                      >
+                        {pin.list.length}
+                      </text>
+                      <text
+                        x={pin.cx + 18 + pin.list.length * 2}
+                        y={pin.cy + 6}
+                        fontSize={20}
+                        fontWeight={700}
+                        fill="var(--color-foreground)"
+                      >
+                        {provinceTh(pin.prov)}
+                      </text>
+                    </g>
+                  ))}
+                </svg>
 
-              <div className="columns-2 gap-4 text-xs leading-snug">
-                {pins.map((pin) => (
-                  <div key={pin.prov} className="mb-3 break-inside-avoid">
-                    <p className="mb-1 border-b border-border pb-0.5 text-[13px] font-extrabold">
-                      {provinceTh(pin.prov)}
-                    </p>
-                    {pin.list.map((p) => (
-                      <p key={p.id} className="mb-1">
-                        <span className="font-bold">{p.name}</span>
-                        {p.org ? <span className="text-muted-foreground"> · {p.org}</span> : null}
-                        <br />
-                        <span className="text-muted-foreground">{p.work}</span>
+                <div className="columns-2 gap-4 text-xs leading-snug">
+                  {pins.map((pin) => (
+                    <div key={pin.prov} className="mb-3 break-inside-avoid">
+                      <p className="mb-1 border-b border-border pb-0.5 text-[13px] font-extrabold">
+                        {provinceTh(pin.prov)}
                       </p>
-                    ))}
-                  </div>
-                ))}
-                {pins.length === 0 && (
-                  <p className="text-muted-foreground">ยังไม่มีข้อมูลในภาคนี้</p>
-                )}
+                      {pin.list.map((p) => (
+                        <p key={p.id} className="mb-1">
+                          <span className="font-bold">{p.name}</span>
+                          {p.org ? <span className="text-muted-foreground"> · {p.org}</span> : null}
+                          <br />
+                          <span className="text-muted-foreground">{p.work}</span>
+                        </p>
+                      ))}
+                    </div>
+                  ))}
+                  {pins.length === 0 && (
+                    <p className="text-muted-foreground">ยังไม่มีข้อมูลในภาคนี้</p>
+                  )}
+                </div>
               </div>
-            </div>
-            <p className="mt-6 text-center text-sm font-bold text-muted-foreground">
-              สแกน QR เพื่อเพิ่มหรืออัปเดตข้อมูลของคุณเอง · {url}
-            </p>
-          </section>
+              <p className="mt-6 text-center text-sm font-bold text-muted-foreground">
+                สแกน QR เพื่อเพิ่มหรืออัปเดตข้อมูลของคุณเอง · {url}
+              </p>
+            </section>
           </div>
         )}
 

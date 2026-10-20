@@ -3,6 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { makeJoinCode } from "@/lib/session";
+import { ArrowLeft, ArrowUpRight, Camera, QrCode } from "lucide-react";
+import { MissionHeader } from "@/components/mission-ui";
 
 export const Route = createFileRoute("/qr")({
   head: () => ({
@@ -15,9 +17,9 @@ export const Route = createFileRoute("/qr")({
       },
       { property: "og:title", content: "สแกนเพื่อเข้าร่วม คนส. Connexts" },
       { property: "og:description", content: "สแกนเพื่อเข้าร่วม แล้วสร้างโปรไฟล์พลังของคุณ" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: QrPoster,
 });
@@ -32,42 +34,81 @@ function QrPoster() {
   }, [joinCode]);
 
   return (
-    <div className="relative min-h-screen px-6 py-[max(2rem,env(safe-area-inset-top))]">
-      <div
-        className="absolute inset-0"
-        style={{ backgroundImage: "var(--gradient-soft)" }}
-        aria-hidden
-      />
-      <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center text-center">
-        <span className="rounded-full border border-border bg-card/80 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur">
-          สแกนเพื่อเข้าร่วม · <span lang="en">Scan to join</span>
-        </span>
-        <h1 className="mt-5 flex justify-center">
-          <Wordmark size="md" withMark />
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          ยกกล้องมือถือส่องตรงนี้ แล้วคุณจะเข้าสู่หน้าสร้างโปรไฟล์พลังของคุณทันที
-        </p>
-
-        <div className="card-soft mt-8 rounded-3xl bg-card p-6">
-          <QRCodeSVG value={url} size={232} level="M" bgColor="#ffffff" fgColor="#0b1020" />
+    <div className="focused-page qr-page min-h-screen">
+      <header className="focused-topbar">
+        <div className="focused-topbar-inner">
+          <Link to="/" className="focused-back-link tap" aria-label="กลับหน้าแรก">
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            <Wordmark size="sm" />
+          </Link>
+          <span className="focused-system-label">EVENT ACCESS / {joinCode}</span>
         </div>
-
-        <p className="mt-5 text-xs text-muted-foreground">
-          หรือเปิดลิงก์ <span className="font-bold text-foreground">{url}</span>
-        </p>
-        <p className="mt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          รหัสห้อง {joinCode}
-        </p>
-
-        <Link
-          to="/join"
-          search={{ c: joinCode, source: "link" }}
-          className="tap mt-8 flex h-14 w-full max-w-xs items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground"
-        >
-          เข้าร่วมด้วยเครื่องนี้
-        </Link>
-      </div>
+      </header>
+      <main className="focused-content">
+        <div className="qr-poster-layout">
+          <section className="qr-poster-copy">
+            <MissionHeader
+              kicker="SCAN TO CONNECT"
+              title={
+                <>
+                  หนึ่งการสแกน
+                  <br />
+                  หลายความเป็นไปได้
+                </>
+              }
+              description="เปิดกล้องมือถือ สแกน QR แล้วเริ่มสร้างโปรไฟล์ของคุณ"
+              variant="signal"
+            />
+            <ol className="qr-instructions">
+              <li>
+                <span>01</span> สแกน QR ด้วยกล้องมือถือ
+              </li>
+              <li>
+                <span>02</span> บอกตัวตนและพลังของคุณ
+              </li>
+              <li>
+                <span>03</span> พบคนที่พร้อมไปต่อด้วยกัน
+              </li>
+            </ol>
+            <p className="qr-poster-footnote">
+              <Camera className="h-4 w-4" aria-hidden /> ใช้เวลาประมาณ 2 นาที · ไม่ต้องล็อกอิน
+            </p>
+          </section>
+          <section className="qr-poster-card" aria-label="QR สำหรับเข้าร่วมงาน">
+            <div className="qr-poster-card-heading">
+              <QrCode className="h-5 w-5" aria-hidden />
+              <span>SCAN TO JOIN</span>
+              <span>↗</span>
+            </div>
+            <div className="qr-code-paper">
+              <QRCodeSVG
+                value={url}
+                size={280}
+                level="M"
+                bgColor="#ffffff"
+                fgColor="#030508"
+                marginSize={2}
+              />
+            </div>
+            <div className="qr-room-label">
+              <span>รหัสห้อง / ROOM</span>
+              <strong>{joinCode}</strong>
+            </div>
+            <div className="qr-link-alternative">
+              <span>หรือเปิดลิงก์</span>
+              <a href={url}>{url}</a>
+            </div>
+            <Link
+              to="/join"
+              search={{ c: joinCode, source: "link" }}
+              className="tap focused-primary-action"
+            >
+              <span>เข้าร่วมด้วยเครื่องนี้</span>
+              <ArrowUpRight className="h-5 w-5" aria-hidden />
+            </Link>
+          </section>
+        </div>
+      </main>
     </div>
   );
 }

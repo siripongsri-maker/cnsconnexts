@@ -1,8 +1,10 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   BookOpen,
+  ArrowUpRight,
   CalendarDays,
+  Coins,
   DatabaseBackup,
   Download,
   FileUp,
@@ -23,6 +25,7 @@ import {
 
 import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
 import { Button } from "@/components/ui/button";
+import { MissionHeader, MissionVisual } from "@/components/mission-ui";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -30,7 +33,8 @@ export const Route = createFileRoute("/admin")({
       { title: "หลังบ้านผู้ดูแล — คนส. Connexts" },
       {
         name: "description",
-        content: "ระบบหลังบ้านสำหรับผู้ดูแลงาน จัดการสมาชิก ไอเดีย ผลงาน คู่เชื่อม และข้อมูลกิจกรรมทั้งหมด",
+        content:
+          "ระบบหลังบ้านสำหรับผู้ดูแลงาน จัดการสมาชิก ไอเดีย ผลงาน คู่เชื่อม และข้อมูลกิจกรรมทั้งหมด",
       },
       { property: "og:title", content: "หลังบ้านผู้ดูแล — คนส. Connexts" },
       { property: "og:description", content: "จัดการข้อมูลกิจกรรมทั้งหมดในที่เดียว" },
@@ -58,9 +62,131 @@ export const ADMIN_MENU = [
   { to: "/admin/backup-policy", label: "นโยบายสำรอง", icon: ShieldCheck },
   { to: "/admin/audit", label: "ประวัติการแก้ไข", icon: HistoryIcon },
   { to: "/admin/export", label: "ส่งออกข้อมูล", icon: Download },
-  { to: "/admin/costs", label: "สรุปค่าใช้จ่าย", icon: Download },
-  { to: "/journey", label: "Journey ทุกหน้า", icon: Map },
+  { to: "/admin/costs", label: "สรุปค่าใช้จ่าย", icon: Coins },
   { to: "/admin/settings", label: "ตั้งค่า", icon: Settings },
+  { to: "/journey", label: "Journey ทุกหน้า", icon: Map },
+] as const;
+
+const ADMIN_PAGES = [
+  {
+    path: "/admin",
+    kicker: "Mission overview",
+    title: "เครือข่าย ในภาพเดียว",
+    description: "ทุกความเคลื่อนไหวของ คนส. Connexts",
+    variant: "control",
+  },
+  {
+    path: "/admin/people",
+    kicker: "People directory",
+    title: "คน คือพลังของเครือข่าย",
+    description: "ค้นหา แก้ไข และติดตามสมาชิก",
+    variant: "profile",
+  },
+  {
+    path: "/admin/import",
+    kicker: "Connect your people",
+    title: "เพิ่มคน เพิ่มพลัง",
+    description: "นำเข้ารายชื่อจาก CSV เชื่อมเข้าสู่เครือข่าย",
+    variant: "network",
+  },
+  {
+    path: "/admin/ideas",
+    kicker: "Idea exchange",
+    title: "ไอเดีย ที่พร้อมเติบโต",
+    description: "จัดการข้อเสนอและประเด็นจากสมาชิก",
+    variant: "signal",
+  },
+  {
+    path: "/admin/submissions",
+    kicker: "Work archive",
+    title: "ผลงาน ที่ขยายผลได้",
+    description: "ดูแลผลงานและเลือกเรื่องเล่าขึ้นเวที",
+    variant: "archive",
+  },
+  {
+    path: "/admin/map",
+    kicker: "Regional network",
+    title: "พลัง ในทุกพื้นที่",
+    description: "ดูสมาชิกและบันทึกการทำงานรายจังหวัด",
+    variant: "network",
+  },
+  {
+    path: "/admin/connections",
+    kicker: "Network connections",
+    title: "ทุกคู่เชื่อม มีโอกาส",
+    description: "ติดตามและปรับสถานะการเชื่อมต่อ",
+    variant: "network",
+  },
+  {
+    path: "/admin/commitments",
+    kicker: "Commitment tracker",
+    title: "จากคำมั่น สู่การลงมือ",
+    description: "ดูแลวันนัดและความคืบหน้าร่วมกัน",
+    variant: "action",
+  },
+  {
+    path: "/admin/live",
+    kicker: "Live transmission",
+    title: "สัญญาณสด จากเครือข่าย",
+    description: "ติดตามกิจกรรมและเปิดจอฉายสำหรับงาน",
+    variant: "signal",
+  },
+  {
+    path: "/admin/qr",
+    kicker: "Event access",
+    title: "สแกน แล้วเชื่อมกัน",
+    description: "รหัสห้อง QR และป้ายสำหรับหน้างาน",
+    variant: "signal",
+  },
+  {
+    path: "/admin/logs",
+    kicker: "Usage signals",
+    title: "เข้าใจ ทุกการใช้งาน",
+    description: "บันทึกการเข้าชมและความยินยอม",
+    variant: "control",
+  },
+  {
+    path: "/admin/backups",
+    kicker: "Data recovery",
+    title: "ข้อมูล ที่กลับมาได้",
+    description: "สำรอง ส่งออก และกู้คืนสแนปช็อต",
+    variant: "archive",
+  },
+  {
+    path: "/admin/backup-policy",
+    kicker: "Retention policy",
+    title: "ดูแลข้อมูล อย่างต่อเนื่อง",
+    description: "กำหนดอายุและจำนวนรายการสำรอง",
+    variant: "control",
+  },
+  {
+    path: "/admin/audit",
+    kicker: "Change history",
+    title: "ทุกการเปลี่ยนแปลง มีที่มา",
+    description: "ติดตามผู้แก้ไข เวลา และรายการข้อมูล",
+    variant: "archive",
+  },
+  {
+    path: "/admin/export",
+    kicker: "Data export",
+    title: "พาข้อมูล ไปต่อ",
+    description: "ดาวน์โหลด CSV หรือ JSON ได้ในที่เดียว",
+    variant: "archive",
+  },
+  {
+    path: "/admin/costs",
+    kicker: "Cost intelligence",
+    title: "รู้ต้นทุน เพื่อไปต่อ",
+    description: "แนบเครดิตและใบแจ้งหนี้ ให้ AI สรุปเป็นเงินบาท",
+    variant: "control",
+  },
+  {
+    path: "/admin/settings",
+    kicker: "System settings",
+    title: "จัดระบบ ให้พร้อมเสมอ",
+    description: "ดูแลบัญชีและข้อมูลของกิจกรรม",
+    variant: "control",
+  },
 ] as const;
 
 function AdminLayout() {
@@ -68,121 +194,200 @@ function AdminLayout() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname.replace(/\/$/, ""),
+  });
+  const pageIndex = Math.max(
+    0,
+    ADMIN_PAGES.findIndex((page) => page.path === pathname),
+  );
+  const page = ADMIN_PAGES[pageIndex]!;
 
   if (!ready) {
-    return <div className="grid min-h-dvh place-items-center text-sm text-muted-foreground">กำลังเชื่อม…</div>;
+    return (
+      <div className="admin-loading" role="status">
+        <span />
+        กำลังเชื่อมต่อระบบ…
+      </div>
+    );
   }
 
   if (!authed) {
     return (
-      <main className="editorial-auth grid min-h-dvh place-items-center bg-background px-5">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!signIn(user, password)) setError(true);
-          }}
-          className="w-full max-w-sm space-y-6 border-t border-border py-8"
-        >
-          <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/12 text-primary">
-              <Lock className="h-4 w-4" />
-            </span>
-            <div>
-              <h1 className="text-[16px] font-extrabold">หลังบ้านผู้ดูแล</h1>
-              <p className="text-[12px] text-muted-foreground">คนส. Connexts</p>
-            </div>
-          </div>
-
-          <label className="block space-y-1">
-            <span className="text-xs font-bold text-muted-foreground">ชื่อผู้ใช้</span>
-            <input
-              value={user}
-              onChange={(e) => {
-                setUser(e.target.value);
-                setError(false);
-              }}
-              autoComplete="username"
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
-            />
-          </label>
-
-          <label className="block space-y-1">
-            <span className="text-xs font-bold text-muted-foreground">รหัสผ่าน</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError(false);
-              }}
-              autoComplete="current-password"
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
-            />
-          </label>
-
-          {error && <p className="text-[12px] font-bold text-destructive">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>}
-
-          <Button
-            type="submit"
-            variant="mission"
-            className="tap w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-extrabold text-primary-foreground"
-          >
-            เข้าสู่ระบบผู้ดูแล
-          </Button>
-
-          <p className="rounded-xl bg-muted/60 p-3 text-xs leading-relaxed text-muted-foreground">
-            บทบาท: <b>ผู้ดูแลสูงสุด</b> ดู/ค้นหา/ส่งออก/ล้าง Log ได้ทั้งหมด ·{" "}
-            <b>นักวิเคราะห์</b> ดู ค้นหา และส่งออกได้ · <b>ผู้ชม</b> ดูได้อย่างเดียว
-          </p>
-
-          <Link to="/" className="block text-center text-[12px] font-bold text-muted-foreground">
-            ← กลับหน้าแรก
+      <main id="main-content" className="admin-login">
+        <section className="admin-login-story" aria-labelledby="admin-login-title">
+          <Link to="/" className="admin-brand">
+            คนส.<span>CONNEXTS / CONTROL</span>
           </Link>
-        </form>
+          <div className="admin-login-copy">
+            <p className="mission-kicker">Network operations / 01</p>
+            <h1 id="admin-login-title">
+              ดูแลเครือข่าย
+              <br />
+              <span>ให้ไปต่อ</span>
+            </h1>
+            <p>ทุกคน ทุกไอเดีย ทุกการเชื่อมต่อ ในที่เดียว</p>
+          </div>
+          <MissionVisual variant="control" className="admin-login-visual" />
+          <div className="admin-login-caption">
+            <span>คนส. Connexts</span>
+            <span>Control room ↗</span>
+          </div>
+        </section>
+        <section className="admin-login-access" aria-labelledby="admin-access-title">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!signIn(user, password)) setError(true);
+            }}
+            className="admin-login-form space-y-6"
+          >
+            <div className="admin-access-heading">
+              <span className="admin-access-icon">
+                <Lock className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="mission-kicker">Authorized access</p>
+                <h2 id="admin-access-title">เข้าสู่ระบบผู้ดูแล</h2>
+              </div>
+            </div>
+
+            <label className="block space-y-1">
+              <span className="text-xs font-bold text-muted-foreground">ชื่อผู้ใช้</span>
+              <input
+                value={user}
+                onChange={(e) => {
+                  setUser(e.target.value);
+                  setError(false);
+                }}
+                autoComplete="username"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+              />
+            </label>
+
+            <label className="block space-y-1">
+              <span className="text-xs font-bold text-muted-foreground">รหัสผ่าน</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError(false);
+                }}
+                autoComplete="current-password"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+              />
+            </label>
+
+            {error && (
+              <p role="alert" className="text-[12px] font-bold text-destructive">
+                ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              variant="mission"
+              className="tap w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-extrabold text-primary-foreground"
+            >
+              เข้าสู่ระบบ <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
+            </Button>
+
+            <details className="admin-role-note">
+              <summary>สิทธิ์ของแต่ละบทบาท</summary>
+              <p>
+                <b>ผู้ดูแลสูงสุด</b> ดู ค้นหา ส่งออก และล้าง Log
+                <br />
+                <b>นักวิเคราะห์</b> ดู ค้นหา และส่งออก
+                <br />
+                <b>ผู้ชม</b> ดูข้อมูล
+              </p>
+            </details>
+
+            <Link to="/" className="block text-center text-[12px] font-bold text-muted-foreground">
+              ← กลับหน้าแรก
+            </Link>
+          </form>
+        </section>
       </main>
     );
   }
 
   return (
-    <div className="admin-experience min-h-dvh bg-background">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
-          <Link to="/" aria-label="กลับหน้าแรก" className="tap grid h-9 w-9 place-items-center rounded-xl bg-muted">
-            <Home className="h-4 w-4" />
-          </Link>
-          <div className="min-w-0">
-            <p className="truncate text-[15px] font-extrabold">หลังบ้านผู้ดูแล</p>
-            <p className="truncate text-xs text-muted-foreground">
-              คนส. Connexts · {adminUser ?? "-"} · {role ? ROLE_TH[role] : "-"}
-            </p>
-          </div>
-          <Button
-            type="button"
-            onClick={signOut}
-            variant="outline"
-            className="tap ml-auto inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-[12px] font-bold"
-          >
-            <LogOut className="h-3.5 w-3.5" /> ออกจากระบบ
-          </Button>
-        </div>
-        <nav className="no-scrollbar mx-auto flex max-w-5xl gap-1.5 overflow-x-auto px-4 pb-3">
-          {ADMIN_MENU.map(({ to, label, icon: Icon, ...rest }) => (
+    <div className="admin-experience">
+      <a href="#main-content" className="mission-skip">
+        ข้ามไปเนื้อหา
+      </a>
+      <aside className="admin-sidebar">
+        <Link to="/" aria-label="คนส. Connexts กลับหน้าแรก" className="admin-brand">
+          คนส.<span>CONNEXTS / CONTROL</span>
+        </Link>
+        <p className="admin-nav-label">Mission control</p>
+        <nav aria-label="เมนูผู้ดูแล" className="admin-nav no-scrollbar">
+          {ADMIN_MENU.map(({ to, label, icon: Icon, ...rest }, index) => (
             <Link
               key={to}
               to={to}
               activeOptions={{ exact: "exact" in rest ? Boolean(rest.exact) : false }}
-              activeProps={{ className: "border-primary bg-primary/10 text-primary" }}
-              className="tap inline-flex min-h-11 shrink-0 items-center gap-1.5 border-b border-transparent px-3 py-1.5 text-xs font-medium text-muted-foreground"
+              activeProps={{ className: "is-active" }}
+              className="admin-nav-link tap"
             >
-              <Icon className="h-3.5 w-3.5" /> {label}
+              <Icon className="size-4" aria-hidden="true" />
+              <span>{label}</span>
+              <span className="admin-nav-number">{String(index + 1).padStart(2, "0")}</span>
             </Link>
           ))}
         </nav>
-      </header>
+        <Link to="/" className="admin-return">
+          <Home className="size-4" />
+          กลับหน้าบ้าน
+          <ArrowUpRight className="ml-auto size-4" />
+        </Link>
+      </aside>
+      <div className="admin-stage">
+        <header className="admin-topbar">
+          <p className="admin-topbar-name">
+            <span />
+            Control room<span className="admin-topbar-separator">/</span>
+            <span>{page.kicker}</span>
+          </p>
+          <div className="admin-session">
+            <span className="admin-session-user">{adminUser ?? "-"}</span>
+            <span className="admin-role-chip">{role ? ROLE_TH[role] : "-"}</span>
+            <Button
+              type="button"
+              onClick={signOut}
+              variant="outline"
+              className="admin-sign-out tap"
+            >
+              <LogOut className="h-3.5 w-3.5" /> ออกจากระบบ
+            </Button>
+          </div>
+        </header>
 
-      <main className="mx-auto max-w-5xl px-4 pb-24 pt-4">
-        <Outlet />
-      </main>
+        <main id="main-content" tabIndex={-1} className="admin-main">
+          <MissionHeader
+            kicker={page.kicker}
+            title={page.title}
+            description={page.description}
+            variant={page.variant}
+            number={String(pageIndex + 1).padStart(2, "0")}
+            compact
+          />
+          <div
+            className={`admin-content admin-page-${page.path === "/admin" ? "overview" : page.path.split("/").at(-1)}`}
+          >
+            <Outlet />
+          </div>
+          <footer className="admin-footer">
+            <span>คนส. CONNEXTS</span>
+            <span>
+              {String(pageIndex + 1).padStart(2, "0")} /{" "}
+              {String(ADMIN_PAGES.length).padStart(2, "0")} — {page.kicker}
+            </span>
+          </footer>
+        </main>
+      </div>
     </div>
   );
 }

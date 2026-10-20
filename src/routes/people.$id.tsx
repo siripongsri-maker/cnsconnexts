@@ -6,6 +6,7 @@ import { Avatar, Chip, ConnectBurst, PowerChip } from "@/components/power-bits";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { issueTh, provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
+import { MissionState, MissionVisual } from "@/components/mission-ui";
 
 export const Route = createFileRoute("/people/$id")({
   head: () => ({
@@ -14,26 +15,24 @@ export const Route = createFileRoute("/people/$id")({
       { name: "description", content: "ดูว่าคนนี้มีพลังอะไรมาแบ่งปัน และกำลังมองหาอะไรอยู่" },
       { property: "og:title", content: "โปรไฟล์พลัง — คนส. Connexts" },
       { property: "og:description", content: "ดูว่าเขามีพลังอะไร และกำลังมองหาอะไร" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: Person,
   notFoundComponent: () => (
-    <div className="grid min-h-screen place-items-center p-6">
-      <div className="card-soft max-w-sm space-y-3 p-6 text-center">
-        <p className="text-base font-extrabold">ไม่เจอโปรไฟล์นี้แล้ว</p>
-        <p className="text-sm text-muted-foreground">
-          อาจถูกลบไป หรือลิงก์ไม่ครบ · <span lang="en">This profile isn&apos;t available</span>
-        </p>
-        <Link
-          to="/matches"
-          className="tap inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
-        >
-          กลับไปดูคนที่น่าเจอ
-        </Link>
-      </div>
-    </div>
+    <MissionState
+      code="Profile unavailable"
+      title="ไม่พบโปรไฟล์นี้"
+      description="โปรไฟล์อาจถูกลบ หรือลิงก์ไม่ครบ ลองค้นหาคนอื่นในเครือข่ายได้เลย"
+    >
+      <Link
+        to="/matches"
+        className="tap inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
+      >
+        กลับไปดูคนที่น่าเจอ
+      </Link>
+    </MissionState>
   ),
 });
 
@@ -44,24 +43,21 @@ function Person() {
   const [burst, setBurst] = useState(false);
   const user = users.find((u) => u.id === id);
   if (!hydrated && !user) {
-    return (
-      <div className="grid min-h-screen place-items-center p-8 text-sm text-muted-foreground">
-        กำลังเปิดโปรไฟล์…
-      </div>
-    );
+    return <MissionState code="Power profile" title="กำลังเปิดโปรไฟล์…" />;
   }
   if (!user) throw notFound();
 
-
   const match = me ? scoreMatch(me, user) : null;
   const existing = connections.find(
-    (c) => (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
+    (c) =>
+      (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
   );
   const theirIdeas = ideas.filter((i) => i.owner_id === user.id);
 
   return (
-    <div className="editorial-focused min-h-screen pb-32">
-      <div className="relative border-b border-border bg-background px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-foreground">
+    <div className="editorial-focused mission-person-page min-h-screen pb-32">
+      <header className="person-masthead relative border-b border-border px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-foreground">
+        <MissionVisual variant="profile" />
         <Link
           to="/matches"
           aria-label="กลับไปหน้าคนที่น่าเจอ"
@@ -69,7 +65,10 @@ function Person() {
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
         </Link>
-        <div className="flex items-end gap-4">
+        <p className="mission-kicker mb-6" lang="en">
+          Meet your next connection
+        </p>
+        <div className="person-identity flex items-end gap-4">
           <Avatar user={user} size={72} />
           <div className="min-w-0">
             <h1 className="break-words text-2xl font-medium">{user.name}</h1>
@@ -81,14 +80,19 @@ function Person() {
             </p>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="mx-auto max-w-xl space-y-4 px-5 py-5">
-        {user.bio && <p className="card-soft p-4 text-[15px] leading-relaxed">"{user.bio}"</p>}
+      <main id="main-content" className="person-details-grid mx-auto px-5 py-5">
+        {user.bio && (
+          <p className="person-bio card-soft p-6 text-[15px] leading-relaxed">“{user.bio}”</p>
+        )}
 
         {match && (
-          <div className="card-soft p-4">
-            <p className="text-3xl font-extrabold text-gradient">แมตช์กัน {match.score}%</p>
+          <div className="person-match card-soft p-6">
+            <p className="mission-kicker" lang="en">
+              Shared potential
+            </p>
+            <p className="mt-3 text-3xl font-extrabold text-gradient">แมตช์กัน {match.score}%</p>
             <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{match.reason}</p>
           </div>
         )}
@@ -112,10 +116,8 @@ function Person() {
         </Block>
 
         {theirIdeas.length > 0 && (
-          <div className="card-soft p-4">
-            <p className="mb-2 text-xs font-extrabold text-muted-foreground">
-              ไอเดียในตลาดพลัง
-            </p>
+          <div className="person-ideas card-soft p-6">
+            <p className="mb-2 text-xs font-extrabold text-muted-foreground">ไอเดียในตลาดพลัง</p>
             {theirIdeas.map((i) => (
               <Link
                 key={i.id}
@@ -127,7 +129,7 @@ function Person() {
             ))}
           </div>
         )}
-      </div>
+      </main>
 
       {burst && (
         <div className="pointer-events-none fixed inset-0 z-40">
@@ -135,7 +137,7 @@ function Person() {
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 border-t border-border/60 bg-background/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
+      <div className="mission-detail-actionbar fixed inset-x-0 bottom-0 border-t border-border/60 bg-background/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
         {existing ? (
           <Link
             to="/connection/$id"
@@ -149,7 +151,7 @@ function Person() {
             to="/onboarding"
             className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo px-4 text-center text-base font-extrabold text-primary-foreground"
           >
-            สร้างโปรไฟล์สั้น ๆ แล้วมาเชื่อมกับ {user.name} กัน
+            สร้างโปรไฟล์เพื่อเชื่อมต่อ
           </Link>
         ) : (
           <button
@@ -179,11 +181,9 @@ function Person() {
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="card-soft p-4">
-      <p className="mb-2 text-xs font-extrabold text-muted-foreground">
-        {title}
-      </p>
+    <section className="person-power-section card-soft p-6">
+      <h2 className="mb-4 text-sm font-medium text-muted-foreground">{title}</h2>
       <div className="flex flex-wrap gap-1.5">{children}</div>
-    </div>
+    </section>
   );
 }

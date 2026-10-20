@@ -23,6 +23,7 @@ import { GuidedTour } from "@/components/guided-tour";
 import { UsageTracker } from "@/components/usage-tracker";
 import { CacheRefresher } from "@/components/cache-refresher";
 import { useMotionSettings } from "@/lib/motion";
+import { MissionState } from "@/components/mission-ui";
 
 /* ปุ่มแบบสีทึบ (ไม่ใช้เกรเดียนต์) สำหรับหน้าแจ้งปัญหา — สูง 48px กดง่าย */
 const BTN_PRIMARY =
@@ -32,32 +33,20 @@ const BTN_SECONDARY =
 
 function NotFoundComponent() {
   return (
-    <main className="grid min-h-screen place-items-center bg-background px-4 py-16">
-      <div className="card-soft mx-auto w-full max-w-md rounded-3xl p-6 text-center">
-        <h1 className="text-xl font-bold text-foreground">อ๊ะ หาหน้านี้ไม่เจอ</h1>
-        <p lang="en" className="mt-1 text-sm text-muted-foreground">
-          We couldn't find this page
-        </p>
-        <p className="mt-4 text-sm text-foreground">
-          ลิงก์อาจพิมพ์ผิดหรือหมดอายุแล้ว ไม่เป็นไรนะ ไปดูคนที่คุณน่าจะอยากเจอกันต่อ
-        </p>
-        <p lang="en" className="mt-1 text-sm text-muted-foreground">
-          The link may be mistyped or expired. Let's find people you should meet.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <Link to="/matches" className={BTN_PRIMARY}>
-            <span>
-              ไปดูคนที่ควรเจอ · <span lang="en">People to meet</span>
-            </span>
-          </Link>
-          <Link to="/" className={BTN_SECONDARY}>
-            <span>
-              กลับหน้าแรก · <span lang="en">Home</span>
-            </span>
-          </Link>
-        </div>
+    <MissionState
+      code="404 / Signal not found"
+      title="เส้นทางนี้ยังไม่เชื่อมถึงกัน"
+      description="ลิงก์อาจไม่ครบหรือหมดอายุ กลับไปค้นหาคนที่คุณอยากเจอได้เลย"
+    >
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Link to="/matches" className={BTN_PRIMARY}>
+          <span>ไปหาคนที่ควรเจอ</span>
+        </Link>
+        <Link to="/" className={BTN_SECONDARY}>
+          <span>กลับหน้าแรก</span>
+        </Link>
       </div>
-    </main>
+    </MissionState>
   );
 }
 
@@ -69,39 +58,30 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
   }, [error]);
 
   return (
-    <main className="grid min-h-screen place-items-center bg-background px-4">
-      <div className="card-soft mx-auto w-full max-w-md rounded-3xl p-6 text-center">
-        <div role="alert">
-          <h1 className="text-xl font-bold text-foreground">หน้านี้โหลดไม่สำเร็จ</h1>
-          <p lang="en" className="mt-1 text-sm text-muted-foreground">
-            This page didn't load
-          </p>
-          <p className="mt-4 text-sm text-foreground">อาจเป็นที่สัญญาณ ลองอีกครั้งได้เลยนะ</p>
-          <p lang="en" className="mt-1 text-sm text-muted-foreground">
-            It might be the connection. Give it another try.
-          </p>
-        </div>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className={BTN_PRIMARY}
-          >
-            <span>
-              ลองอีกครั้ง · <span lang="en">Try again</span>
-            </span>
-          </button>
-          <a href="/" className={BTN_SECONDARY}>
-            <span>
-              กลับหน้าแรก · <span lang="en">Home</span>
-            </span>
-          </a>
-        </div>
+    <MissionState
+      code="Connection interrupted"
+      title="สัญญาณสะดุดนิดหน่อย"
+      description="หน้านี้ยังโหลดไม่สำเร็จ ลองเชื่อมต่ออีกครั้งได้เลย"
+    >
+      <span className="sr-only" role="alert">
+        หน้านี้โหลดไม่สำเร็จ
+      </span>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+          className={BTN_PRIMARY}
+        >
+          <span>ลองอีกครั้ง</span>
+        </button>
+        <a href="/" className={BTN_SECONDARY}>
+          <span>กลับหน้าแรก</span>
+        </a>
       </div>
-    </main>
+    </MissionState>
   );
 }
 
@@ -161,7 +141,9 @@ function RootComponent() {
         <StoreProvider>
           <HydrationGate>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <div className="site-experience"><Outlet /></div>
+            <div className="site-experience">
+              <Outlet />
+            </div>
           </HydrationGate>
           <NotificationHost />
           <CommitmentReminders />

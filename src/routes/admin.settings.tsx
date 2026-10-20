@@ -6,14 +6,19 @@ import { useStore } from "@/lib/store";
 import { ADMIN_PASSWORD, ADMIN_USER } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/settings")({
-  head: () => ({ meta: [
-    { title: "ตั้งค่าผู้ดูแล — คนส. Connexts" },
-    { name: "description", content: "ตั้งค่าผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "ตั้งค่าผู้ดูแล — คนส. Connexts" },
-    { property: "og:description", content: "ตั้งค่าผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "ตั้งค่าผู้ดูแล — คนส. Connexts" },
+      { name: "description", content: "ตั้งค่าผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "ตั้งค่าผู้ดูแล — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "ตั้งค่าผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminSettings,
 });
 
@@ -21,12 +26,7 @@ function AdminSettings() {
   const { reset, users, ideas, connections, commitments } = useStore();
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-[18px] font-extrabold">ตั้งค่าระบบหลังบ้าน</h1>
-        <p className="text-[12px] text-muted-foreground">ข้อมูลบัญชีผู้ดูแลและการล้างข้อมูลเดโม่</p>
-      </header>
-
+    <div className="admin-workspace admin-workspace-settings space-y-4">
       <section className="card-soft space-y-2 rounded-2xl bg-card p-4">
         <h2 className="inline-flex items-center gap-1.5 text-[14px] font-extrabold">
           <KeyRound className="h-4 w-4 text-primary" /> บัญชีผู้ดูแล
@@ -36,15 +36,15 @@ function AdminSettings() {
           <span className="font-extrabold text-foreground">{ADMIN_PASSWORD}</span>
         </p>
         <p className="text-[12px] text-muted-foreground">
-          รหัสนี้เป็นการป้องกันระดับหน้าจอสำหรับเดโม่เท่านั้น ข้อมูลทั้งหมดเก็บในเครื่องผู้ใช้ (localStorage)
+          บัญชีนี้ใช้สำหรับเดโม่และป้องกันเฉพาะหน้าจอ
         </p>
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
         <h2 className="text-[14px] font-extrabold">สรุปข้อมูลปัจจุบัน</h2>
         <p className="mt-1 text-[13px] text-muted-foreground">
-          สมาชิก {users.length} · ไอเดีย {ideas.length} · คู่เชื่อม {connections.length} · คำมั่นสัญญา{" "}
-          {commitments.length}
+          สมาชิก {users.length} · ไอเดีย {ideas.length} · คู่เชื่อม {connections.length} ·
+          คำมั่นสัญญา {commitments.length}
         </p>
       </section>
 
@@ -53,7 +53,8 @@ function AdminSettings() {
           <AlertTriangle className="h-4 w-4" /> โซนอันตราย
         </h2>
         <p className="text-[12px] text-muted-foreground">
-          ล้างค่าที่เก็บในเครื่องนี้ (รายการถูกใจ ที่ข้าม และการแจ้งเตือน) ข้อมูลกลางบนฐานข้อมูลจะไม่ถูกลบ
+          ล้างค่าที่เก็บในเครื่องนี้ (รายการถูกใจ ที่ข้าม และการแจ้งเตือน)
+          ข้อมูลกลางบนฐานข้อมูลจะไม่ถูกลบ
         </p>
         <button
           type="button"
