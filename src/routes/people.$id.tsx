@@ -92,7 +92,7 @@ function Person() {
 
         {theirIdeas.length > 0 && (
           <div className="card-soft p-4">
-            <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+            <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
               ไอเดียในตลาดพลัง
             </p>
             {theirIdeas.map((i) => (
@@ -137,7 +137,7 @@ function Person() {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card-soft p-4">
-      <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+      <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
         {title}
       </p>
       <div className="flex flex-wrap gap-1.5">{children}</div>

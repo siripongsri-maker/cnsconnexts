@@ -4,7 +4,7 @@ import schLogo from "@/assets/sch-logo.png.asset.json";
 export function SponsorFooter({ className = "" }: { className?: string }) {
   return (
     <footer className={`flex flex-col items-center gap-2 py-6 ${className}`}>
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
         สนับสนุนหลักโดย
       </p>
       <img

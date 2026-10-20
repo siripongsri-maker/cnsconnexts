@@ -192,7 +192,7 @@ function AdminPeoplePage() {
             ))}
           </div>
           <label className="block space-y-1">
-            <span className="text-[11px] font-medium text-muted-foreground">แหล่งที่มา</span>
+            <span className="text-xs font-medium text-muted-foreground">แหล่งที่มา</span>
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <select
@@ -213,7 +213,7 @@ function AdminPeoplePage() {
           </label>
           <div className="grid grid-cols-2 gap-2">
             <label className="block space-y-1">
-              <span className="text-[11px] font-medium text-muted-foreground">onboard ตั้งแต่</span>
+              <span className="text-xs font-medium text-muted-foreground">onboard ตั้งแต่</span>
               <input
                 type="date"
                 value={from}
@@ -222,7 +222,7 @@ function AdminPeoplePage() {
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-[11px] font-medium text-muted-foreground">ถึงวันที่</span>
+              <span className="text-xs font-medium text-muted-foreground">ถึงวันที่</span>
               <input
                 type="date"
                 value={to}
@@ -240,7 +240,7 @@ function AdminPeoplePage() {
                 setTo("");
                 setQ("");
               }}
-              className="text-[11px] font-semibold text-primary"
+              className="text-xs font-semibold text-primary"
             >
               ล้างตัวกรองทั้งหมด
             </button>
@@ -248,7 +248,7 @@ function AdminPeoplePage() {
         </div>
 
         <div className="space-y-2 rounded-2xl border border-border bg-card p-3">
-          <p className="text-[11px] font-medium text-muted-foreground">
+          <p className="text-xs font-medium text-muted-foreground">
             ส่งออกข้อมูล (CSV รองรับภาษาไทย)
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -282,7 +282,7 @@ function AdminPeoplePage() {
               <Download className="size-3.5" /> ตามตัวกรอง ({filtered.length})
             </button>
           </div>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             คอลัมน์: วันที่ onboard · แหล่งที่มา · สถานะโปรไฟล์ · ความครบถ้วน · ข้อมูลที่ขาด · ความสนใจ · พลังที่มี/ต้องการ
           </p>
         </div>
@@ -328,7 +328,7 @@ function AdminPeoplePage() {
                         {u.interests.slice(0, 4).map((i) => (
                           <span
                             key={i}
-                            className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground"
+                            className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
                           >
                             {issueTh(i)}
                           </span>
@@ -342,14 +342,14 @@ function AdminPeoplePage() {
                     <button
                       type="button"
                       onClick={() => setDetailId(u.id)}
-                      className="tap inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-[11px] font-semibold"
+                      className="tap inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-xs font-semibold"
                     >
                       <Eye className="size-3.5" /> ดูรายละเอียด
                     </button>
                     <button
                       type="button"
                       onClick={() => open(u)}
-                      className="tap inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
+                      className="tap inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground"
                     >
                       แก้ไขข้อมูล
                     </button>
@@ -498,7 +498,7 @@ function SourceBadge({ source }: { source?: UserSource | undefined }) {
               ? "bg-secondary text-secondary-foreground"
               : "bg-accent text-accent-foreground";
   return (
-    <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${color}`}>{label}</span>
+    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${color}`}>{label}</span>
   );
 }
 
@@ -544,7 +544,7 @@ function UserDetail({
           <span className="text-2xl leading-none">{user.avatar}</span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold">{user.name}</p>
-            <p className="truncate text-[11px] text-muted-foreground">
+            <p className="truncate text-xs text-muted-foreground">
               {user.organization} · {provinceTh(user.province)}
             </p>
           </div>
@@ -556,14 +556,14 @@ function UserDetail({
         <div className="space-y-4 px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <SourceBadge source={user.source} />
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
               {GENERATION_TH[user.generation] ?? user.generation}
             </span>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
               {REGION_LABEL[user.region]}
             </span>
             <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+              className={`rounded-full px-2 py-0.5 text-xs font-bold ${
                 st.missing.length ? "bg-coral/20 text-coral" : "bg-lime/20 text-lime-foreground"
               }`}
             >
@@ -577,13 +577,13 @@ function UserDetail({
               <PowerList label="พลังที่ต้องการ" items={user.powers_need} tone="bg-coral/15" />
             </div>
             {user.bio && <p className="mt-2 text-xs text-muted-foreground">{user.bio}</p>}
-            <p className="mt-2 text-[11px] text-muted-foreground">
+            <p className="mt-2 text-xs text-muted-foreground">
               onboard {fmtDate(user.created_at)}
               {user.updated_at ? ` · อัปเดต ${fmtDate(user.updated_at)}` : ""}
               {user.linked_at ? " · ผูกบัญชีอีเมลแล้ว" : ""}
             </p>
             {st.missing.length > 0 && (
-              <p className="mt-1 text-[11px] text-coral">ข้อมูลที่ยังขาด: {st.missing.join(" / ")}</p>
+              <p className="mt-1 text-xs text-coral">ข้อมูลที่ยังขาด: {st.missing.join(" / ")}</p>
             )}
           </Section>
 
@@ -591,7 +591,7 @@ function UserDetail({
             <div className="flex flex-wrap gap-1.5">
               {user.interests.length ? (
                 user.interests.map((i) => (
-                  <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-[11px]">
+                  <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-xs">
                     {issueTh(i)}
                   </span>
                 ))
@@ -609,11 +609,11 @@ function UserDetail({
                     <div className="flex items-center gap-2">
                       <span className="text-lg leading-none">{m.user.avatar}</span>
                       <span className="min-w-0 flex-1 truncate text-xs font-semibold">{m.user.name}</span>
-                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold text-primary">
                         {Math.round(m.score)}%
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">{m.reason}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{m.reason}</p>
                   </li>
                 ))}
               </ul>
@@ -633,11 +633,11 @@ function UserDetail({
                         <span className="min-w-0 flex-1 truncate text-xs font-semibold">
                           กับ {nameOf(other)}
                         </span>
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
                           {STATUS_TH[c.status]}
                         </span>
                       </div>
-                      <p className="mt-1 text-[11px] text-muted-foreground">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         คะแนน {Math.round(c.match_score)}% · {c.match_reason}
                       </p>
                     </li>
@@ -656,13 +656,13 @@ function UserDetail({
                   <li key={m.id} className="rounded-xl border border-border p-2.5">
                     <div className="flex items-center gap-2">
                       <span className="min-w-0 flex-1 truncate text-xs font-semibold">{m.action_type}</span>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold">
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
                         {STATUS_TH[m.status]}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-muted-foreground">{m.description}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{m.description}</p>
                     {m.follow_up_date && (
-                      <p className="mt-0.5 text-[11px] text-primary">นัดหมาย {fmtDate(m.follow_up_date)}</p>
+                      <p className="mt-0.5 text-xs text-primary">นัดหมาย {fmtDate(m.follow_up_date)}</p>
                     )}
                   </li>
                 ))}
@@ -708,11 +708,11 @@ function Section({
 function PowerList({ label, items, tone }: { label: string; items: string[]; tone: string }) {
   return (
     <div>
-      <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <div className="mt-1 flex flex-wrap gap-1.5">
         {items.length ? (
           items.map((p) => (
-            <span key={p} className={`rounded-full px-2.5 py-1 text-[11px] ${tone}`}>
+            <span key={p} className={`rounded-full px-2.5 py-1 text-xs ${tone}`}>
               {POWER_EMOJI[p] ?? "✨"} {powerTh(p)}
             </span>
           ))
@@ -725,5 +725,5 @@ function PowerList({ label, items, tone }: { label: string; items: string[]; ton
 }
 
 function Empty({ text }: { text: string }) {
-  return <span className="text-[11px] text-muted-foreground">{text}</span>;
+  return <span className="text-xs text-muted-foreground">{text}</span>;
 }

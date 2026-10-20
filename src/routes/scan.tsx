@@ -124,7 +124,7 @@ function ScanPage() {
         aria-hidden
       />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur">
           <ScanLine className="h-3.5 w-3.5" />
           สแกนเพื่อเข้าร่วม
         </span>
@@ -137,7 +137,7 @@ function ScanPage() {
 
         {/* คำแนะนำก่อนเริ่มออนบอร์ดดิ้ง */}
         <ol className="card-soft mt-5 space-y-3 rounded-3xl bg-card p-5">
-          <li className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <li className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             3 ขั้นตอนก่อนเริ่ม
           </li>
           {GUIDE.map((g, i) => (
@@ -231,12 +231,12 @@ function ScanPage() {
           <Sparkles className="h-5 w-5 shrink-0" />
         </button>
 
-        <p className="mt-2 text-center text-[11px] text-muted-foreground">
+        <p className="mt-2 text-center text-xs text-muted-foreground">
           ข้อมูลจะเก็บไว้ในเครื่องนี้ก่อน · ผูกกับอีเมลภายหลังได้ที่หน้าเข้าสู่ระบบ
         </p>
 
         <div className="card-soft mt-6 rounded-3xl bg-card p-4">
-          <label htmlFor="room" className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <label htmlFor="room" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             หรือกรอกรหัสห้อง
           </label>
           <div className="mt-2 flex gap-2">

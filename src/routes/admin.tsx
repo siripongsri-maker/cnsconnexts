@@ -126,7 +126,7 @@ function AdminLayout() {
             เข้าสู่ระบบผู้ดูแล
           </button>
 
-          <p className="rounded-xl bg-muted/60 p-3 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="rounded-xl bg-muted/60 p-3 text-xs leading-relaxed text-muted-foreground">
             บทบาท: <b>ผู้ดูแลสูงสุด</b> ดู/ค้นหา/ส่งออก/ล้าง Log ได้ทั้งหมด ·{" "}
             <b>นักวิเคราะห์</b> ดู ค้นหา และส่งออกได้ · <b>ผู้ชม</b> ดูได้อย่างเดียว
           </p>
@@ -148,7 +148,7 @@ function AdminLayout() {
           </Link>
           <div className="min-w-0">
             <p className="truncate text-[15px] font-extrabold">หลังบ้านผู้ดูแล</p>
-            <p className="truncate text-[11px] text-muted-foreground">
+            <p className="truncate text-xs text-muted-foreground">
               คนส. Connexts · {adminUser ?? "-"} · {role ? ROLE_TH[role] : "-"}
             </p>
           </div>

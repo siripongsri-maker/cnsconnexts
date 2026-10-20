@@ -146,7 +146,7 @@ function CalendarPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-muted-foreground">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-muted-foreground">
             {DOW.map((d) => (
               <span key={d}>{d}</span>
             ))}
@@ -267,7 +267,7 @@ function PartnerHead({
       />
       <div className="min-w-0">
         <p className="truncate text-sm font-bold">{partner?.name ?? "คอนเนกชัน"}</p>
-        <p className="truncate text-[11px] text-muted-foreground">{label}</p>
+        <p className="truncate text-xs text-muted-foreground">{label}</p>
       </div>
     </div>
   );
@@ -290,7 +290,7 @@ function CommitmentRow({
       <PartnerHead partner={partner} label={m.action_type} />
       {m.follow_up_date && (
         <>
-          <p className="mt-2 text-[11px] font-semibold text-primary">
+          <p className="mt-2 text-xs font-semibold text-primary">
             นัดไว้ {new Date(m.follow_up_date).toLocaleDateString("th-TH", { dateStyle: "medium" })} ·{" "}
             {timeTh(m.follow_up_date)} น.
           </p>
@@ -320,7 +320,7 @@ function CommitmentRow({
             key={s}
             type="button"
             onClick={() => onUpdate(m.id, { status: s })}
-            className={`tap rounded-full px-2.5 py-1 text-[11px] font-bold ${
+            className={`tap rounded-full px-2.5 py-1 text-xs font-bold ${
               m.status === s
                 ? "bg-primary text-primary-foreground"
                 : "bg-background text-muted-foreground"
@@ -332,7 +332,7 @@ function CommitmentRow({
         <Link
           to="/connection/$id"
           params={{ id: m.connection_id }}
-          className="tap ml-auto rounded-full bg-background px-2.5 py-1 text-[11px] font-bold text-primary"
+          className="tap ml-auto rounded-full bg-background px-2.5 py-1 text-xs font-bold text-primary"
         >
           เปิดคอนเนกชัน
         </Link>
@@ -355,14 +355,14 @@ function CommitmentRow({
               description: partner?.name ?? undefined,
             });
           }}
-          className="tap inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-primary-foreground"
+          className="tap inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground"
         >
           <Send className="h-3 w-3" /> ส่งเข้าห้องแชท
         </button>
         <Link
           to="/chat/$id"
           params={{ id: m.connection_id }}
-          className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-[11px] font-bold text-primary"
+          className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-bold text-primary"
         >
           <MessageCircle className="h-3 w-3" /> เปิดแชท
         </Link>
@@ -374,7 +374,7 @@ function CommitmentRow({
                 const ev = commitmentToEvent(m, partner?.name);
                 if (ev) downloadICS("นัดหมาย", [ev]);
               }}
-              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-[11px] font-bold text-foreground"
+              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-bold text-foreground"
             >
               <Download className="h-3 w-3" /> .ics
             </button>
@@ -385,7 +385,7 @@ function CommitmentRow({
               })()}
               target="_blank"
               rel="noreferrer"
-              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-[11px] font-bold text-foreground"
+              className="tap inline-flex items-center gap-1 rounded-full bg-background px-3 py-1.5 text-xs font-bold text-foreground"
             >
               <CalendarPlus className="h-3 w-3" /> Google
             </a>
@@ -471,7 +471,7 @@ function ReminderChip({ iso, done }: { iso: string; done: boolean }) {
 
   if (diff <= 0) {
     return (
-      <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
+      <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-bold text-destructive">
         <BellRing className="h-3 w-3" /> ถึงเวลานัดแล้ว
       </p>
     );
@@ -487,7 +487,7 @@ function ReminderChip({ iso, done }: { iso: string; done: boolean }) {
   const next = REMINDER_STAGES.filter((s) => s.ms < diff).slice(-1)[0];
 
   return (
-    <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+    <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
       <BellRing className="h-3 w-3" /> {left}
       {next ? ` · เตือน${next.label}` : " · เตือนแล้ว"}
     </p>

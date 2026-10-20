@@ -563,7 +563,7 @@ function Dashboard() {
                     key={m.k}
                     type="button"
                     onClick={() => setPowerMode(m.k)}
-                    className={`tap h-8 flex-1 rounded-lg text-[11px] font-extrabold ${
+                    className={`tap h-8 flex-1 rounded-lg text-xs font-extrabold ${
                       powerMode === m.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                     }`}
                   >
@@ -581,19 +581,19 @@ function Dashboard() {
             </div>
 
             <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
-              <p className="text-[11px] font-bold text-muted-foreground">ชุดตัวกรองที่บันทึกไว้</p>
+              <p className="text-xs font-bold text-muted-foreground">ชุดตัวกรองที่บันทึกไว้</p>
               <button
                 type="button"
                 onClick={saveCurrentPreset}
                 disabled={activeCount === 0}
-                className="tap flex h-8 items-center gap-1 rounded-lg border border-border px-2 text-[11px] font-extrabold disabled:opacity-40"
+                className="tap flex h-8 items-center gap-1 rounded-lg border border-border px-2 text-xs font-extrabold disabled:opacity-40"
               >
                 <BookmarkPlus className="h-3.5 w-3.5" />
                 บันทึกชุดนี้
               </button>
             </div>
             {presets.length === 0 ? (
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 ยังไม่มีชุดที่บันทึก — เลือกตัวกรองแล้วกด “บันทึกชุดนี้” เพื่อรับแจ้งเตือนเมื่อมีแมตช์หรือคู่เชื่อมต่อใหม่ที่ตรงเงื่อนไข
               </p>
             ) : (
@@ -601,7 +601,7 @@ function Dashboard() {
                 {presets.map((p) => (
                   <span
                     key={p.id}
-                    className={`flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-extrabold ${
+                    className={`flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-extrabold ${
                       activePresetId === p.id
                         ? "gradient-power border-transparent text-primary-foreground"
                         : "border-border bg-background"
@@ -642,7 +642,7 @@ function Dashboard() {
 
 
         <div className="-mx-5 flex items-center gap-1.5 overflow-x-auto px-5 pb-0.5">
-          <span className="flex shrink-0 items-center gap-1 text-[11px] font-extrabold text-muted-foreground">
+          <span className="flex shrink-0 items-center gap-1 text-xs font-extrabold text-muted-foreground">
             <ArrowUpDown className="h-3.5 w-3.5" /> เรียงโดย
           </span>
           {SORT_OPTIONS.map((s) => (
@@ -651,7 +651,7 @@ function Dashboard() {
               type="button"
               onClick={() => setSort(s.key)}
               aria-pressed={sort === s.key}
-              className={`tap shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${
+              className={`tap shrink-0 rounded-full border px-2.5 py-1 text-xs font-extrabold ${
                 sort === s.key
                   ? "gradient-power border-transparent text-primary-foreground"
                   : "border-border bg-card text-muted-foreground"
@@ -663,7 +663,7 @@ function Dashboard() {
         </div>
 
         {activeCount > 0 && (
-          <p className="text-[11px] font-bold text-muted-foreground">
+          <p className="text-xs font-bold text-muted-foreground">
             กำลังกรอง · {fUsers.length} คน · {fConnections.length} คอนเนกชัน ·{" "}
             {fCommitments.length} คำมั่นสัญญา
           </p>
@@ -675,7 +675,7 @@ function Dashboard() {
           <div className="absolute inset-0 text-white/70">
             <NetworkBackground count={20} seed={12} />
           </div>
-          <div className="relative flex items-center gap-2 pb-4 text-[11px] font-bold uppercase tracking-widest">
+          <div className="relative flex items-center gap-2 pb-4 text-xs font-bold uppercase tracking-widest">
             <span className="h-2 w-2 rounded-full bg-lime animate-pulse-node" />
             สด · อัปเดตอัตโนมัติ
           </div>
@@ -765,7 +765,7 @@ function Dashboard() {
                   <p className="truncate text-[13px] font-bold">{f.title}</p>
                   <p className="truncate text-[12px] text-muted-foreground">{f.detail}</p>
                 </div>
-                <span className="ml-auto shrink-0 text-[11px] font-bold text-muted-foreground">
+                <span className="ml-auto shrink-0 text-xs font-bold text-muted-foreground">
                   {ago(f.created_at, now)}
                 </span>
               </li>
@@ -893,7 +893,7 @@ function Dashboard() {
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline gap-2">
                       <span className="truncate text-[13px] font-extrabold">{r.user.name}</span>
-                      <span className="shrink-0 text-[10px] font-bold text-muted-foreground">
+                      <span className="shrink-0 text-xs font-bold text-muted-foreground">
                         {REGION_LABEL[r.user.region]}
                       </span>
                     </span>
@@ -901,7 +901,7 @@ function Dashboard() {
                       {r.reasons.map((reason) => (
                         <span
                           key={reason}
-                          className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground"
+                          className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-bold text-muted-foreground"
                         >
                           {reason}
                         </span>
@@ -912,7 +912,7 @@ function Dashboard() {
                     <span className="block text-sm font-extrabold tabular-nums text-primary">
                       {r.relevance}%
                     </span>
-                    <span className="block text-[10px] font-bold text-muted-foreground">
+                    <span className="block text-xs font-bold text-muted-foreground">
                       {r.match != null ? `แมตช์ ${r.match}%` : "ความเกี่ยวข้อง"}
                     </span>
                   </span>
@@ -961,7 +961,7 @@ function Dashboard() {
             <FileJson className="h-4 w-4" /> ส่งออกทั้งหมด (JSON)
           </button>
           {matchRows.length === 0 && (
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               * ต้องมีโปรไฟล์ของคุณจึงจะส่งออกรายการแมตช์ได้
             </p>
           )}
@@ -1001,7 +1001,7 @@ function Big({ n, label }: { n: number; label: string }) {
       <p className="text-[clamp(2rem,11vw,3rem)] font-extrabold leading-none tracking-tighter">
         {v}
       </p>
-      <p className="text-[11px] font-bold uppercase tracking-widest opacity-90">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-widest opacity-90">{label}</p>
     </div>
   );
 }
@@ -1009,7 +1009,7 @@ function Big({ n, label }: { n: number; label: string }) {
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="card-soft p-4">
-      <h2 className="mb-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+      <h2 className="mb-3 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
         {title}
       </h2>
       <div className="space-y-2">{children}</div>

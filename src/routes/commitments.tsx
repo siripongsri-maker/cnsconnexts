@@ -60,13 +60,13 @@ function Commitments() {
       <div className="grid grid-cols-2 gap-3 px-5 py-4">
         <div className="card-soft p-4">
           <p className="text-3xl font-extrabold text-gradient">{shownConnections.length}</p>
-          <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
             คอนเนกชันของฉัน
           </p>
         </div>
         <div className="card-soft p-4">
           <p className="text-3xl font-extrabold text-gradient">{shown.length}</p>
-          <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
             คำมั่นสัญญาของฉัน
           </p>
         </div>
@@ -91,7 +91,7 @@ function Commitments() {
                 </p>
               </div>
               <p className="mt-2 text-[15px] font-semibold leading-snug">"{m.description}"</p>
-              <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className="mt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {m.action_type}
               </p>
               <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto">
@@ -99,7 +99,7 @@ function Commitments() {
                   <button
                     key={s}
                     onClick={() => info && setConnectionStatus(info.conn.id, s)}
-                    className={`tap shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold ${
+                    className={`tap shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
                       m.status === s
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border bg-card text-muted-foreground"

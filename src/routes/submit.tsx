@@ -147,7 +147,7 @@ function SubmitPage() {
                   {me.interests.map((i) => (
                     <span
                       key={i}
-                      className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary"
+                      className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary"
                     >
                       {issueTh(i)}
                     </span>
@@ -156,7 +156,7 @@ function SubmitPage() {
               </div>
               <Link
                 to="/update"
-                className="tap inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-[11px] font-bold"
+                className="tap inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-bold"
               >
                 <Pencil className="h-3.5 w-3.5" />
                 แก้ไข

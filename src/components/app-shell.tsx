@@ -31,7 +31,7 @@ export function AppShell({
           <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3">
             <Link
               to="/"
-              className="tap inline-grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent text-foreground"
+              className="tap relative inline-grid h-10 w-10 after:absolute after:-inset-1 after:content-[''] shrink-0 place-items-center rounded-full bg-accent text-foreground"
               aria-label="กลับหน้าแรก"
             >
               <Home className="h-[18px] w-[18px]" strokeWidth={2.2} />
@@ -48,15 +48,14 @@ export function AppShell({
               )}
             </div>
             <div className="flex items-center gap-2">
-              {action}
               <Link
                 to="/notifications"
-                className="tap relative inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+                className="tap relative inline-grid h-10 w-10 after:absolute after:-inset-1 after:content-[''] place-items-center rounded-full bg-accent text-foreground"
                 aria-label="การแจ้งเตือน"
               >
                 <Bell className="h-[18px] w-[18px]" strokeWidth={2.2} />
                 {unread > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-coral px-1 text-[10px] font-extrabold text-coral-foreground">
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-coral px-1 text-xs font-extrabold text-coral-foreground">
                     {unread > 9 ? "9+" : unread}
                   </span>
                 )}
@@ -64,8 +63,10 @@ export function AppShell({
               {mode === "user" || mode === "guest" ? (
                 <button
                   type="button"
-                  onClick={() => void signOut()}
-                  className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-accent text-foreground"
+                  onClick={() => {
+                    if (window.confirm("ออกจากระบบตอนนี้ใช่ไหม?")) void signOut();
+                  }}
+                  className="tap relative inline-grid h-10 w-10 after:absolute after:-inset-1 after:content-[''] place-items-center rounded-full bg-accent text-foreground"
                   aria-label="ออกจากระบบ"
                 >
                   <LogOut className="h-[18px] w-[18px]" strokeWidth={2.2} />
@@ -73,7 +74,7 @@ export function AppShell({
               ) : (
                 <Link
                   to="/auth"
-                  className="tap inline-grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground"
+                  className="tap relative inline-grid h-10 w-10 after:absolute after:-inset-1 after:content-[''] place-items-center rounded-full bg-primary text-primary-foreground"
                   aria-label="เข้าสู่ระบบ"
                 >
                   <LogIn className="h-[18px] w-[18px]" strokeWidth={2.2} />
@@ -81,6 +82,7 @@ export function AppShell({
               )}
             </div>
           </div>
+          {action && <div className="mt-2.5 flex flex-wrap items-center gap-2">{action}</div>}
         </header>
       )}
       <PendingSyncBanner />
@@ -91,7 +93,6 @@ export function AppShell({
       </div>
 
       <BottomNav />
-
     </div>
   );
 }

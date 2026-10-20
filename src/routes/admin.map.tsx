@@ -37,7 +37,7 @@ function AdminMap() {
         <h2 className="text-[14px] font-extrabold">จังหวัดที่มีสมาชิกมากที่สุด</h2>
         <ul className="mt-2 flex flex-wrap gap-1.5">
           {byProvince.map(([p, n]) => (
-            <li key={p} className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
+            <li key={p} className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground">
               {provinceTh(p)} · {n}
             </li>
           ))}
@@ -62,7 +62,7 @@ function AdminMap() {
           <li key={n.id} className="card-soft flex items-start gap-3 rounded-2xl bg-card p-4">
             <div className="min-w-0 flex-1">
               <p className="break-words text-sm font-extrabold">{n.title}</p>
-              <p className="text-[11px] font-bold text-muted-foreground">
+              <p className="text-xs font-bold text-muted-foreground">
                 {provinceTh(n.province)} · {n.author_name} · {n.issues.map(issueTh).join(", ")}
               </p>
               <p className="mt-1 text-[12px] text-muted-foreground">{n.detail}</p>

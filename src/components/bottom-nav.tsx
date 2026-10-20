@@ -21,7 +21,7 @@ export function BottomNav() {
             <li key={to} className="flex-1">
               <Link
                 to={to}
-                className={`tap flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-[10px] font-semibold ${
+                className={`tap flex flex-col items-center gap-1 rounded-xl px-1 py-1.5 text-xs font-semibold ${
                   active ? "text-primary" : "text-muted-foreground"
                 }`}
               >

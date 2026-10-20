@@ -120,7 +120,7 @@ export function GuidedTour() {
             <Icon className="h-5 w-5" strokeWidth={2.2} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               ทัวร์แนะนำการใช้งาน
             </p>
             <h2 className="break-words text-[17px] font-extrabold leading-tight">{step.title}</h2>

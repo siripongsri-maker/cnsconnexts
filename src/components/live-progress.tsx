@@ -95,7 +95,7 @@ export function LiveProgress() {
                 <Icon className="h-4 w-4" />
               </span>
               <p className="mt-1 text-lg font-extrabold leading-none">{s.value}</p>
-              <p className="mt-0.5 text-[11px] font-bold text-muted-foreground">
+              <p className="mt-0.5 text-xs font-bold text-muted-foreground">
                 {i + 1}. {s.label}
               </p>
             </li>

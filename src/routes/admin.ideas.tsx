@@ -48,7 +48,7 @@ function AdminIdeas() {
                 >
                   <p className="break-words text-sm font-extrabold">{idea.title}</p>
                   <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">{idea.description}</p>
-                  <p className="mt-1 text-[11px] font-bold text-muted-foreground">
+                  <p className="mt-1 text-xs font-bold text-muted-foreground">
                     โดย {ownerName(idea.owner_id)} · {REGION_LABEL[idea.region]} ·{" "}
                     {idea.issues.map(issueTh).join(", ")}
                   </p>

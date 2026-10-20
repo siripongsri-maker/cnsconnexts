@@ -26,7 +26,7 @@ export function PdpaConsent() {
             </p>
 
             {open && (
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-muted-foreground">
                 <li>ข้อมูลที่เก็บ: รหัสผู้เยี่ยมชมแบบสุ่ม, เส้นทางหน้า, ประเภทเหตุการณ์, เวลา</li>
                 <li>วัตถุประสงค์: วิเคราะห์การใช้งานและรายงานผลกิจกรรมแบบไม่ระบุตัวตน</li>
                 <li>ระยะเวลา: เก็บสูงสุด 1,000 รายการล่าสุด และลบทันทีเมื่อคุณไม่ยินยอม</li>
@@ -37,7 +37,7 @@ export function PdpaConsent() {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className="mt-1.5 text-[11px] font-extrabold text-primary"
+              className="mt-1.5 text-xs font-extrabold text-primary"
             >
               {open ? "ย่อรายละเอียด" : "อ่านรายละเอียดการเก็บข้อมูล"}
             </button>

@@ -118,7 +118,7 @@ function AdminBackupPolicy() {
         </label>
 
         {updatedAt ? (
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             แก้ไขล่าสุด {new Date(updatedAt).toLocaleString("th-TH")}
           </p>
         ) : null}

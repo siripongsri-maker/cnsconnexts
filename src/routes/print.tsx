@@ -216,7 +216,7 @@ function PrintKit() {
                 ))}
               </svg>
 
-              <div className="columns-2 gap-4 text-[11px] leading-snug">
+              <div className="columns-2 gap-4 text-xs leading-snug">
                 {pins.map((pin) => (
                   <div key={pin.prov} className="mb-3 break-inside-avoid">
                     <p className="mb-1 border-b border-border pb-0.5 text-[13px] font-extrabold">
@@ -253,7 +253,7 @@ function PrintKit() {
               >
                 <div className="flex items-start justify-between gap-6 border-b-4 border-primary pb-4">
                   <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary">
+                    <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">
                       การ์ดนโยบายรายคน
                     </p>
                     <h2 className="text-3xl font-extrabold">{p.name}</h2>
@@ -340,7 +340,7 @@ function QrBlock({ url, code, size }: { url: string; code: string; size: number 
   return (
     <div className="shrink-0 text-center">
       <QRCodeSVG value={url} size={size} level="M" bgColor="transparent" fgColor="#3b0f78" />
-      <p className="mt-1 text-[11px] font-bold text-muted-foreground">อัปเดตข้อมูล · {code}</p>
+      <p className="mt-1 text-xs font-bold text-muted-foreground">อัปเดตข้อมูล · {code}</p>
     </div>
   );
 }

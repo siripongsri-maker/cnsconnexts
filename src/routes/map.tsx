@@ -74,7 +74,7 @@ function PowerMap() {
       title="แผนที่พลัง"
       subtitle={`${filtered.length} คน · ${ideas.length} ไอเดีย · ${provinceNotes.length} เรื่องเล่าจากจังหวัด`}
       action={
-        <div className="flex shrink-0 rounded-full bg-muted p-1 text-[11px] font-bold">
+        <div className="flex shrink-0 rounded-full bg-muted p-1 text-xs font-bold">
           {(
             [
               ["map", "แผนที่"],
@@ -195,7 +195,7 @@ function PowerMap() {
                 />
               ))}
             </svg>
-            <p className="px-2 pb-1 pt-2 text-center text-[11px] text-muted-foreground">
+            <p className="px-2 pb-1 pt-2 text-center text-xs text-muted-foreground">
               แตะที่จังหวัดเพื่อดูรายละเอียดและร่วมเพิ่มข้อมูล
             </p>
           </div>
@@ -219,7 +219,7 @@ function PowerMap() {
             <Link key={u.id} to="/people/$id" params={{ id: u.id }} className="card-soft tap p-3">
               <Avatar user={u} size={44} />
               <p className="mt-2 truncate text-sm font-extrabold">{u.name}</p>
-              <p className="truncate text-[11px] text-muted-foreground">{provinceTh(u.province)}</p>
+              <p className="truncate text-xs text-muted-foreground">{provinceTh(u.province)}</p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {u.interests.slice(0, 2).map((i) => (
                   <Chip key={i} tone="primary">
@@ -296,7 +296,7 @@ function ProvinceSheet({
 
         {people.length > 0 && (
           <div className="mt-4">
-            <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+            <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
               คนในจังหวัดนี้
             </p>
             <div className="space-y-2">
@@ -310,7 +310,7 @@ function ProvinceSheet({
                   <Avatar user={u} size={40} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-extrabold">{u.name}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{u.organization}</p>
+                    <p className="truncate text-xs text-muted-foreground">{u.organization}</p>
                   </div>
                   <div className="flex shrink-0 gap-1">
                     {u.powers_have.slice(0, 1).map((p) => (
@@ -324,7 +324,7 @@ function ProvinceSheet({
         )}
 
         <div className="mt-5">
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             รายละเอียดของจังหวัด
           </p>
           {notes.length === 0 && (
@@ -343,7 +343,7 @@ function ProvinceSheet({
                       {issueTh(i)}
                     </Chip>
                   ))}
-                  <span className="text-[11px] text-muted-foreground">โดย {n.author_name}</span>
+                  <span className="text-xs text-muted-foreground">โดย {n.author_name}</span>
                 </div>
               </article>
             ))}
@@ -410,7 +410,7 @@ function ProvinceSheet({
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-14 shrink-0 text-[10px] font-extrabold text-muted-foreground">{label}</span>
+      <span className="w-14 shrink-0 text-xs font-extrabold text-muted-foreground">{label}</span>
       <div className="no-scrollbar flex flex-1 gap-1.5 overflow-x-auto">{children}</div>
     </div>
   );
@@ -428,7 +428,7 @@ function Pill({
   return (
     <button
       onClick={onClick}
-      className={`tap shrink-0 rounded-full border px-3 py-1 text-[11px] font-bold ${
+      className={`tap shrink-0 rounded-full border px-3 py-1 text-xs font-bold ${
         active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
       }`}
     >

@@ -78,7 +78,7 @@ function ConnectionDetail() {
 
       <div className="mx-auto max-w-xl space-y-4 px-5 py-5">
         <div className="card-soft p-4">
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             พลังที่มีร่วมกัน
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -116,7 +116,7 @@ function ConnectionDetail() {
         </div>
 
         <div>
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             ก้าวต่อไปของเรา
           </p>
           <textarea
@@ -145,7 +145,7 @@ function ConnectionDetail() {
 
       {myCommitments.length > 0 && (
         <div className="mx-auto max-w-xl px-5 pb-4">
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             นัดหมายที่ตกลงไว้
           </p>
           <ul className="space-y-3">
@@ -154,7 +154,7 @@ function ConnectionDetail() {
                 <p className="text-sm font-bold">{m.action_type}</p>
                 <p className="text-xs text-muted-foreground">{m.description}</p>
                 {m.follow_up_date && (
-                  <p className="mt-1 text-[11px] font-semibold text-primary">
+                  <p className="mt-1 text-xs font-semibold text-primary">
                     นัด{" "}
                     {new Date(m.follow_up_date).toLocaleString("th-TH", {
                       dateStyle: "medium",

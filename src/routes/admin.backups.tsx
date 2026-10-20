@@ -174,7 +174,7 @@ function AdminBackups() {
             <div className="flex items-center justify-between gap-2">
               <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setOpenId(openId === row.id ? null : row.id)}>
                 <p className="truncate text-sm font-extrabold">{label(row)}</p>
-                <p className="text-[11px] font-bold text-muted-foreground">
+                <p className="text-xs font-bold text-muted-foreground">
                   {OP_TH[row.operation] ?? row.operation} · {row.table_name} ·{" "}
                   {new Date(row.created_at).toLocaleString("th-TH")}
                 </p>
@@ -183,20 +183,20 @@ function AdminBackups() {
                 type="button"
                 onClick={() => onExportOne(row)}
                 aria-label="ดาวน์โหลดสแนปช็อตนี้"
-                className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-[11px] font-bold"
+                className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-xs font-bold"
               >
                 <Download className="size-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => void onRestore(row)}
-                className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-[11px] font-bold"
+                className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-xs font-bold"
               >
                 <RotateCcw className="size-3.5" /> กู้คืน
               </button>
             </div>
             {openId === row.id ? (
-              <pre className="mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-2 text-[10px] leading-relaxed">
+              <pre className="mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-2 text-xs leading-relaxed">
                 {JSON.stringify(row.old_data ?? row.new_data, null, 2)}
               </pre>
             ) : null}

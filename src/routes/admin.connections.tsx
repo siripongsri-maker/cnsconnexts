@@ -50,7 +50,7 @@ function AdminConnections() {
                 <p className="break-words text-sm font-extrabold">
                   {nameOf(c.user_a)} ↔ {nameOf(c.user_b)}
                 </p>
-                <p className="text-[11px] font-bold text-muted-foreground">
+                <p className="text-xs font-bold text-muted-foreground">
                   แมตช์ {c.match_score}% · {c.match_reason}
                 </p>
               </div>
@@ -72,7 +72,7 @@ function AdminConnections() {
                   key={s}
                   type="button"
                   onClick={() => setConnectionStatus(c.id, s)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold ${
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
                     c.status === s
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground"

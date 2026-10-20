@@ -164,7 +164,7 @@ function AdminLogs() {
         <p className="text-[12px] text-muted-foreground">
           บันทึกจะเก็บเฉพาะเมื่อผู้ใช้กดยินยอม PDPA บนหน้าแรก · เก็บในเครื่องผู้ใช้ สูงสุด 1,000 รายการล่าสุด
         </p>
-        <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-[11px] font-extrabold text-primary">
+        <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">
           <ShieldCheck className="h-3.5 w-3.5" />
           {adminUser ?? "-"} · {role ? ROLE_TH[role] : "-"} · สิทธิ์: ดู
           {canSearch ? " · ค้นหา" : ""}
@@ -182,7 +182,7 @@ function AdminLogs() {
         ].map((s) => (
           <div key={s.l} className="card-soft rounded-2xl bg-card p-4">
             <p className="text-2xl font-extrabold text-gradient">{s.v}</p>
-            <p className="text-[11px] font-bold text-muted-foreground">{s.l}</p>
+            <p className="text-xs font-bold text-muted-foreground">{s.l}</p>
           </div>
         ))}
       </div>
@@ -261,7 +261,7 @@ function AdminLogs() {
             <div className="text-[12px]">
               <p className="text-3xl font-extrabold text-gradient">{consentRate}%</p>
               <p className="text-muted-foreground">ยินยอม {consentStats.accepted} · ไม่ยินยอม {consentStats.declined}</p>
-              <p className="mt-1 text-[11px] text-muted-foreground">นับจากการตัดสินใจบนเครื่องนี้</p>
+              <p className="mt-1 text-xs text-muted-foreground">นับจากการตัดสินใจบนเครื่องนี้</p>
             </div>
           </div>
         </section>
@@ -319,17 +319,17 @@ function AdminLogs() {
 
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <div className="rounded-xl bg-muted/50 p-3">
-            <p className="text-[11px] font-bold text-muted-foreground">เก็บย้อนหลังถึง</p>
+            <p className="text-xs font-bold text-muted-foreground">เก็บย้อนหลังถึง</p>
             <p className="text-[12px] font-extrabold">{cutoff ? fmt(cutoff.toISOString()) : "ไม่จำกัด"}</p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3">
-            <p className="text-[11px] font-bold text-muted-foreground">รายการเก่าสุดจะหมดอายุ</p>
+            <p className="text-xs font-bold text-muted-foreground">รายการเก่าสุดจะหมดอายุ</p>
             <p className="text-[12px] font-extrabold">
               {nextExpiry ? fmt(nextExpiry.toISOString()) : "ไม่มีกำหนด"}
             </p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3">
-            <p className="text-[11px] font-bold text-muted-foreground">จะถูกลบใน 7 วันข้างหน้า</p>
+            <p className="text-xs font-bold text-muted-foreground">จะถูกลบใน 7 วันข้างหน้า</p>
             <p className="text-[12px] font-extrabold">{expiringSoon} รายการ</p>
           </div>
         </div>
@@ -443,7 +443,7 @@ function AdminLogs() {
 
       <section className="card-soft overflow-x-auto rounded-2xl bg-card">
         <table className="w-full text-left text-[12px]">
-          <thead className="bg-muted/40 text-[11px] font-extrabold">
+          <thead className="bg-muted/40 text-xs font-extrabold">
             <tr>
               <th className="px-3 py-2">เวลา</th>
               <th className="px-3 py-2">ประเภท</th>

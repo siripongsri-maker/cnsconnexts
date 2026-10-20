@@ -68,7 +68,7 @@ export function LiveTicker() {
             <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse-node rounded-full bg-coral" />
           </span>
           <h2 className="text-[15px] font-extrabold">แจ้งเตือนสดในงาน</h2>
-          <span className="ml-auto text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <span className="ml-auto text-xs font-bold uppercase tracking-widest text-muted-foreground">
             live
           </span>
         </div>
@@ -89,13 +89,13 @@ export function LiveTicker() {
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-bold">
                       {e.title}
-                      <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      <span className="ml-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                         {KIND_TH[e.kind]}
                       </span>
                     </p>
                     <p className="truncate text-[12px] text-muted-foreground">{e.detail}</p>
                   </div>
-                  <span className="ml-auto shrink-0 text-[11px] font-bold text-muted-foreground">
+                  <span className="ml-auto shrink-0 text-xs font-bold text-muted-foreground">
                     {ago(e.created_at, now)}
                   </span>
                 </li>

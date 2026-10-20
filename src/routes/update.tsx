@@ -80,7 +80,7 @@ function UpdateMe() {
         <div className="card-soft rounded-3xl bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 สถานะข้อมูล
               </p>
               <p className="mt-1 text-sm font-extrabold">

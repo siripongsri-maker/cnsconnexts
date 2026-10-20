@@ -39,7 +39,6 @@ export function ProfileForm({
   const provinces = useMemo(() => PROVINCES_BY_REGION(region), [region]);
   const valid = name.trim().length > 0 && interests.length > 0 && have.length > 0;
 
-
   const toggle = (list: string[], set: (v: string[]) => void, v: string) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
@@ -73,7 +72,6 @@ export function ProfileForm({
     }
   };
 
-
   return (
     <div className="space-y-7 pb-32">
       <Block step={1} title="คุณคือใคร" hint="ชื่อ รูป และกลุ่มที่สังกัด">
@@ -91,43 +89,56 @@ export function ProfileForm({
                 type="button"
                 onClick={() => setPhoto(undefined)}
                 aria-label="ลบรูป"
-                className="tap absolute -right-1 -top-1 grid h-7 w-7 place-items-center rounded-full bg-foreground text-background"
+                className="tap absolute -right-2 -top-2 grid h-9 w-9 place-items-center rounded-full bg-foreground text-background"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
-          <label className="tap inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-border px-4 py-2.5 text-[13px] font-bold">
-            <Camera className="h-4 w-4" />
+          <label className="tap inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-2xl border border-border px-4 py-2.5 text-[13px] font-bold focus-within:ring-2 focus-within:ring-ring">
+            <Camera className="h-4 w-4" aria-hidden />
             {photo ? "เปลี่ยนรูป" : "แนบรูป (ไม่บังคับ)"}
             <input
               type="file"
               accept="image/*"
-              className="hidden"
+              className="sr-only"
               onChange={(e) => onPhoto(e.target.files?.[0])}
             />
           </label>
         </div>
 
+        <label htmlFor="pf-name" className="block text-[13px] font-bold">
+          ชื่อที่อยากให้เพื่อนเรียก <span className="text-primary">*</span>
+        </label>
         <input
+          id="pf-name"
+          autoComplete="nickname"
+          required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="ชื่อหรือชื่อเล่นของคุณ"
+          placeholder="เช่น ต้น, มายด์"
           className="h-13 w-full rounded-2xl border border-border bg-card px-4 py-3 text-base font-semibold outline-none focus:ring-2 focus:ring-ring"
         />
+        <label htmlFor="pf-org" className="block text-[13px] font-bold">
+          กลุ่ม / องค์กร <span className="font-medium text-muted-foreground">(ไม่บังคับ)</span>
+        </label>
         <input
+          id="pf-org"
+          autoComplete="organization"
           value={organization}
           onChange={(e) => setOrganization(e.target.value)}
-          placeholder="กลุ่ม / องค์กร (ไม่บังคับ)"
+          placeholder="เช่น เครือข่ายเยาวชนภาคใต้"
           className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
 
         {!photo && (
-          <div className="flex flex-wrap gap-2">
-            {AVATARS.map((a) => (
+          <div className="flex flex-wrap gap-2" role="group" aria-label="เลือกไอคอนแทนตัว">
+            {AVATARS.map((a, idx) => (
               <button
                 key={a}
                 type="button"
+                aria-label={`ไอคอนแทนตัวแบบที่ ${idx + 1}`}
+                aria-pressed={avatar === a}
                 onClick={() => setAvatar(a)}
                 className={`tap grid h-11 w-11 place-items-center rounded-2xl border text-xl ${
                   avatar === a ? "border-primary bg-primary/10" : "border-border bg-card"
@@ -139,7 +150,7 @@ export function ProfileForm({
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="ช่วงวัย">
           {GENERATIONS.map((g) => (
             <Pill key={g} active={generation === g} onClick={() => setGeneration(g)}>
               {GENERATION_TH[g]}
@@ -149,7 +160,7 @@ export function ProfileForm({
       </Block>
 
       <Block step={2} title="คุณทำงานอยู่ที่ไหน" hint="เลือกภาคแล้วเลือกจังหวัด">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="ภูมิภาค">
           {REGIONS.map((r) => (
             <Pill
               key={r}
@@ -163,7 +174,11 @@ export function ProfileForm({
             </Pill>
           ))}
         </div>
+        <label htmlFor="pf-province" className="sr-only">
+          จังหวัด
+        </label>
         <select
+          id="pf-province"
           value={province}
           onChange={(e) => setProvince(e.target.value)}
           className="h-12 w-full rounded-2xl border border-border bg-card px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring"
@@ -178,7 +193,7 @@ export function ProfileForm({
       </Block>
 
       <Block step={3} title="ประเด็นที่คุณทำ" hint="เลือกได้มากกว่า 1 ข้อ">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="ประเด็นที่คุณทำ">
           {ISSUES.map((i) => (
             <Pill
               key={i}
@@ -197,11 +212,16 @@ export function ProfileForm({
 
       <Block step={5} title="พลังที่คุณต้องการ" hint="สิ่งที่อยากได้จากเพื่อนในเครือข่าย">
         <PowerGrid selected={need} onToggle={(v) => toggle(need, setNeed, v)} tone="coral" />
+        <label htmlFor="pf-bio" className="block text-[13px] font-bold">
+          เล่าสั้น ๆ ว่าคุณกำลังทำอะไรอยู่{" "}
+          <span className="font-medium text-muted-foreground">(ไม่บังคับ)</span>
+        </label>
         <textarea
+          id="pf-bio"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={3}
-          placeholder="เล่าสั้น ๆ ว่าคุณกำลังทำอะไรอยู่"
+          placeholder="เช่น ทำงานเรื่องพื้นที่ปลอดภัยให้เยาวชน"
           className="w-full rounded-2xl border border-border bg-card p-4 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
       </Block>
@@ -210,14 +230,17 @@ export function ProfileForm({
         <button
           type="button"
           disabled={!valid || sending}
+          aria-describedby={!valid ? "pf-hint" : undefined}
           onClick={submit}
           className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl gradient-power text-base font-extrabold text-primary-foreground disabled:opacity-40"
         >
           {sending ? "กำลังบันทึก…" : submitLabel}
-
         </button>
         {!valid && (
-          <p className="mx-auto mt-1.5 max-w-xl text-center text-[11px] text-muted-foreground">
+          <p
+            id="pf-hint"
+            className="mx-auto mt-1.5 max-w-xl text-center text-xs text-muted-foreground"
+          >
             กรอกชื่อ เลือกประเด็นอย่างน้อย 1 ข้อ และพลังที่มีอย่างน้อย 1 ข้อ
           </p>
         )}
@@ -240,7 +263,7 @@ function Block({
   return (
     <section className="animate-rise space-y-3">
       <div className="flex items-baseline gap-2">
-        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/12 text-[11px] font-extrabold text-primary">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/12 text-xs font-extrabold text-primary">
           {step}
         </span>
         <div>
@@ -265,8 +288,9 @@ function Pill({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
-      className={`tap rounded-full border px-4 py-2 text-[13px] font-bold ${
+      className={`tap min-h-11 rounded-full border px-4 py-2 text-[13px] font-bold ${
         active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
       }`}
     >
@@ -292,6 +316,7 @@ function PowerGrid({
           <button
             key={p.key}
             type="button"
+            aria-pressed={active}
             onClick={() => onToggle(p.key)}
             className={`tap rounded-2xl border p-3 text-left ${
               active
@@ -301,7 +326,9 @@ function PowerGrid({
                 : "border-border bg-card"
             }`}
           >
-            <span className="text-xl">{p.emoji}</span>
+            <span className="text-xl" aria-hidden>
+              {p.emoji}
+            </span>
             <span className="mt-1 block text-[13px] font-extrabold leading-tight">{p.th}</span>
           </button>
         );

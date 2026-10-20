@@ -40,7 +40,7 @@ function AdminCommitments() {
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 <p className="break-words text-sm font-extrabold">{pairOf(m.connection_id)}</p>
-                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{m.action_type}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{m.action_type}</p>
               </div>
               <button
                 type="button"
@@ -69,7 +69,7 @@ function AdminCommitments() {
                 onChange={(e) => updateCommitment(m.id, { follow_up_date: e.target.value || null })}
                 className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
               />
-              <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
+              <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground">
                 ฉัน: {RSVP_TH[m.rsvp ?? "pending"]} · คู่: {RSVP_TH[m.partner_rsvp ?? "pending"]}
               </span>
             </div>
@@ -80,7 +80,7 @@ function AdminCommitments() {
                   key={s}
                   type="button"
                   onClick={() => updateCommitment(m.id, { status: s })}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold ${
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
                     m.status === s
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground"

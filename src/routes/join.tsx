@@ -60,7 +60,7 @@ function Join() {
           กำลังสร้างเซสชันของคุณ…
         </p>
         {code && (
-          <p className="mt-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="mt-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             เซสชัน {code}
           </p>
         )}

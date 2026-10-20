@@ -142,7 +142,7 @@ function AdminOverview() {
               <Icon className="h-4 w-4" />
             </span>
             <p className="mt-2 text-2xl font-extrabold text-gradient">{value}</p>
-            <p className="text-[11px] font-bold text-muted-foreground">{label}</p>
+            <p className="text-xs font-bold text-muted-foreground">{label}</p>
           </Link>
         ))}
       </div>
@@ -151,7 +151,7 @@ function AdminOverview() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-[14px] font-extrabold">แนวโน้มผู้ใช้ onboard จริง</h2>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {bucket === "day" ? "14 วันล่าสุด" : "8 สัปดาห์ล่าสุด"} · ใหม่และยอดสะสม
             </p>
           </div>
@@ -161,7 +161,7 @@ function AdminOverview() {
                 key={b}
                 type="button"
                 onClick={() => setBucket(b)}
-                className={`tap rounded-lg px-3 py-1.5 text-[11px] font-bold ${
+                className={`tap rounded-lg px-3 py-1.5 text-xs font-bold ${
                   bucket === b ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
                 }`}
               >
@@ -212,7 +212,7 @@ function AdminOverview() {
 
       <section className="card-soft rounded-2xl bg-card p-4">
         <h2 className="text-[14px] font-extrabold">Funnel การใช้งาน</h2>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           อัตราคอนเวอร์ชันจากผู้เข้าชม → โปรไฟล์ → ประเด็น → พลัง → คู่แมตช์ → เชื่อมต่อ → คำมั่นสัญญา
         </p>
 
@@ -224,7 +224,7 @@ function AdminOverview() {
             const fromPrev = prev > 0 ? Math.round((s.value / prev) * 100) : 0;
             return (
               <div key={s.step}>
-                <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                <div className="flex items-baseline justify-between gap-2 text-xs">
                   <span className="font-bold">
                     {i + 1}. {s.th} <span className="text-muted-foreground">· {s.step}</span>
                   </span>
@@ -244,7 +244,7 @@ function AdminOverview() {
           })}
         </div>
 
-        <p className="mt-3 text-[11px] text-muted-foreground">
+        <p className="mt-3 text-xs text-muted-foreground">
           คอนเวอร์ชันรวม Welcome → คำมั่นสัญญา:{" "}
           <span className="font-extrabold text-primary">
             {funnelTop > 0 ? Math.round(((funnel.at(-1)?.value ?? 0) / funnelTop) * 100) : 0}%

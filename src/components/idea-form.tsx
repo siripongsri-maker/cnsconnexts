@@ -146,7 +146,7 @@ function Pill({
     <button
       type="button"
       onClick={onClick}
-      className={`tap rounded-full border px-3 py-1.5 text-[11px] font-bold ${
+      className={`tap rounded-full border px-3 py-1.5 text-xs font-bold ${
         active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
       }`}
     >

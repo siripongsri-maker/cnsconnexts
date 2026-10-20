@@ -35,7 +35,7 @@ function AdminSubmissions() {
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
                   <p className="break-words text-sm font-extrabold">{s.name}</p>
-                  <p className="text-[11px] font-bold text-muted-foreground">
+                  <p className="text-xs font-bold text-muted-foreground">
                     {s.course} · {s.batch} · {provinceTh(s.province)} · {REGION_LABEL[s.region]}
                   </p>
                 </div>
@@ -43,7 +43,7 @@ function AdminSubmissions() {
                   type="button"
                   onClick={() => toggleShowcase(s.id)}
                   aria-pressed={s.showcase}
-                  className={`tap inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold ${
+                  className={`tap inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${
                     s.showcase ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
                   }`}
                 >
@@ -61,7 +61,7 @@ function AdminSubmissions() {
                   }}
                 >
                   <p className="line-clamp-2 text-[12px] text-muted-foreground">{s.summary}</p>
-                  <p className="mt-1 text-[11px] font-bold text-primary">แตะเพื่อแก้ไข</p>
+                  <p className="mt-1 text-xs font-bold text-primary">แตะเพื่อแก้ไข</p>
                 </button>
               ) : (
                 <div className="mt-3 space-y-3">

@@ -134,7 +134,7 @@ function ImportPage() {
           <p className="mt-2 text-muted-foreground">
             คอลัมน์: ชื่อ, จังหวัด, องค์กร, หลักสูตร, ประเด็น, สรุปงาน (จังหวัดเป็นภาษาไทยได้เลย)
           </p>
-          <pre className="mt-2 overflow-x-auto rounded-xl bg-muted p-3 text-[11px]">{TEMPLATE}</pre>
+          <pre className="mt-2 overflow-x-auto rounded-xl bg-muted p-3 text-xs">{TEMPLATE}</pre>
         </details>
 
         {rows.length > 0 && (

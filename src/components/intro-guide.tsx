@@ -55,7 +55,7 @@ export function IntroGuide({ onDone }: { onDone: () => void }) {
           <Icon className="h-6 w-6 text-primary" />
         </span>
         <div className="min-w-0">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             แนะนำก่อนเริ่ม {step + 1}/{INTRO_STEPS.length}
           </p>
           <h2 className="mt-0.5 text-[18px] font-extrabold leading-snug">{item.title}</h2>

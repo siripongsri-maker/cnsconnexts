@@ -145,7 +145,7 @@ function Marketplace() {
 
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div className="rounded-xl bg-lime/20 p-3">
-                    <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-lime-foreground">
+                    <p className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-lime-foreground">
                       มีให้
                     </p>
                     <ul className="space-y-0.5 text-[12px] font-semibold">
@@ -155,7 +155,7 @@ function Marketplace() {
                     </ul>
                   </div>
                   <div className="rounded-xl bg-coral/10 p-3">
-                    <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-coral">
+                    <p className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-coral">
                       ต้องการ
                     </p>
                     <ul className="space-y-0.5 text-[12px] font-semibold">
@@ -279,7 +279,7 @@ function Pill({
   return (
     <button
       onClick={onClick}
-      className={`tap shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold ${
+      className={`tap shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
         active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
       }`}
     >

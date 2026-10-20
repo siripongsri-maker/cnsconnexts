@@ -144,7 +144,7 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
 
           <div className="mt-3 grid grid-cols-2 gap-3">
             <div>
-              <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+              <p className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
                 เขามีให้
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -154,7 +154,7 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
               </div>
             </div>
             <div>
-              <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+              <p className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
                 เขากำลังหา
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -193,7 +193,7 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
           className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-border bg-card"
         >
           <X className="h-5 w-5 text-muted-foreground" />
-          <span className="text-[11px] font-extrabold text-muted-foreground">ข้าม</span>
+          <span className="text-xs font-extrabold text-muted-foreground">ข้าม</span>
         </button>
 
         {existing ? (
@@ -219,11 +219,11 @@ export function DiscoverDeck({ matches }: { matches: MatchResult[] }) {
           className="tap flex h-16 w-16 flex-col items-center justify-center gap-0.5 rounded-2xl border border-coral/40 bg-coral/10"
         >
           <Heart className="h-5 w-5 text-coral" />
-          <span className="text-[11px] font-extrabold text-coral">สนใจ</span>
+          <span className="text-xs font-extrabold text-coral">สนใจ</span>
         </button>
       </div>
 
-      <p className="mt-2 text-center text-[11px] text-muted-foreground">
+      <p className="mt-2 text-center text-xs text-muted-foreground">
         เหลืออีก {matches.length - 1} คน · อยากดูเป็นรายชื่อ กดปุ่ม “รายการ” ด้านบน
       </p>
     </div>

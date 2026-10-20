@@ -80,7 +80,7 @@ export function ChatRoom({ connectionId, compact = false }: { connectionId: stri
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                <p className={`mt-1 text-[10px] ${mine ? "opacity-80" : "text-muted-foreground"}`}>
+                <p className={`mt-1 text-xs ${mine ? "opacity-80" : "text-muted-foreground"}`}>
                   {clock(m.created_at)}
                 </p>
               </div>

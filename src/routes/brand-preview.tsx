@@ -85,7 +85,7 @@ function BrandPreview() {
                 <h3 className="text-sm font-extrabold uppercase tracking-wide opacity-80">
                   {swatch.name}
                 </h3>
-                <span className="rounded-full bg-black/10 px-2 py-0.5 text-[10px] font-bold opacity-70 dark:bg-white/15">
+                <span className="rounded-full bg-black/10 px-2 py-0.5 text-xs font-bold opacity-70 dark:bg-white/15">
                   {swatch.note}
                 </span>
               </div>
@@ -97,7 +97,7 @@ function BrandPreview() {
                       key={size}
                       className="flex items-center gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur-sm"
                     >
-                      <span className="w-10 shrink-0 text-[10px] font-bold uppercase tracking-wide opacity-60">
+                      <span className="w-10 shrink-0 text-xs font-bold uppercase tracking-wide opacity-60">
                         {size}
                       </span>
                       <Wordmark size={size} />
@@ -106,7 +106,7 @@ function BrandPreview() {
                 </div>
 
                 <div className="flex flex-col gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur-sm">
-                  <span className="text-[10px] font-bold uppercase tracking-wide opacity-60">
+                  <span className="text-xs font-bold uppercase tracking-wide opacity-60">
                     พร้อมโลโก้
                   </span>
                   <div className="flex flex-wrap items-center gap-4">
@@ -117,7 +117,7 @@ function BrandPreview() {
                 </div>
 
                 <div className="flex flex-col gap-3 rounded-2xl bg-white/10 p-3 backdrop-blur-sm">
-                  <span className="text-[10px] font-bold uppercase tracking-wide opacity-60">
+                  <span className="text-xs font-bold uppercase tracking-wide opacity-60">
                     โลโก้ล้วน
                   </span>
                   <div className="flex items-center gap-4">

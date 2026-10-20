@@ -42,10 +42,10 @@ function StepCard({ step }: { step: JourneyStep }) {
         <div className="min-w-0 space-y-3">
           <header>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-extrabold text-primary">
+              <span className="rounded-full bg-primary/12 px-2 py-0.5 text-xs font-extrabold text-primary">
                 {step.no}
               </span>
-              <code className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-bold">{step.path}</code>
+              <code className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-bold">{step.path}</code>
             </div>
             <h3 className="mt-1.5 text-[15px] font-extrabold">{step.title}</h3>
             <p className="text-[12.5px] text-muted-foreground">{step.goal}</p>
@@ -70,7 +70,7 @@ function StepCard({ step }: { step: JourneyStep }) {
 function Block({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <p className="text-[11px] font-extrabold uppercase tracking-wide text-muted-foreground">{title}</p>
+      <p className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">{title}</p>
       <ul className="mt-1 space-y-1">
         {items.map((t) => (
           <li key={t} className="text-[12.5px] leading-snug">
@@ -92,7 +92,7 @@ function JourneyPage() {
           </Link>
           <div className="min-w-0">
             <p className="truncate text-[15px] font-extrabold">Journey ทุกฟังก์ชัน</p>
-            <p className="truncate text-[11px] text-muted-foreground">คนส. CoNnextS · เอกสารฉบับเดียวจบ</p>
+            <p className="truncate text-xs text-muted-foreground">คนส. CoNnextS · เอกสารฉบับเดียวจบ</p>
           </div>
           <button
             type="button"
@@ -149,7 +149,7 @@ function JourneyPage() {
             แนวคิดคือเปลี่ยน “การเจอกันในงานสมัชชา” ให้กลายเป็น “ความร่วมมือที่มีเจ้าภาพและวันนัดจริง”
             ระบบจึงไล่ผู้ใช้จากโปรไฟล์พลัง → คู่เชื่อมที่มีเหตุผลรองรับ → คำมั่นสัญญาที่ติดตามได้ → ผลงานที่กลายเป็นคลังความรู้
           </p>
-          <pre className="overflow-x-auto rounded-2xl bg-muted/60 p-3 text-[11px] leading-relaxed">{`หน้าบ้าน (มือถือ)                    แกนข้อมูลกลาง                    หลังบ้าน /admin
+          <pre className="overflow-x-auto rounded-2xl bg-muted/60 p-3 text-xs leading-relaxed">{`หน้าบ้าน (มือถือ)                    แกนข้อมูลกลาง                    หลังบ้าน /admin
 /scan → /start → /onboarding  ─┐
 /matches /map /marketplace     ├─►  lib/store.ts (React Context)  ◄─┬─ /admin/people /ideas
 /connection /chat /calendar    │     ├ localStorage: connecting-power-v1  ├─ /submissions /map
@@ -181,7 +181,7 @@ function JourneyPage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-[12px]">
               <thead>
-                <tr className="border-b border-border text-[11px] uppercase text-muted-foreground">
+                <tr className="border-b border-border text-xs uppercase text-muted-foreground">
                   <th className="py-2 pr-3">ชนิดข้อมูล</th>
                   <th className="py-2 pr-3">ฟิลด์</th>
                   <th className="py-2">หมายเหตุ</th>

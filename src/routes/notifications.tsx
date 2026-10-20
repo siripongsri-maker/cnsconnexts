@@ -125,7 +125,7 @@ function NotificationsPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-extrabold">{n.title}</p>
                       <p className="text-[13px] text-muted-foreground">{n.body}</p>
-                      <p className="mt-1 text-[11px] text-muted-foreground">{timeAgo(n.created_at)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{timeAgo(n.created_at)}</p>
                     </div>
                     {!n.read && <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-coral" />}
                   </div>

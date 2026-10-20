@@ -116,7 +116,7 @@ function Welcome() {
           ].map((s) => (
             <div key={s.l} className="card-soft px-2 py-3 text-center">
               <p className="text-xl font-extrabold text-gradient">{s.n}</p>
-              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 {s.l}
               </p>
             </div>
@@ -151,7 +151,7 @@ function Welcome() {
             ใช้งานยังไง? อ่านคู่มือ 1 นาที
           </Link>
 
-          <p className="pt-1 text-center text-[11px] text-muted-foreground">
+          <p className="pt-1 text-center text-xs text-muted-foreground">
             ใช้เวลาไม่ถึง 2 นาที · Takes 1–2 minutes
           </p>
         </div>
@@ -195,7 +195,7 @@ function TopNav() {
                 <Link
                   to={to}
                   onClick={() => setOpen(false)}
-                  className="tap flex flex-col items-center gap-1.5 rounded-2xl bg-accent p-3 text-center text-[11px] font-semibold text-foreground"
+                  className="tap flex flex-col items-center gap-1.5 rounded-2xl bg-accent p-3 text-center text-xs font-semibold text-foreground"
                 >
                   <Icon className="h-5 w-5 text-primary" strokeWidth={2} />
                   {label}

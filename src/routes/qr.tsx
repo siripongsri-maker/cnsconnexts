@@ -36,7 +36,7 @@ function QrPoster() {
         aria-hidden
       />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center text-center">
-        <span className="rounded-full border border-border bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
+        <span className="rounded-full border border-border bg-card/80 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur">
           สแกนเพื่อเข้าร่วม · Scan to join
         </span>
         <h1 className="mt-5 flex justify-center">
@@ -53,7 +53,7 @@ function QrPoster() {
         <p className="mt-5 text-xs text-muted-foreground">
           หรือเปิดลิงก์ <span className="font-bold text-foreground">{url}</span>
         </p>
-        <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className="mt-1 text-xs font-bold uppercase tracking-widest text-muted-foreground">
           รหัสห้อง {joinCode}
         </p>
 

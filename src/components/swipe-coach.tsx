@@ -31,7 +31,7 @@ export function SwipeCoach() {
       <div className="card-soft w-full max-w-sm rounded-3xl bg-card p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               วิธีใช้การ์ดนี้
             </p>
             <h2 className="mt-0.5 text-[19px] font-extrabold">ปัดการ์ดยังไง?</h2>

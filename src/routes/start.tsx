@@ -59,7 +59,7 @@ function StartPage() {
         aria-hidden
       />
       <div className="relative z-10 mx-auto flex max-w-xl flex-col animate-rise">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-lime/40 bg-card/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary backdrop-blur">
+        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-lime/40 bg-card/80 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur">
           <CheckCircle2 className="h-3.5 w-3.5" />
           เข้าห้องสำเร็จ
         </span>
@@ -72,7 +72,7 @@ function StartPage() {
         </p>
 
         {session && (
-          <p className="mt-3 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="mt-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             ห้อง {session.code ?? "NHA26"} · เซสชัน {session.id}
           </p>
         )}
@@ -123,7 +123,7 @@ function StartPage() {
           </Link>
         </div>
 
-        <p className="mt-5 flex items-center justify-center gap-2 text-[11px] text-muted-foreground">
+        <p className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5" />
           เชื่อมคน · เชื่อมไอเดีย · เชื่อมพื้นที่
         </p>

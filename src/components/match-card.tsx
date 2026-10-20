@@ -66,7 +66,7 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
-          <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             เขามีให้
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -76,7 +76,7 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
           </div>
         </div>
         <div>
-          <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-1.5 text-xs font-extrabold uppercase tracking-widest text-muted-foreground">
             เขากำลังหา
           </p>
           <div className="flex flex-wrap gap-1.5">

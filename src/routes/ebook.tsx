@@ -169,18 +169,18 @@ function Ebook() {
                           {s.policy_issues.map((i) => (
                             <span
                               key={i}
-                              className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary"
+                              className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
                             >
                               {issueTh(i)}
                             </span>
                           ))}
                           {s.stage_ready && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-lime/25 px-2.5 py-1 text-[11px] font-semibold text-lime-foreground">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-lime/25 px-2.5 py-1 text-xs font-semibold text-lime-foreground">
                               <Mic className="h-3 w-3" /> ยินดีขึ้นเวที
                             </span>
                           )}
                           {s.showcase && (
-                            <span className="rounded-full bg-coral/12 px-2.5 py-1 text-[11px] font-semibold text-coral">
+                            <span className="rounded-full bg-coral/12 px-2.5 py-1 text-xs font-semibold text-coral">
                               กรณีศึกษาขึ้นเวที
                             </span>
                           )}
