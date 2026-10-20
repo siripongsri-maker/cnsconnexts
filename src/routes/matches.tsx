@@ -97,21 +97,13 @@ function Matches() {
       title="คนที่คุณควรเจอวันนี้"
       subtitle="People you should meet today"
       action={
-        <>
-          <ShareCardButton
-            me={me}
-            matches={all}
-            kind="matches"
-            label="แชร์คู่เชื่อม"
-            className="min-h-11 bg-secondary text-secondary-foreground"
-          />
-          <ShareCardButton
-            me={me}
-            kind="profile"
-            label="แชร์โปรไฟล์"
-            className="min-h-11 bg-secondary text-secondary-foreground"
-          />
-        </>
+        <ShareCardButton
+          me={me}
+          matches={all}
+          kind="matches"
+          label="แชร์"
+          className="min-h-11 bg-secondary text-secondary-foreground"
+        />
       }
     >
       <div className="px-5 pt-3">
