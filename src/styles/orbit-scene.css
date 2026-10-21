@@ -23,6 +23,9 @@
 .orbit-scene[data-dragging="true"] > canvas {
   cursor: grabbing;
 }
+.orbit-scene[data-geographic="true"] > canvas {
+  cursor: default;
+}
 .orbit-drag-cue {
   display: none;
   position: absolute;
@@ -58,10 +61,12 @@
   .orbit-drag-cue {
     display: grid;
   }
-  .orbit-scene[data-orbit-state="ready"][data-pointer-visible="true"] .orbit-drag-cue {
+  .orbit-scene[data-orbit-state="ready"][data-pointer-visible="true"]:not([data-geographic])
+    .orbit-drag-cue {
     opacity: 1;
   }
-  .orbit-scene[data-orbit-state="ready"][data-pointer-visible="true"] > canvas {
+  .orbit-scene[data-orbit-state="ready"][data-pointer-visible="true"]:not([data-geographic])
+    > canvas {
     cursor: none;
   }
   .orbit-scene[data-dragging="true"] .orbit-drag-cue {
