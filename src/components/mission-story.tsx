@@ -65,9 +65,8 @@ export function MissionStory() {
   }, [chapter, disabled]);
 
   useEffect(() => {
-    const media = window.matchMedia(
-      "(max-height: 540px), (max-width: 700px) and (max-height: 600px)",
-    );
+    // Compact editor previews and landscape phones can still render the scene.
+    const media = window.matchMedia("(max-height: 359px)");
     const update = () => setShortViewport(media.matches);
     update();
     media.addEventListener("change", update);
@@ -145,17 +144,19 @@ export function MissionStory() {
                 { opacity: 1, y: 0, duration: SLOT * 0.28 },
                 start,
               );
-              timeline.fromTo(
-                scene.querySelectorAll(".story-line > span"),
-                { yPercent: 105 },
-                {
-                  yPercent: 0,
-                  stagger: SLOT * 0.056,
-                  duration: SLOT * 0.36,
-                  ease: "power3.out",
-                },
-                start,
-              );
+              const lines = scene.querySelectorAll(".story-line > span");
+              if (lines.length)
+                timeline.fromTo(
+                  lines,
+                  { yPercent: 105 },
+                  {
+                    yPercent: 0,
+                    stagger: SLOT * 0.056,
+                    duration: SLOT * 0.36,
+                    ease: "power3.out",
+                  },
+                  start,
+                );
             }
             if (links.length) timeline.set(links, { pointerEvents: "auto" }, start + SLOT * 0.28);
             const ink = scene.querySelector<HTMLElement>(".story-ink");
@@ -247,11 +248,7 @@ export function MissionStory() {
             height={1088}
             fetchPriority="high"
           />
-          <OrbitScene
-            progressRef={progressRef}
-            disabled={disabled}
-            onReady={sceneLoaded}
-          />
+          <OrbitScene progressRef={progressRef} disabled={disabled} onReady={sceneLoaded} />
           {enhanced && <ThailandNetwork progressRef={progressRef} disabled={disabled} />}
           <div className="story-vignette" />
         </div>

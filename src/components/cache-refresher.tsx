@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 /** เปลี่ยนเลขนี้ทุกครั้งที่ต้องการบังคับให้เครื่องผู้ใช้โหลดเวอร์ชันใหม่ */
-export const APP_BUILD = "2026-08-25-5";
+export const APP_BUILD = "2026-10-21-thailand-2";
 
 const KEY = "connexts-build";
 
@@ -34,8 +34,10 @@ export function CacheRefresher() {
       }
       try {
         localStorage.setItem(KEY, APP_BUILD);
+        // อย่าโหลดซ้ำ ถ้าเครื่องนี้เก็บหรืออ่านเลขเวอร์ชันที่บันทึกไว้ไม่ได้
+        if (localStorage.getItem(KEY) !== APP_BUILD) return;
       } catch {
-        /* ignore */
+        return;
       }
       // โหลดใหม่หนึ่งครั้งเฉพาะกรณีที่เคยมีเวอร์ชันเก่าค้างอยู่
       if (prev) window.location.reload();
