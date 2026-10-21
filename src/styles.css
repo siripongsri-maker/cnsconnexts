@@ -12,6 +12,7 @@
 @import "./styles/scroll-motion.css";
 @import "./styles/orbit-scene.css";
 @import "./styles/mission-story.css";
+@import "./styles/thailand-network.css";
 
 @custom-variant dark (&:is(.dark *));
 
