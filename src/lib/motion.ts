@@ -1,8 +1,19 @@
 import { useEffect, useState } from "react";
 
+export function pageTransitionTypes({ pathChanged }: { pathChanged: boolean }): string[] | false {
+  if (!pathChanged || typeof window === "undefined") return false;
+  if (
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    document.documentElement.hasAttribute("data-lowspec")
+  )
+    return false;
+  return ["page"];
+}
+
 export function useMotionSettings() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [lowSpec, setLowSpec] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -22,12 +33,10 @@ export function useMotionSettings() {
 
       // ไม่ใช้ hardwareConcurrency: iOS Safari รายงานค่าต่ำเสมอ (กันการ fingerprint)
       // ทำให้ iPhone ทุกเครื่องถูกมองว่าเป็นเครื่องสเปกต่ำ
-      const isLowSpec =
-        reduced ||
-        !!saveData ||
-        (typeof memory === "number" && memory <= 2);
+      const isLowSpec = reduced || !!saveData || (typeof memory === "number" && memory <= 2);
 
       setLowSpec(isLowSpec);
+      setReady(true);
     };
 
     update();
@@ -35,5 +44,5 @@ export function useMotionSettings() {
     return () => mql.removeEventListener("change", update);
   }, []);
 
-  return { reducedMotion, lowSpec };
+  return { reducedMotion, lowSpec, ready };
 }
