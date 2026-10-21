@@ -59,7 +59,13 @@ export function IdeaForm({ idea, onClose }: Props) {
       if (nextErrors.title) {
         document.getElementById("idea-title")?.focus();
       } else {
-        needGroupRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const motionOff =
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-lowspec");
+        needGroupRef.current?.scrollIntoView({
+          behavior: motionOff ? "instant" : "smooth",
+          block: "center",
+        });
         needGroupRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
       }
       return;
