@@ -132,7 +132,8 @@ export function MissionStory() {
             },
           });
           gsap.set(scenes, { opacity: 0, pointerEvents: "none" });
-          gsap.set(scenes[0]!, { opacity: 1 });
+          const intro = scenes[0];
+          if (intro) gsap.set(intro, { opacity: 1 });
           gsap.set(el.querySelectorAll(".story-copy-stack a"), { pointerEvents: "none" });
           scenes.forEach((scene, index) => {
             const start = index * SLOT;
@@ -248,7 +249,7 @@ export function MissionStory() {
           />
           <OrbitScene
             progressRef={progressRef}
-            disabled={disabled || !enhanced}
+            disabled={disabled}
             onReady={sceneLoaded}
           />
           {enhanced && <ThailandNetwork progressRef={progressRef} disabled={disabled} />}
