@@ -2,19 +2,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import { OrbitScene } from "@/components/orbit-scene";
+import { ThailandNetwork } from "@/components/thailand-network";
 import { useMotionSettings } from "@/lib/motion";
 import missionSatellite from "@/assets/mission-satellite.jpg";
 
 const CHAPTERS = [
-  "เริ่มที่เรา",
-  "สิ่งที่ท้าทาย",
-  "พลังที่เติมกัน",
-  "ไปด้วยกัน",
-  "บอกพลัง",
-  "พบคน",
-  "เชื่อมต่อ",
-  "ลงมือทำ",
-];
+  { label: "เริ่มที่เรา", href: "#welcome-title" },
+  { label: "สิ่งที่ท้าทาย", href: "#challenge" },
+  { label: "พลังที่เติมกัน", href: "#story-connection" },
+  { label: "ไปด้วยกัน", href: "#story-together" },
+  { label: "บอกพลัง", href: "#story-define" },
+  { label: "พบคน", href: "#story-discover" },
+  { label: "เชื่อมต่อ", href: "#story-connect" },
+  { label: "ลงมือทำ", href: "#story-act" },
+  { label: "ประเทศไทย", href: "#story-thailand" },
+  { label: "เครือข่าย", href: "#explore-network" },
+] as const;
+const CHAPTER_COUNT = CHAPTERS.length;
+const SLOT = 1 / CHAPTER_COUNT;
 const STEPS = [
   { en: "Define", th: "บอกพลังของคุณ", description: "สิ่งที่มี · สิ่งที่มองหา", to: "/onboarding" },
   {
@@ -36,6 +41,7 @@ const STEPS = [
 export function MissionStory() {
   const host = useRef<HTMLElement>(null);
   const progressRef = useRef(0);
+  const chapterRail = useRef<HTMLElement>(null);
   const { ready, reducedMotion, lowSpec } = useMotionSettings();
   const [enhanced, setEnhanced] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
@@ -45,7 +51,23 @@ export function MissionStory() {
   const sceneLoaded = useCallback(() => setSceneReady(true), []);
 
   useEffect(() => {
-    const media = window.matchMedia("(max-height: 540px)");
+    if (disabled) setSceneReady(false);
+  }, [disabled]);
+
+  useEffect(() => {
+    const rail = chapterRail.current;
+    const item = rail?.children[chapter] as HTMLElement | undefined;
+    if (!rail || !item || rail.scrollWidth <= rail.clientWidth) return;
+    rail.scrollTo({
+      left: item.offsetLeft - (rail.clientWidth - item.offsetWidth) / 2,
+      behavior: disabled ? "auto" : "smooth",
+    });
+  }, [chapter, disabled]);
+
+  useEffect(() => {
+    const media = window.matchMedia(
+      "(max-height: 540px), (max-width: 700px) and (max-height: 600px)",
+    );
     const update = () => setShortViewport(media.matches);
     update();
     media.addEventListener("change", update);
@@ -65,13 +87,26 @@ export function MissionStory() {
       if (!el || !enhanced) return;
       const range = Math.max(1, el.offsetHeight - window.innerHeight);
       const top =
-        el.getBoundingClientRect().top + window.scrollY + (index / 8 + (index ? 0.045 : 0)) * range;
+        el.getBoundingClientRect().top +
+        window.scrollY +
+        (index * SLOT + (index ? SLOT * 0.36 : 0)) * range;
       const event = new CustomEvent("connexts:scroll-to", { detail: { top }, cancelable: true });
       if (window.dispatchEvent(event))
         window.scrollTo({ top, behavior: disabled ? "auto" : "smooth" });
     },
     [enhanced, disabled],
   );
+
+  useEffect(() => {
+    if (!enhanced) return;
+    const revealHash = () => {
+      const index = CHAPTERS.findIndex(({ href }) => href === window.location.hash);
+      if (index >= 0) jump(index);
+    };
+    revealHash();
+    window.addEventListener("hashchange", revealHash);
+    return () => window.removeEventListener("hashchange", revealHash);
+  }, [enhanced, jump]);
 
   useEffect(() => {
     const el = host.current;
@@ -94,51 +129,72 @@ export function MissionStory() {
               end: "bottom bottom",
               scrub: 0.65,
               invalidateOnRefresh: true,
-              onUpdate: (self) => {
-                progressRef.current = self.progress;
-                el.style.setProperty("--story-progress", String(self.progress));
-                const next = Math.min(7, Math.floor(self.progress * 8));
-                if (next !== active) {
-                  active = next;
-                  setChapter(next);
-                }
-              },
             },
           });
           gsap.set(scenes, { opacity: 0, pointerEvents: "none" });
-          gsap.set(scenes[0]!, { opacity: 1, pointerEvents: "auto" });
+          gsap.set(scenes[0]!, { opacity: 1 });
+          gsap.set(el.querySelectorAll(".story-copy-stack a"), { pointerEvents: "none" });
           scenes.forEach((scene, index) => {
-            const start = index / 8;
+            const start = index * SLOT;
+            const links = scene.querySelectorAll("a");
             if (index) {
               timeline.fromTo(
                 scene,
                 { opacity: 0, y: 34 },
-                { opacity: 1, y: 0, duration: 0.035, pointerEvents: "auto" },
+                { opacity: 1, y: 0, duration: SLOT * 0.28 },
                 start,
               );
               timeline.fromTo(
                 scene.querySelectorAll(".story-line > span"),
                 { yPercent: 105 },
-                { yPercent: 0, stagger: 0.007, duration: 0.045, ease: "power3.out" },
+                {
+                  yPercent: 0,
+                  stagger: SLOT * 0.056,
+                  duration: SLOT * 0.36,
+                  ease: "power3.out",
+                },
                 start,
               );
             }
+            if (links.length) timeline.set(links, { pointerEvents: "auto" }, start + SLOT * 0.28);
             const ink = scene.querySelector<HTMLElement>(".story-ink");
             if (ink)
               timeline.fromTo(
                 ink,
                 { "--ink": "0%" },
-                { "--ink": "100%", duration: 0.068 },
-                start + 0.018,
+                { "--ink": "100%", duration: SLOT * 0.544 },
+                start + SLOT * 0.144,
               );
-            if (index < 7)
+            if (index < CHAPTER_COUNT - 1) {
+              if (links.length)
+                timeline.set(links, { pointerEvents: "none" }, start + SLOT * 0.816);
               timeline.to(
                 scene,
-                { opacity: 0, y: -24, duration: 0.025, pointerEvents: "none" },
-                start + 0.102,
+                { opacity: 0, y: -24, duration: SLOT * 0.2 },
+                start + SLOT * 0.816,
               );
+            }
           });
           timeline.to({}, { duration: 0.01 }, 0.99);
+          // One scrubbed playhead keeps the camera, map and copy in the same frame.
+          timeline.eventCallback("onUpdate", () => {
+            const progress = timeline.progress();
+            progressRef.current = progress;
+            el.style.setProperty("--story-progress", String(progress));
+            el.style.setProperty(
+              "--thailand-reveal",
+              String(Math.max(0, Math.min(1, (progress - 0.82) / 0.08))),
+            );
+            el.style.setProperty(
+              "--network-progress",
+              String(Math.max(0, Math.min(1, (progress - 0.9) / 0.075))),
+            );
+            const next = Math.min(CHAPTER_COUNT - 1, Math.floor(progress * CHAPTER_COUNT));
+            if (next !== active) {
+              active = next;
+              setChapter(next);
+            }
+          });
         }, el);
         setEnhanced(true);
         ScrollTrigger.refresh();
@@ -146,6 +202,8 @@ export function MissionStory() {
           context.revert();
           delete el.dataset["storyEnhanced"];
           el.style.removeProperty("--story-progress");
+          el.style.removeProperty("--thailand-reveal");
+          el.style.removeProperty("--network-progress");
           progressRef.current = 0;
           setEnhanced(false);
         };
@@ -162,11 +220,20 @@ export function MissionStory() {
   return (
     <section
       ref={host}
-      className={`mission-story${sceneReady && !disabled ? " scene-ready" : ""}`}
+      className={`mission-story${sceneReady && enhanced && !disabled ? " scene-ready" : ""}`}
       data-chapters-visible={chapter >= 3 ? "true" : undefined}
       aria-label="เรื่องราวของพลังที่เชื่อมกัน"
     >
-      <a className="story-skip" href="#explore-network">
+      <a
+        className="story-skip"
+        href="#explore-network"
+        onClick={(event) => {
+          if (!enhanced) return;
+          event.preventDefault();
+          event.stopPropagation();
+          jump(CHAPTER_COUNT - 1);
+        }}
+      >
         ข้ามเรื่องราว ไปสำรวจเครือข่าย
       </a>
       <div className="story-stage">
@@ -179,7 +246,12 @@ export function MissionStory() {
             height={1088}
             fetchPriority="high"
           />
-          <OrbitScene progressRef={progressRef} disabled={disabled} onReady={sceneLoaded} />
+          <OrbitScene
+            progressRef={progressRef}
+            disabled={disabled || !enhanced}
+            onReady={sceneLoaded}
+          />
+          {enhanced && <ThailandNetwork progressRef={progressRef} disabled={disabled} />}
           <div className="story-vignette" />
         </div>
         <div
@@ -273,24 +345,64 @@ export function MissionStory() {
               </Link>
             </section>
           ))}
+          <section id="story-thailand" data-story-scene="8" className="story-scene story-place">
+            <p className="mission-eyebrow" lang="en">
+              From the world. To Thailand.
+            </p>
+            <h2 className="story-place-title">
+              <span className="story-line">
+                <span>จากโลกกว้าง</span>
+              </span>
+              <span className="story-line">
+                <span>
+                  สู่ประเทศไทย<span className="mission-period">.</span>
+                </span>
+              </span>
+            </h2>
+            <p className="story-description">เริ่มจากพื้นที่ที่เราอยู่</p>
+          </section>
+          <section
+            id="explore-network"
+            data-story-scene="9"
+            className="story-scene story-place story-network"
+          >
+            <p className="mission-eyebrow" lang="en">
+              One connected network
+            </p>
+            <h2 className="story-place-title">
+              <span className="story-line">
+                <span>ต่างพื้นที่</span>
+              </span>
+              <span className="story-line">
+                <span>
+                  พลังเดียวกัน<span className="mission-period">.</span>
+                </span>
+              </span>
+            </h2>
+            <p className="story-description">เชื่อมคน เชื่อมไอเดีย ข้ามพื้นที่</p>
+            {!enhanced && (
+              <div className="story-static-map" aria-hidden="true">
+                <ThailandNetwork progressRef={progressRef} disabled />
+              </div>
+            )}
+            <Link to="/map" className="story-step-link">
+              สำรวจแผนที่พลัง <ArrowUpRight size={20} aria-hidden="true" />
+            </Link>
+            <p className="story-map-note">ภาพแนวคิดการเชื่อมโยงพื้นที่</p>
+          </section>
         </div>
-        <nav className="story-chapters" aria-label="ช่วงของเรื่องราว">
-          {CHAPTERS.map((label, index) => (
+        <nav
+          ref={chapterRail}
+          className="story-chapters"
+          aria-label="ช่วงของเรื่องราว"
+          data-lenis-prevent
+        >
+          {CHAPTERS.map(({ label, href }, index) => (
             <a
               key={label}
-              href={
-                index === 0
-                  ? "#welcome-title"
-                  : index === 1
-                    ? "#challenge"
-                    : index === 2
-                      ? "#story-connection"
-                      : index === 3
-                        ? "#story-together"
-                        : `#story-${STEPS[index - 4]!.en.toLowerCase()}`
-              }
+              href={href}
               aria-current={chapter === index ? "step" : undefined}
-              aria-label={`0${index + 1} ${label}`}
+              aria-label={`${String(index + 1).padStart(2, "0")} ${label}`}
               className={chapter === index ? "is-active" : ""}
               onClick={(event) => {
                 if (enhanced) {
@@ -300,7 +412,7 @@ export function MissionStory() {
                 }
               }}
             >
-              <span>0{index + 1}</span>
+              <span>{String(index + 1).padStart(2, "0")}</span>
               <span>{label}</span>
             </a>
           ))}
@@ -314,15 +426,18 @@ export function MissionStory() {
               if (enhanced) {
                 event.preventDefault();
                 event.stopPropagation();
-                jump(Math.min(7, chapter + 1));
+                jump(Math.min(CHAPTER_COUNT - 1, chapter + 1));
               }
             }}
           >
             <ArrowDown size={16} aria-hidden="true" />
             <span>เลื่อนเพื่อรู้จักเรา</span>
           </a>
-          <Link to="/onboarding" className="mission-action">
-            เริ่มเชื่อมพลัง
+          <Link
+            to={enhanced && chapter === CHAPTER_COUNT - 1 ? "/map" : "/onboarding"}
+            className="mission-action"
+          >
+            {enhanced && chapter === CHAPTER_COUNT - 1 ? "สำรวจแผนที่พลัง" : "เริ่มเชื่อมพลัง"}
             <span className="mission-action-icon">
               <ArrowUpRight aria-hidden="true" />
             </span>

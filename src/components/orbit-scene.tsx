@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import type { BufferGeometry, Material, Object3D, WebGLRenderer } from "three";
+import type { WorldLandPolygon } from "@/lib/world-geodata";
 
 type Three = typeof import("three");
 type SceneState = "idle" | "loading" | "ready" | "failed";
@@ -72,144 +73,15 @@ const POSES: readonly Pose[] = [
   },
 ];
 
-/* Original, deliberately simplified land outlines for a decorative point globe.
- * No map texture, proprietary model, tracking data or external asset is used. */
-const LAND: readonly (readonly Point[])[] = [
-  [
-    [-168, 71],
-    [-145, 72],
-    [-121, 74],
-    [-95, 71],
-    [-65, 60],
-    [-55, 52],
-    [-67, 46],
-    [-80, 25],
-    [-78, 9],
-    [-83, 9],
-    [-90, 17],
-    [-98, 18],
-    [-106, 25],
-    [-116, 31],
-    [-124, 42],
-    [-122, 49],
-    [-132, 56],
-    [-140, 63],
-  ],
-  [
-    [-81, 12],
-    [-70, 11],
-    [-60, 6],
-    [-50, 0],
-    [-35, -8],
-    [-40, -22],
-    [-49, -31],
-    [-55, -51],
-    [-68, -56],
-    [-75, -42],
-    [-73, -18],
-    [-81, -5],
-  ],
-  [
-    [-57, 59],
-    [-44, 60],
-    [-25, 70],
-    [-20, 80],
-    [-41, 84],
-    [-61, 78],
-  ],
-  [
-    [-12, 36],
-    [-10, 56],
-    [0, 61],
-    [10, 71],
-    [31, 71],
-    [45, 61],
-    [32, 48],
-    [36, 41],
-    [26, 35],
-    [15, 37],
-  ],
-  [
-    [-17, 37],
-    [11, 38],
-    [35, 31],
-    [44, 12],
-    [51, 11],
-    [43, -12],
-    [35, -26],
-    [20, -35],
-    [10, -29],
-    [2, -5],
-    [-16, 15],
-  ],
-  [
-    [26, 70],
-    [60, 76],
-    [110, 75],
-    [160, 68],
-    [179, 64],
-    [166, 52],
-    [142, 45],
-    [138, 35],
-    [121, 23],
-    [112, 7],
-    [103, 0],
-    [95, 15],
-    [80, 7],
-    [69, 24],
-    [44, 31],
-    [35, 42],
-    [50, 52],
-    [30, 58],
-  ],
-  [
-    [96, 21],
-    [103, 23],
-    [110, 13],
-    [107, 3],
-    [101, 0],
-    [96, 12],
-  ],
-  [
-    [95, 5],
-    [106, -6],
-    [120, -8],
-    [137, -4],
-    [139, -8],
-    [120, -11],
-    [105, -10],
-  ],
-  [
-    [130, 31],
-    [135, 35],
-    [141, 45],
-    [145, 44],
-    [142, 35],
-    [135, 31],
-  ],
-  [
-    [113, -11],
-    [130, -10],
-    [142, -11],
-    [153, -24],
-    [151, -37],
-    [135, -39],
-    [116, -32],
-    [113, -20],
-  ],
-  [
-    [166, -34],
-    [179, -38],
-    [174, -47],
-    [166, -46],
-  ],
-  [
-    [47, -13],
-    [51, -16],
-    [48, -26],
-    [44, -24],
-  ],
-];
+// The first eight chapters retain the satellite and whole-globe camera path.
+// The last two use the same scrubbed playhead for the geographic handoff.
+const GLOBE_STORY_END = 0.76;
+const THAILAND = { lon: 101, lat: 15.5 };
+
+function phase(progress: number, start: number, end: number) {
+  const value = Math.max(0, Math.min(1, (progress - start) / (end - start)));
+  return value * value * (3 - 2 * value);
+}
 
 function random(seed: number) {
   let value = seed;
@@ -230,6 +102,16 @@ function inside(lon: number, lat: number, polygon: readonly Point[]) {
   return result;
 }
 
+function onLand(lon: number, lat: number, land: readonly WorldLandPolygon[]) {
+  return land.some(({ bounds: [west, south, east, north], rings }) => {
+    if (lon < west || lon > east || lat < south || lat > north) return false;
+    // Even/odd rings retain lakes and other holes from the original shapefile.
+    let result = false;
+    for (const ring of rings) if (inside(lon, lat, ring)) result = !result;
+    return result;
+  });
+}
+
 function globePoint(three: Three, lon: number, lat: number, radius: number) {
   const phi = (lat * Math.PI) / 180;
   const theta = (lon * Math.PI) / 180;
@@ -240,21 +122,23 @@ function globePoint(three: Three, lon: number, lat: number, radius: number) {
   );
 }
 
-function createEarth(three: Three, mobile: boolean) {
+function createEarth(three: Three, mobile: boolean, land: readonly WorldLandPolygon[]) {
   const frame = new three.Group();
   const globe = new three.Group();
   frame.add(globe);
   const radius = 2.4;
   const sphere = new three.SphereGeometry(radius, mobile ? 48 : 64, mobile ? 32 : 48);
-  globe.add(
-    new three.Mesh(
-      sphere,
-      new three.MeshPhongMaterial({ color: 0x020812, specular: 0x0b4166, shininess: 16 }),
-    ),
-  );
+  const sphereMaterial = new three.MeshPhongMaterial({
+    color: 0x020812,
+    specular: 0x0b4166,
+    shininess: 16,
+    transparent: true,
+  });
+  globe.add(new three.Mesh(sphere, sphereMaterial));
 
   const points: number[] = [];
   const colors: number[] = [];
+  const details: number[] = [];
   const rand = random(4739);
   const count = mobile ? 15000 : 27000;
   const golden = Math.PI * (3 - Math.sqrt(5));
@@ -262,45 +146,68 @@ function createEarth(three: Three, mobile: boolean) {
     const y = 1 - (2 * (i + 0.5)) / count;
     const lat = (Math.asin(y) * 180) / Math.PI;
     const lon = (((i * golden * 180) / Math.PI + 180) % 360) - 180;
-    if (!LAND.some((polygon) => inside(lon, lat, polygon))) continue;
+    if (!onLand(lon, lat, land)) continue;
     const point = globePoint(three, lon, lat, radius + 0.018);
     points.push(point.x, point.y, point.z);
     const light = 0.4 + rand() * 0.6;
     colors.push(0.27 * light, 0.42 * light, 0.55 * light);
+    details.push(0);
   }
   // A slightly clearer dotted coastline keeps the quiet land field legible.
   // It shares the same draw call and shader as the rest of the continents.
-  for (const polygon of LAND) {
-    polygon.forEach((from, i) => {
-      const to = polygon[(i + 1) % polygon.length]!;
-      const steps = Math.max(1, Math.ceil(Math.hypot(to[0] - from[0], to[1] - from[1]) / 1.4));
-      for (let step = 0; step < steps; step++) {
-        const mix = step / steps;
-        const point = globePoint(
-          three,
-          from[0] + (to[0] - from[0]) * mix,
-          from[1] + (to[1] - from[1]) * mix,
-          radius + 0.02,
-        );
-        points.push(point.x, point.y, point.z);
-        colors.push(0.33, 0.47, 0.58);
-      }
-    });
+  for (const { rings } of land)
+    for (const polygon of rings) {
+      polygon.forEach((from, i) => {
+        const to = polygon[(i + 1) % polygon.length]!;
+        const steps = Math.max(1, Math.ceil(Math.hypot(to[0] - from[0], to[1] - from[1]) / 1.4));
+        for (let step = 0; step < steps; step++) {
+          const mix = step / steps;
+          const point = globePoint(
+            three,
+            from[0] + (to[0] - from[0]) * mix,
+            from[1] + (to[1] - from[1]) * mix,
+            radius + 0.02,
+          );
+          points.push(point.x, point.y, point.z);
+          colors.push(0.33, 0.47, 0.58);
+          details.push(0);
+        }
+      });
+    }
+  // A small regional level of detail appears only during the close approach.
+  // It uses the same real land mask, muted palette and single point draw call.
+  const detailStep = mobile ? 0.4 : 0.3;
+  for (let lat = 3; lat <= 23; lat += detailStep) {
+    for (let lon = 93; lon <= 109; lon += detailStep) {
+      if (!onLand(lon, lat, land)) continue;
+      const point = globePoint(three, lon, lat, radius + 0.018);
+      points.push(point.x, point.y, point.z);
+      const light = 0.4 + rand() * 0.6;
+      colors.push(0.27 * light, 0.42 * light, 0.55 * light);
+      details.push(1);
+    }
   }
   const geometry = new three.BufferGeometry();
   geometry.setAttribute("position", new three.Float32BufferAttribute(points, 3));
   geometry.setAttribute("pointColor", new three.Float32BufferAttribute(colors, 3));
+  geometry.setAttribute("pointDetail", new three.Float32BufferAttribute(details, 1));
   const landMaterial = new three.ShaderMaterial({
-    uniforms: { pointSize: { value: mobile ? 0.055 : 0.065 } },
-    vertexShader: `attribute vec3 pointColor; varying vec3 vColor; uniform float pointSize;
-      void main(){vColor=pointColor;vec4 mv=modelViewMatrix*vec4(position,1.0);gl_PointSize=clamp(pointSize*(300.0/-mv.z),0.8,3.2);gl_Position=projectionMatrix*mv;}`,
-    fragmentShader: `varying vec3 vColor;
-      void main(){float d=length(gl_PointCoord-vec2(0.5));if(d>0.5)discard;float a=smoothstep(0.5,0.12,d);gl_FragColor=vec4(vColor,a*0.9);}`,
+    uniforms: {
+      pointSize: { value: mobile ? 0.055 : 0.065 },
+      fadeOpacity: { value: 1 },
+      detailOpacity: { value: 0 },
+    },
+    vertexShader: `attribute vec3 pointColor;attribute float pointDetail;varying vec3 vColor;varying float vDetail;uniform float pointSize;
+      void main(){vColor=pointColor;vDetail=pointDetail;vec4 mv=modelViewMatrix*vec4(position,1.0);gl_PointSize=clamp(pointSize*(300.0/-mv.z),0.8,3.2);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader: `varying vec3 vColor;varying float vDetail;uniform float fadeOpacity;uniform float detailOpacity;
+      void main(){float d=length(gl_PointCoord-vec2(0.5));if(d>0.5)discard;float a=1.0-smoothstep(0.12,0.5,d);gl_FragColor=vec4(vColor,a*0.9*fadeOpacity*mix(1.0,detailOpacity,vDetail));}`,
     transparent: true,
     depthWrite: false,
     blending: three.AdditiveBlending,
   });
-  globe.add(new three.Points(geometry, landMaterial));
+  const continents = new three.Points(geometry, landMaterial);
+  continents.renderOrder = 1;
+  globe.add(continents);
 
   const gridMaterial = new three.LineBasicMaterial({
     color: 0x246db2,
@@ -327,17 +234,21 @@ function createEarth(three: Three, mobile: boolean) {
   }
 
   const atmosphere = new three.ShaderMaterial({
+    uniforms: { fadeOpacity: { value: 1 } },
     vertexShader: `varying vec3 vNormal;varying vec3 vView;
       void main(){vNormal=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vView=-mv.xyz;gl_Position=projectionMatrix*mv;}`,
-    fragmentShader: `varying vec3 vNormal;varying vec3 vView;
-      void main(){float rim=pow(1.0-max(dot(normalize(vNormal),normalize(vView)),0.0),3.5);gl_FragColor=vec4(0.03,0.37,0.78,rim*0.68);}`,
+    fragmentShader: `varying vec3 vNormal;varying vec3 vView;uniform float fadeOpacity;
+      void main(){float rim=pow(1.0-max(dot(normalize(vNormal),normalize(vView)),0.0),3.5);gl_FragColor=vec4(0.03,0.37,0.78,rim*0.68*fadeOpacity);}`,
     transparent: true,
     depthWrite: false,
     blending: three.AdditiveBlending,
   });
-  frame.add(
-    new three.Mesh(new three.SphereGeometry(radius * 1.018, mobile ? 48 : 64, 40), atmosphere),
+  const glow = new three.Mesh(
+    new three.SphereGeometry(radius * 1.018, mobile ? 48 : 64, 40),
+    atmosphere,
   );
+  glow.renderOrder = 2;
+  frame.add(glow);
 
   const orbitMaterial = new three.LineBasicMaterial({
     color: 0x237ed2,
@@ -365,7 +276,19 @@ function createEarth(three: Three, mobile: boolean) {
     orbit.rotation.set(x!, 0.05, z!);
     frame.add(orbit);
   }
-  return { frame, globe };
+  return {
+    frame,
+    globe,
+    setFade: (opacity: number, focus: number) => {
+      frame.visible = opacity > 0.001;
+      sphereMaterial.opacity = opacity;
+      landMaterial.uniforms["fadeOpacity"]!.value = opacity;
+      landMaterial.uniforms["detailOpacity"]!.value = focus;
+      atmosphere.uniforms["fadeOpacity"]!.value = opacity;
+      gridMaterial.opacity = 0.12 * opacity * (1 - focus * 0.7);
+      orbitMaterial.opacity = 0.17 * opacity * (1 - focus);
+    },
+  };
 }
 
 function createSatellite(three: Three) {
@@ -575,8 +498,8 @@ export function OrbitScene({
     let teardown = () => {};
     setState("loading");
 
-    void import("three")
-      .then((three) => {
+    void Promise.all([import("three"), import("@/lib/world-geodata")])
+      .then(([three, { WORLD_LAND }]) => {
         if (disposed) return;
         let renderer: WebGLRenderer | undefined;
         const scene = new three.Scene();
@@ -598,7 +521,7 @@ export function OrbitScene({
           canvas.setAttribute("tabindex", "-1");
           host.appendChild(canvas);
           scene.add(createStars(three, mobile));
-          const { frame: earth, globe } = createEarth(three, mobile);
+          const { frame: earth, globe, setFade } = createEarth(three, mobile, WORLD_LAND);
           const satellite = createSatellite(three);
           scene.add(earth, satellite);
           scene.add(new three.AmbientLight(0x7eafd9, 0.62));
@@ -616,6 +539,9 @@ export function OrbitScene({
           let elapsed = 0;
           let firstFrame = true;
           let tornDown = false;
+          let compact = window.matchMedia("(max-width: 700px)").matches;
+          let needsPaint = true;
+          let previousGlobeVisible = true;
           let currentProgress = Math.max(0, Math.min(1, progressRef.current || 0));
           let yaw = 0;
           let targetYaw = 0;
@@ -628,11 +554,25 @@ export function OrbitScene({
           } | null = null;
           const lookAt = new three.Vector3();
           const position = new three.Vector3();
+          const story = host.closest<HTMLElement>(".mission-story");
+          const thailandPoint = globePoint(three, THAILAND.lon, THAILAND.lat, 2.42);
+          const thailandWorld = new three.Vector3();
+          const anchorDirection = new three.Vector3();
+          const anchorWorld = new three.Vector3();
+          const projectedThailand = new three.Vector3();
+          const viewFrame = new three.Matrix4();
+          const driftRotation = new three.Euler();
+          const focusRotation = new three.Quaternion();
+          const thailandRotation = new three.Quaternion().setFromEuler(
+            new three.Euler((THAILAND.lat * Math.PI) / 180, (-THAILAND.lon * Math.PI) / 180, 0),
+          );
 
           const resize = () => {
             const { width, height } = host.getBoundingClientRect();
             if (!width || !height) return;
             const narrow = width < 768;
+            compact = width <= 700;
+            needsPaint = true;
             activeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, narrow ? 1 : 1.5));
             activeRenderer.setSize(width, height, false);
             camera.aspect = width / height;
@@ -645,7 +585,7 @@ export function OrbitScene({
             const target = Math.max(0, Math.min(1, progressRef.current || 0));
             const moving =
               pointer?.dragging ||
-              Math.abs(target - currentProgress) > 0.0005 ||
+              Math.abs(target - currentProgress) > 0.00005 ||
               Math.abs(targetYaw - yaw) > 0.002;
             // Full refresh rate while scrolling/dragging; quiet idle motion needs
             // only 30 paints per second and considerably less GPU work.
@@ -657,33 +597,100 @@ export function OrbitScene({
             const delta = previous ? Math.min((time - previous) / 1000, 0.05) : 0;
             previous = time;
             elapsed += delta;
-            currentProgress += (target - currentProgress) * (1 - Math.exp(-delta * 11));
-            if (firstFrame) currentProgress = target;
+            // MissionStory already scrubs this clock. A second easing stage
+            // would let the SVG map reveal ahead of the geographic camera.
+            currentProgress = target;
+            if (target >= 0.94 && !previousGlobeVisible && !needsPaint && !firstFrame) {
+              raf = requestAnimationFrame(render);
+              return;
+            }
             yaw += (targetYaw - yaw) * (1 - Math.exp(-delta * 12));
+            const storyProgress = Math.min(1, currentProgress / GLOBE_STORY_END);
+            const focus = phase(currentProgress, GLOBE_STORY_END, 0.88);
+            const zoom = phase(currentProgress, 0.78, 0.92);
+            const align = phase(currentProgress, 0.78, 0.86);
             let segment = 0;
-            while (segment < POSES.length - 2 && currentProgress > POSES[segment + 1]!.at)
-              segment++;
+            while (segment < POSES.length - 2 && storyProgress > POSES[segment + 1]!.at) segment++;
             const from = POSES[segment]!;
             const to = POSES[segment + 1]!;
-            const raw = Math.max(0, Math.min(1, (currentProgress - from.at) / (to.at - from.at)));
+            const raw = Math.max(0, Math.min(1, (storyProgress - from.at) / (to.at - from.at)));
             const mix = raw * raw * (3 - 2 * raw);
             const blend = (a: number, b: number) => a + (b - a) * mix;
+            const approach = (from: number, to: number) => from + (to - from) * zoom;
             const mobileScale = camera.aspect < 1 ? 0.77 : 1;
             position.set(
               blend(from.earth[0], to.earth[0]) * mobileScale,
               blend(from.earth[1], to.earth[1]),
-              blend(from.earth[2], to.earth[2]),
+              approach(blend(from.earth[2], to.earth[2]), -0.6),
             );
             earth.position.copy(position);
             earth.scale.setScalar(
-              blend(from.earthScale, to.earthScale) * (camera.aspect < 1 ? 0.8 : 1),
+              approach(
+                blend(from.earthScale, to.earthScale) * (camera.aspect < 1 ? 0.8 : 1),
+                compact ? 2.95 : 3.35,
+              ),
             );
-            globe.rotation.set(
+            camera.position.set(
+              blend(from.camera[0], to.camera[0]) * (1 - zoom),
+              blend(from.camera[1], to.camera[1]) * (1 - zoom),
+              approach(blend(from.camera[2], to.camera[2]), compact ? 11.1 : 11.7),
+            );
+            camera.lookAt(lookAt);
+            camera.updateMatrixWorld(true);
+
+            // North remains up as the real Thai coordinate turns toward the
+            // camera. Blend from the live drift, so entering/reversing this
+            // chapter never replaces the rotation with a captured pose.
+            driftRotation.set(
               0.1 + Math.sin(elapsed * 0.09) * 0.012,
-              -1.72 + currentProgress * 2.65 + yaw + Math.sin(elapsed * 0.07) * 0.018,
+              -1.72 + storyProgress * 2.65 + yaw + Math.sin(elapsed * 0.07) * 0.018,
               -0.1,
             );
-            earth.rotation.z = Math.sin(elapsed * 0.06) * 0.008;
+            anchorDirection
+              .set(compact ? 0 : 0.36, compact ? 0.04 : -0.04, 0.5)
+              .unproject(camera)
+              .sub(camera.position)
+              .normalize();
+            anchorWorld.copy(anchorDirection).negate();
+            viewFrame.lookAt(anchorWorld, lookAt, camera.up);
+            focusRotation.setFromRotationMatrix(viewFrame).multiply(thailandRotation);
+            globe.quaternion.setFromEuler(driftRotation).slerp(focusRotation, focus);
+            earth.rotation.z = Math.sin(elapsed * 0.06) * 0.008 * (1 - focus);
+
+            // Project and align the geographic point in Three's camera space.
+            // The SVG receives the same center without per-frame DOM reads.
+            earth.updateMatrixWorld(true);
+            thailandWorld.copy(thailandPoint).applyMatrix4(globe.matrixWorld);
+            const distance = (thailandWorld.z - camera.position.z) / anchorDirection.z;
+            anchorWorld.copy(camera.position).addScaledVector(anchorDirection, distance);
+            earth.position.x += (anchorWorld.x - thailandWorld.x) * align;
+            earth.position.y += (anchorWorld.y - thailandWorld.y) * align;
+            earth.updateMatrixWorld(true);
+            projectedThailand.copy(thailandPoint).applyMatrix4(globe.matrixWorld).project(camera);
+            const anchorX =
+              currentProgress < GLOBE_STORY_END
+                ? compact
+                  ? 50
+                  : 68
+                : (projectedThailand.x + 1) * 50;
+            const anchorY =
+              currentProgress < GLOBE_STORY_END
+                ? compact
+                  ? 48
+                  : 52
+                : (1 - projectedThailand.y) * 50;
+            story?.style.setProperty("--thailand-anchor-x", `${anchorX.toFixed(3)}%`);
+            story?.style.setProperty("--thailand-anchor-y", `${anchorY.toFixed(3)}%`);
+            setFade(1 - phase(currentProgress, 0.88, 0.94), focus);
+            if (currentProgress >= GLOBE_STORY_END) {
+              host.dataset["geographic"] = "true";
+              delete host.dataset["pointerVisible"];
+              if (pointer) {
+                if (canvas.hasPointerCapture(pointer.id)) canvas.releasePointerCapture(pointer.id);
+                pointer = null;
+                delete host.dataset["dragging"];
+              }
+            } else delete host.dataset["geographic"];
             satellite.position.set(
               blend(from.satellite[0], to.satellite[0]) * mobileScale,
               blend(from.satellite[1], to.satellite[1]) + Math.sin(elapsed * 0.2) * 0.035,
@@ -695,17 +702,16 @@ export function OrbitScene({
             satellite.scale.setScalar(Math.max(0.001, satelliteScale));
             satellite.rotation.set(
               0.27 + Math.sin(elapsed * 0.12) * 0.018,
-              -0.38 + currentProgress * 0.8 + yaw * 0.12,
+              -0.38 + storyProgress * 0.8 + yaw * 0.12,
               -0.7 + Math.sin(elapsed * 0.1) * 0.014,
             );
-            camera.position.set(
-              blend(from.camera[0], to.camera[0]),
-              blend(from.camera[1], to.camera[1]),
-              blend(from.camera[2], to.camera[2]),
-            );
-            camera.lookAt(lookAt);
             try {
-              activeRenderer.render(scene, camera);
+              // Clear the faded globe once; leave the static star field intact
+              // without issuing GPU work throughout the final network chapter.
+              if (earth.visible || previousGlobeVisible || needsPaint || firstFrame)
+                activeRenderer.render(scene, camera);
+              previousGlobeVisible = earth.visible;
+              needsPaint = false;
             } catch {
               setState("failed");
               host.dispatchEvent(new CustomEvent("orbit-scene-error", { bubbles: true }));
@@ -760,7 +766,13 @@ export function OrbitScene({
           document.addEventListener("visibilitychange", visibility);
 
           const pointerDown = (event: PointerEvent) => {
-            if (!event.isPrimary || event.button !== 0 || event.pointerType !== "mouse") return;
+            if (
+              currentProgress >= GLOBE_STORY_END ||
+              !event.isPrimary ||
+              event.button !== 0 ||
+              event.pointerType !== "mouse"
+            )
+              return;
             pointer = {
               id: event.pointerId,
               x: event.clientX,
@@ -770,7 +782,7 @@ export function OrbitScene({
             };
           };
           const pointerMove = (event: PointerEvent) => {
-            if (event.pointerType === "mouse") {
+            if (event.pointerType === "mouse" && currentProgress < GLOBE_STORY_END) {
               host.style.setProperty("--orbit-pointer-x", `${event.offsetX}px`);
               host.style.setProperty("--orbit-pointer-y", `${event.offsetY}px`);
               host.dataset["pointerVisible"] = "true";
@@ -834,8 +846,11 @@ export function OrbitScene({
             canvas.removeEventListener("webglcontextlost", contextLost);
             delete host.dataset["dragging"];
             delete host.dataset["pointerVisible"];
+            delete host.dataset["geographic"];
             host.style.removeProperty("--orbit-pointer-x");
             host.style.removeProperty("--orbit-pointer-y");
+            story?.style.removeProperty("--thailand-anchor-x");
+            story?.style.removeProperty("--thailand-anchor-y");
             disposeScene(scene, activeRenderer);
             canvas.remove();
           };
@@ -844,11 +859,17 @@ export function OrbitScene({
         } catch {
           if (renderer) disposeScene(scene, renderer);
           renderer?.domElement.remove();
-          if (!disposed) setState("failed");
+          if (!disposed) {
+            setState("failed");
+            host.dispatchEvent(new CustomEvent("orbit-scene-error", { bubbles: true }));
+          }
         }
       })
       .catch(() => {
-        if (!disposed) setState("failed");
+        if (!disposed) {
+          setState("failed");
+          host.dispatchEvent(new CustomEvent("orbit-scene-error", { bubbles: true }));
+        }
       });
 
     return () => {
