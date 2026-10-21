@@ -496,6 +496,81 @@
     line-height: 1.2;
   }
 }
+/* Preserve motion in short previews while reserving room for the scene and actions. */
+@media (max-height: 600px) {
+  .mission-story[data-story-enhanced] .story-scene {
+    padding-top: 76px;
+    padding-bottom: 112px;
+  }
+  .mission-story[data-story-enhanced] .story-intro {
+    justify-content: center;
+  }
+  .mission-story[data-story-enhanced] .story-title {
+    font-size: clamp(34px, 9vw, 66px);
+  }
+  .mission-story[data-story-enhanced] .story-scene .mission-eyebrow {
+    font-size: 9px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+  .mission-story[data-story-enhanced] .story-description {
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+  .mission-story[data-story-enhanced] .story-step-title {
+    font-size: clamp(38px, 10vw, 70px);
+  }
+  .mission-story[data-story-enhanced] .story-step-th {
+    display: none;
+  }
+  .mission-story[data-story-enhanced] .story-step-link {
+    min-height: 44px;
+    margin-top: 12px;
+    padding-bottom: 4px;
+  }
+  .mission-story[data-story-enhanced] .story-together h2 {
+    gap: 32px;
+    font-size: 28px;
+  }
+  .mission-story[data-story-enhanced] .story-ink {
+    font-size: clamp(24px, 4vw, 40px);
+  }
+  .mission-story[data-story-enhanced] .story-place-title {
+    font-size: clamp(24px, 4vw, 38px);
+  }
+  .mission-story[data-story-enhanced] .story-chapters:not(:focus-within) {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .mission-story[data-story-enhanced] .story-bottom {
+    padding: 14px 5% 20px;
+  }
+  .mission-story .story-bottom .mission-action {
+    min-height: 44px;
+    font-size: 14px;
+    gap: 12px;
+  }
+  .mission-story .story-bottom .mission-action-icon {
+    width: 42px;
+    height: 42px;
+  }
+}
+@media (max-width: 700px) and (max-height: 600px) {
+  .mission-story[data-story-enhanced] .story-scene {
+    padding: 74px 24px calc(150px + env(safe-area-inset-bottom));
+  }
+  .mission-story[data-story-enhanced] .story-place {
+    padding-top: 70px;
+  }
+  .mission-story[data-story-enhanced] .story-place-title {
+    font-size: 22px;
+  }
+  .mission-story[data-story-enhanced] .story-bottom {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    padding: 14px 24px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .mission-home .mission-story {
     height: auto !important;
