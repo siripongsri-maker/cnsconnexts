@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Download, Sparkles, Star, Mic } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { MissionEmpty } from "@/components/mission-ui";
 import { useStore } from "@/lib/store";
 import { REGIONS, type Region, type Submission } from "@/lib/types";
 import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
@@ -17,9 +18,9 @@ export const Route = createFileRoute("/ebook")({
       },
       { property: "og:title", content: "หนังสือรวมผลงานเครือข่าย" },
       { property: "og:description", content: "ผลงานทั้งหมด จัดกลุ่มตามภาคและประเด็น" },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: Ebook,
 });
@@ -57,16 +58,17 @@ function Ebook() {
 
   return (
     <AppShell
-      title="หนังสือรวมผลงาน"
+      title="คลังผลงานของเรา"
       subtitle={`${submissions.length} ผลงาน · ยกขึ้นเวที ${showcaseCount} กรณีศึกษา`}
     >
-      <div className="px-5 pb-32 pt-4">
-        <div className="no-print flex flex-wrap items-center gap-2">
+      <div className="publication-page px-5 pb-32 pt-4">
+        <div className="publication-toolbar mission-toolbar no-print">
           <div className="flex rounded-2xl border border-border bg-card p-1">
             {(["region", "issue"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
+                aria-pressed={mode === m}
                 className={`tap rounded-xl px-4 py-2 text-[13px] font-bold ${
                   mode === m ? "gradient-power text-primary-foreground" : "text-muted-foreground"
                 }`}
@@ -77,12 +79,13 @@ function Ebook() {
           </div>
           <button
             onClick={() => setOnlyShowcase((v) => !v)}
+            aria-pressed={onlyShowcase}
             className={`tap flex items-center gap-1.5 rounded-2xl border px-3.5 py-2 text-[13px] font-bold ${
               onlyShowcase ? "border-coral bg-coral/12 text-coral" : "border-border bg-card"
             }`}
           >
             <Star className="h-4 w-4" />
-            เฉพาะกรณีศึกษาขึ้นเวที
+            กรณีศึกษาขึ้นเวที
           </button>
           <button
             onClick={() => window.print()}
@@ -100,27 +103,33 @@ function Ebook() {
           </div>
 
           {groups.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              ยังไม่มีผลงานในกลุ่มนี้ —{" "}
-              <Link to="/submit" className="font-bold text-primary">
-                ส่งผลงานชิ้นแรก
+            <MissionEmpty
+              title="พื้นที่สำหรับผลงานต่อไป"
+              description="แบ่งปันสิ่งที่คุณทำ เพื่อให้เพื่อนในเครือข่ายได้เรียนรู้และร่วมต่อยอด"
+              variant="archive"
+            >
+              <Link
+                to="/submit"
+                className="tap inline-flex min-h-12 items-center bg-primary px-5 text-sm font-medium text-primary-foreground"
+              >
+                แบ่งปันผลงาน
               </Link>
-            </p>
+            </MissionEmpty>
           )}
 
           {groups.map((g) => (
-            <section key={g.key}>
-              <div className="flex items-baseline gap-2 border-b border-border pb-2">
+            <section key={g.key} className="publication-group">
+              <div className="publication-group-heading flex items-baseline gap-3 border-b border-border pb-4">
                 <h2 className="text-lg font-extrabold">{g.label}</h2>
                 <span className="text-xs font-bold text-muted-foreground">
                   {g.items.length} ผลงาน
                 </span>
               </div>
-              <div className="mt-3 space-y-3">
+              <div className="publication-grid mt-5">
                 {g.items.map((s) => (
                   <article
                     key={`${g.key}-${s.id}`}
-                    className="card-soft break-inside-avoid rounded-2xl bg-card p-4"
+                    className="publication-card card-soft break-inside-avoid rounded-2xl bg-card p-6"
                   >
                     <div className="flex gap-3">
                       {s.photo && (

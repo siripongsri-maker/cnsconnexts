@@ -19,13 +19,15 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
 
   return (
     <article
-      className="card-soft animate-rise relative overflow-hidden p-4"
+      className="core-match-card card-soft animate-rise relative overflow-hidden p-4"
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <div className="flex items-start gap-3">
         <Avatar user={u} size={54} />
         <div className="min-w-0 flex-1">
-          <h3 className="line-clamp-2 break-words text-base font-extrabold leading-snug">{u.name}</h3>
+          <h3 className="line-clamp-2 break-words text-base font-extrabold leading-snug">
+            {u.name}
+          </h3>
           <p className="line-clamp-2 break-words text-[12px] leading-snug text-muted-foreground">
             {provinceTh(u.province) || REGION_LABEL[u.region]} · {u.organization}
           </p>
@@ -62,9 +64,7 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
-          <p className="mb-1.5 text-xs font-extrabold text-muted-foreground">
-            เขามีให้
-          </p>
+          <p className="mb-1.5 text-xs font-extrabold text-muted-foreground">เขามีให้</p>
           <div className="flex flex-wrap gap-1.5">
             {match.theyBring.map((p) => (
               <PowerChip key={p} name={p} tone="lime" />
@@ -72,16 +72,16 @@ export function MatchCard({ match, index = 0 }: { match: MatchResult; index?: nu
           </div>
         </div>
         <div>
-          <p className="mb-1.5 text-xs font-extrabold text-muted-foreground">
-            เขากำลังหา
-          </p>
+          <p className="mb-1.5 text-xs font-extrabold text-muted-foreground">เขากำลังหา</p>
           <div className="flex flex-wrap gap-1.5">
             {match.theyNeed.map((p) => (
               <PowerChip key={p} name={p} tone="coral" canHelp={match.youCanGive.includes(p)} />
             ))}
           </div>
           {match.youCanGive.length > 0 && (
-            <p className="mt-1 text-xs font-semibold text-muted-foreground">✓ = เรื่องที่คุณช่วยเขาได้</p>
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">
+              ✓ = เรื่องที่คุณช่วยเขาได้
+            </p>
           )}
         </div>
       </div>

@@ -31,7 +31,6 @@ export function SwipeCoach() {
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;
@@ -44,13 +43,13 @@ export function SwipeCoach() {
       aria-describedby="swipe-coach-desc"
       className="fixed inset-0 z-50 grid place-items-center bg-background/80 px-6 backdrop-blur-sm"
     >
-      <div className="card-soft w-full max-w-sm rounded-3xl bg-card p-5">
+      <div className="core-swipe-coach card-soft w-full max-w-sm rounded-3xl bg-card p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-bold text-muted-foreground">
-              วิธีใช้การ์ดนี้
-            </p>
-            <h2 id="swipe-coach-title" className="mt-0.5 text-[19px] font-extrabold">ปัดการ์ดยังไง?</h2>
+            <p className="text-xs font-bold text-muted-foreground">DISCOVER / QUICK GUIDE</p>
+            <h2 id="swipe-coach-title" className="mt-0.5 text-[19px] font-extrabold">
+              เจอคนที่ใช่ ในหนึ่งปัด
+            </h2>
           </div>
           <button
             type="button"
@@ -69,17 +68,19 @@ export function SwipeCoach() {
         <ul className="mt-4 space-y-2.5 text-[15px] font-semibold">
           <li className="flex items-center gap-2.5 rounded-2xl border border-primary/30 bg-primary/8 p-3">
             <ArrowRight className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-            ลากการ์ดไป <span className="text-primary">ทางขวา = สนใจ</span>
+            <span className="text-primary">ปัดขวา</span> เก็บไว้ในคนที่สนใจ
           </li>
           <li className="flex items-center gap-2.5 rounded-2xl border border-border p-3">
             <ArrowLeft className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
-            ลากการ์ดไป <span className="text-muted-foreground">ทางซ้าย = ข้าม</span>
+            <span className="text-muted-foreground">ปัดซ้าย</span> ดูคนต่อไป
           </li>
         </ul>
 
-        <p id="swipe-coach-desc" className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
-          ไม่ถนัดปัดก็ไม่เป็นไร — ใต้การ์ดมีปุ่มใหญ่ <b>ข้าม</b> · <b>ขอเชื่อมต่อ</b> · <b>สนใจ</b>
-          หรือกดปุ่ม “รายการ” ด้านบนเพื่อดูเป็นรายชื่อแทน
+        <p
+          id="swipe-coach-desc"
+          className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground"
+        >
+          ใช้ปุ่มใต้การ์ดได้เช่นกัน หรือเลือก “รายการ” เพื่อดูทุกคน
         </p>
 
         <button

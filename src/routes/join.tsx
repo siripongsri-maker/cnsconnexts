@@ -1,8 +1,10 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect } from "react";
-import { QrCode, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { MissionVisual } from "@/components/mission-ui";
+import { Wordmark } from "@/components/wordmark";
 import { createSession, sourceFromSearch } from "@/lib/session";
 
 const searchSchema = z.object({
@@ -27,9 +29,9 @@ export const Route = createFileRoute("/join")({
         property: "og:description",
         content: "สแกนแล้วเข้าร่วมได้ทันที — สร้างโปรไฟล์พลังของคุณใน 2 นาที",
       },
-          { property: "og:type", content: "website" },
+      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-],
+    ],
   }),
   component: Join,
 });
@@ -45,21 +47,39 @@ function Join() {
   }, [c, code, source, navigate]);
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center px-8 text-center">
-      <div className="relative z-10 animate-rise">
-        <span className="mx-auto grid h-20 w-20 place-items-center rounded-3xl gradient-power text-primary-foreground glow">
-          <QrCode className="h-9 w-9" aria-hidden />
-        </span>
-        <h1 className="mt-6 text-2xl font-extrabold">คุณเข้าห้องแล้ว</h1>
-        <p className="mt-2 text-sm font-semibold text-primary">ยินดีต้อนรับสู่ คนส. Connexts</p>
-        <p
-          role="status"
-          className="mt-3 flex items-center justify-center gap-2 text-[13px] text-muted-foreground"
-        >
-          <Sparkles className="h-4 w-4 animate-pulse-node" aria-hidden />
-          กำลังพาคุณเข้างาน…
-        </p>
-      </div>
+    <div className="focused-page join-page min-h-screen">
+      <header className="focused-topbar">
+        <div className="focused-topbar-inner">
+          <Link to="/" aria-label="หน้าแรก">
+            <Wordmark size="sm" />
+          </Link>
+          <span className="focused-system-label">CONNECTION ESTABLISHED</span>
+        </div>
+      </header>
+      <main className="join-welcome">
+        <div className="join-signal-visual">
+          <MissionVisual variant="signal" />
+        </div>
+        <div className="join-welcome-copy">
+          <span className="mission-kicker">
+            <CheckCircle2 className="h-4 w-4" aria-hidden /> CONNECTION / READY
+          </span>
+          <h1>
+            คุณเข้าห้องแล้ว<span>เริ่มเชื่อมพลังกัน</span>
+          </h1>
+          <p>ยินดีต้อนรับสู่ คนส. Connexts</p>
+          {(c || code) && <span className="join-room-code">ROOM / {c || code}</span>}
+          <div className="join-progress" aria-hidden>
+            <span />
+          </div>
+          <p role="status" className="join-status">
+            กำลังพาคุณไปสร้างโปรไฟล์…
+          </p>
+          <Link to="/start" className="tap join-continue">
+            ไปต่อ <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
+      </main>
     </div>
   );
 }

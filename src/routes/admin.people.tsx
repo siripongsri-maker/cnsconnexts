@@ -1,6 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Search, Save, Trash2, Users, FileUp, Filter, Download, Eye, X, Sparkles, Link2, CalendarCheck } from "lucide-react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  Search,
+  Save,
+  Trash2,
+  Users,
+  FileUp,
+  Filter,
+  Download,
+  Eye,
+  X,
+  Sparkles,
+  Link2,
+  CalendarCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
@@ -18,7 +31,8 @@ export const Route = createFileRoute("/admin/people")({
       { title: "จัดการข้อมูลสมาชิก — คนส. Connexts" },
       {
         name: "description",
-        content: "หน้าผู้ดูแลสำหรับแก้ไขชื่อ องค์กร คำอธิบาย จังหวัด และแท็กความสนใจของสมาชิกแบบรวดเร็ว",
+        content:
+          "หน้าผู้ดูแลสำหรับแก้ไขชื่อ องค์กร คำอธิบาย จังหวัด และแท็กความสนใจของสมาชิกแบบรวดเร็ว",
       },
       { property: "og:title", content: "จัดการข้อมูลสมาชิก — คนส. Connexts" },
       { property: "og:description", content: "แก้ไขข้อมูลเดโม่ของสมาชิกได้ในหน้าเดียว" },
@@ -163,8 +177,14 @@ function AdminPeoplePage() {
   };
 
   return (
-    <AppShell title="จัดการข้อมูลสมาชิก" subtitle={`แก้ไขข้อมูลเดโม่ได้ทันที · ${users.length} คน`}>
-      <div className="space-y-4 px-5 pb-32 pt-4">
+    <AppShell title="สมาชิก">
+      <div className="admin-workspace admin-workspace-people space-y-4">
+        <div className="admin-section-meta">
+          <span>ทำเนียบสมาชิก</span>
+          <span>
+            {filtered.length} / {users.length} คน
+          </span>
+        </div>
         <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2">
           <Search className="size-4 shrink-0 text-muted-foreground" />
           <input
@@ -175,7 +195,7 @@ function AdminPeoplePage() {
           />
         </div>
 
-        <div className="space-y-3 rounded-2xl border border-border bg-card p-3">
+        <div className="admin-people-filters space-y-3 rounded-2xl border border-border bg-card p-3">
           <div className="flex rounded-xl bg-muted p-0.5">
             {(["all", "real"] as const).map((s) => (
               <button
@@ -247,7 +267,7 @@ function AdminPeoplePage() {
           )}
         </div>
 
-        <div className="space-y-2 rounded-2xl border border-border bg-card p-3">
+        <div className="admin-people-export space-y-2 rounded-2xl border border-border bg-card p-3">
           <p className="text-xs font-medium text-muted-foreground">
             ส่งออกข้อมูล (CSV รองรับภาษาไทย)
           </p>
@@ -283,7 +303,7 @@ function AdminPeoplePage() {
             </button>
           </div>
           <p className="text-xs text-muted-foreground">
-            คอลัมน์: วันที่ onboard · แหล่งที่มา · สถานะโปรไฟล์ · ความครบถ้วน · ข้อมูลที่ขาด · ความสนใจ · พลังที่มี/ต้องการ
+            รวมข้อมูลโปรไฟล์ ความสนใจ และพลังที่มี / ต้องการ
           </p>
         </div>
 
@@ -294,14 +314,13 @@ function AdminPeoplePage() {
           <FileUp className="size-4" /> นำเข้ารายชื่อเพิ่มจากไฟล์ CSV
         </Link>
 
-
         {filtered.length === 0 && (
           <p className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
             ไม่พบสมาชิกที่ตรงกับคำค้น
           </p>
         )}
 
-        <ul className="space-y-3">
+        <ul className="admin-records admin-people-records space-y-3">
           {filtered.map((u) => {
             const editing = openId === u.id && draft;
             return (
@@ -497,9 +516,7 @@ function SourceBadge({ source }: { source?: UserSource | undefined }) {
             : source === "admin"
               ? "bg-secondary text-secondary-foreground"
               : "bg-accent text-accent-foreground";
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${color}`}>{label}</span>
-  );
+  return <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${color}`}>{label}</span>;
 }
 
 /** แผงรายละเอียดผู้ใช้: Power Profile · ความสนใจ · แมตช์ · การเชื่อมต่อ · commitment */
@@ -518,11 +535,85 @@ function UserDetail({
   onClose: () => void;
   onEdit: () => void;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  const closeTimerRef = useRef<number | null>(null);
+  const closingRef = useRef(false);
+  const [closing, setClosing] = useState(false);
+  const titleId = useId();
+
+  const requestClose = useCallback((afterClose?: () => void) => {
+    if (closingRef.current) return;
+    const complete = afterClose ?? closeRef.current;
+    const reduced =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.hasAttribute("data-lowspec");
+    if (reduced) {
+      complete();
+      return;
+    }
+    closingRef.current = true;
+    setClosing(true);
+    closeTimerRef.current = window.setTimeout(complete, 180);
+  }, []);
+
+  useEffect(() => {
+    closeRef.current = onClose;
+  }, [onClose]);
+  useEffect(() => {
+    const previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    const panel = panelRef.current;
+    document.body.style.overflow = "hidden";
+    panel?.querySelector<HTMLButtonElement>("button")?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        requestClose();
+        return;
+      }
+      if (event.key !== "Tab" || !panel) return;
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) {
+        event.preventDefault();
+        panel.focus();
+      } else if (
+        event.shiftKey &&
+        (document.activeElement === first || document.activeElement === panel)
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKey);
+      if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [requestClose]);
+
   const nameOf = (id: string) => users.find((u) => u.id === id)?.name ?? id;
   const st = profileStatus(user);
 
   const matches = useMemo(
-    () => rankMatches(user, users.filter((u) => u.id !== user.id), 5),
+    () =>
+      rankMatches(
+        user,
+        users.filter((u) => u.id !== user.id),
+        5,
+      ),
     [user, users],
   );
   const myConnections = useMemo(
@@ -535,20 +626,37 @@ function UserDetail({
   }, [commitments, myConnections]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-center bg-foreground/40 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className={`admin-person-overlay${closing ? " is-closing" : ""} fixed inset-0 z-50 flex justify-center bg-foreground/40 backdrop-blur-sm`}
+      data-motion-local="true"
+      data-lenis-prevent
+      onClick={() => requestClose()}
+    >
       <div
-        className="mt-10 w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card pb-24 shadow-xl"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="admin-person-detail mt-10 w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card pb-24 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border bg-card px-5 py-3">
           <span className="text-2xl leading-none">{user.avatar}</span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold">{user.name}</p>
+            <h2 id={titleId} className="truncate text-sm font-bold">
+              {user.name}
+            </h2>
             <p className="truncate text-xs text-muted-foreground">
               {user.organization} · {provinceTh(user.province)}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="tap rounded-lg p-1.5 text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => requestClose()}
+            aria-label="ปิดรายละเอียดสมาชิก"
+            className="tap rounded-lg p-1.5 text-muted-foreground"
+          >
             <X className="size-4" />
           </button>
         </div>
@@ -601,14 +709,19 @@ function UserDetail({
             </div>
           </Section>
 
-          <Section icon={<Sparkles className="size-3.5" />} title={`คู่แมตช์แนะนำ (${matches.length})`}>
+          <Section
+            icon={<Sparkles className="size-3.5" />}
+            title={`คู่แมตช์แนะนำ (${matches.length})`}
+          >
             {matches.length ? (
               <ul className="space-y-2">
                 {matches.map((m) => (
                   <li key={m.user.id} className="rounded-xl border border-border p-2.5">
                     <div className="flex items-center gap-2">
                       <span className="text-lg leading-none">{m.user.avatar}</span>
-                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">{m.user.name}</span>
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                        {m.user.name}
+                      </span>
                       <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold text-primary">
                         {Math.round(m.score)}%
                       </span>
@@ -622,7 +735,10 @@ function UserDetail({
             )}
           </Section>
 
-          <Section icon={<Link2 className="size-3.5" />} title={`การเชื่อมต่อ (${myConnections.length})`}>
+          <Section
+            icon={<Link2 className="size-3.5" />}
+            title={`การเชื่อมต่อ (${myConnections.length})`}
+          >
             {myConnections.length ? (
               <ul className="space-y-2">
                 {myConnections.map((c) => {
@@ -649,20 +765,27 @@ function UserDetail({
             )}
           </Section>
 
-          <Section icon={<CalendarCheck className="size-3.5" />} title={`คำมั่นสัญญา (${myCommitments.length})`}>
+          <Section
+            icon={<CalendarCheck className="size-3.5" />}
+            title={`คำมั่นสัญญา (${myCommitments.length})`}
+          >
             {myCommitments.length ? (
               <ul className="space-y-2">
                 {myCommitments.map((m) => (
                   <li key={m.id} className="rounded-xl border border-border p-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">{m.action_type}</span>
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                        {m.action_type}
+                      </span>
                       <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
                         {STATUS_TH[m.status]}
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">{m.description}</p>
                     {m.follow_up_date && (
-                      <p className="mt-0.5 text-xs text-primary">นัดหมาย {fmtDate(m.follow_up_date)}</p>
+                      <p className="mt-0.5 text-xs text-primary">
+                        นัดหมาย {fmtDate(m.follow_up_date)}
+                      </p>
                     )}
                   </li>
                 ))}
@@ -674,7 +797,7 @@ function UserDetail({
 
           <button
             type="button"
-            onClick={onEdit}
+            onClick={() => requestClose(onEdit)}
             className="tap w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground"
           >
             แก้ไขข้อมูลผู้ใช้นี้

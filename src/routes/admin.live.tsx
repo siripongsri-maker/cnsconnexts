@@ -1,19 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { MonitorPlay, Radio } from "lucide-react";
+import { MonitorPlay } from "lucide-react";
 
 import { useStore } from "@/lib/store";
 import { buildFeed, RotatingPrompt } from "@/components/live-ticker";
 
 export const Route = createFileRoute("/admin/live")({
-  head: () => ({ meta: [
-    { title: "จอสดผู้ดูแล — คนส. Connexts" },
-    { name: "description", content: "จอสดผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "จอสดผู้ดูแล — คนส. Connexts" },
-    { property: "og:description", content: "จอสดผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "จอสดผู้ดูแล — คนส. Connexts" },
+      { name: "description", content: "จอสดผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "จอสดผู้ดูแล — คนส. Connexts" },
+      { property: "og:description", content: "จอสดผู้ดูแลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminLive,
 });
 
@@ -38,33 +40,21 @@ function AdminLive() {
   const done = commitments.filter((c) => c.status === "Completed").length;
 
   return (
-    <div className="space-y-4">
-      <header className="flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-xl bg-coral/15 text-coral">
-          <Radio className="h-4 w-4" aria-hidden="true" />
-        </span>
-        <div>
-          <h1 className="text-[18px] font-extrabold">จอฉายกิจกรรมสด</h1>
-          <p className="text-[12px] text-muted-foreground">
-            ใช้ “จอฉายเต็มจอ” ด้านล่างเพื่อขึ้นโปรเจกเตอร์ — ไม่มีเมนูแอดมินติดไปบนจอ
-          </p>
-        </div>
-      </header>
-
+    <div className="admin-workspace admin-workspace-live space-y-4">
       <Link
         to="/dashboard"
         search={{ present: "1" }}
         className="tap flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-[15px] font-extrabold text-primary-foreground"
       >
         <MonitorPlay className="h-5 w-5" aria-hidden="true" />
-        เปิดจอฉายเต็มจอ <span lang="en">· Open projector view</span>
+        เปิดจอฉายเต็มจอ
       </Link>
 
       <div className="card-soft rounded-2xl p-4">
         <RotatingPrompt size="lg" tone="card" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="admin-stat-grid grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           ["คน", users.length],
           ["คู่เชื่อม", connections.length],
@@ -79,16 +69,12 @@ function AdminLive() {
       </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">
-          ใครกำลังเชื่อมกันอยู่ตอนนี้ <span lang="en" className="text-muted-foreground">· Happening now</span>
-        </h2>
+        <h2 className="text-[14px] font-extrabold">กำลังเชื่อมกัน</h2>
         <p className="mt-1 text-[12px] text-muted-foreground">
           ไม่แสดงชื่อ — บอกแค่ภาคและเรื่องที่สนใจร่วมกัน
         </p>
         {feed.length === 0 ? (
-          <p className="mt-2 text-[13px] text-muted-foreground">
-            ยังไม่มีสัญญาณสด — เมื่อมีความเคลื่อนไหวจะขึ้นที่นี่ทันที
-          </p>
+          <p className="mt-2 text-[13px] text-muted-foreground">รอสัญญาณแรกจากเครือข่าย</p>
         ) : (
           <ul className="mt-3 space-y-2">
             {feed.map((e) => (

@@ -1,0 +1,136 @@
+/* The story timeline supplies normalized values. No independent RAF or scroll listener. */
+.thailand-network {
+  --map-amount: clamp(0, var(--thailand-reveal, 1), 1);
+  --connections-amount: clamp(0, var(--network-progress, 1), 1);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  opacity: var(--map-amount);
+  contain: layout paint;
+}
+.mission-story[data-story-enhanced] .thailand-network:not([data-disabled="true"]) {
+  --map-amount: clamp(0, var(--thailand-reveal, 0), 1);
+  --connections-amount: clamp(0, var(--network-progress, 0), 1);
+}
+.thailand-network-map {
+  position: absolute;
+  left: var(--thailand-anchor-x, 68%);
+  top: var(--thailand-anchor-y, 52%);
+  display: block;
+  width: min(46vw, 40.625svh, 560px);
+  height: auto;
+  aspect-ratio: 5 / 8;
+  overflow: visible;
+  transform: translate(-50%, -50%) scale(calc(0.94 + var(--map-amount) * 0.06));
+  transform-origin: center;
+}
+.thailand-coast {
+  stroke: #438fb9;
+  stroke-width: 1.2px;
+  stroke-linejoin: round;
+}
+.thailand-province {
+  stroke: #5586a1;
+  stroke-width: 0.38px;
+  stroke-opacity: 0.58;
+  stroke-linejoin: round;
+}
+.thailand-network .thailand-province-hub {
+  fill: #12415e;
+}
+.thailand-connections,
+.thailand-hubs {
+  opacity: clamp(0, calc(var(--connections-amount) * 16), 1);
+}
+.thailand-network-link {
+  --connection-amount: clamp(
+    0,
+    calc((var(--connections-amount) - var(--connection-start)) * var(--connection-count)),
+    1
+  );
+  fill: none;
+  stroke-width: 1.2px;
+  stroke-linecap: round;
+  stroke-dashoffset: calc((1 - var(--connection-amount)) * 100px);
+  opacity: clamp(0, calc(var(--connection-amount) * 12), 1);
+}
+.thailand-hub {
+  opacity: clamp(0, calc((var(--connections-amount) - var(--hub-start)) * 12.5), 1);
+}
+.thailand-hub-ring {
+  fill: #159fff0d;
+  stroke: #61d1ff;
+  stroke-width: 0.7px;
+  stroke-opacity: 0.75;
+}
+.thailand-hub-point {
+  fill: #d5f7ff;
+}
+.thailand-label-leader {
+  fill: none;
+  stroke: #60b8df;
+  stroke-width: 0.5px;
+  stroke-opacity: 0.55;
+}
+.thailand-hub-label {
+  fill: #c2dce9;
+  stroke: #02050b;
+  stroke-width: 7px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 35px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+/* A disabled instance is the complete static figure, within its own sized container. */
+.thailand-network[data-disabled="true"] {
+  --map-amount: 1;
+  --connections-amount: 1;
+}
+.thailand-network[data-disabled="true"] .thailand-network-map {
+  left: 50%;
+  top: 50%;
+  width: auto;
+  height: 80%;
+  max-width: 96%;
+  transform: translate(-50%, -50%);
+}
+@media (max-width: 700px) {
+  .thailand-network-map {
+    left: var(--thailand-anchor-x, 50%);
+    top: var(--thailand-anchor-y, 48%);
+    width: min(90vw, 28.125svh, calc((96svh - 350px - 2 * env(safe-area-inset-bottom)) * 0.625));
+  }
+  .thailand-network-link {
+    stroke-width: 1px;
+  }
+  .thailand-hub-label {
+    font-size: 45px;
+    stroke-width: 8px;
+  }
+  .thailand-province {
+    stroke-width: 0.3px;
+  }
+  .thailand-coast {
+    stroke-width: 0.9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thailand-network {
+    --map-amount: 1 !important;
+    --connections-amount: 1 !important;
+  }
+  .thailand-network-map {
+    transform: translate(-50%, -50%);
+  }
+}
+html[data-lowspec] .thailand-network {
+  --map-amount: 1 !important;
+  --connections-amount: 1 !important;
+}
+html[data-lowspec] .thailand-network-map {
+  transform: translate(-50%, -50%);
+}

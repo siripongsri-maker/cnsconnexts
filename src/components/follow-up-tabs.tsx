@@ -9,7 +9,7 @@ export function FollowUpTabs() {
     { to: "/calendar", label: "ปฏิทิน", icon: CalendarDays },
   ] as const;
   return (
-    <div className="px-5 pt-3">
+    <div className="core-follow-tabs px-5 pt-3">
       <div className="grid grid-cols-2 gap-1 rounded-2xl bg-muted p-1" role="tablist">
         {tabs.map(({ to, label, icon: Icon }) => {
           const active = path.startsWith(to);

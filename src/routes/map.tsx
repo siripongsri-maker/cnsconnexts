@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { MissionVisual } from "@/components/mission-ui";
 import { Avatar, Chip, PowerChip } from "@/components/power-bits";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useStore } from "@/lib/store";
@@ -190,414 +191,455 @@ function PowerMap() {
         </div>
       }
     >
-      <div className="space-y-2 px-5 py-3">
-        {activeCount > 0 && (
-          <button
-            type="button"
-            onClick={clearAll}
-            className="tap inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-card px-4 text-xs font-bold"
-          >
-            <X className="h-3.5 w-3.5" aria-hidden="true" />
-            ล้างตัวกรอง ({activeCount})
-          </button>
-        )}
-        <FilterRow label="ภาค">
-          <Pill active={!region} onClick={() => setRegion(null)}>
-            ทั้งหมด
-          </Pill>
-          {REGIONS.map((r) => (
-            <Pill key={r} active={region === r} onClick={() => setRegion(r)}>
-              {REGION_LABEL[r]}
-            </Pill>
-          ))}
-        </FilterRow>
-        <FilterRow label="ประเด็น">
-          <Pill active={!issue} onClick={() => setIssue(null)}>
-            ทั้งหมด
-          </Pill>
-          {ISSUES.filter((i) => i !== "Other").map((i) => (
-            <Pill key={i} active={issue === i} onClick={() => setIssue(i)}>
-              {issueTh(i)}
-            </Pill>
-          ))}
-        </FilterRow>
-        <FilterRow label="มีพลัง">
-          <Pill active={!have} onClick={() => setHave(null)}>
-            ทั้งหมด
-          </Pill>
-          {POWERS.map((p) => (
-            <Pill key={p.key} active={have === p.key} onClick={() => setHave(p.key)}>
-              <span aria-hidden="true">{p.emoji}</span> {p.th}
-            </Pill>
-          ))}
-        </FilterRow>
-        <FilterRow label="ต้องการ">
-          <Pill active={!need} onClick={() => setNeed(null)}>
-            ทั้งหมด
-          </Pill>
-          {POWERS.map((p) => (
-            <Pill key={p.key} active={need === p.key} onClick={() => setNeed(p.key)}>
-              <span aria-hidden="true">{p.emoji}</span> {p.th}
-            </Pill>
-          ))}
-        </FilterRow>
-        <FilterRow label="รุ่น">
-          <Pill active={!gen} onClick={() => setGen(null)}>
-            ทั้งหมด
-          </Pill>
-          {(Object.keys(GENERATION_TH) as Generation[]).map((g) => (
-            <Pill key={g} active={gen === g} onClick={() => setGen(g)}>
-              {GENERATION_TH[g]}
-            </Pill>
-          ))}
-        </FilterRow>
-      </div>
+      <div className="core-page core-map">
+        <details className="core-map-filters core-filter-panel px-5 py-3" open>
+          <summary className="core-filter-summary">
+            <span>
+              <span className="mission-kicker">EXPLORE THE NETWORK</span>
+              <strong>เลือกพลังที่อยากเจอ</strong>
+            </span>
+            <span>
+              {activeCount > 0 ? `${activeCount} ตัวกรอง` : "ทุกพลัง"}{" "}
+              <span aria-hidden="true">+</span>
+            </span>
+          </summary>
+          <div className="space-y-2">
+            {activeCount > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="tap inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-card px-4 text-xs font-bold"
+              >
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
+                ล้างตัวกรอง ({activeCount})
+              </button>
+            )}
+            <FilterRow label="ภาค">
+              <Pill active={!region} onClick={() => setRegion(null)}>
+                ทั้งหมด
+              </Pill>
+              {REGIONS.map((r) => (
+                <Pill key={r} active={region === r} onClick={() => setRegion(r)}>
+                  {REGION_LABEL[r]}
+                </Pill>
+              ))}
+            </FilterRow>
+            <FilterRow label="ประเด็น">
+              <Pill active={!issue} onClick={() => setIssue(null)}>
+                ทั้งหมด
+              </Pill>
+              {ISSUES.filter((i) => i !== "Other").map((i) => (
+                <Pill key={i} active={issue === i} onClick={() => setIssue(i)}>
+                  {issueTh(i)}
+                </Pill>
+              ))}
+            </FilterRow>
+            <FilterRow label="มีพลัง">
+              <Pill active={!have} onClick={() => setHave(null)}>
+                ทั้งหมด
+              </Pill>
+              {POWERS.map((p) => (
+                <Pill key={p.key} active={have === p.key} onClick={() => setHave(p.key)}>
+                  <span aria-hidden="true">{p.emoji}</span> {p.th}
+                </Pill>
+              ))}
+            </FilterRow>
+            <FilterRow label="ต้องการ">
+              <Pill active={!need} onClick={() => setNeed(null)}>
+                ทั้งหมด
+              </Pill>
+              {POWERS.map((p) => (
+                <Pill key={p.key} active={need === p.key} onClick={() => setNeed(p.key)}>
+                  <span aria-hidden="true">{p.emoji}</span> {p.th}
+                </Pill>
+              ))}
+            </FilterRow>
+            <FilterRow label="รุ่น">
+              <Pill active={!gen} onClick={() => setGen(null)}>
+                ทั้งหมด
+              </Pill>
+              {(Object.keys(GENERATION_TH) as Generation[]).map((g) => (
+                <Pill key={g} active={gen === g} onClick={() => setGen(g)}>
+                  {GENERATION_TH[g]}
+                </Pill>
+              ))}
+            </FilterRow>
+          </div>
+        </details>
 
-      {filtered.length === 0 && (
-        <div role="status" className="card-soft mx-5 mb-3 p-4 text-center">
-          <p className="text-sm font-extrabold">ไม่พบคนที่ตรงตัวกรอง ลองเลือกให้กว้างขึ้น</p>
-          <button
-            type="button"
-            onClick={clearAll}
-            className="tap mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-card px-5 text-sm font-bold"
-          >
-            ล้างตัวกรอง
-          </button>
-        </div>
-      )}
-
-      {view === "map" ? (
-        <div className="px-5 pb-6">
+        {filtered.length === 0 && (
           <div
-            className="relative overflow-hidden rounded-3xl border border-border p-2"
-            style={{ backgroundImage: "var(--gradient-soft)" }}
+            role="status"
+            className="core-map-no-results mission-empty mx-5 mb-3 p-4 text-center"
           >
-            <svg
-              viewBox={MAP_VIEWBOX}
-              className="h-auto w-full"
-              role="group"
-              aria-label="แผนที่ประเทศไทยรายจังหวัด"
-              aria-describedby="province-list-hint"
+            <p className="text-sm font-extrabold">ไม่พบคนที่ตรงตัวกรอง ลองเลือกให้กว้างขึ้น</p>
+            <button
+              type="button"
+              onClick={clearAll}
+              className="tap mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-card px-5 text-sm font-bold"
             >
-              {PROVINCES.map((p) => {
-                const count = countByProvince.get(p.en) ?? 0;
-                const dim = !!region && region !== "Nationwide" && p.region !== region;
-                const intensity = count ? 0.25 + (count / maxCount) * 0.6 : 0.07;
-                return (
-                  <path
-                    key={p.en}
-                    d={p.d}
-                    onClick={() => setOpenProvince(p)}
-                    fill={REGION_FILL[p.region]}
-                    fillOpacity={dim ? 0.05 : intensity}
-                    stroke="var(--color-background)"
-                    strokeWidth={1.6}
-                    className="cursor-pointer transition-opacity"
-                    aria-hidden="true"
-                  />
-                );
-              })}
+              ล้างตัวกรอง
+            </button>
+          </div>
+        )}
 
-              {network && (
-                <g aria-hidden="true" pointerEvents="none">
-                  {network.connected.map((p) => (
-                    <line
-                      key={`c-${p.en}`}
-                      x1={network.home.cx}
-                      y1={network.home.cy}
-                      x2={p.cx}
-                      y2={p.cy}
-                      stroke="var(--color-primary)"
-                      strokeWidth={3}
-                      strokeOpacity={0.55}
-                      strokeLinecap="round"
-                    />
-                  ))}
-                  {network.suggested.map((p, i) => (
-                    <line
-                      key={`s-${p.en}-${i}`}
-                      x1={network.home.cx}
-                      y1={network.home.cy}
-                      x2={p.cx}
-                      y2={p.cy}
-                      stroke="var(--color-coral)"
-                      strokeWidth={3}
-                      strokeOpacity={0.6}
-                      strokeLinecap="round"
-                      strokeDasharray="10 14"
-                      className={shouldAnimate ? "animate-dash" : undefined}
-                      style={shouldAnimate ? { animationDelay: `${i * 0.6}s` } : undefined}
-                    />
-                  ))}
-                  <circle
-                    cx={network.home.cx}
-                    cy={network.home.cy}
-                    r={44}
-                    fill="none"
-                    stroke="var(--color-primary)"
-                    strokeWidth={4}
-                    className={shouldAnimate ? "animate-pulse-node" : undefined}
-                    style={{
-                      transformOrigin: `${network.home.cx}px ${network.home.cy}px`,
-                      transformBox: "view-box",
-                    }}
-                  />
-                </g>
-              )}
-
-              {PROVINCES.filter((p) => (countByProvince.get(p.en) ?? 0) > 0).map((p) => {
-                const c = countByProvince.get(p.en) ?? 0;
-                const r = bubbleRadius(c);
-                return (
-                  <g key={`m-${p.en}`}>
-                    <circle
-                      cx={p.cx}
-                      cy={p.cy}
-                      r={Math.min(r * 1.8, r + 18)}
-                      fill="var(--color-primary)"
-                      fillOpacity={0.15}
-                      pointerEvents="none"
+        {view === "map" ? (
+          <div className="core-map-layout px-5 pb-6">
+            <div
+              className="core-map-stage relative overflow-hidden rounded-3xl border border-border p-2"
+              style={{ backgroundImage: "var(--gradient-soft)" }}
+            >
+              <div className="core-map-stage-label">
+                <span className="mission-kicker">THAILAND / POWER NETWORK</span>
+                <span>{filtered.length} คน</span>
+              </div>
+              <svg
+                viewBox={MAP_VIEWBOX}
+                className="h-auto w-full"
+                role="group"
+                aria-label="แผนที่ประเทศไทยรายจังหวัด"
+                aria-describedby="province-list-hint"
+              >
+                {PROVINCES.map((p) => {
+                  const count = countByProvince.get(p.en) ?? 0;
+                  const dim = !!region && region !== "Nationwide" && p.region !== region;
+                  const intensity = count ? 0.25 + (count / maxCount) * 0.6 : 0.07;
+                  return (
+                    <path
+                      key={p.en}
+                      d={p.d}
+                      onClick={() => setOpenProvince(p)}
+                      fill={REGION_FILL[p.region]}
+                      fillOpacity={dim ? 0.05 : intensity}
+                      stroke="var(--color-background)"
+                      strokeWidth={1.6}
+                      className="cursor-pointer transition-opacity"
                       aria-hidden="true"
                     />
-                    <g
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`${p.th} · ${c} คน · แตะเพื่อดูว่าใครอยู่ที่นี่`}
-                      onClick={() => setOpenProvince(p)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setOpenProvince(p);
-                        }
+                  );
+                })}
+
+                {network && (
+                  <g aria-hidden="true" pointerEvents="none">
+                    {network.connected.map((p) => (
+                      <line
+                        key={`c-${p.en}`}
+                        x1={network.home.cx}
+                        y1={network.home.cy}
+                        x2={p.cx}
+                        y2={p.cy}
+                        stroke="var(--color-primary)"
+                        strokeWidth={3}
+                        strokeOpacity={0.55}
+                        strokeLinecap="round"
+                      />
+                    ))}
+                    {network.suggested.map((p, i) => (
+                      <line
+                        key={`s-${p.en}-${i}`}
+                        x1={network.home.cx}
+                        y1={network.home.cy}
+                        x2={p.cx}
+                        y2={p.cy}
+                        stroke="var(--color-coral)"
+                        strokeWidth={3}
+                        strokeOpacity={0.6}
+                        strokeLinecap="round"
+                        strokeDasharray="10 14"
+                        className={shouldAnimate ? "animate-dash" : undefined}
+                        style={shouldAnimate ? { animationDelay: `${i * 0.6}s` } : undefined}
+                      />
+                    ))}
+                    <circle
+                      cx={network.home.cx}
+                      cy={network.home.cy}
+                      r={44}
+                      fill="none"
+                      stroke="var(--color-primary)"
+                      strokeWidth={4}
+                      className={shouldAnimate ? "animate-pulse-node" : undefined}
+                      style={{
+                        transformOrigin: `${network.home.cx}px ${network.home.cy}px`,
+                        transformBox: "view-box",
                       }}
-                      className="cursor-pointer"
-                    >
+                    />
+                  </g>
+                )}
+
+                {PROVINCES.filter((p) => (countByProvince.get(p.en) ?? 0) > 0).map((p) => {
+                  const c = countByProvince.get(p.en) ?? 0;
+                  const r = bubbleRadius(c);
+                  return (
+                    <g key={`m-${p.en}`}>
                       <circle
                         cx={p.cx}
                         cy={p.cy}
-                        r={r}
+                        r={Math.min(r * 1.8, r + 18)}
                         fill="var(--color-primary)"
-                        stroke="var(--color-card)"
-                        strokeWidth={4}
-                      />
-                      <text
-                        x={p.cx}
-                        y={p.cy + 11}
-                        textAnchor="middle"
-                        fontSize={32}
-                        fontWeight={800}
-                        fill="var(--color-primary-foreground)"
+                        fillOpacity={0.15}
+                        pointerEvents="none"
                         aria-hidden="true"
+                      />
+                      <g
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${p.th} · ${c} คน · แตะเพื่อดูว่าใครอยู่ที่นี่`}
+                        onClick={() => setOpenProvince(p)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setOpenProvince(p);
+                          }
+                        }}
+                        className="cursor-pointer"
                       >
-                        {c}
-                      </text>
+                        <circle
+                          cx={p.cx}
+                          cy={p.cy}
+                          r={r}
+                          fill="var(--color-primary)"
+                          stroke="var(--color-card)"
+                          strokeWidth={4}
+                        />
+                        <text
+                          x={p.cx}
+                          y={p.cy + 11}
+                          textAnchor="middle"
+                          fontSize={32}
+                          fontWeight={800}
+                          fill="var(--color-primary-foreground)"
+                          aria-hidden="true"
+                        >
+                          {c}
+                        </text>
+                      </g>
                     </g>
-                  </g>
-                );
-              })}
+                  );
+                })}
 
-              {PROVINCES.filter((p) => (notesByProvince.get(p.en) ?? 0) > 0).map((p) => {
-                const c = countByProvince.get(p.en) ?? 0;
-                const bubbleR = c > 0 ? bubbleRadius(c) : 0;
-                return (
-                  <circle
-                    key={`n-${p.en}`}
-                    cx={p.cx + bubbleR * 0.7 + 10}
-                    cy={p.cy - bubbleR * 0.7 - 10}
-                    r={12}
-                    fill="var(--color-coral)"
-                    stroke="var(--color-card)"
-                    strokeWidth={3}
+                {PROVINCES.filter((p) => (notesByProvince.get(p.en) ?? 0) > 0).map((p) => {
+                  const c = countByProvince.get(p.en) ?? 0;
+                  const bubbleR = c > 0 ? bubbleRadius(c) : 0;
+                  return (
+                    <circle
+                      key={`n-${p.en}`}
+                      cx={p.cx + bubbleR * 0.7 + 10}
+                      cy={p.cy - bubbleR * 0.7 - 10}
+                      r={12}
+                      fill="var(--color-coral)"
+                      stroke="var(--color-card)"
+                      strokeWidth={3}
+                      pointerEvents="none"
+                      aria-hidden="true"
+                    />
+                  );
+                })}
+
+                {network && (
+                  <text
+                    x={network.home.cx}
+                    y={network.home.cy - 54}
+                    textAnchor="middle"
+                    fontSize={34}
+                    fontWeight={800}
+                    fill="var(--color-primary)"
+                    stroke="var(--color-background)"
+                    strokeWidth={8}
+                    paintOrder="stroke"
                     pointerEvents="none"
                     aria-hidden="true"
-                  />
-                );
-              })}
-
-              {network && (
-                <text
-                  x={network.home.cx}
-                  y={network.home.cy - 54}
-                  textAnchor="middle"
-                  fontSize={34}
-                  fontWeight={800}
-                  fill="var(--color-primary)"
-                  stroke="var(--color-background)"
-                  strokeWidth={8}
-                  paintOrder="stroke"
-                  pointerEvents="none"
-                  aria-hidden="true"
-                >
-                  คุณ
-                </text>
-              )}
-            </svg>
-            <p className="px-2 pb-1 pt-2 text-center text-xs text-muted-foreground">
-              แตะจังหวัดเพื่อดูคนและงานในพื้นที่
-            </p>
-          </div>
-
-          {me ? (
-            network && (
-              <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <svg width="28" height="8" aria-hidden="true" className="shrink-0">
-                    <line
-                      x1="2"
-                      y1="4"
-                      x2="26"
-                      y2="4"
-                      stroke="var(--color-primary)"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <span>เส้นทึบ = เชื่อมแล้ว</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg width="28" height="8" aria-hidden="true" className="shrink-0">
-                    <line
-                      x1="2"
-                      y1="4"
-                      x2="26"
-                      y2="4"
-                      stroke="var(--color-coral)"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray="5 5"
-                    />
-                  </svg>
-                  <span>เส้นประ = คู่พลังที่แนะนำ</span>
-                </li>
-              </ul>
-            )
-          ) : (
-            <Link
-              to="/onboarding"
-              className="tap mt-3 flex min-h-11 items-center justify-center rounded-2xl border border-dashed border-primary/60 px-4 py-2 text-center text-sm font-bold text-primary"
-            >
-              <span>สร้างโปรไฟล์ เพื่อดูคู่พลังของคุณ</span>
-            </Link>
-          )}
-
-          <h2 className="mt-4 text-sm font-extrabold">จังหวัดที่มีผู้เข้าร่วม</h2>
-          <p id="province-list-hint" className="sr-only">
-            เลือกจังหวัดจากรายการด้านล่างเพื่อดูว่าใครอยู่ที่นั่น
-          </p>
-          {listProvinces.length > 0 ? (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {listProvinces.map((p) => (
-                <button
-                  key={p.en}
-                  type="button"
-                  onClick={() => setOpenProvince(p)}
-                  className="tap min-h-11 rounded-full border border-border bg-card px-4 text-sm font-bold"
-                >
-                  {p.th} · {countByProvince.get(p.en) ?? 0}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-2 text-xs text-muted-foreground">
-              ไม่พบคนในตัวกรองนี้ ลองเปลี่ยนตัวกรอง
-            </p>
-          )}
-
-          <section aria-labelledby="clusters-h" className="mt-4">
-            <h2 id="clusters-h" className="mb-2 text-sm font-extrabold">
-              กลุ่มที่กำลังรวมพลัง
-            </h2>
-            <div className="grid grid-cols-2 gap-2">
-              {CLUSTERS.map((c) => {
-                const members = baseForClusters.filter((u) => u.interests.includes(c));
-                const active = issue === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    aria-pressed={active}
-                    aria-label={`${issueTh(c)} ${members.length} คน`}
-                    onClick={() => setIssue(active ? null : c)}
-                    className={`card-soft tap min-h-11 rounded-2xl p-3 text-left ${
-                      active ? "ring-2 ring-primary" : ""
-                    }`}
                   >
-                    <p className="text-sm font-extrabold">{issueTh(c)}</p>
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">{members.length} คน</span>
-                      <span aria-hidden="true" className="flex -space-x-2">
-                        {members.slice(0, 3).map((u) => (
-                          <Avatar key={u.id} user={u} size={24} />
-                        ))}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {REGIONS.filter((r) => r !== "Nationwide").map((r) => (
-              <Chip key={r} tone="muted">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ background: REGION_FILL[r] }}
-                  aria-hidden
-                />
-                {REGION_LABEL[r]} · {filtered.filter((u) => u.region === r).length}
-              </Chip>
-            ))}
-            <Chip tone="muted">
-              ทั่วประเทศ · {filtered.filter((u) => u.region === "Nationwide").length}
-            </Chip>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 px-5 pb-6">
-          {filtered.map((u) => (
-            <Link key={u.id} to="/people/$id" params={{ id: u.id }} className="card-soft tap p-3">
-              <Avatar user={u} size={44} />
-              <p className="mt-2 truncate text-sm font-extrabold">{u.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {provinceTh(u.province)}
-                {GENERATION_TH[u.generation] ? ` · ${GENERATION_TH[u.generation]}` : ""}
+                    คุณ
+                  </text>
+                )}
+              </svg>
+              <p className="px-2 pb-1 pt-2 text-center text-xs text-muted-foreground">
+                แตะจังหวัดเพื่อดูคนและงานในพื้นที่
               </p>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {u.interests.slice(0, 2).map((i) => (
-                  <Chip key={i} tone="primary">
-                    {issueTh(i)}
+            </div>
+
+            <aside className="core-map-aside">
+              {me ? (
+                network && (
+                  <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+                    <li className="flex items-center gap-2">
+                      <svg width="28" height="8" aria-hidden="true" className="shrink-0">
+                        <line
+                          x1="2"
+                          y1="4"
+                          x2="26"
+                          y2="4"
+                          stroke="var(--color-primary)"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <span>เส้นทึบ = เชื่อมแล้ว</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <svg width="28" height="8" aria-hidden="true" className="shrink-0">
+                        <line
+                          x1="2"
+                          y1="4"
+                          x2="26"
+                          y2="4"
+                          stroke="var(--color-coral)"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeDasharray="5 5"
+                        />
+                      </svg>
+                      <span>เส้นประ = คู่พลังที่แนะนำ</span>
+                    </li>
+                  </ul>
+                )
+              ) : (
+                <Link
+                  to="/onboarding"
+                  className="tap mt-3 flex min-h-11 items-center justify-center rounded-2xl border border-dashed border-primary/60 px-4 py-2 text-center text-sm font-bold text-primary"
+                >
+                  <span>สร้างโปรไฟล์ เพื่อดูคู่พลังของคุณ</span>
+                </Link>
+              )}
+
+              <div className="core-section-head">
+                <div>
+                  <p className="mission-kicker">ON THE MAP</p>
+                  <h2 className="mt-4 text-sm font-extrabold">จังหวัดที่มีผู้เข้าร่วม</h2>
+                </div>
+                <span className="core-data-count">
+                  {listProvinces.length}
+                  <span>จังหวัด</span>
+                </span>
+              </div>
+              <p id="province-list-hint" className="sr-only">
+                เลือกจังหวัดจากรายการด้านล่างเพื่อดูว่าใครอยู่ที่นั่น
+              </p>
+              {listProvinces.length > 0 ? (
+                <div className="core-province-list mt-2 flex flex-wrap gap-2">
+                  {listProvinces.map((p) => (
+                    <button
+                      key={p.en}
+                      type="button"
+                      onClick={() => setOpenProvince(p)}
+                      className="tap min-h-11 rounded-full border border-border bg-card px-4 text-sm font-bold"
+                    >
+                      {p.th} · {countByProvince.get(p.en) ?? 0}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="core-map-empty">
+                  <MissionVisual variant="network" className="core-empty-visual" />
+                  <p>ยังไม่มีคนในตัวกรองนี้</p>
+                  <p className="text-xs text-muted-foreground">
+                    เปลี่ยนตัวกรองเพื่อค้นหาพลังในพื้นที่อื่น
+                  </p>
+                </div>
+              )}
+
+              <section aria-labelledby="clusters-h" className="core-clusters mt-4">
+                <h2 id="clusters-h" className="mb-2 text-sm font-extrabold">
+                  กลุ่มที่กำลังรวมพลัง
+                </h2>
+                <div className="grid grid-cols-2 gap-2">
+                  {CLUSTERS.map((c) => {
+                    const members = baseForClusters.filter((u) => u.interests.includes(c));
+                    const active = issue === c;
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        aria-pressed={active}
+                        aria-label={`${issueTh(c)} ${members.length} คน`}
+                        onClick={() => setIssue(active ? null : c)}
+                        className={`card-soft tap min-h-11 rounded-2xl p-3 text-left ${
+                          active ? "ring-2 ring-primary" : ""
+                        }`}
+                      >
+                        <p className="text-sm font-extrabold">{issueTh(c)}</p>
+                        <div className="mt-1 flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">{members.length} คน</span>
+                          <span aria-hidden="true" className="flex -space-x-2">
+                            {members.slice(0, 3).map((u) => (
+                              <Avatar key={u.id} user={u} size={24} />
+                            ))}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <div className="core-map-legend mt-4 flex flex-wrap gap-1.5">
+                {REGIONS.filter((r) => r !== "Nationwide").map((r) => (
+                  <Chip key={r} tone="muted">
+                    <span
+                      className="h-2.5 w-2.5 shrink-0 rounded-full"
+                      style={{ background: REGION_FILL[r] }}
+                      aria-hidden
+                    />
+                    {REGION_LABEL[r]} · {filtered.filter((u) => u.region === r).length}
                   </Chip>
                 ))}
+                <Chip tone="muted">
+                  ทั่วประเทศ · {filtered.filter((u) => u.region === "Nationwide").length}
+                </Chip>
               </div>
-            </Link>
-          ))}
-        </div>
-      )}
+            </aside>
+          </div>
+        ) : (
+          <div className="core-people-grid grid grid-cols-2 gap-3 px-5 pb-6">
+            {filtered.map((u) => (
+              <Link
+                key={u.id}
+                to="/people/$id"
+                params={{ id: u.id }}
+                className="core-person-card card-soft tap p-3"
+              >
+                <Avatar user={u} size={44} />
+                <p className="mt-2 truncate text-sm font-extrabold">{u.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {provinceTh(u.province)}
+                  {GENERATION_TH[u.generation] ? ` · ${GENERATION_TH[u.generation]}` : ""}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {u.interests.slice(0, 2).map((i) => (
+                    <Chip key={i} tone="primary">
+                      {issueTh(i)}
+                    </Chip>
+                  ))}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
 
-      {openProvince && (
-        <ProvinceSheet
-          province={openProvince}
-          onClose={() => setOpenProvince(null)}
-          people={filtered.filter((u) => u.province === openProvince.en)}
-          allPeople={users.filter((u) => u.province === openProvince.en)}
-          filtersOn={filtersOn}
-          notes={provinceNotes.filter((n) => n.province === openProvince.en)}
-          onAdd={(title, detail, issues) => {
-            addProvinceNote({
-              province: openProvince.en,
-              author_id: me?.id ?? "guest",
-              author_name: me?.name ?? "ผู้เข้าร่วม",
-              title,
-              detail,
-              issues,
-            });
-            toast.success("แชร์เรื่องเล่าแล้ว ✨", {
-              description: `${openProvince.th} · ขอบคุณที่ช่วยเติมพลังให้แผนที่`,
-            });
-          }}
-        />
-      )}
+        {openProvince && (
+          <ProvinceSheet
+            province={openProvince}
+            onClose={() => setOpenProvince(null)}
+            people={filtered.filter((u) => u.province === openProvince.en)}
+            allPeople={users.filter((u) => u.province === openProvince.en)}
+            filtersOn={filtersOn}
+            notes={provinceNotes.filter((n) => n.province === openProvince.en)}
+            onAdd={(title, detail, issues) => {
+              addProvinceNote({
+                province: openProvince.en,
+                author_id: me?.id ?? "guest",
+                author_name: me?.name ?? "ผู้เข้าร่วม",
+                title,
+                detail,
+                issues,
+              });
+              toast.success("แชร์เรื่องเล่าแล้ว ✨", {
+                description: `${openProvince.th} · ขอบคุณที่ช่วยเติมพลังให้แผนที่`,
+              });
+            }}
+          />
+        )}
+      </div>
     </AppShell>
   );
 }

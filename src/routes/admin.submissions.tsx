@@ -1,3 +1,4 @@
+import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Save, Star, Trash2 } from "lucide-react";
@@ -8,14 +9,16 @@ import { provinceTh, REGION_LABEL } from "@/lib/i18n";
 import type { Submission } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/submissions")({
-  head: () => ({ meta: [
-    { title: "จัดการผลงาน — คนส. Connexts" },
-    { name: "description", content: "จัดการผลงานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "จัดการผลงาน — คนส. Connexts" },
-    { property: "og:description", content: "จัดการผลงานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "จัดการผลงาน — คนส. Connexts" },
+      { name: "description", content: "จัดการผลงานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "จัดการผลงาน — คนส. Connexts" },
+      { property: "og:description", content: "จัดการผลงานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminSubmissions,
 });
 
@@ -27,15 +30,20 @@ function AdminSubmissions() {
   const [draft, setDraft] = useState<Draft | null>(null);
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-[18px] font-extrabold">จัดการผลงานที่ส่งเข้ามา</h1>
-        <p className="text-[12px] text-muted-foreground">
-          แก้ไขข้อมูล เลือกกรณีศึกษาขึ้นเวที และลบรายการ · {submissions.length} ชิ้น
-        </p>
-      </header>
+    <div className="admin-workspace admin-workspace-submissions space-y-4">
+      <div className="admin-section-meta">
+        <span>คลังผลงาน</span>
+        <span>{submissions.length} ชิ้น</span>
+      </div>
 
-      <ul className="space-y-3">
+      {submissions.length === 0 && (
+        <MissionEmpty
+          className="admin-empty"
+          title="ยังไม่มีผลงาน"
+          description="ผลงานใหม่จะมารวมอยู่ในคลังนี้"
+        />
+      )}
+      <ul className="admin-records space-y-3">
         {submissions.map((s) => {
           const editing = openId === s.id && draft;
           return (
@@ -52,7 +60,9 @@ function AdminSubmissions() {
                   onClick={() => toggleShowcase(s.id)}
                   aria-pressed={s.showcase}
                   className={`tap inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${
-                    s.showcase ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+                    s.showcase
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground"
                   }`}
                 >
                   <Star className="h-3.5 w-3.5" /> ขึ้นเวที
@@ -65,7 +75,12 @@ function AdminSubmissions() {
                   className="mt-2 w-full text-left"
                   onClick={() => {
                     setOpenId(s.id);
-                    setDraft({ name: s.name, summary: s.summary, highlight: s.highlight, wanted: s.wanted });
+                    setDraft({
+                      name: s.name,
+                      summary: s.summary,
+                      highlight: s.highlight,
+                      wanted: s.wanted,
+                    });
                   }}
                 >
                   <p className="line-clamp-2 text-[12px] text-muted-foreground">{s.summary}</p>

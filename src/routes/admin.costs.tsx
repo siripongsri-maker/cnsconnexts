@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { FileUp, Loader2, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { MissionEmpty } from "@/components/mission-ui";
 import { ADMIN_PASSWORD, useAdminAuth } from "@/lib/admin-auth";
 import { summarizeCosts, type CostFile, type CostSummary } from "@/lib/cost-summary.functions";
 
@@ -12,7 +13,10 @@ export const Route = createFileRoute("/admin/costs")({
   head: () => ({
     meta: [
       { title: "สรุปค่าใช้จ่าย — คนส. Connexts" },
-      { name: "description", content: "อัปโหลดข้อมูลเครดิตและใบแจ้งหนี้ แล้วสรุปค่าใช้จ่ายเป็นเงินบาท" },
+      {
+        name: "description",
+        content: "อัปโหลดข้อมูลเครดิตและใบแจ้งหนี้ แล้วสรุปค่าใช้จ่ายเป็นเงินบาท",
+      },
       { property: "og:title", content: "สรุปค่าใช้จ่าย — คนส. Connexts" },
       { property: "og:description", content: "สรุปค่าใช้จ่ายเว็บเป็นเงินบาทพร้อมแจกแจงรายการ" },
       { property: "og:type", content: "website" },
@@ -23,12 +27,14 @@ export const Route = createFileRoute("/admin/costs")({
 });
 
 const TEXT_EXT = /\.(csv|json|txt|tsv|md)$/i;
-const thb = (n: number) => n.toLocaleString("th-TH", { style: "currency", currency: "THB", maximumFractionDigits: 2 });
+const thb = (n: number) =>
+  n.toLocaleString("th-TH", { style: "currency", currency: "THB", maximumFractionDigits: 2 });
 
 function readFile(file: File): Promise<CostFile> {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
-    const isText = TEXT_EXT.test(file.name) || file.type.startsWith("text/") || file.type === "application/json";
+    const isText =
+      TEXT_EXT.test(file.name) || file.type.startsWith("text/") || file.type === "application/json";
     r.onerror = () => reject(new Error(`อ่านไฟล์ ${file.name} ไม่ได้`));
     r.onload = () =>
       resolve(
@@ -50,9 +56,41 @@ function AdminCosts() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<CostSummary | null>(null);
+  const [resultRevision, setResultRevision] = useState(0);
+  const resultRef = useRef<HTMLElement>(null);
+  const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+  const resultTitleId = useId();
+
+  useEffect(() => {
+    if (resultRevision === 0) return;
+    const panel = resultRef.current;
+    const heading = resultHeadingRef.current;
+    if (!panel || !heading) return;
+    const reduced =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.hasAttribute("data-lowspec");
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    if (reduced || typeof panel.animate !== "function") return;
+    const animation = panel.animate(
+      [
+        { opacity: 0, transform: "translate3d(0, 18px, 0)" },
+        { opacity: 1, transform: "translate3d(0, 0, 0)" },
+      ],
+      { duration: 420, easing: "cubic-bezier(.16, 1, .3, 1)" },
+    );
+    return () => animation.cancel();
+  }, [resultRevision]);
 
   if (role && role !== "owner") {
-    return <p className="text-muted-foreground">หน้านี้สำหรับเจ้าของโปรเจกต์เท่านั้น</p>;
+    return (
+      <MissionEmpty
+        className="admin-empty"
+        variant="control"
+        title="สำหรับเจ้าของโปรเจกต์"
+        description="บัญชีนี้ไม่มีสิทธิ์สรุปค่าใช้จ่าย"
+      />
+    );
   }
 
   const submit = async () => {
@@ -61,10 +99,16 @@ function AdminCosts() {
     try {
       const payload = await Promise.all(files.map(readFile));
       const res = await run({
-        data: { password: ADMIN_PASSWORD, files: payload, rate: rate ? Number(rate) : undefined, note: note || undefined },
+        data: {
+          password: ADMIN_PASSWORD,
+          files: payload,
+          rate: rate ? Number(rate) : undefined,
+          note: note || undefined,
+        },
       });
       if (res.ok) {
         setSummary(res.summary);
+        setResultRevision((revision) => revision + 1);
         toast.success("สรุปค่าใช้จ่ายเรียบร้อย");
       } else {
         setError(res.error);
@@ -77,19 +121,30 @@ function AdminCosts() {
   };
 
   return (
-    <div className="space-y-8">
-      <header>
-        <p lang="en" className="mission-eyebrow">Cost summary</p>
-        <h1 className="text-3xl font-bold">สรุปค่าใช้จ่ายเป็นเงินบาท</h1>
-        <p className="mt-2 text-muted-foreground">
-          แนบไฟล์การใช้เครดิต (CSV, JSON, TXT) และใบแจ้งหนี้ (PDF หรือรูปภาพ) แล้วให้ AI แจกแจงรายการให้
-        </p>
-      </header>
+    <div className="admin-workspace admin-workspace-costs space-y-6">
+      <div className="admin-section-meta">
+        <span>เอกสารค่าใช้จ่าย</span>
+        <span>{files.length} / 6 ไฟล์</span>
+      </div>
 
-      <section className="space-y-4 border border-border p-5">
-        <label className="flex cursor-pointer flex-col items-center gap-2 border border-dashed border-border p-8 text-center hover:bg-accent">
+      <p role="status" aria-live="polite" className="sr-only">
+        {busy
+          ? "กำลังอ่านเอกสารและสรุปค่าใช้จ่าย"
+          : error
+            ? ""
+            : summary
+              ? "ผลสรุปค่าใช้จ่ายพร้อมแล้ว"
+              : ""}
+      </p>
+      <section className="admin-cost-input card-soft space-y-5" aria-busy={busy}>
+        <label className="admin-upload-zone flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed border-border p-8 text-center hover:bg-accent">
           <FileUp className="h-6 w-6" aria-hidden />
-          <span>เลือกไฟล์ (สูงสุด 6 ไฟล์ ไฟล์ละไม่เกิน 5 MB)</span>
+          <span className="admin-upload-title">แนบไฟล์ค่าใช้จ่าย</span>
+          <span className="admin-upload-hint">
+            CSV · JSON · TXT · PDF · รูปภาพ
+            <br />
+            สูงสุด 6 ไฟล์ ไฟล์ละไม่เกิน 5 MB
+          </span>
           <input
             type="file"
             multiple
@@ -97,21 +152,25 @@ function AdminCosts() {
             className="sr-only"
             onChange={(e) => {
               const picked = Array.from(e.target.files ?? []).filter((f) => f.size <= 5_000_000);
-              if (picked.length < (e.target.files?.length ?? 0)) toast.error("บางไฟล์ใหญ่เกิน 5 MB จึงไม่ได้แนบ");
+              if (picked.length < (e.target.files?.length ?? 0))
+                toast.error("บางไฟล์ใหญ่เกิน 5 MB จึงไม่ได้แนบ");
               setFiles((prev) => [...prev, ...picked].slice(0, 6));
               e.target.value = "";
             }}
           />
         </label>
         {files.length > 0 && (
-          <ul className="space-y-2">
+          <ul className="admin-cost-files space-y-2">
             {files.map((f, i) => (
-              <li key={f.name + i} className="flex items-center justify-between border-b border-border pb-2 text-sm">
-                <span className="truncate">{f.name}</span>
+              <li
+                key={f.name + i}
+                className="flex items-center justify-between gap-3 border-b border-border pb-2 text-sm"
+              >
+                <span className="min-w-0 flex-1 truncate">{f.name}</span>
                 <button
                   type="button"
                   aria-label={`เอา ${f.name} ออก`}
-                  className="inline-flex h-9 w-9 items-center justify-center"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-border text-muted-foreground"
                   onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
                 >
                   <X className="h-4 w-4" />
@@ -121,8 +180,9 @@ function AdminCosts() {
           </ul>
         )}
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm">
-            อัตราแลกเปลี่ยน (บาทต่อ 1 ดอลลาร์ ไม่บังคับ)
+          <label className="block text-sm">
+            อัตราแลกเปลี่ยน{" "}
+            <span className="text-xs text-muted-foreground">(บาท / 1 ดอลลาร์ · ไม่บังคับ)</span>
             <input
               inputMode="decimal"
               value={rate}
@@ -131,8 +191,8 @@ function AdminCosts() {
               className="mt-1 h-11 w-full border border-input bg-background px-3"
             />
           </label>
-          <label className="text-sm">
-            หมายเหตุ (ไม่บังคับ)
+          <label className="block text-sm">
+            หมายเหตุ <span className="text-xs text-muted-foreground">(ไม่บังคับ)</span>
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -141,30 +201,69 @@ function AdminCosts() {
             />
           </label>
         </div>
-        <Button variant="mission" className="h-12" disabled={busy || files.length === 0} onClick={submit}>
+        <Button
+          variant="mission"
+          className="admin-cost-submit min-h-12 w-full justify-center gap-3"
+          disabled={busy || files.length === 0}
+          onClick={submit}
+        >
           {busy ? <Loader2 className="animate-spin" aria-hidden /> : <Sparkles aria-hidden />}
           {busy ? "กำลังสรุป…" : "สรุปค่าใช้จ่าย"}
         </Button>
-        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
       </section>
 
       {summary && (
-        <section className="space-y-4" aria-live="polite">
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-4">
+        <section
+          ref={resultRef}
+          className="admin-cost-summary card-soft space-y-5"
+          aria-labelledby={resultTitleId}
+          data-motion-local="true"
+        >
+          <div className="admin-cost-summary-head flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
             <div>
+              <h2
+                ref={resultHeadingRef}
+                id={resultTitleId}
+                tabIndex={-1}
+                className="admin-cost-result-title admin-section-label"
+              >
+                สรุปจากไฟล์
+              </h2>
               <p className="text-sm text-muted-foreground">{summary.period}</p>
-              <p className="text-4xl font-bold">{thb(summary.total_thb)}</p>
+              <p className="admin-cost-total">{thb(summary.total_thb)}</p>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <div
+            className="admin-data-table overflow-x-auto"
+            role="region"
+            aria-label="ตารางรายการค่าใช้จ่าย"
+            tabIndex={0}
+            data-lenis-prevent
+          >
             <table className="w-full text-sm">
+              <caption className="sr-only">รายการค่าใช้จ่ายจากไฟล์แนบ</caption>
               <thead className="text-left text-muted-foreground">
                 <tr>
-                  <th className="py-2 pr-4">รายการ</th>
-                  <th className="py-2 pr-4">หมวด</th>
-                  <th className="py-2 pr-4 text-right">เครดิต</th>
-                  <th className="py-2 pr-4 text-right">บาท</th>
-                  <th className="py-2">ที่มา</th>
+                  <th scope="col" className="py-2 pr-4">
+                    รายการ
+                  </th>
+                  <th scope="col" className="py-2 pr-4">
+                    หมวด
+                  </th>
+                  <th scope="col" className="py-2 pr-4 text-right">
+                    เครดิต
+                  </th>
+                  <th scope="col" className="py-2 pr-4 text-right">
+                    บาท
+                  </th>
+                  <th scope="col" className="py-2">
+                    ที่มา
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -181,15 +280,19 @@ function AdminCosts() {
             </table>
           </div>
           {summary.assumptions.length > 0 && (
-            <div>
-              <h2 className="font-semibold">สมมติฐาน</h2>
+            <div className="admin-cost-assumptions">
+              <h3 className="font-medium">สมมติฐาน</h3>
               <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
-                {summary.assumptions.map((a, i) => <li key={i}>{a}</li>)}
+                {summary.assumptions.map((a, i) => (
+                  <li key={i}>{a}</li>
+                ))}
               </ul>
             </div>
           )}
           {summary.notes && <p className="text-sm text-muted-foreground">{summary.notes}</p>}
-          <p className="text-xs text-muted-foreground">ตัวเลขนี้ AI สรุปจากไฟล์ที่แนบมา ควรตรวจกับใบแจ้งหนี้จริงอีกครั้ง</p>
+          <p className="admin-cost-review text-xs text-muted-foreground">
+            AI สรุปจากไฟล์แนบ ควรตรวจกับใบแจ้งหนี้จริงอีกครั้ง
+          </p>
         </section>
       )}
     </div>

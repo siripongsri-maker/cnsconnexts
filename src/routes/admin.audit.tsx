@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, History, RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
@@ -8,14 +8,19 @@ import { listAuditLog, type AuditRow } from "@/lib/backup.functions";
 import { downloadCSV, type Row } from "@/lib/export";
 
 export const Route = createFileRoute("/admin/audit")({
-  head: () => ({ meta: [
-    { title: "ประวัติการแก้ไข — คนส. Connexts" },
-    { name: "description", content: "ประวัติการแก้ไขสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "ประวัติการแก้ไข — คนส. Connexts" },
-    { property: "og:description", content: "ประวัติการแก้ไขสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "ประวัติการแก้ไข — คนส. Connexts" },
+      { name: "description", content: "ประวัติการแก้ไขสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "ประวัติการแก้ไข — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "ประวัติการแก้ไขสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminAudit,
 });
 
@@ -106,15 +111,12 @@ function AdminAudit() {
   };
 
   return (
-    <div className="space-y-4">
-      <header className="flex flex-wrap items-start justify-between gap-3">
+    <div className="admin-workspace admin-workspace-audit space-y-4">
+      <header className="admin-section-meta flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-xl font-bold">
-            <History className="h-5 w-5" /> ประวัติการใช้งานข้อมูล (Audit log)
-          </h1>
+          <p className="admin-section-label">บันทึกการเปลี่ยนแปลง</p>
           <p className="text-sm text-muted-foreground">
-            ใครเปลี่ยนข้อมูลอะไร เมื่อไร และระบบสำรองอัตโนมัติทำงานล่าสุดเมื่อ{" "}
-            {lastBackupAt ? new Date(lastBackupAt).toLocaleString("th-TH") : "—"}
+            สำรองล่าสุด {lastBackupAt ? new Date(lastBackupAt).toLocaleString("th-TH") : "—"}
           </p>
         </div>
         <div className="flex gap-2">
@@ -133,7 +135,7 @@ function AdminAudit() {
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="admin-filter-strip flex flex-wrap gap-2">
         <select
           value={table}
           onChange={(e) => setTable(e.target.value)}
@@ -171,16 +173,35 @@ function AdminAudit() {
         <span className="self-center text-sm text-muted-foreground">{rows.length} รายการ</span>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border">
+      <div
+        className="admin-data-table overflow-x-auto rounded-2xl border"
+        role="region"
+        aria-label="ตารางประวัติการเปลี่ยนแปลงข้อมูล"
+        tabIndex={0}
+        data-lenis-prevent
+      >
         <table className="w-full text-left text-sm">
+          <caption className="sr-only">ประวัติการเปลี่ยนแปลงข้อมูล</caption>
           <thead className="bg-muted/50 text-xs">
             <tr>
-              <th className="p-3">เวลา</th>
-              <th className="p-3">ผู้ทำรายการ</th>
-              <th className="p-3">ช่องทาง</th>
-              <th className="p-3">ตาราง</th>
-              <th className="p-3">การกระทำ</th>
-              <th className="p-3">รายการ</th>
+              <th scope="col" className="p-3">
+                เวลา
+              </th>
+              <th scope="col" className="p-3">
+                ผู้ทำรายการ
+              </th>
+              <th scope="col" className="p-3">
+                ช่องทาง
+              </th>
+              <th scope="col" className="p-3">
+                ตาราง
+              </th>
+              <th scope="col" className="p-3">
+                การกระทำ
+              </th>
+              <th scope="col" className="p-3">
+                รายการ
+              </th>
             </tr>
           </thead>
           <tbody>

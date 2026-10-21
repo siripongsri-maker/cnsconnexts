@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { DatabaseBackup, Download, FileJson, RefreshCw, RotateCcw } from "lucide-react";
+import { Download, FileJson, RefreshCw, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
@@ -9,14 +9,22 @@ import { listBackups, type BackupRow } from "@/lib/backup.functions";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 
 export const Route = createFileRoute("/admin/backups")({
-  head: () => ({ meta: [
-    { title: "สำรองและกู้คืนข้อมูล — คนส. Connexts" },
-    { name: "description", content: "สำรองและกู้คืนข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "สำรองและกู้คืนข้อมูล — คนส. Connexts" },
-    { property: "og:description", content: "สำรองและกู้คืนข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "สำรองและกู้คืนข้อมูล — คนส. Connexts" },
+      {
+        name: "description",
+        content: "สำรองและกู้คืนข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:title", content: "สำรองและกู้คืนข้อมูล — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "สำรองและกู้คืนข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminBackups,
 });
 
@@ -120,19 +128,18 @@ function AdminBackups() {
   };
 
   return (
-    <div className="space-y-4">
-      <header className="flex items-start justify-between gap-3">
+    <div className="admin-workspace admin-workspace-backups space-y-4">
+      <header className="admin-section-meta flex items-start justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-[18px] font-extrabold">
-            <DatabaseBackup className="size-5" /> สำรองข้อมูลอัตโนมัติ
-          </h1>
-          <p className="text-[12px] text-muted-foreground">
-            ระบบบันทึกสแนปช็อตทุกครั้งที่มีการเพิ่ม แก้ไข หรือลบข้อมูล · ทั้งหมด {total} รายการ
+          <p className="admin-section-label">สแนปช็อตข้อมูล</p>
+          <p className="text-sm text-muted-foreground">
+            {total} รายการ · บันทึกทุกครั้งที่ข้อมูลเปลี่ยน
           </p>
         </div>
         <button
           type="button"
           onClick={() => void load()}
+          aria-label="รีเฟรชรายการสำรอง"
           className="rounded-xl border border-border px-3 py-2 text-[12px] font-bold"
         >
           <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
@@ -176,11 +183,17 @@ function AdminBackups() {
         </p>
       ) : null}
 
-      <ul className="space-y-2">
+      <ul className="admin-records admin-backup-records space-y-2">
         {rows.map((row) => (
           <li key={row.id} className="card-soft rounded-2xl bg-card p-3">
             <div className="flex items-center justify-between gap-2">
-              <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setOpenId(openId === row.id ? null : row.id)}>
+              <button
+                type="button"
+                className="min-w-0 flex-1 text-left"
+                aria-expanded={openId === row.id}
+                aria-controls={`backup-snapshot-${row.id}`}
+                onClick={() => setOpenId(openId === row.id ? null : row.id)}
+              >
                 <p className="truncate text-sm font-extrabold">{label(row)}</p>
                 <p className="text-xs font-bold text-muted-foreground">
                   {OP_TH[row.operation] ?? row.operation} · {row.table_name} ·{" "}
@@ -204,7 +217,14 @@ function AdminBackups() {
               </button>
             </div>
             {openId === row.id ? (
-              <pre className="mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-2 text-xs leading-relaxed">
+              <pre
+                id={`backup-snapshot-${row.id}`}
+                tabIndex={0}
+                role="region"
+                aria-label="รายละเอียดสแนปช็อตสำรอง"
+                className="admin-backup-detail mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-2 text-xs leading-relaxed"
+                data-lenis-prevent
+              >
                 {JSON.stringify(row.old_data ?? row.new_data, null, 2)}
               </pre>
             ) : null}

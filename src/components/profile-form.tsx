@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Camera, Check, X } from "lucide-react";
+import { ArrowRight, Camera, Check, CheckCircle2, X } from "lucide-react";
 
 import { GENERATION_TH, issueTh, REGION_LABEL } from "@/lib/i18n";
 import { useStore } from "@/lib/store";
@@ -143,8 +143,18 @@ export function ProfileForm({
   const countHint = (base: string, n: number) => (n ? `${base} · เลือกแล้ว ${n}` : base);
 
   return (
-    <div className="space-y-7 pb-44">
-      <Block id="pf-step-1" step={1} title="ชื่อของคุณ" hint="ต้องกรอก">
+    <div className="profile-form">
+      <div className="profile-form-overview">
+        <div>
+          <p className="mission-kicker">YOUR PROFILE / ข้อมูลของคุณ</p>
+          <h2>{initial ? "ปรับพลังให้เป็นปัจจุบัน" : "บอกตัวตน สร้างการเชื่อมต่อ"}</h2>
+        </div>
+        <span className={`profile-completion-badge ${valid ? "is-complete" : ""}`}>
+          <CheckCircle2 className="h-4 w-4" aria-hidden />
+          {answered}/3 ข้อสำคัญ
+        </span>
+      </div>
+      <Block id="pf-step-1" step={1} title="ตัวตนของคุณ" hint="ชื่อที่อยากให้คนในงานเรียก" required>
         <label htmlFor="pf-name" className="block text-[13px] font-bold">
           ชื่อที่ใช้ในงาน <span className="text-primary">*</span>
         </label>
@@ -166,7 +176,7 @@ export function ProfileForm({
           open={Boolean(
             initial?.photo || (initial?.organization && initial.organization !== "อิสระ"),
           )}
-          className="rounded-2xl border border-border bg-card/60 p-3"
+          className="profile-optional-fields rounded-2xl border border-border bg-card/60 p-3"
         >
           <summary className="min-h-11 cursor-pointer py-2.5 text-[13px] font-bold">
             เพิ่มรูป กลุ่ม และช่วงวัย (ไม่บังคับ)
@@ -267,8 +277,8 @@ export function ProfileForm({
       <Block
         id="pf-step-2"
         step={2}
-        title="คุณอยู่ที่ไหน?"
-        hint="ระบุจังหวัดเพื่อให้คนในพื้นที่เจอคุณง่ายขึ้น"
+        title="พื้นที่ของคุณ"
+        hint="ให้คนในพื้นที่เดียวกันพบคุณง่ายขึ้น"
       >
         <div className="flex flex-wrap gap-2" role="group" aria-label="ภูมิภาค">
           {REGIONS.map((r) => (
@@ -359,7 +369,7 @@ export function ProfileForm({
         id="pf-step-6"
         step={6}
         title="ตอนนี้กำลังทำอะไร?"
-        hint="เล่า 1 ประโยคให้เพื่อนรู้จัก · ไม่บังคับ"
+        hint="แนะนำงานที่ทำใน 1 ประโยค · ไม่บังคับ"
       >
         <label htmlFor="pf-bio" className="sr-only">
           เล่าสั้น ๆ ว่าคุณกำลังทำอะไรอยู่ (ไม่บังคับ)
@@ -379,55 +389,51 @@ export function ProfileForm({
         </p>
       </Block>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/92 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
-        <div className="mx-auto mb-2 max-w-xl">
-          <div
-            role="progressbar"
-            aria-label="ความคืบหน้าข้อที่ต้องตอบ"
-            aria-valuemin={0}
-            aria-valuemax={3}
-            aria-valuenow={answered}
-            className="h-1 overflow-hidden rounded-full bg-muted"
-          >
+      <div className="profile-save-bar">
+        <div className="profile-save-inner">
+          <div className="profile-save-progress">
+            <div className="profile-save-label">
+              <span>PROFILE READINESS</span>
+              <span>{answered} / 3</span>
+            </div>
             <div
-              className="h-full rounded-full bg-primary transition-[width] duration-300"
-              style={{ width: `${(answered / 3) * 100}%` }}
-            />
+              role="progressbar"
+              aria-label="ความคืบหน้าข้อที่ต้องตอบ"
+              aria-valuemin={0}
+              aria-valuemax={3}
+              aria-valuenow={answered}
+              className="profile-progress-track"
+            >
+              <div style={{ width: `${(answered / 3) * 100}%` }} />
+            </div>
+            <p id="pf-hint" aria-live="polite">
+              {valid ? "ครบแล้ว พร้อมไปต่อ" : `ยังขาด: ${missing.map((m) => m.label).join(" · ")}`}
+            </p>
+          </div>
+          <div className="profile-save-action">
+            {valid && (sameIssue > 0 || canHelp > 0) && (
+              <p aria-live="polite" className="profile-peer-hint">
+                {[
+                  sameIssue > 0 && `${sameIssue} คนใส่ใจเรื่องเดียวกัน`,
+                  canHelp > 0 && `${canHelp} คนมีพลังที่คุณหา`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+            )}
+            <button
+              type="button"
+              disabled={sending}
+              aria-disabled={!valid || undefined}
+              aria-describedby="pf-hint"
+              onClick={submit}
+              className="tap focused-primary-action profile-save-button"
+            >
+              <span>{sending ? "กำลังบันทึก…" : submitLabel}</span>
+              <ArrowRight className="h-5 w-5" aria-hidden />
+            </button>
           </div>
         </div>
-        {valid && (sameIssue > 0 || canHelp > 0) && (
-          <p
-            aria-live="polite"
-            className="mx-auto mb-2 max-w-xl text-center text-[13px] font-bold text-primary"
-          >
-            <span aria-hidden>✨ </span>
-            {[
-              sameIssue > 0 && `${sameIssue} คนสนใจเรื่องเดียวกัน`,
-              canHelp > 0 && `${canHelp} คนมีพลังที่คุณหา`,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-        )}
-        <button
-          type="button"
-          disabled={sending}
-          aria-disabled={!valid || undefined}
-          aria-describedby="pf-hint"
-          onClick={submit}
-          className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo text-base font-extrabold text-primary-foreground disabled:bg-none disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none aria-disabled:bg-none aria-disabled:bg-muted aria-disabled:text-muted-foreground aria-disabled:shadow-none"
-        >
-          {sending ? "กำลังบันทึก…" : submitLabel}
-        </button>
-        <p
-          id="pf-hint"
-          aria-live="polite"
-          className="mx-auto mt-1.5 min-h-4 max-w-xl text-center text-xs text-muted-foreground"
-        >
-          {valid
-            ? "ครบแล้ว พร้อมไปต่อ"
-            : `ตอบแล้ว ${answered}/3 · ยังขาด: ${missing.map((m) => m.label).join(" · ")}`}
-        </p>
       </div>
     </div>
   );
@@ -453,28 +459,21 @@ function Block({
       id={id}
       tabIndex={-1}
       aria-labelledby={`${id}-title`}
-      className="animate-rise scroll-mt-24 space-y-3 outline-none"
+      className="profile-form-section mission-panel scroll-mt-24 outline-none"
     >
-      <div className="flex items-baseline gap-2">
-        <span
-          className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/12 text-xs font-extrabold text-primary"
-          aria-hidden
-        >
-          {step}
+      <div className="profile-section-heading">
+        <span className="profile-section-number" aria-hidden>
+          {String(step).padStart(2, "0")}
         </span>
         <div>
-          <h2 id={`${id}-title`} className="text-lg font-extrabold leading-tight">
+          <h2 id={`${id}-title`} className="profile-section-title">
             {title}
-            {required && (
-              <span className="ml-1.5 inline-block rounded-full bg-primary/12 px-2 py-0.5 align-middle text-xs font-bold text-primary">
-                ต้องเลือก
-              </span>
-            )}
+            {required && <span className="profile-required-label">จำเป็น</span>}
           </h2>
           <p className="text-[12px] text-muted-foreground">{hint}</p>
         </div>
       </div>
-      <div className="space-y-3">{children}</div>
+      <div className="profile-section-body space-y-3">{children}</div>
     </section>
   );
 }
@@ -493,7 +492,7 @@ function Pill({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`tap inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-bold ${
+      className={`tap profile-option-pill inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-bold ${
         active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
       }`}
     >
@@ -515,7 +514,7 @@ function PowerGrid({
   tone: "lime" | "coral";
 }) {
   return (
-    <div className="grid grid-cols-2 gap-2" role="group" aria-label={label}>
+    <div className="profile-power-grid grid grid-cols-2 gap-2" role="group" aria-label={label}>
       {POWERS.map((p) => {
         const active = selected.includes(p.key);
         return (
@@ -524,7 +523,7 @@ function PowerGrid({
             type="button"
             aria-pressed={active}
             onClick={() => onToggle(p.key)}
-            className={`tap relative rounded-2xl border-2 p-3 pr-8 text-left ${
+            className={`tap profile-power-card profile-power-${tone} relative rounded-2xl border-2 p-3 pr-8 text-left ${
               active
                 ? tone === "lime"
                   ? "border-lime-foreground/70 bg-lime/30"

@@ -32,14 +32,19 @@ import {
 } from "@/lib/usage-log";
 
 export const Route = createFileRoute("/admin/logs")({
-  head: () => ({ meta: [
-    { title: "สถิติการใช้งาน — คนส. Connexts" },
-    { name: "description", content: "สถิติการใช้งานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "สถิติการใช้งาน — คนส. Connexts" },
-    { property: "og:description", content: "สถิติการใช้งานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "สถิติการใช้งาน — คนส. Connexts" },
+      { name: "description", content: "สถิติการใช้งานสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "สถิติการใช้งาน — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "สถิติการใช้งานสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminLogs,
 });
 
@@ -157,7 +162,7 @@ function AdminLogs() {
     return (
       <div className="card-soft rounded-2xl bg-card p-6 text-center">
         <Lock className="mx-auto h-6 w-6 text-muted-foreground" />
-        <h1 className="mt-2 text-[16px] font-extrabold">ไม่มีสิทธิ์เข้าถึงบันทึกการใช้งาน</h1>
+        <h2 className="mt-2 text-[16px] font-extrabold">ไม่มีสิทธิ์เข้าถึงบันทึกการใช้งาน</h2>
         <p className="mt-1 text-[12px] text-muted-foreground">
           บทบาทของคุณ ({role ? ROLE_TH[role] : "-"}) ไม่ได้รับสิทธิ์ดู Log · ติดต่อผู้ดูแลสูงสุด
         </p>
@@ -166,11 +171,11 @@ function AdminLogs() {
   }
 
   return (
-    <div className="space-y-5">
-      <section>
-        <h1 className="text-[18px] font-extrabold">Log การเข้าใช้งาน</h1>
+    <div className="admin-workspace admin-workspace-logs space-y-5">
+      <section className="admin-log-access">
         <p className="text-[12px] text-muted-foreground">
-          บันทึกจะเก็บเฉพาะเมื่อผู้ใช้กดยินยอม PDPA บนหน้าแรก · เก็บในเครื่องผู้ใช้ สูงสุด 1,000 รายการล่าสุด
+          บันทึกจะเก็บเฉพาะเมื่อผู้ใช้กดยินยอม PDPA บนหน้าแรก · เก็บในเครื่องผู้ใช้ สูงสุด 1,000
+          รายการล่าสุด
         </p>
         <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">
           <ShieldCheck className="h-3.5 w-3.5" />
@@ -181,8 +186,7 @@ function AdminLogs() {
         </p>
       </section>
 
-
-      <div className="grid grid-cols-3 gap-3">
+      <div className="admin-stat-grid grid grid-cols-3 gap-3">
         {[
           { l: "เหตุการณ์ทั้งหมด", v: logs.length },
           { l: "ผู้ใช้ (ไม่ระบุตัวตน)", v: visitors },
@@ -207,7 +211,13 @@ function AdminLogs() {
                 </linearGradient>
               </defs>
               <XAxis dataKey="label" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={32} />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
+                width={32}
+              />
               <Tooltip
                 contentStyle={{ fontSize: 12, borderRadius: 12 }}
                 formatter={(v: number) => [`${v} ครั้ง`, "เข้าชม"]}
@@ -233,11 +243,36 @@ function AdminLogs() {
           ) : (
             <div className="mt-3 h-44 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={sources} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 8 }}>
-                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} formatter={(v: number) => [`${v} เหตุการณ์`, "จำนวน"]} />
-                  <Bar dataKey="value" fill="var(--primary)" radius={[0, 6, 6, 0]} isAnimationActive={false} />
+                <BarChart
+                  data={sources}
+                  layout="vertical"
+                  margin={{ top: 0, right: 12, bottom: 0, left: 8 }}
+                >
+                  <XAxis
+                    type="number"
+                    allowDecimals={false}
+                    tick={{ fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={80}
+                    tick={{ fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{ fontSize: 12, borderRadius: 12 }}
+                    formatter={(v: number) => [`${v} เหตุการณ์`, "จำนวน"]}
+                  />
+                  <Bar
+                    dataKey="value"
+                    fill="var(--primary)"
+                    radius={[0, 6, 6, 0]}
+                    isAnimationActive={false}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -262,13 +297,17 @@ function AdminLogs() {
                       <Cell key={entry.name} fill={consentTotal ? PIE_COLORS[i] : "var(--muted)"} />
                     ))}
                   </Pie>
-                  {consentTotal > 0 && <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />}
+                  {consentTotal > 0 && (
+                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
+                  )}
                 </PieChart>
               </ResponsiveContainer>
             </div>
             <div className="text-[12px]">
               <p className="text-3xl font-extrabold text-gradient">{consentRate}%</p>
-              <p className="text-muted-foreground">ยินยอม {consentStats.accepted} · ไม่ยินยอม {consentStats.declined}</p>
+              <p className="text-muted-foreground">
+                ยินยอม {consentStats.accepted} · ไม่ยินยอม {consentStats.declined}
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">นับจากการตัดสินใจบนเครื่องนี้</p>
             </div>
           </div>
@@ -281,7 +320,8 @@ function AdminLogs() {
           <h2 className="text-[14px] font-extrabold">นโยบายการเก็บรักษาและลบข้อมูลอัตโนมัติ</h2>
         </div>
         <p className="mt-1 text-[12px] text-muted-foreground">
-          ระบบจะลบบันทึกที่เก่ากว่าระยะเวลาที่กำหนดโดยอัตโนมัติ (ตรวจสอบทุกนาทีและทุกครั้งที่เปิดหน้านี้)
+          ระบบจะลบบันทึกที่เก่ากว่าระยะเวลาที่กำหนดโดยอัตโนมัติ
+          (ตรวจสอบทุกนาทีและทุกครั้งที่เปิดหน้านี้)
         </p>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -311,7 +351,11 @@ function AdminLogs() {
               type="button"
               onClick={() => {
                 const removed = purgeExpiredLogs();
-                logUsage("admin", "ลบบันทึกหมดอายุด้วยตนเอง", `${adminUser ?? "-"} · ${removed} รายการ`);
+                logUsage(
+                  "admin",
+                  "ลบบันทึกหมดอายุด้วยตนเอง",
+                  `${adminUser ?? "-"} · ${removed} รายการ`,
+                );
                 alert(removed ? `ลบบันทึกหมดอายุแล้ว ${removed} รายการ` : "ไม่มีบันทึกที่หมดอายุ");
               }}
               className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
@@ -328,7 +372,9 @@ function AdminLogs() {
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <div className="rounded-xl bg-muted/50 p-3">
             <p className="text-xs font-bold text-muted-foreground">เก็บย้อนหลังถึง</p>
-            <p className="text-[12px] font-extrabold">{cutoff ? fmt(cutoff.toISOString()) : "ไม่จำกัด"}</p>
+            <p className="text-[12px] font-extrabold">
+              {cutoff ? fmt(cutoff.toISOString()) : "ไม่จำกัด"}
+            </p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3">
             <p className="text-xs font-bold text-muted-foreground">รายการเก่าสุดจะหมดอายุ</p>
@@ -406,7 +452,11 @@ function AdminLogs() {
                     })(),
                   })),
                 );
-                logUsage("admin", "ส่งออกบันทึกการใช้งาน (CSV)", `${adminUser ?? "-"} · ${filtered.length} รายการ`);
+                logUsage(
+                  "admin",
+                  "ส่งออกบันทึกการใช้งาน (CSV)",
+                  `${adminUser ?? "-"} · ${filtered.length} รายการ`,
+                );
               }}
               className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
             >
@@ -416,7 +466,11 @@ function AdminLogs() {
               type="button"
               onClick={() => {
                 downloadJSON("usage-logs", filtered);
-                logUsage("admin", "ส่งออกบันทึกการใช้งาน (JSON)", `${adminUser ?? "-"} · ${filtered.length} รายการ`);
+                logUsage(
+                  "admin",
+                  "ส่งออกบันทึกการใช้งาน (JSON)",
+                  `${adminUser ?? "-"} · ${filtered.length} รายการ`,
+                );
               }}
               className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
             >
@@ -448,17 +502,34 @@ function AdminLogs() {
         )}
       </div>
 
-
-      <section className="card-soft overflow-x-auto rounded-2xl bg-card">
+      <section
+        className="admin-data-table card-soft overflow-x-auto rounded-2xl bg-card"
+        aria-label="ตารางบันทึกการใช้งาน"
+        tabIndex={0}
+        data-lenis-prevent
+      >
         <table className="w-full text-left text-[12px]">
+          <caption className="sr-only">บันทึกการใช้งานล่าสุด</caption>
           <thead className="bg-muted/40 text-xs font-extrabold">
             <tr>
-              <th className="px-3 py-2">เวลา</th>
-              <th className="px-3 py-2">ประเภท</th>
-              <th className="px-3 py-2">เหตุการณ์</th>
-              <th className="px-3 py-2">หน้า</th>
-              <th className="px-3 py-2">ผู้ใช้</th>
-              <th className="px-3 py-2">หมดอายุ</th>
+              <th scope="col" className="px-3 py-2">
+                เวลา
+              </th>
+              <th scope="col" className="px-3 py-2">
+                ประเภท
+              </th>
+              <th scope="col" className="px-3 py-2">
+                เหตุการณ์
+              </th>
+              <th scope="col" className="px-3 py-2">
+                หน้า
+              </th>
+              <th scope="col" className="px-3 py-2">
+                ผู้ใช้
+              </th>
+              <th scope="col" className="px-3 py-2">
+                หมดอายุ
+              </th>
             </tr>
           </thead>
           <tbody>

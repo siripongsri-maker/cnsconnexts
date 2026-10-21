@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Camera, CheckCircle2, Pencil, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { MissionEmpty } from "@/components/mission-ui";
 import { useStore } from "@/lib/store";
 import { COURSES, type Course } from "@/lib/types";
 import { issueTh, REGION_LABEL } from "@/lib/i18n";
@@ -14,8 +15,7 @@ export const Route = createFileRoute("/submit")({
       { title: "ส่งผลงาน — คนส. Connexts" },
       {
         name: "description",
-        content:
-          "ส่งผลงานโดยใช้ข้อมูลจากโปรไฟล์ของคุณอัตโนมัติ กรอกเฉพาะเรื่องงาน ไม่ต้องกรอกซ้ำ",
+        content: "ส่งผลงานโดยใช้ข้อมูลจากโปรไฟล์ของคุณอัตโนมัติ กรอกเฉพาะเรื่องงาน ไม่ต้องกรอกซ้ำ",
       },
       { property: "og:title", content: "ส่งผลงานของคุณ" },
       { property: "og:description", content: "กรอกเฉพาะเรื่องงาน ข้อมูลส่วนตัวดึงจากโปรไฟล์" },
@@ -117,18 +117,18 @@ function SubmitPage() {
   if (hydrated && !me) {
     return (
       <AppShell title="ส่งผลงาน" subtitle="ต้องมีโปรไฟล์ก่อน">
-        <div className="px-5 py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            เพื่อไม่ให้กรอกข้อมูลซ้ำ เราจะดึงชื่อ ภาค จังหวัด และประเด็นที่คุณทำ จากโปรไฟล์ของคุณ
-            สร้างโปรไฟล์ครั้งเดียวแล้วส่งผลงานได้เลย
-          </p>
+        <MissionEmpty
+          title="ให้เครือข่ายรู้จักงานของคุณ"
+          description="สร้างโปรไฟล์ก่อน แล้วเราจะเติมชื่อ พื้นที่ และประเด็นให้ คุณเล่าเฉพาะเรื่องงานได้เลย"
+          variant="archive"
+        >
           <Link
             to="/onboarding"
             className="tap mt-5 inline-flex items-center justify-center rounded-3xl gradient-power px-6 py-3 text-sm font-extrabold text-primary-foreground"
           >
             สร้างโปรไฟล์ของฉัน
           </Link>
-        </div>
+        </MissionEmpty>
       </AppShell>
     );
   }
@@ -136,7 +136,7 @@ function SubmitPage() {
   if (done) {
     return (
       <AppShell title="ส่งผลงานแล้ว" subtitle="ขอบคุณที่แบ่งปันพลังของคุณ">
-        <div className="px-5 py-10 text-center">
+        <div className="submission-success mission-panel px-5 py-10 text-center">
           <CheckCircle2 className="mx-auto h-14 w-14 text-lime" />
           <h2 className="mt-4 text-xl font-extrabold">บันทึกผลงานเรียบร้อย</h2>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -175,9 +175,9 @@ function SubmitPage() {
 
   return (
     <AppShell title="ส่งผลงาน" subtitle="กรอกเฉพาะเรื่องงาน ข้อมูลอื่นดึงจากโปรไฟล์">
-      <div className="space-y-6 px-5 pb-32 pt-4">
+      <div className="submission-form-grid px-5 pb-32 pt-4">
         {me && (
-          <div className="card-soft rounded-3xl bg-card p-4">
+          <div className="submission-author card-soft rounded-3xl bg-card p-6">
             <div className="flex items-start gap-3">
               <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-accent text-2xl">
                 {me.photo ? (
@@ -220,7 +220,9 @@ function SubmitPage() {
                 key={c}
                 onClick={() => setCourse(c)}
                 className={`tap rounded-2xl border px-4 py-2 text-sm font-bold ${
-                  course === c ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
+                  course === c
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border bg-card"
                 }`}
               >
                 {c}
@@ -228,6 +230,7 @@ function SubmitPage() {
             ))}
           </div>
           <input
+            aria-label="รุ่นที่"
             value={batch}
             onChange={(e) => setBatch(e.target.value)}
             placeholder="รุ่นที่ (เช่น รุ่น 7)"
@@ -237,6 +240,7 @@ function SubmitPage() {
 
         <Field label="สรุปงาน 1–2 บรรทัด">
           <textarea
+            aria-label="สรุปงาน"
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             rows={3}
@@ -248,6 +252,7 @@ function SubmitPage() {
 
         <Field label="ผลงานเด่น 1 ชิ้น">
           <textarea
+            aria-label="ผลงานเด่น"
             value={highlight}
             onChange={(e) => setHighlight(e.target.value)}
             rows={2}
@@ -257,8 +262,9 @@ function SubmitPage() {
           />
         </Field>
 
-        <Field label="สิ่งที่อยากให้เพื่อนมาร่วม (ถ้าเว้นว่าง จะใช้พลังที่คุณต้องการจากโปรไฟล์)">
+        <Field label="ชวนเพื่อนมาร่วมอะไร">
           <textarea
+            aria-label="สิ่งที่อยากชวนเพื่อนมาร่วม"
             value={wanted}
             onChange={(e) => setWanted(e.target.value)}
             rows={2}
@@ -266,6 +272,9 @@ function SubmitPage() {
             placeholder="อยากได้ทักษะ ทรัพยากร หรือเครือข่ายแบบไหน"
             className="input-line resize-none py-3"
           />
+          <p className="mt-2 text-xs text-muted-foreground">
+            เว้นว่างเพื่อใช้พลังที่กำลังมองหาในโปรไฟล์
+          </p>
         </Field>
 
         <Field label="แนบรูปผลงาน (ไม่บังคับ)">
@@ -304,7 +313,7 @@ function SubmitPage() {
           type="button"
           aria-pressed={stageReady}
           onClick={() => setStageReady((v) => !v)}
-          className={`tap flex w-full items-center gap-3 rounded-2xl border p-4 text-left ${
+          className={`submission-stage tap flex w-full items-center gap-3 rounded-2xl border p-5 text-left ${
             stageReady ? "border-lime bg-lime/15" : "border-border bg-card"
           }`}
         >
@@ -322,7 +331,7 @@ function SubmitPage() {
           type="button"
           onClick={submit}
           disabled={!valid}
-          className="tap flex h-14 w-full items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground disabled:opacity-40"
+          className="submission-save tap flex h-14 w-full items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground disabled:opacity-40"
         >
           ส่งผลงาน
         </button>
@@ -333,9 +342,9 @@ function SubmitPage() {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
+    <section className="submission-field mission-panel">
       <p className="mb-2 text-[13px] font-extrabold">{label}</p>
       {children}
-    </div>
+    </section>
   );
 }

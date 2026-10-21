@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
+import { MissionVisual } from "@/components/mission-ui";
 import { LiveNetwork, NetworkBackground } from "@/components/network-background";
 import { useStore, useUserMap } from "@/lib/store";
 import {
@@ -428,7 +429,7 @@ function Dashboard() {
     const needRank = rank("powers_need");
     const haveRank = rank("powers_have");
     return (
-      <main className="relative min-h-dvh overflow-hidden bg-background px-[4vw] py-[3vh] text-foreground">
+      <main className="core-dashboard-present relative min-h-dvh overflow-hidden bg-background px-[4vw] py-[3vh] text-foreground">
         <header className="flex flex-wrap items-center gap-4">
           <div className="min-w-0 flex-1">
             <h1 className="text-[clamp(1.75rem,3.5vw,3.25rem)] font-extrabold leading-tight">
@@ -618,516 +619,528 @@ function Dashboard() {
         ) : undefined
       }
     >
-      <div className="px-5 pt-4">
-        <div className="flex rounded-2xl border border-border bg-card p-1">
-          {(
-            [
-              { k: "organizer", l: "มุมผู้จัด" },
-              { k: "me", l: "มุมของฉัน" },
-            ] as const
-          ).map((t) => (
-            <button
-              key={t.k}
-              type="button"
-              onClick={() => setView(t.k)}
-              aria-pressed={view === t.k}
-              className={`tap h-11 flex-1 rounded-xl text-[13px] font-extrabold transition ${
-                view === t.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-              }`}
-            >
-              {t.l}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="px-5 pt-3">
-        <details
-          open={searchOpen}
-          onToggle={(e) => setSearchOpen(e.currentTarget.open)}
-          className="card-soft"
-        >
-          <summary className="tap flex min-h-11 cursor-pointer items-center justify-between gap-2 px-4 text-sm font-extrabold">
-            <span className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-              ค้นหาและกรอง
-            </span>
-            {activeCount > 0 && (
-              <span className="text-[12px] text-muted-foreground">{activeCount} ตัวกรอง</span>
-            )}
-          </summary>
-
-          <div className="space-y-2 px-3 pb-3">
-            <div className="flex min-w-0 gap-2">
-              <label className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-2xl border border-border bg-card px-3">
-                <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <span className="sr-only">ค้นหาคนในงาน</span>
-                <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="ค้นหาชื่อ องค์กร จังหวัด ประเด็น..."
-                  className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
-                />
-                {q && (
-                  <button
-                    type="button"
-                    aria-label="ล้างคำค้น"
-                    onClick={() => setQ("")}
-                    className="tap -mr-2 grid h-9 w-9 shrink-0 place-items-center rounded-full"
-                  >
-                    <X className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  </button>
-                )}
-              </label>
+      <div className="core-page core-dashboard">
+        <div className="core-dashboard-modes px-5 pt-4">
+          <div className="core-mode-tabs flex rounded-2xl border border-border bg-card p-1">
+            {(
+              [
+                { k: "organizer", l: "มุมผู้จัด" },
+                { k: "me", l: "มุมของฉัน" },
+              ] as const
+            ).map((t) => (
               <button
+                key={t.k}
                 type="button"
-                onClick={() => setShowFilters((v) => !v)}
-                aria-expanded={showFilters}
-                aria-label={activeCount ? `กรอง · เลือกไว้ ${activeCount} รายการ` : undefined}
-                className={`tap flex h-11 shrink-0 items-center gap-1.5 rounded-2xl border px-3 text-[13px] font-extrabold ${
-                  activeCount
-                    ? "border-transparent bg-primary text-primary-foreground"
-                    : "border-border bg-card"
+                onClick={() => setView(t.k)}
+                aria-pressed={view === t.k}
+                className={`tap h-11 flex-1 rounded-xl text-[13px] font-extrabold transition ${
+                  view === t.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 }`}
               >
-                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-                {activeCount ? activeCount : "กรอง"}
+                {t.l}
               </button>
-              <button
-                type="button"
-                onClick={shareCurrentUrl}
-                aria-label="แชร์ลิงก์หน้านี้"
-                title="แชร์ลิงก์หน้าผลลัพธ์ที่ใช้ตัวกรองปัจจุบัน"
-                className="tap flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-[13px] font-extrabold text-primary"
-              >
-                <Share2 className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {showFilters && (
-              <div className="space-y-2 rounded-2xl border border-border bg-background/60 p-3">
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  <select
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
-                    aria-label="ภูมิภาค"
-                    className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
-                  >
-                    <option value="all">ทุกภูมิภาค</option>
-                    {REGIONS.map((r) => (
-                      <option key={r} value={r}>
-                        {REGION_LABEL[r]}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={issue}
-                    onChange={(e) => setIssue(e.target.value)}
-                    aria-label="ประเด็น"
-                    className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
-                  >
-                    <option value="all">ทุกประเด็น</option>
-                    {ISSUES.map((i) => (
-                      <option key={i} value={i}>
-                        {issueTh(i)}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={power}
-                    onChange={(e) => setPower(e.target.value)}
-                    aria-label="ประเภทพลัง"
-                    className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
-                  >
-                    <option value="all">ทุกประเภทพลัง</option>
-                    {POWERS.map((p) => (
-                      <option key={p.key} value={p.key}>
-                        {p.emoji} {p.th}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-1 rounded-xl border border-border bg-background p-1">
-                    {(
-                      [
-                        { k: "any", l: "มี/ต้องการ" },
-                        { k: "have", l: "มีพลังนี้" },
-                        { k: "need", l: "ต้องการพลังนี้" },
-                      ] as const
-                    ).map((m) => (
-                      <button
-                        key={m.k}
-                        type="button"
-                        onClick={() => setPowerMode(m.k)}
-                        aria-pressed={powerMode === m.k}
-                        className={`tap h-9 flex-1 rounded-lg text-xs font-extrabold ${
-                          powerMode === m.k
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {m.l}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={clearFilters}
-                    className="tap h-11 rounded-xl border border-border px-3 text-[12px] font-extrabold text-muted-foreground"
-                  >
-                    ล้าง
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
-                  <p className="text-xs font-bold text-muted-foreground">ชุดตัวกรองที่บันทึกไว้</p>
-                  <button
-                    type="button"
-                    onClick={saveCurrentPreset}
-                    disabled={activeCount === 0}
-                    className="tap flex h-9 items-center gap-1 rounded-lg border border-border px-2 text-xs font-extrabold disabled:opacity-40"
-                  >
-                    <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                    บันทึกชุดนี้
-                  </button>
-                </div>
-                {presets.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    บันทึกตัวกรองเพื่อรับแจ้งเตือนเมื่อมีคนใหม่ที่ตรงเงื่อนไข
-                  </p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {presets.map((p) => (
-                      <span
-                        key={p.id}
-                        className={`flex items-center gap-2 rounded-full border px-2 py-1 text-xs font-extrabold ${
-                          activePresetId === p.id
-                            ? "border-transparent bg-primary text-primary-foreground"
-                            : "border-border bg-background"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => applyPreset(p)}
-                          title={describeFilters(p.filters)}
-                          aria-pressed={activePresetId === p.id}
-                          className="tap min-h-6 px-1"
-                        >
-                          {p.name}
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={
-                            p.alerts ? `ปิดแจ้งเตือนชุด ${p.name}` : `เปิดแจ้งเตือนชุด ${p.name}`
-                          }
-                          aria-pressed={p.alerts}
-                          title={p.alerts ? "แจ้งเตือนเปิดอยู่" : "แจ้งเตือนปิดอยู่"}
-                          onClick={() => toggleAlerts(p.id)}
-                          className="tap relative grid h-6 w-6 place-items-center rounded-full after:absolute after:-inset-2 after:content-['']"
-                        >
-                          {p.alerts ? (
-                            <Bell className="h-3 w-3" aria-hidden="true" />
-                          ) : (
-                            <BellOff className="h-3 w-3 opacity-60" aria-hidden="true" />
-                          )}
-                        </button>
-                        <button
-                          type="button"
-                          aria-label={`ลบชุด ${p.name}`}
-                          onClick={() => removePreset(p.id)}
-                          className="tap relative grid h-6 w-6 place-items-center rounded-full opacity-70 after:absolute after:-inset-2 after:content-['']"
-                        >
-                          <X className="h-3 w-3" aria-hidden="true" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-0.5">
-              <span className="flex shrink-0 items-center gap-1 text-xs font-extrabold text-muted-foreground">
-                <ArrowUpDown className="h-3.5 w-3.5" aria-hidden="true" /> เรียงโดย
+        <div className="core-dashboard-filter px-5 pt-3">
+          <details
+            open={searchOpen}
+            onToggle={(e) => setSearchOpen(e.currentTarget.open)}
+            className="card-soft"
+          >
+            <summary className="tap flex min-h-11 cursor-pointer items-center justify-between gap-2 px-4 text-sm font-extrabold">
+              <span className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                ค้นหาและกรอง
               </span>
-              {SORT_OPTIONS.map((s) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={() => setSort(s.key)}
-                  aria-pressed={sort === s.key}
-                  className={`tap shrink-0 rounded-full border px-2.5 py-1 text-xs font-extrabold ${
-                    sort === s.key
-                      ? "border-transparent bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+              {activeCount > 0 && (
+                <span className="text-[12px] text-muted-foreground">{activeCount} ตัวกรอง</span>
+              )}
+            </summary>
 
-            {activeCount > 0 && (
-              <p className="text-xs font-bold text-muted-foreground">
-                กำลังกรอง · {fUsers.length} คน · {fConnections.length} คู่เชื่อม ·{" "}
-                {fCommitments.length} นัดลงมือทำ
-              </p>
-            )}
-
-            <div className="pt-1">
-              <h2 className="mb-2 text-[13px] font-extrabold text-muted-foreground">
-                ผลการค้นหา · {results.length} คน · เรียงตาม
-                {SORT_OPTIONS.find((s) => s.key === sort)?.label ?? ""}
-              </h2>
-              {results.length === 0 ? (
-                <p className="text-[12px] text-muted-foreground">
-                  ไม่พบคนที่ตรงตัวกรอง ลองล้างหรือเปลี่ยนคำค้น
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {results.slice(0, resultLimit).map((r) => (
-                    <Link
-                      key={r.user.id}
-                      to="/people/$id"
-                      params={{ id: r.user.id }}
-                      className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-2.5"
-                    >
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted text-lg">
-                        {r.user.photo ? (
-                          <img
-                            src={r.user.photo}
-                            alt=""
-                            className="h-10 w-10 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <span aria-hidden="true">{r.user.avatar}</span>
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-baseline gap-2">
-                          <span className="truncate text-[13px] font-extrabold">{r.user.name}</span>
-                          <span className="shrink-0 text-xs font-bold text-muted-foreground">
-                            {REGION_LABEL[r.user.region]}
-                          </span>
-                        </span>
-                        <span className="mt-0.5 flex flex-wrap gap-1">
-                          {r.reasons.map((reason) => (
-                            <span
-                              key={reason}
-                              className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-bold text-muted-foreground"
-                            >
-                              {reason}
-                            </span>
-                          ))}
-                        </span>
-                      </span>
-                      <span className="shrink-0 text-right">
-                        <span className="block font-tech text-sm font-extrabold tabular-nums text-primary">
-                          {r.relevance}%
-                        </span>
-                        <span className="block text-xs font-bold text-muted-foreground">
-                          {r.match != null ? `แมตช์ ${r.match}%` : "ความเกี่ยวข้อง"}
-                        </span>
-                      </span>
-                    </Link>
-                  ))}
-                  {results.length > resultLimit && (
+            <div className="space-y-2 px-3 pb-3">
+              <div className="flex min-w-0 gap-2">
+                <label className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-2xl border border-border bg-card px-3">
+                  <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <span className="sr-only">ค้นหาคนในงาน</span>
+                  <input
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="ค้นหาชื่อ องค์กร จังหวัด ประเด็น..."
+                    className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
+                  />
+                  {q && (
                     <button
                       type="button"
-                      onClick={() => setResultLimit((n) => n + 12)}
-                      className="tap h-11 w-full rounded-2xl border border-border text-[12px] font-extrabold"
+                      aria-label="ล้างคำค้น"
+                      onClick={() => setQ("")}
+                      className="tap -mr-2 grid h-9 w-9 shrink-0 place-items-center rounded-full"
                     >
-                      ดูเพิ่ม ({results.length - resultLimit})
+                      <X className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     </button>
+                  )}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowFilters((v) => !v)}
+                  aria-expanded={showFilters}
+                  aria-label={activeCount ? `กรอง · เลือกไว้ ${activeCount} รายการ` : undefined}
+                  className={`tap flex h-11 shrink-0 items-center gap-1.5 rounded-2xl border px-3 text-[13px] font-extrabold ${
+                    activeCount
+                      ? "border-transparent bg-primary text-primary-foreground"
+                      : "border-border bg-card"
+                  }`}
+                >
+                  <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                  {activeCount ? activeCount : "กรอง"}
+                </button>
+                <button
+                  type="button"
+                  onClick={shareCurrentUrl}
+                  aria-label="แชร์ลิงก์หน้านี้"
+                  title="แชร์ลิงก์หน้าผลลัพธ์ที่ใช้ตัวกรองปัจจุบัน"
+                  className="tap flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-[13px] font-extrabold text-primary"
+                >
+                  <Share2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+
+              {showFilters && (
+                <div className="space-y-2 rounded-2xl border border-border bg-background/60 p-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    <select
+                      value={region}
+                      onChange={(e) => setRegion(e.target.value)}
+                      aria-label="ภูมิภาค"
+                      className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
+                    >
+                      <option value="all">ทุกภูมิภาค</option>
+                      {REGIONS.map((r) => (
+                        <option key={r} value={r}>
+                          {REGION_LABEL[r]}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={issue}
+                      onChange={(e) => setIssue(e.target.value)}
+                      aria-label="ประเด็น"
+                      className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
+                    >
+                      <option value="all">ทุกประเด็น</option>
+                      {ISSUES.map((i) => (
+                        <option key={i} value={i}>
+                          {issueTh(i)}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={power}
+                      onChange={(e) => setPower(e.target.value)}
+                      aria-label="ประเภทพลัง"
+                      className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
+                    >
+                      <option value="all">ทุกประเภทพลัง</option>
+                      {POWERS.map((p) => (
+                        <option key={p.key} value={p.key}>
+                          {p.emoji} {p.th}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-1 rounded-xl border border-border bg-background p-1">
+                      {(
+                        [
+                          { k: "any", l: "มี/ต้องการ" },
+                          { k: "have", l: "มีพลังนี้" },
+                          { k: "need", l: "ต้องการพลังนี้" },
+                        ] as const
+                      ).map((m) => (
+                        <button
+                          key={m.k}
+                          type="button"
+                          onClick={() => setPowerMode(m.k)}
+                          aria-pressed={powerMode === m.k}
+                          className={`tap h-9 flex-1 rounded-lg text-xs font-extrabold ${
+                            powerMode === m.k
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {m.l}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="tap h-11 rounded-xl border border-border px-3 text-[12px] font-extrabold text-muted-foreground"
+                    >
+                      ล้าง
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
+                    <p className="text-xs font-bold text-muted-foreground">
+                      ชุดตัวกรองที่บันทึกไว้
+                    </p>
+                    <button
+                      type="button"
+                      onClick={saveCurrentPreset}
+                      disabled={activeCount === 0}
+                      className="tap flex h-9 items-center gap-1 rounded-lg border border-border px-2 text-xs font-extrabold disabled:opacity-40"
+                    >
+                      <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
+                      บันทึกชุดนี้
+                    </button>
+                  </div>
+                  {presets.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      บันทึกตัวกรองเพื่อรับแจ้งเตือนเมื่อมีคนใหม่ที่ตรงเงื่อนไข
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {presets.map((p) => (
+                        <span
+                          key={p.id}
+                          className={`flex items-center gap-2 rounded-full border px-2 py-1 text-xs font-extrabold ${
+                            activePresetId === p.id
+                              ? "border-transparent bg-primary text-primary-foreground"
+                              : "border-border bg-background"
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => applyPreset(p)}
+                            title={describeFilters(p.filters)}
+                            aria-pressed={activePresetId === p.id}
+                            className="tap min-h-6 px-1"
+                          >
+                            {p.name}
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={
+                              p.alerts ? `ปิดแจ้งเตือนชุด ${p.name}` : `เปิดแจ้งเตือนชุด ${p.name}`
+                            }
+                            aria-pressed={p.alerts}
+                            title={p.alerts ? "แจ้งเตือนเปิดอยู่" : "แจ้งเตือนปิดอยู่"}
+                            onClick={() => toggleAlerts(p.id)}
+                            className="tap relative grid h-6 w-6 place-items-center rounded-full after:absolute after:-inset-2 after:content-['']"
+                          >
+                            {p.alerts ? (
+                              <Bell className="h-3 w-3" aria-hidden="true" />
+                            ) : (
+                              <BellOff className="h-3 w-3 opacity-60" aria-hidden="true" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={`ลบชุด ${p.name}`}
+                            onClick={() => removePreset(p.id)}
+                            className="tap relative grid h-6 w-6 place-items-center rounded-full opacity-70 after:absolute after:-inset-2 after:content-['']"
+                          >
+                            <X className="h-3 w-3" aria-hidden="true" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
               )}
-            </div>
-          </div>
-        </details>
-      </div>
 
-      <div className="px-5 py-4">
-        <div className="relative overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground">
-          <div className="absolute inset-0 text-white/70">
-            <NetworkBackground count={20} seed={12} />
-          </div>
-          <div className="relative flex items-center gap-2 pb-3 text-[13px] font-bold">
-            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-lime animate-pulse-node" />
-            LIVE
-          </div>
-          <div className="relative pb-4">
-            <RotatingPrompt />
-          </div>
-          <div className="relative grid grid-cols-2 gap-4">
-            {view === "organizer" ? (
-              <>
-                <Big n={stats.people} label="คน" />
-                <Big n={stats.connections} label="คู่เชื่อม" />
-                <Big n={stats.ideas} label="ไอเดีย" />
-                <Big n={stats.commitments} label="นัดลงมือทำ" />
-              </>
-            ) : (
-              <>
-                <Big n={mine?.conns.length ?? 0} label="คู่เชื่อมของฉัน" />
-                <Big n={mine?.comms.length ?? 0} label="นัดลงมือทำ" />
-                <Big n={mine?.active ?? 0} label="กำลังทำ" />
-                <Big n={mine?.done ?? 0} label="สำเร็จแล้ว" />
-              </>
-            )}
+              <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-0.5">
+                <span className="flex shrink-0 items-center gap-1 text-xs font-extrabold text-muted-foreground">
+                  <ArrowUpDown className="h-3.5 w-3.5" aria-hidden="true" /> เรียงโดย
+                </span>
+                {SORT_OPTIONS.map((s) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => setSort(s.key)}
+                    aria-pressed={sort === s.key}
+                    className={`tap shrink-0 rounded-full border px-2.5 py-1 text-xs font-extrabold ${
+                      sort === s.key
+                        ? "border-transparent bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground"
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
+              {activeCount > 0 && (
+                <p className="text-xs font-bold text-muted-foreground">
+                  กำลังกรอง · {fUsers.length} คน · {fConnections.length} คู่เชื่อม ·{" "}
+                  {fCommitments.length} นัดลงมือทำ
+                </p>
+              )}
+
+              <div className="pt-1">
+                <h2 className="mb-2 text-[13px] font-extrabold text-muted-foreground">
+                  ผลการค้นหา · {results.length} คน · เรียงตาม
+                  {SORT_OPTIONS.find((s) => s.key === sort)?.label ?? ""}
+                </h2>
+                {results.length === 0 ? (
+                  <p className="text-[12px] text-muted-foreground">
+                    ไม่พบคนที่ตรงตัวกรอง ลองล้างหรือเปลี่ยนคำค้น
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {results.slice(0, resultLimit).map((r) => (
+                      <Link
+                        key={r.user.id}
+                        to="/people/$id"
+                        params={{ id: r.user.id }}
+                        className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-2.5"
+                      >
+                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted text-lg">
+                          {r.user.photo ? (
+                            <img
+                              src={r.user.photo}
+                              alt=""
+                              className="h-10 w-10 rounded-xl object-cover"
+                            />
+                          ) : (
+                            <span aria-hidden="true">{r.user.avatar}</span>
+                          )}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-baseline gap-2">
+                            <span className="truncate text-[13px] font-extrabold">
+                              {r.user.name}
+                            </span>
+                            <span className="shrink-0 text-xs font-bold text-muted-foreground">
+                              {REGION_LABEL[r.user.region]}
+                            </span>
+                          </span>
+                          <span className="mt-0.5 flex flex-wrap gap-1">
+                            {r.reasons.map((reason) => (
+                              <span
+                                key={reason}
+                                className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-bold text-muted-foreground"
+                              >
+                                {reason}
+                              </span>
+                            ))}
+                          </span>
+                        </span>
+                        <span className="shrink-0 text-right">
+                          <span className="block font-tech text-sm font-extrabold tabular-nums text-primary">
+                            {r.relevance}%
+                          </span>
+                          <span className="block text-xs font-bold text-muted-foreground">
+                            {r.match != null ? `แมตช์ ${r.match}%` : "ความเกี่ยวข้อง"}
+                          </span>
+                        </span>
+                      </Link>
+                    ))}
+                    {results.length > resultLimit && (
+                      <button
+                        type="button"
+                        onClick={() => setResultLimit((n) => n + 12)}
+                        className="tap h-11 w-full rounded-2xl border border-border text-[12px] font-extrabold"
+                      >
+                        ดูเพิ่ม ({results.length - resultLimit})
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div className="core-dashboard-overview px-5 py-4">
+          <div className="core-live-metrics relative overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground">
+            <div className="absolute inset-0 text-white/70">
+              <NetworkBackground count={20} seed={12} />
+            </div>
+            <div className="relative flex items-center gap-2 pb-3 text-[13px] font-bold">
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 rounded-full bg-lime animate-pulse-node"
+              />
+              LIVE
+            </div>
+            <div className="relative pb-4">
+              <RotatingPrompt />
+            </div>
+            <div className="core-live-metric-grid relative grid grid-cols-2 gap-4">
+              {view === "organizer" ? (
+                <>
+                  <Big n={stats.people} label="คน" />
+                  <Big n={stats.connections} label="คู่เชื่อม" />
+                  <Big n={stats.ideas} label="ไอเดีย" />
+                  <Big n={stats.commitments} label="นัดลงมือทำ" />
+                </>
+              ) : (
+                <>
+                  <Big n={mine?.conns.length ?? 0} label="คู่เชื่อมของฉัน" />
+                  <Big n={mine?.comms.length ?? 0} label="นัดลงมือทำ" />
+                  <Big n={mine?.active ?? 0} label="กำลังทำ" />
+                  <Big n={mine?.done ?? 0} label="สำเร็จแล้ว" />
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="space-y-3 px-5 pb-6">
-        {view === "organizer" && (
-          <>
-            <section className="card-soft p-4">
-              <h2 className="text-[15px] font-extrabold">เครือข่ายที่เกิดขึ้น</h2>
-              <p className="mt-0.5 text-[12px] text-muted-foreground">
-                {fConnections.length} คู่ในแผนที่นี้
-              </p>
-              <div className="mx-auto mt-3 aspect-[5/8] max-h-[420px] w-full">
-                <LiveNetwork
-                  users={fUsers}
-                  connections={fConnections}
-                  className="h-full"
-                  emptyAction={
-                    <Link
-                      to="/matches"
-                      className="tap inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-[13px] font-extrabold text-primary-foreground"
-                    >
-                      หาคนที่ใช่
-                    </Link>
-                  }
-                />
-              </div>
-            </section>
-
-            <Panel title="ประเด็นยอดนิยม">
-              {topIssues.map(([issue, count]) => (
-                <Bar
-                  key={issue}
-                  label={issueTh(issue)}
-                  value={count}
-                  max={topIssues[0]![1]}
-                  tone="primary"
-                />
-              ))}
-            </Panel>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <Panel title="พลังที่ยังตามหา">
-                {needRank.map(([p, c]) => (
-                  <Bar
-                    key={p}
-                    label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
-                    value={c}
-                    max={needRank[0]![1]}
-                    tone="coral"
-                  />
-                ))}
-              </Panel>
-              <Panel title="พลังพร้อมแบ่งปัน">
-                {haveRank.map(([p, c]) => (
-                  <Bar
-                    key={p}
-                    label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
-                    value={c}
-                    max={haveRank[0]![1]}
-                    tone="lime"
-                  />
-                ))}
-              </Panel>
-            </div>
-
-            <Panel title="คู่เชื่อมแต่ละภาค">
-              {byRegion.map((r) => (
-                <Bar
-                  key={r.region}
-                  label={REGION_LABEL[r.region]}
-                  value={r.count}
-                  max={maxRegion}
-                  tone="electric"
-                />
-              ))}
-            </Panel>
-
-            {feedPanel}
-            {progressPanel}
-          </>
-        )}
-
-        {view === "me" && (
-          <>
-            {!me && (
-              <section className="card-soft p-5 text-center">
-                <p className="text-sm font-bold">ยังไม่มีโปรไฟล์ในเครื่องนี้</p>
-                <p className="mt-1 text-[13px] text-muted-foreground">
-                  สร้างโปรไฟล์เพื่อดูคู่เชื่อมของคุณ
+        <div className="core-dashboard-grid px-5 pb-6">
+          {view === "organizer" && (
+            <>
+              <section className="core-network-panel card-soft p-4">
+                <p className="mission-kicker">LIVE CONNECTIONS</p>
+                <h2 className="text-[15px] font-extrabold">เครือข่ายที่เกิดขึ้น</h2>
+                <p className="mt-0.5 text-[12px] text-muted-foreground">
+                  {fConnections.length} คู่ในแผนที่นี้
                 </p>
-                <Link
-                  to="/onboarding"
-                  className="tap mt-4 inline-flex h-12 items-center justify-center rounded-2xl gradient-power px-6 text-sm font-extrabold text-primary-foreground"
-                >
-                  สร้างโปรไฟล์
-                </Link>
+                <div className="core-live-network mx-auto mt-3 aspect-[5/8] max-h-[420px] w-full">
+                  <LiveNetwork
+                    users={fUsers}
+                    connections={fConnections}
+                    className="h-full"
+                    emptyAction={
+                      <Link
+                        to="/matches"
+                        className="tap inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-[13px] font-extrabold text-primary-foreground"
+                      >
+                        หาคนที่ใช่
+                      </Link>
+                    }
+                  />
+                </div>
               </section>
-            )}
 
-            <LiveProgress />
-
-            {mine && (
-              <Panel title="คู่เชื่อมของฉัน">
-                {mine.conns.length === 0 && (
-                  <p className="text-[13px] text-muted-foreground">
-                    ยังไม่มีคู่เชื่อม — ไปหาคนที่ใช่กันก่อน
-                  </p>
-                )}
-                {mine.conns.map((c) => {
-                  const other = userMap[c.user_a === me?.id ? c.user_b : c.user_a];
-                  return (
-                    <Link
-                      key={c.id}
-                      to="/connection/$id"
-                      params={{ id: c.id }}
-                      className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-3"
-                    >
-                      <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/12 text-primary">
-                        <Users className="h-4 w-4" aria-hidden="true" />
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate text-[13px] font-bold">
-                          {other?.name ?? "ผู้เข้าร่วม"}
-                        </p>
-                        <p className="truncate text-[12px] text-muted-foreground">
-                          แมตช์ {c.match_score}% · {STATUS_TH[c.status]}
-                        </p>
-                      </div>
-                      <Sparkles
-                        className="ml-auto h-4 w-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    </Link>
-                  );
-                })}
-                <Link
-                  to="/matches"
-                  className="tap mt-1 flex h-12 items-center justify-center gap-2 rounded-2xl border border-border text-sm font-extrabold"
-                >
-                  <Activity className="h-4 w-4" aria-hidden="true" /> หาคู่เชื่อมเพิ่ม
-                </Link>
+              <Panel title="ประเด็นยอดนิยม">
+                {topIssues.map(([issue, count]) => (
+                  <Bar
+                    key={issue}
+                    label={issueTh(issue)}
+                    value={count}
+                    max={topIssues[0]![1]}
+                    tone="primary"
+                  />
+                ))}
               </Panel>
-            )}
 
-            {feedPanel}
-            {progressPanel}
-          </>
-        )}
+              <div className="core-resource-panels grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Panel title="พลังที่ยังตามหา">
+                  {needRank.map(([p, c]) => (
+                    <Bar
+                      key={p}
+                      label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                      value={c}
+                      max={needRank[0]![1]}
+                      tone="coral"
+                    />
+                  ))}
+                </Panel>
+                <Panel title="พลังพร้อมแบ่งปัน">
+                  {haveRank.map(([p, c]) => (
+                    <Bar
+                      key={p}
+                      label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                      value={c}
+                      max={haveRank[0]![1]}
+                      tone="lime"
+                    />
+                  ))}
+                </Panel>
+              </div>
 
-        <LiveTicker toastOnly />
+              <Panel title="คู่เชื่อมแต่ละภาค">
+                {byRegion.map((r) => (
+                  <Bar
+                    key={r.region}
+                    label={REGION_LABEL[r.region]}
+                    value={r.count}
+                    max={maxRegion}
+                    tone="electric"
+                  />
+                ))}
+              </Panel>
+
+              {feedPanel}
+              {progressPanel}
+            </>
+          )}
+
+          {view === "me" && (
+            <>
+              {!me && (
+                <section className="core-empty mission-empty">
+                  <MissionVisual variant="profile" className="core-empty-visual" />
+                  <p className="mission-kicker">YOUR PERSONAL VIEW</p>
+                  <p className="text-sm font-bold">ยังไม่มีโปรไฟล์ในเครื่องนี้</p>
+                  <p className="mt-1 text-[13px] text-muted-foreground">
+                    สร้างโปรไฟล์เพื่อดูคู่เชื่อมของคุณ
+                  </p>
+                  <Link
+                    to="/onboarding"
+                    className="tap mt-4 inline-flex h-12 items-center justify-center rounded-2xl gradient-power px-6 text-sm font-extrabold text-primary-foreground"
+                  >
+                    สร้างโปรไฟล์
+                  </Link>
+                </section>
+              )}
+
+              <LiveProgress />
+
+              {mine && (
+                <Panel title="คู่เชื่อมของฉัน">
+                  {mine.conns.length === 0 && (
+                    <p className="text-[13px] text-muted-foreground">
+                      ยังไม่มีคู่เชื่อม — ไปหาคนที่ใช่กันก่อน
+                    </p>
+                  )}
+                  {mine.conns.map((c) => {
+                    const other = userMap[c.user_a === me?.id ? c.user_b : c.user_a];
+                    return (
+                      <Link
+                        key={c.id}
+                        to="/connection/$id"
+                        params={{ id: c.id }}
+                        className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-3"
+                      >
+                        <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/12 text-primary">
+                          <Users className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-bold">
+                            {other?.name ?? "ผู้เข้าร่วม"}
+                          </p>
+                          <p className="truncate text-[12px] text-muted-foreground">
+                            แมตช์ {c.match_score}% · {STATUS_TH[c.status]}
+                          </p>
+                        </div>
+                        <Sparkles
+                          className="ml-auto h-4 w-4 shrink-0 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    );
+                  })}
+                  <Link
+                    to="/matches"
+                    className="tap mt-1 flex h-12 items-center justify-center gap-2 rounded-2xl border border-border text-sm font-extrabold"
+                  >
+                    <Activity className="h-4 w-4" aria-hidden="true" /> หาคู่เชื่อมเพิ่ม
+                  </Link>
+                </Panel>
+              )}
+
+              {feedPanel}
+              {progressPanel}
+            </>
+          )}
+
+          <LiveTicker toastOnly />
+        </div>
       </div>
     </AppShell>
   );
@@ -1136,7 +1149,7 @@ function Dashboard() {
 function BigCard({ n, label }: { n: number; label: string }) {
   const v = useCountUp(n);
   return (
-    <div className="card-soft rounded-3xl p-[2vw]">
+    <div className="core-screen-stat card-soft rounded-3xl p-[2vw]">
       <p
         key={n}
         className="font-tech animate-pop text-[clamp(3rem,8vw,9rem)] font-extrabold leading-none text-primary"
@@ -1173,7 +1186,7 @@ function Panel({
   size?: "md" | "lg";
 }) {
   return (
-    <section className="card-soft p-4">
+    <section className="core-data-panel card-soft p-4">
       <h2
         className={`mb-3 font-extrabold ${
           size === "lg" ? "text-[20px] text-foreground" : "text-[13px] text-muted-foreground"
@@ -1181,7 +1194,16 @@ function Panel({
       >
         {title}
       </h2>
-      <div className="space-y-2">{children}</div>
+      <div className="core-data-panel-body space-y-2">
+        {Array.isArray(children) && children.length === 0 ? (
+          <div className="core-data-empty">
+            <span aria-hidden="true">—</span>
+            <p>ข้อมูลจะแสดงเมื่อมีการร่วมกิจกรรม</p>
+          </div>
+        ) : (
+          children
+        )}
+      </div>
     </section>
   );
 }

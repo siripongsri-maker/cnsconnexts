@@ -21,7 +21,9 @@ export function IdeaForm({ idea, onClose }: Props) {
   const [have, setHave] = useState<string[]>(idea?.resources_have ?? []);
   const [need, setNeed] = useState<string[]>(idea?.resources_need ?? []);
   const [sending, setSending] = useState(false);
-  const [errors, setErrors] = useState<{ title?: string | undefined; need?: string | undefined }>({});
+  const [errors, setErrors] = useState<{ title?: string | undefined; need?: string | undefined }>(
+    {},
+  );
   const dialogRef = useRef<HTMLDivElement>(null);
   const needGroupRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -57,7 +59,13 @@ export function IdeaForm({ idea, onClose }: Props) {
       if (nextErrors.title) {
         document.getElementById("idea-title")?.focus();
       } else {
-        needGroupRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const motionOff =
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          document.documentElement.hasAttribute("data-lowspec");
+        needGroupRef.current?.scrollIntoView({
+          behavior: motionOff ? "instant" : "smooth",
+          block: "center",
+        });
         needGroupRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
       }
       return;
@@ -94,7 +102,7 @@ export function IdeaForm({ idea, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="idea-form-title"
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-card px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none sm:rounded-3xl"
+        className="core-idea-form max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-card px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none sm:rounded-3xl"
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 id="idea-form-title" className="text-lg font-extrabold">
@@ -129,7 +137,11 @@ export function IdeaForm({ idea, onClose }: Props) {
           }`}
         />
         {errors.title ? (
-          <p id="idea-title-err" role="alert" className="mt-1 mb-3 text-[12px] font-semibold text-destructive">
+          <p
+            id="idea-title-err"
+            role="alert"
+            className="mt-1 mb-3 text-[12px] font-semibold text-destructive"
+          >
             {errors.title}
           </p>
         ) : (
@@ -166,7 +178,11 @@ export function IdeaForm({ idea, onClose }: Props) {
 
         <Section label="พลังที่เรามีให้">
           {POWERS.map((p) => (
-            <Pill key={p.key} active={have.includes(p.key)} onClick={() => toggle(have, setHave, p.key)}>
+            <Pill
+              key={p.key}
+              active={have.includes(p.key)}
+              onClick={() => toggle(have, setHave, p.key)}
+            >
               {p.emoji} {p.th}
             </Pill>
           ))}

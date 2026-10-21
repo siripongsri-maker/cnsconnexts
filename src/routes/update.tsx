@@ -5,6 +5,7 @@ import { Check, LogOut, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
+import { MissionEmpty } from "@/components/mission-ui";
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
@@ -56,7 +57,7 @@ function SignOutButton() {
       className="tap mx-auto mt-6 flex min-h-11 items-center gap-2 px-4 text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
     >
       <LogOut className="h-4 w-4" aria-hidden />
-      ออกจากระบบ · <span lang="en">Sign out</span>
+      ออกจากระบบ
     </button>
   );
 }
@@ -102,18 +103,18 @@ function UpdateMe() {
     return (
       <AppShell title="อัปเดตข้อมูลของฉัน" subtitle="ยังไม่พบโปรไฟล์ในเครื่องนี้">
         <div className="px-5 py-8">
-          <div className="card-soft rounded-3xl bg-card p-6 text-center">
-            <QrCode className="mx-auto h-9 w-9 text-primary" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              คุณยังไม่มีโปรไฟล์ในเครื่องนี้ สร้างโปรไฟล์ครั้งเดียว แล้วกลับมาแก้ไขได้ทุกเมื่อ
-            </p>
+          <MissionEmpty
+            title="เริ่มต้นจากพลังของคุณ"
+            description="สร้างโปรไฟล์ครั้งเดียว แล้วกลับมาแก้ไขได้ตลอดงาน"
+            variant="profile"
+          >
             <Link
               to="/onboarding"
               className="tap mt-5 inline-flex items-center justify-center rounded-3xl gradient-power px-6 py-3 text-sm font-extrabold text-primary-foreground"
             >
               สร้างโปรไฟล์ของฉัน
             </Link>
-          </div>
+          </MissionEmpty>
           <SignOutButton />
         </div>
       </AppShell>
@@ -122,8 +123,8 @@ function UpdateMe() {
 
   return (
     <AppShell title="โปรไฟล์ของฉัน" subtitle="แก้ไขได้ตลอดงาน แล้วกดบันทึก">
-      <div className="space-y-5 px-5 py-5">
-        <div className="card-soft rounded-3xl bg-card p-4">
+      <div className="profile-update-page space-y-5 px-5 py-5">
+        <div className="profile-sync-status card-soft rounded-3xl bg-card p-6">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -156,7 +157,10 @@ function UpdateMe() {
         </div>
 
         {hydrated && me && !formReady && (
-          <p role="status" className="card-soft rounded-3xl p-5 text-center text-sm font-semibold text-muted-foreground">
+          <p
+            role="status"
+            className="card-soft rounded-3xl p-5 text-center text-sm font-semibold text-muted-foreground"
+          >
             กำลังโหลดรูปโปรไฟล์ของคุณ…
           </p>
         )}
@@ -171,7 +175,10 @@ function UpdateMe() {
               try {
                 await saveProfile({ ...draft, source: session?.source });
                 setSaved(true);
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                const motionOff =
+                  window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+                  document.documentElement.hasAttribute("data-lowspec");
+                window.scrollTo({ top: 0, behavior: motionOff ? "instant" : "smooth" });
                 setTimeout(() => setSaved(false), 4000);
               } catch (err) {
                 console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", err);
@@ -181,9 +188,9 @@ function UpdateMe() {
           />
         )}
 
-        <div className="card-soft flex items-center gap-4 rounded-3xl bg-card p-4">
-          <div className="rounded-2xl bg-background p-2">
-            <QRCodeSVG value={qrUrl} size={84} />
+        <div className="profile-qr-card card-soft flex items-center gap-5 rounded-3xl bg-card p-6">
+          <div className="shrink-0 bg-white p-3">
+            <QRCodeSVG value={qrUrl} size={84} bgColor="#ffffff" fgColor="#07101b" />
           </div>
           <div className="min-w-0">
             <p className="text-[13px] font-extrabold">QR ของฉัน</p>

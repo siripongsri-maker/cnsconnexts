@@ -1,8 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, Link2, Sparkles, UserCircle2, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Link2, UserCircle2 } from "lucide-react";
+import { MissionHeader, MissionVisual } from "@/components/mission-ui";
+import { Wordmark } from "@/components/wordmark";
 
-import { createSession, getSession, sourceFromSearch, type ParticipantSession } from "@/lib/session";
+import {
+  createSession,
+  getSession,
+  sourceFromSearch,
+  type ParticipantSession,
+} from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import { INTRO_KEY } from "@/components/intro-guide";
@@ -29,9 +36,9 @@ export const Route = createFileRoute("/start")({
 });
 
 const STEPS = [
-  { t: "บอกว่าคุณคือใคร", d: "ชื่อ รูป ภาค/จังหวัด" },
-  { t: "เลือกประเด็นที่สนใจ", d: "เพื่อหาเพื่อนร่วมประเด็น" },
-  { t: "สิ่งที่ให้ได้ / สิ่งที่ต้องการ", d: "หัวใจของการจับคู่พลัง" },
+  { t: "บอกตัวตน", d: "ชื่อและพื้นที่ของคุณ" },
+  { t: "เลือกประเด็น", d: "เรื่องที่คุณใส่ใจ" },
+  { t: "แบ่งปันพลัง", d: "สิ่งที่มีให้และกำลังมองหา" },
 ];
 
 function StartPage() {
@@ -40,7 +47,9 @@ function StartPage() {
   const { me, hydrated } = useStore();
   const [session, setSession] = useState<ParticipantSession | null>(null);
 
-  const entrySource = sourceFromSearch(new URLSearchParams(window.location.search));
+  const entrySource = sourceFromSearch(
+    new URLSearchParams(typeof window === "undefined" ? "" : window.location.search),
+  );
 
   useEffect(() => {
     setSession(getSession() ?? createSession(entrySource, null));
@@ -70,80 +79,76 @@ function StartPage() {
   };
 
   return (
-    <div className="relative min-h-screen px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]">
-      <div className="relative z-10 mx-auto flex max-w-xl flex-col animate-rise">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-lime/40 bg-card/80 px-3 py-1.5 text-xs font-bold text-primary backdrop-blur">
-          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-          เข้าห้องสำเร็จ
-        </span>
-
-        <h1 className="mt-4 text-[clamp(1.9rem,8vw,2.6rem)] font-extrabold leading-tight">
-          <span className="text-foreground">
-            เริ่มสร้าง <span lang="en">Power Profile</span>
-          </span>
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          ไม่ต้องล็อกอิน ใช้เวลาประมาณ 2 นาที แล้วระบบจะจับคู่คนที่คุณควรเจอในงานนี้ให้ทันที
-        </p>
-
-        {session && (
-          <p className="mt-3 text-xs font-bold text-muted-foreground">
-            ห้อง {session.code ?? "NHA26"}
-          </p>
-        )}
-
-        <ol className="card-soft mt-6 space-y-4 rounded-3xl bg-card p-5">
-          {STEPS.map((s, i) => (
-            <li key={s.t} className="flex items-start gap-3">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary/12 text-[12px] font-extrabold text-primary">
-                {i + 1}
-              </span>
-              <span>
-                <span className="block text-sm font-bold">{s.t}</span>
-                <span className="block text-[12px] text-muted-foreground">{s.d}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
-
-        <button
-          type="button"
-          onClick={begin}
-          className="tap mt-5 flex h-16 items-center justify-between rounded-3xl cta-holo px-6 text-primary-foreground"
-        >
-          <span className="text-left">
-            <span className="block text-base font-extrabold">
-              {hydrated && me ? "แก้ไข Power Profile ของฉัน" : "เริ่มสร้าง Power Profile"}
-            </span>
-            <span className="block text-[12px] opacity-90">ไม่ต้องล็อกอิน · เริ่มเลย</span>
-          </span>
-          <Zap className="h-5 w-5 shrink-0" aria-hidden />
-        </button>
-
-        <div className="card-soft mt-5 rounded-3xl bg-card p-5">
-          <div className="flex items-center gap-2 text-sm font-bold">
-            <Link2 className="h-4 w-4 text-primary" aria-hidden />
-            ผูกบัญชีทีหลังก็ได้
-          </div>
-          <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">
-            ไม่ต้องสมัครก็ใช้ได้ โปรไฟล์ผูกกับเครื่องนี้ไว้ก่อน (เพื่อนในงานจะเห็นโปรไฟล์เพื่อจับคู่)
-            เมื่อพร้อมค่อยเชื่อมกับอีเมลหรือ Google เพื่อใช้ต่อในเครื่องอื่น —
-            โปรไฟล์ที่กรอกไว้จะถูกย้ายไปให้อัตโนมัติ
-          </p>
-          <Link
-            to="/auth"
-            className="tap mt-3 inline-flex h-11 items-center gap-2 rounded-2xl border border-border bg-background px-4 text-[13px] font-bold"
-          >
-            <UserCircle2 className="h-4 w-4" aria-hidden />
-            ผูกบัญชีตอนนี้
+    <div className="focused-page access-page min-h-screen">
+      <header className="focused-topbar">
+        <div className="focused-topbar-inner">
+          <Link to="/" className="focused-back-link tap" aria-label="กลับหน้าแรก">
+            <ArrowLeft className="h-4 w-4" aria-hidden />
+            <Wordmark size="sm" />
           </Link>
+          <span className="focused-system-label">JOIN / CONNEXTS</span>
         </div>
-
-        <p className="mt-5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" aria-hidden />
-          เชื่อมคน · เชื่อมไอเดีย · เชื่อมพื้นที่
-        </p>
-      </div>
+      </header>
+      <main className="focused-content">
+        <MissionHeader
+          kicker="WELCOME TO THE NETWORK"
+          title={
+            <>
+              พร้อมเชื่อมพลัง
+              <br />
+              ในแบบของคุณ
+            </>
+          }
+          description="สร้างโปรไฟล์ครั้งเดียว แล้วพบคนที่ควรเจอ"
+          number="01"
+          variant="network"
+        />
+        <div className="access-layout">
+          <section className="mission-panel access-steps-panel">
+            <div className="access-ready-label">
+              <CheckCircle2 className="h-4 w-4" aria-hidden />
+              <span>เข้าห้องสำเร็จ</span>
+              {session && <span className="access-room">{session.code ?? "NHA26"}</span>}
+            </div>
+            <h2>2 นาที เพื่อก้าวต่อไป</h2>
+            <ol className="access-steps">
+              {STEPS.map((step, index) => (
+                <li key={step.t}>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3>{step.t}</h3>
+                    <p>{step.d}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </li>
+              ))}
+            </ol>
+            <button type="button" onClick={begin} className="tap focused-primary-action">
+              <span>{hydrated && me ? "แก้ไขโปรไฟล์ของฉัน" : "เริ่มสร้างโปรไฟล์"}</span>
+              <ArrowRight className="h-5 w-5" aria-hidden />
+            </button>
+            <p className="access-action-note" role="status">
+              กำลังพาคุณไปต่อ · ไม่ต้องล็อกอิน
+            </p>
+          </section>
+          <aside className="access-network-panel">
+            <MissionVisual variant="network" />
+            <div className="access-account-note">
+              <Link2 className="h-5 w-5" aria-hidden />
+              <div>
+                <h2>เริ่มเลย ผูกบัญชีทีหลัง</h2>
+                <p>
+                  ผู้เยี่ยมชมเก็บโปรไฟล์ในเครื่องนี้ ผูกอีเมลหรือ Google เพื่อใช้ต่อข้ามอุปกรณ์ได้
+                </p>
+                <Link to="/auth" className="tap">
+                  <UserCircle2 className="h-4 w-4" aria-hidden /> ผูกบัญชีตอนนี้{" "}
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
     </div>
   );
 }

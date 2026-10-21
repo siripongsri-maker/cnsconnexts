@@ -1,3 +1,4 @@
+import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Save, Trash2 } from "lucide-react";
@@ -8,14 +9,19 @@ import { issueTh, REGION_LABEL } from "@/lib/i18n";
 import { ISSUES, REGIONS, type Idea, type Region } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/ideas")({
-  head: () => ({ meta: [
-    { title: "จัดการไอเดีย — คนส. Connexts" },
-    { name: "description", content: "จัดการไอเดียสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "จัดการไอเดีย — คนส. Connexts" },
-    { property: "og:description", content: "จัดการไอเดียสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "จัดการไอเดีย — คนส. Connexts" },
+      { name: "description", content: "จัดการไอเดียสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "จัดการไอเดีย — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "จัดการไอเดียสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminIdeas,
 });
 
@@ -29,13 +35,20 @@ function AdminIdeas() {
   const ownerName = (id: string) => users.find((u) => u.id === id)?.name ?? "ไม่ระบุ";
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-[18px] font-extrabold">จัดการไอเดียในตลาดนัด</h1>
-        <p className="text-[12px] text-muted-foreground">แก้ไขหัวข้อ รายละเอียด ภูมิภาค และประเด็น · {ideas.length} ไอเดีย</p>
-      </header>
+    <div className="admin-workspace admin-workspace-ideas space-y-4">
+      <div className="admin-section-meta">
+        <span>รายการไอเดีย</span>
+        <span>{ideas.length} ไอเดีย</span>
+      </div>
 
-      <ul className="space-y-3">
+      {ideas.length === 0 && (
+        <MissionEmpty
+          className="admin-empty"
+          title="ยังไม่มีไอเดีย"
+          description="ไอเดียที่สมาชิกส่งเข้ามาจะปรากฏที่นี่"
+        />
+      )}
+      <ul className="admin-records space-y-3">
         {ideas.map((idea) => {
           const editing = openId === idea.id && draft;
           return (
@@ -55,7 +68,9 @@ function AdminIdeas() {
                   }}
                 >
                   <p className="break-words text-sm font-extrabold">{idea.title}</p>
-                  <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">{idea.description}</p>
+                  <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">
+                    {idea.description}
+                  </p>
                   <p className="mt-1 text-xs font-bold text-muted-foreground">
                     โดย {ownerName(idea.owner_id)} · {REGION_LABEL[idea.region]} ·{" "}
                     {idea.issues.map(issueTh).join(", ")}
@@ -95,11 +110,15 @@ function AdminIdeas() {
                           onClick={() =>
                             setDraft({
                               ...draft,
-                              issues: on ? draft.issues.filter((x) => x !== i) : [...draft.issues, i],
+                              issues: on
+                                ? draft.issues.filter((x) => x !== i)
+                                : [...draft.issues, i],
                             })
                           }
                           className={`rounded-full border px-2.5 py-1 text-xs ${
-                            on ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"
+                            on
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border text-muted-foreground"
                           }`}
                         >
                           {issueTh(i)}

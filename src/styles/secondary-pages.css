@@ -1,0 +1,712 @@
+.mission-person-page,
+.mission-connection-page,
+.mission-chat-page {
+  background: radial-gradient(ellipse at 85% 0%, #0c2b48 0, transparent 55%), #03070c;
+}
+.mission-person-page .person-masthead,
+.mission-connection-page .connection-masthead {
+  position: relative;
+  isolation: isolate;
+  max-width: 1280px;
+  width: 88%;
+  margin: 0 auto;
+  padding: 36px 44px 42px;
+  overflow: hidden;
+  border-inline: 1px solid #233c52;
+  background: linear-gradient(115deg, #0b1825, #091d30);
+}
+.person-masthead > .mission-visual,
+.connection-masthead > .mission-visual {
+  position: absolute;
+  z-index: -1;
+  right: 0;
+  top: 0;
+  width: 45%;
+  max-width: 460px;
+  height: 100%;
+  opacity: 0.7;
+}
+.mission-person-page .person-identity {
+  max-width: 70%;
+}
+.mission-person-page .person-identity h1 {
+  font-size: 40px;
+  line-height: 1.35;
+}
+.mission-person-page .person-identity p {
+  margin-top: 8px;
+  color: #9ab2c9;
+  white-space: normal;
+}
+.mission-person-page .person-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  max-width: 1280px;
+  width: 88%;
+  padding: 32px 0;
+}
+.person-bio {
+  border-left: 2px solid #159fff !important;
+  font-size: 20px !important;
+  line-height: 1.9;
+}
+.person-details-grid .person-bio,
+.person-details-grid .person-ideas {
+  grid-column: 1/-1;
+}
+.person-power-section {
+  min-height: 156px;
+}
+.person-power-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+}
+.person-power-section h2::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: #159fff;
+}
+.person-match .text-3xl {
+  font-size: 42px;
+}
+.mission-connection-page .connection-masthead h1 {
+  font-size: 34px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.mission-connection-page .connection-masthead > .mission-visual {
+  opacity: 0.35;
+}
+.mission-connection-page .connection-portraits {
+  width: fit-content;
+  margin-inline: auto;
+  padding: 16px;
+  border: 1px solid #27506e;
+  background: #061322c9;
+}
+.mission-connection-page .connection-content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px;
+  width: 88%;
+  max-width: 1280px;
+  padding: 32px 0;
+}
+.connection-content-grid .connection-summary {
+  grid-column: 1/-1;
+  padding: 32px;
+}
+.connection-content-grid .connection-summary > p.text-lg {
+  font-size: 28px;
+  font-weight: 500;
+  margin-top: 12px;
+}
+.connection-content-grid .connection-agreements {
+  grid-row: span 2;
+}
+.connection-content-grid .connection-plan {
+  grid-column: 1/-1;
+}
+.connection-content-grid .connection-plan h2 {
+  font-size: 25px;
+  font-weight: 500;
+}
+.connection-content-grid > .chat-room {
+  grid-column: 1/-1;
+}
+.mission-detail-actionbar {
+  background: #06101cf2;
+  border-top-color: #2b506d;
+}
+.mission-detail-actionbar > :is(a, button, p) {
+  max-width: 700px;
+}
+.mission-chat-page .mission-focused-topbar {
+  width: 100%;
+  max-width: none;
+  padding: 18px 6%;
+  border-bottom: 1px solid #25425b;
+}
+.mission-chat-page .chat-page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: 48px;
+  width: 88%;
+  max-width: 1280px;
+  padding: 56px 0;
+}
+.chat-mission-aside {
+  position: sticky;
+  top: 120px;
+  min-width: 0;
+}
+.chat-mission-aside h1 {
+  font-size: clamp(30px, 3vw, 46px);
+  line-height: 1.5;
+  margin-top: 24px;
+  font-weight: 500;
+}
+.chat-mission-aside > .mission-visual {
+  margin-top: 24px;
+}
+.chat-page-console {
+  min-width: 0;
+}
+.chat-page-console > .chat-room {
+  background: #0b1724;
+  border: 1px solid #234964;
+}
+.app-content .notification-page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.7fr);
+  align-items: start;
+  gap: 24px;
+  padding: 0;
+}
+.notification-settings {
+  position: sticky;
+  top: 110px;
+}
+.notification-settings > button {
+  margin-top: 24px;
+  border-color: #2a4760;
+  color: #a7c8e3;
+}
+.notification-feed {
+  min-width: 0;
+}
+.notification-feed > ul {
+  position: relative;
+  padding-left: 22px;
+  border-left: 1px solid #23445e;
+}
+.notification-feed > ul > li {
+  position: relative;
+}
+.notification-feed > ul > li::before {
+  content: "";
+  position: absolute;
+  left: -27px;
+  top: 26px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #10243a;
+  background: #159fff;
+}
+.notification-card {
+  border-left: 2px solid #1d88d1 !important;
+}
+.notification-feed .mission-empty {
+  grid-template-columns: 1fr;
+}
+.notification-feed .mission-empty > .mission-visual {
+  max-width: 250px;
+  margin: -20px auto 0;
+}
+.notification-feed > button {
+  margin-top: 20px;
+}
+.app-content .publication-page {
+  padding: 0;
+}
+.publication-toolbar > :first-child {
+  margin-right: auto;
+}
+.publication-group-heading h2 {
+  font-size: 28px;
+  font-weight: 500;
+}
+.publication-group-heading > span {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  padding: 3px 10px;
+  background: #0d2538;
+  color: #6ebcff;
+}
+.publication-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.publication-card {
+  position: relative;
+  border-top: 2px solid #268bcf !important;
+}
+.publication-card::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, transparent 49%, #15324a 50%);
+  pointer-events: none;
+}
+.publication-card h3 {
+  font-size: 20px;
+  line-height: 1.5;
+  white-space: normal;
+}
+.publication-card > div > img {
+  width: 72px;
+  height: 72px;
+}
+.publication-card p {
+  line-height: 1.85;
+}
+.app-content .submission-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px;
+  padding: 0 0 100px;
+}
+.submission-form-grid .submission-author,
+.submission-form-grid .submission-stage,
+.submission-form-grid .submission-save {
+  grid-column: 1/-1;
+}
+.submission-field {
+  height: 100%;
+}
+.submission-field > p:first-child {
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #213c52;
+  color: #bdd5e9;
+  font-size: 15px;
+  font-weight: 500;
+}
+.submission-field textarea {
+  resize: vertical;
+  min-height: 130px;
+  background: #050e17 !important;
+}
+.submission-field label:has(input[type="file"]) {
+  border-color: #2774a6;
+  background: #0b2032;
+}
+.submission-success {
+  max-width: 760px;
+  margin: auto;
+  padding: 48px;
+}
+.submission-success > .mt-6 {
+  max-width: 420px;
+  margin-inline: auto;
+}
+.profile-update-page .profile-sync-status {
+  border-left: 2px solid #159fff;
+}
+.profile-update-page .profile-qr-card {
+  max-width: 700px;
+}
+.app-content .editorial-guide {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px;
+  padding: 0;
+}
+.app-content .editorial-guide > * {
+  margin: 0;
+}
+.guide-intro,
+.guide-step-grid,
+.guide-explore,
+.editorial-guide > a:last-child {
+  grid-column: 1/-1;
+}
+.guide-step-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.guide-step-card {
+  display: flex;
+  flex-direction: column;
+}
+.guide-step-card > div {
+  display: block;
+}
+.guide-step-card > div > span {
+  margin-bottom: 24px;
+}
+.guide-step-card h2 {
+  min-height: 64px;
+  font-size: 23px;
+  font-weight: 500;
+}
+.guide-step-card p {
+  font-size: 14px !important;
+}
+.guide-step-card a {
+  margin-top: 24px;
+}
+.guide-gestures h2,
+.guide-faq h2,
+.guide-explore h2 {
+  margin-bottom: 20px;
+  font-size: 23px;
+  font-weight: 500;
+}
+.guide-explore ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.guide-explore li {
+  flex-wrap: wrap;
+  align-content: start;
+}
+.site-experience .editorial-journey {
+  background: radial-gradient(ellipse at 85% 1%, #0a243c, transparent 45%), #03070c;
+}
+.editorial-journey > header {
+  background: #050f1bf5;
+  border-bottom-color: #25445e;
+}
+.editorial-journey > header > div {
+  max-width: 1280px;
+  width: 88%;
+  padding-inline: 0;
+}
+.editorial-journey .journey-content {
+  max-width: 1280px;
+  width: 88%;
+  padding: 32px 0 80px;
+}
+.editorial-journey .journey-content > .mission-panel {
+  background: var(--mission-panel-bg);
+  border: 1px solid #23415a;
+  padding: 28px;
+}
+.journey-step-card > div {
+  grid-template-columns: 180px minmax(0, 1fr);
+  padding: 28px;
+  gap: 32px;
+}
+.journey-step-card img {
+  max-height: 350px;
+  object-fit: cover;
+  border-color: #234a67;
+}
+.journey-step-card h3 {
+  font-size: 22px;
+  font-weight: 500;
+}
+.journey-step-card header > div > span {
+  padding: 5px 12px;
+}
+.journey-route-group > header {
+  padding-block: 28px 12px;
+  border-bottom: 1px solid #24445b;
+}
+.journey-route-group > header h2 {
+  font-size: 30px;
+  font-weight: 500;
+}
+.journey-architecture summary {
+  min-height: 44px;
+  line-height: 44px;
+}
+.journey-architecture[open] > p:first-of-type {
+  margin-top: 18px;
+}
+.journey-content #data {
+  border: 1px solid #27455c;
+  background: #081522;
+  padding: 28px;
+}
+.editorial-print .print-settings-bar {
+  border-bottom-color: #29485f;
+  background: #06121ef5;
+}
+.editorial-print .print-settings-bar > div {
+  max-width: 1280px;
+  width: 88%;
+}
+.editorial-print .print-kit-content {
+  width: 88%;
+  max-width: 1280px;
+  padding: 32px 0 80px;
+}
+.print-kit-intro {
+  margin-bottom: 32px;
+}
+.editorial-print .print-sheet {
+  border: 1px solid #2e485b;
+  border-radius: 0;
+  color: #16212e;
+  background: #fff;
+}
+.editorial-print .print-sheet .card-soft {
+  background: #fff;
+}
+.editorial-print .print-sheet header {
+  color: #16212e;
+}
+.print-kit-content > :last-child {
+  margin-top: 24px;
+}
+
+@media (max-width: 1023px) {
+  .guide-step-grid {
+    gap: 16px;
+  }
+  .guide-step-card {
+    padding: 20px;
+  }
+  .guide-step-card h2 {
+    font-size: 20px;
+  }
+  .mission-chat-page .chat-page-layout {
+    gap: 28px;
+  }
+  .chat-mission-aside h1 {
+    font-size: 30px;
+  }
+  .app-content .notification-page-grid {
+    grid-template-columns: 1fr;
+  }
+  .notification-settings {
+    position: static;
+  }
+  .notification-feed .mission-empty {
+    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1fr);
+  }
+  .editorial-journey .journey-content {
+    width: calc(100% - 40px);
+  }
+}
+@media (max-width: 700px) {
+  .mission-person-page .person-masthead,
+  .mission-connection-page .connection-masthead {
+    width: 100%;
+    padding: 24px 20px 32px;
+    border-inline: 0;
+  }
+  .person-masthead > .mission-visual,
+  .connection-masthead > .mission-visual {
+    width: 80%;
+    right: -22%;
+    opacity: 0.36;
+  }
+  .mission-person-page .person-identity {
+    max-width: 100%;
+    gap: 14px;
+  }
+  .mission-person-page .person-identity h1 {
+    font-size: 28px;
+  }
+  .mission-person-page .person-identity p {
+    font-size: 12px;
+  }
+  .mission-person-page .person-details-grid,
+  .mission-connection-page .connection-content-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    width: calc(100% - 32px);
+    padding: 24px 0;
+  }
+  .person-bio {
+    font-size: 16px !important;
+  }
+  .mission-connection-page .connection-masthead h1 {
+    font-size: 27px;
+  }
+  .connection-content-grid .connection-summary {
+    padding: 24px;
+  }
+  .connection-content-grid .connection-summary > p.text-lg {
+    font-size: 23px;
+  }
+  .mission-chat-page .chat-page-layout {
+    display: block;
+    width: calc(100% - 32px);
+    padding: 24px 0 40px;
+  }
+  .chat-mission-aside {
+    position: relative;
+    top: auto;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid #234761;
+    background: #091a2b;
+    overflow: hidden;
+  }
+  .chat-mission-aside h1 {
+    font-size: 26px;
+  }
+  .chat-mission-aside > .mission-visual {
+    position: absolute;
+    width: 240px;
+    right: -50px;
+    top: -30px;
+    opacity: 0.28;
+  }
+  .chat-mission-aside .mission-side-note {
+    position: relative;
+    margin-top: 24px;
+  }
+  .notification-feed .mission-empty {
+    grid-template-columns: 1fr;
+  }
+  .publication-grid,
+  .app-content .submission-form-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .publication-toolbar > div {
+    width: 100%;
+  }
+  .publication-toolbar > div > button {
+    flex: 1;
+  }
+  .publication-toolbar > button:last-child {
+    margin-left: 0;
+  }
+  .publication-group-heading h2 {
+    font-size: 23px;
+  }
+  .publication-card {
+    padding: 20px;
+  }
+  .publication-card > div > img {
+    width: 48px;
+    height: 48px;
+  }
+  .submission-success {
+    padding: 28px 20px;
+  }
+  .app-content .editorial-guide,
+  .guide-step-grid,
+  .guide-explore ul {
+    grid-template-columns: 1fr;
+  }
+  .guide-step-card h2 {
+    min-height: 0;
+    margin-bottom: 12px;
+  }
+  .guide-step-card > div {
+    display: flex;
+  }
+  .guide-step-card > div > span {
+    margin-bottom: 0;
+  }
+  .editorial-journey .journey-content {
+    width: calc(100% - 32px);
+  }
+  .journey-step-card > div {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 24px;
+  }
+  .journey-step-card > div > a {
+    max-width: 210px;
+    margin: auto;
+  }
+  .journey-step-card img {
+    max-height: 300px;
+  }
+  .journey-route-group > header h2 {
+    font-size: 24px;
+  }
+  .journey-content #data {
+    padding: 20px;
+  }
+  .editorial-print .print-kit-content,
+  .editorial-print .print-settings-bar > div {
+    width: calc(100% - 32px);
+  }
+  .print-settings-bar {
+    padding-inline: 0;
+  }
+  .print-settings-bar button {
+    white-space: normal;
+  }
+}
+@media print {
+  .editorial-print .print-kit-content {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+  .editorial-print .print-sheet {
+    border: none;
+    background: #fff !important;
+  }
+  .editorial-print .print-sheet header {
+    display: flex !important;
+  }
+  .publication-grid {
+    display: block;
+  }
+  .publication-card {
+    margin-bottom: 16px;
+  }
+  .publication-card::after {
+    display: none;
+  }
+  .editorial-journey .journey-content {
+    width: 100%;
+  }
+  /* Keep the document and route headings when the shared screen headers hide. */
+  .site-experience .editorial-journey {
+    --background: #fff;
+    --primary: #075f99;
+    --primary-foreground: #fff;
+    --foreground: #16212e;
+    --muted: #edf2f6;
+    --muted-foreground: #4f5f6d;
+    --border: #c8d2db;
+    --mission-line: #c8d2db;
+    color: #16212e;
+    background: #fff !important;
+  }
+  .editorial-journey .mission-page-hero,
+  .editorial-journey .journey-route-group > header,
+  .editorial-journey .journey-step-card header {
+    display: block !important;
+    color: #16212e;
+    background: #fff !important;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+  .editorial-journey .mission-page-hero {
+    min-height: 0;
+    margin-bottom: 24px;
+    border: 0;
+    border-bottom: 1px solid #c8d2db;
+    padding: 0 0 24px;
+  }
+  .editorial-journey .mission-page-hero h1 {
+    max-width: none;
+    margin-top: 12px;
+    color: #16212e;
+    font-size: 30px;
+  }
+  .editorial-journey .mission-page-description {
+    color: #4f5f6d;
+  }
+  .editorial-journey .mission-kicker,
+  .editorial-journey .mission-index {
+    color: #075f99;
+  }
+  .editorial-journey .journey-route-group > header {
+    border-bottom-color: #c8d2db;
+    padding-block: 20px 12px;
+  }
+  .editorial-journey .journey-content #data {
+    color: #16212e;
+    background: #fff !important;
+    border-color: #c8d2db;
+  }
+}

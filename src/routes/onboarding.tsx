@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ShieldCheck } from "lucide-react";
+import { MissionHeader, MissionVisual } from "@/components/mission-ui";
+import { Wordmark } from "@/components/wordmark";
 import { toast } from "sonner";
 
 import { ProfileForm } from "@/components/profile-form";
@@ -42,60 +44,107 @@ function Onboarding() {
   }, [hydrated, me, navigate]);
 
   return (
-    <div className="editorial-focused min-h-screen">
-      <header className="sticky top-0 z-20 bg-background/90 px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-xl">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/"
-            aria-label="กลับหน้าแรก"
-            className="tap relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-muted after:absolute after:-inset-1 after:content-['']"
-          >
+    <div className="editorial-focused focused-page onboarding-page min-h-screen">
+      <header className="focused-topbar">
+        <div className="focused-topbar-inner">
+          <Link to="/" aria-label="กลับหน้าแรก" className="focused-back-link tap">
             <ArrowLeft className="h-4 w-4" aria-hidden />
+            <Wordmark size="sm" />
           </Link>
-          <div className="min-w-0">
-            <h1 className="truncate text-[17px] font-extrabold leading-tight">
-              {me ? "แก้ไขโปรไฟล์" : "สร้างโปรไฟล์พลัง"}
-            </h1>
-            <p className="text-[12px] text-muted-foreground">ไม่ถึง 2 นาที แล้วไปเจอคนที่ใช่</p>
-          </div>
+          <span className="focused-system-label">PROFILE / CONNEXTS</span>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-xl px-5 pt-4">
-        {hydrated && !me && showIntro && <IntroGuide onDone={() => setShowIntro(false)} />}
-        {hydrated && !me && (
-          <p className="mb-4 rounded-2xl border border-border bg-card/80 px-4 py-3 text-[12px] leading-relaxed text-muted-foreground">
-            ผู้ร่วมงานเห็นโปรไฟล์นี้เพื่อจับคู่ ใช้นามแฝงและแชร์เฉพาะที่สบายใจได้{" "}
-            <Link to="/auth" className="font-bold text-primary">
-              ผูกบัญชี
-            </Link>{" "}
-            ภายหลังได้
-          </p>
-        )}
-        {hydrated && (
-          <ProfileForm
-            initial={me}
-            submitLabel={me ? "บันทึกและดูคู่พลัง" : "ค้นหาคู่พลัง"}
-            onSubmit={async (draft) => {
-              const session = getSession();
-              try {
-                setSyncing(true);
-                await saveProfile({ ...draft, source: session?.source });
-                void navigate({ to: "/matches" });
-              } catch (err) {
-                console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", err);
-                toast.error("บันทึกขึ้นระบบไม่สำเร็จ ลองใหม่อีกครั้งนะ");
-              } finally {
-                setSyncing(false);
-              }
-            }}
-          />
-        )}
-        {syncing && (
-          <p className="mt-3 text-center text-[12px] font-bold text-primary">
-            กำลังเชื่อมข้อมูลขึ้นระบบ…
-          </p>
-        )}
+      <main className="focused-content">
+        <MissionHeader
+          kicker="POWER PROFILE"
+          title={
+            <>
+              ให้คนที่ใช่
+              <br />
+              รู้จักพลังของคุณ
+            </>
+          }
+          description="ชื่อ ประเด็น และสิ่งที่แบ่งปัน — เริ่มเชื่อมต่อใน 2 นาที"
+          number="01"
+          variant="profile"
+        />
+        <div className="onboarding-layout">
+          <aside className="onboarding-sidebar">
+            <div className="onboarding-visual mission-panel">
+              <span className="mission-kicker">YOUR NEXT CONNECTION</span>
+              <MissionVisual variant="profile" className="onboarding-profile-visual" />
+              <h2>
+                เริ่มที่ตัวคุณ
+                <br />
+                <span>ไปต่อด้วยกัน</span>
+              </h2>
+            </div>
+            <nav aria-label="ส่วนต่าง ๆ ของโปรไฟล์" className="profile-section-nav">
+              {[
+                ["pf-step-1", "ตัวตน"],
+                ["pf-step-2", "พื้นที่"],
+                ["pf-step-3", "ประเด็นที่ใส่ใจ"],
+                ["pf-step-4", "พลังที่แบ่งปัน"],
+                ["pf-step-5", "พลังที่มองหา"],
+                ["pf-step-6", "แนะนำตัว"],
+              ].map(([id, label], index) => (
+                <a key={id} href={`#${id}`} className="tap">
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  {label}
+                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                </a>
+              ))}
+            </nav>
+            <p className="profile-privacy-note">
+              <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
+              ใช้นามแฝงและแชร์เฉพาะที่สบายใจ ผู้ร่วมงานเห็นโปรไฟล์เพื่อจับคู่
+            </p>
+          </aside>
+
+          <div className="onboarding-form-column">
+            {hydrated && !me && showIntro && <IntroGuide onDone={() => setShowIntro(false)} />}
+            {hydrated && !me && (
+              <div className="onboarding-session-note">
+                <span className="focused-status-dot" aria-hidden />
+                <p>
+                  เริ่มได้ทันที{" "}
+                  <Link to="/auth">
+                    ผูกบัญชีภายหลัง <ArrowUpRight className="inline h-3.5 w-3.5" aria-hidden />
+                  </Link>
+                </p>
+              </div>
+            )}
+            {hydrated ? (
+              <ProfileForm
+                initial={me}
+                submitLabel={me ? "บันทึกและดูคู่พลัง" : "ค้นหาคู่พลัง"}
+                onSubmit={async (draft) => {
+                  const session = getSession();
+                  try {
+                    setSyncing(true);
+                    await saveProfile({ ...draft, source: session?.source });
+                    void navigate({ to: "/matches" });
+                  } catch (err) {
+                    console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", err);
+                    toast.error("บันทึกขึ้นระบบไม่สำเร็จ ลองใหม่อีกครั้งนะ");
+                  } finally {
+                    setSyncing(false);
+                  }
+                }}
+              />
+            ) : (
+              <div className="mission-panel focused-loading" role="status">
+                กำลังเตรียมโปรไฟล์…
+              </div>
+            )}
+            {syncing && (
+              <p role="status" className="mt-3 text-center text-[12px] font-bold text-primary">
+                กำลังเชื่อมข้อมูลขึ้นระบบ…
+              </p>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );

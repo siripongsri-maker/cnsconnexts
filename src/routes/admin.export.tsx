@@ -7,14 +7,19 @@ import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
 import { provinceTh, REGION_LABEL, issueTh } from "@/lib/i18n";
 
 export const Route = createFileRoute("/admin/export")({
-  head: () => ({ meta: [
-    { title: "ส่งออกข้อมูล — คนส. Connexts" },
-    { name: "description", content: "ส่งออกข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "ส่งออกข้อมูล — คนส. Connexts" },
-    { property: "og:description", content: "ส่งออกข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "ส่งออกข้อมูล — คนส. Connexts" },
+      { name: "description", content: "ส่งออกข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "ส่งออกข้อมูล — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "ส่งออกข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminExport,
 });
 
@@ -22,7 +27,8 @@ function AdminExport() {
   const store = useStore();
   const { users, ideas, submissions, connections, commitments, provinceNotes } = store;
 
-  const nameOf = (id: string) => (id === "me" ? (store.me?.name ?? "ฉัน") : (users.find((u) => u.id === id)?.name ?? id));
+  const nameOf = (id: string) =>
+    id === "me" ? (store.me?.name ?? "ฉัน") : (users.find((u) => u.id === id)?.name ?? id);
 
   const sets: { key: string; label: string; rows: Row[]; data: unknown }[] = [
     {
@@ -100,15 +106,13 @@ function AdminExport() {
   ];
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-[18px] font-extrabold">ส่งออกข้อมูล</h1>
-        <p className="text-[12px] text-muted-foreground">ดาวน์โหลดเป็น CSV (เปิดใน Excel ได้) หรือ JSON</p>
-      </header>
-
-      <ul className="space-y-3">
+    <div className="admin-workspace admin-workspace-export space-y-4">
+      <ul className="admin-records space-y-3">
         {sets.map((s) => (
-          <li key={s.key} className="card-soft flex flex-wrap items-center gap-2 rounded-2xl bg-card p-4">
+          <li
+            key={s.key}
+            className="card-soft flex flex-wrap items-center gap-2 rounded-2xl bg-card p-4"
+          >
             <p className="min-w-0 flex-1 text-sm font-extrabold">{s.label}</p>
             <button
               type="button"

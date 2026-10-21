@@ -77,51 +77,51 @@ export function LiveTicker({ toastOnly = false }: { toastOnly?: boolean } = {}) 
   return (
     <>
       {!toastOnly && (
-      <div className="card-soft rounded-3xl bg-card p-5">
-        <div className="flex items-center gap-2">
-          <span className="relative grid h-8 w-8 place-items-center rounded-xl bg-coral/15 text-coral">
-            <Radio className="h-4 w-4" aria-hidden="true" />
-            <span
-              aria-hidden="true"
-              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse-node rounded-full bg-coral"
-            />
-          </span>
-          <h2 className="text-[15px] font-extrabold">
-            กิจกรรมของฉันตอนนี้ <span lang="en" className="text-muted-foreground">· My live activity</span>
-          </h2>
-        </div>
+        <div className="core-live-ticker card-soft rounded-3xl bg-card p-5">
+          <div className="flex items-center gap-2">
+            <span className="relative grid h-8 w-8 place-items-center rounded-xl bg-coral/15 text-coral">
+              <Radio className="h-4 w-4" aria-hidden="true" />
+              <span
+                aria-hidden="true"
+                className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse-node rounded-full bg-coral"
+              />
+            </span>
+            <h2 className="text-[15px] font-extrabold">กิจกรรมล่าสุดของฉัน</h2>
+          </div>
 
-        {events.length === 0 ? (
-          <p className="mt-3 text-[13px] text-muted-foreground">
-            ยังเงียบอยู่ — พอคุณแมตช์ กดถูกใจ เชื่อมต่อ หรืออัปเดตนัดลงมือทำ จะขึ้นตรงนี้ทันที
-          </p>
-        ) : (
-          <ul className="mt-3 space-y-2.5">
-            {events.map((e) => {
-              const Icon = ICON[e.kind];
-              return (
-                <li key={e.id} className="flex items-start gap-3 animate-rise">
-                  <span className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${TONE[e.kind]}`}>
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-[13px] font-bold">
-                      {e.title}
-                      <span className="ml-2 text-xs font-bold text-muted-foreground">
-                        {KIND_TH[e.kind]}
-                      </span>
-                    </p>
-                    <p className="truncate text-[12px] text-muted-foreground">{e.detail}</p>
-                  </div>
-                  <span className="ml-auto shrink-0 text-xs font-bold text-muted-foreground">
-                    {ago(e.created_at, now)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+          {events.length === 0 ? (
+            <p className="mt-3 text-[13px] text-muted-foreground">
+              เมื่อคุณถูกใจ เชื่อมต่อ หรือนัดลงมือทำ กิจกรรมจะแสดงที่นี่
+            </p>
+          ) : (
+            <ul className="mt-3 space-y-2.5">
+              {events.map((e) => {
+                const Icon = ICON[e.kind];
+                return (
+                  <li key={e.id} className="flex items-start gap-3 animate-rise">
+                    <span
+                      className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${TONE[e.kind]}`}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-bold">
+                        {e.title}
+                        <span className="ml-2 text-xs font-bold text-muted-foreground">
+                          {KIND_TH[e.kind]}
+                        </span>
+                      </p>
+                      <p className="truncate text-[12px] text-muted-foreground">{e.detail}</p>
+                    </div>
+                    <span className="ml-auto shrink-0 text-xs font-bold text-muted-foreground">
+                      {ago(e.created_at, now)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       )}
 
       {toast && (
@@ -131,7 +131,9 @@ export function LiveTicker({ toastOnly = false }: { toastOnly?: boolean } = {}) 
           className="pointer-events-none fixed inset-x-4 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-50 mx-auto max-w-md animate-rise"
         >
           <div className="card-soft flex items-center gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 backdrop-blur">
-            <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${TONE[toast.kind]}`}>
+            <span
+              className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${TONE[toast.kind]}`}
+            >
               {(() => {
                 const Icon = ICON[toast.kind];
                 return <Icon className="h-4 w-4" aria-hidden="true" />;
@@ -188,7 +190,10 @@ export function RotatingPrompt({
       <p className="sr-only">
         {PROMPT_LINES[0]!.th} / <span lang="en">{PROMPT_LINES[0]!.en}</span>
       </p>
-      <div aria-hidden="true" className={lg ? "min-h-[5.5rem] flex-1" : "min-h-[4rem] flex-1"}>
+      <div
+        aria-hidden="true"
+        className={lg ? "min-h-[5.5rem] min-w-0 flex-1" : "min-h-[4rem] min-w-0 flex-1"}
+      >
         <p
           key={i}
           className={`${reducedMotion ? "" : "animate-rise "}${
@@ -305,7 +310,5 @@ export function buildFeed({
       created_at: m.created_at,
     });
   });
-  return items
-    .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
-    .slice(0, limit);
+  return items.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)).slice(0, limit);
 }

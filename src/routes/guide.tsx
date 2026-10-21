@@ -74,7 +74,7 @@ function GuidePage() {
   return (
     <AppShell title="คู่มือใช้งาน" titleEn="Guide">
       <div className="editorial-guide mx-auto w-full space-y-8 pb-8">
-        <section className="border-b border-border py-8">
+        <section className="guide-intro mission-panel">
           <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/12 px-3 py-1 text-[12px] font-bold text-primary">
             <Compass className="h-3.5 w-3.5" /> รู้จัก เชื่อมต่อ ร่วมทำ
           </p>
@@ -86,24 +86,31 @@ function GuidePage() {
           </p>
         </section>
 
-        {STEPS.map(({ icon: Icon, title, body, to, cta }) => (
-          <section key={title} className="border-b border-border py-8">
-            <div className="flex items-start gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/12">
-                <Icon className="h-5 w-5 text-primary" />
-              </span>
-              <div className="min-w-0">
-                <h2 className="text-[17px] font-extrabold leading-snug">{title}</h2>
-                <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted-foreground">{body}</p>
-                <Button asChild variant="outline" className="mt-5">
-                  <Link to={to}>{cta}</Link>
-                </Button>
+        <div className="guide-step-grid">
+          {STEPS.map(({ icon: Icon, title, body, to, cta }, index) => (
+            <section key={title} className="guide-step-card mission-panel">
+              <p className="mission-kicker mb-6" lang="en">
+                0{index + 1} / Your next move
+              </p>
+              <div className="flex items-start gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/12">
+                  <Icon className="h-5 w-5 text-primary" />
+                </span>
+                <div className="min-w-0">
+                  <h2 className="text-[17px] font-extrabold leading-snug">{title}</h2>
+                  <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted-foreground">
+                    {body}
+                  </p>
+                  <Button asChild variant="outline" className="mt-5">
+                    <Link to={to}>{cta}</Link>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </section>
-        ))}
+            </section>
+          ))}
+        </div>
 
-        <section className="border-b border-border py-8">
+        <section className="guide-gestures mission-panel">
           <h2 className="flex items-center gap-2 text-[17px] font-extrabold">
             <Hand className="h-5 w-5 text-primary" /> วิธีใช้การ์ดคู่เชื่อม
           </h2>
@@ -123,7 +130,7 @@ function GuidePage() {
           </div>
         </section>
 
-        <section className="border-b border-border py-8">
+        <section className="guide-faq mission-panel">
           <h2 className="text-[17px] font-extrabold">คำถามที่พบบ่อย</h2>
           <div className="mt-3 space-y-3">
             {FAQ.map((f) => (
@@ -135,7 +142,7 @@ function GuidePage() {
           </div>
         </section>
 
-        <section className="border-b border-border py-8">
+        <section className="guide-explore mission-panel">
           <h2 className="text-[17px] font-extrabold">สำรวจต่อ</h2>
           <ul className="mt-3 space-y-2 text-[14.5px]">
             <li className="flex items-center gap-2">

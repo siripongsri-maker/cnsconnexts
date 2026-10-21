@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Menu, X, Compass, LogOut } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { ArrowUpRight, Compass, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/wordmark";
 import { useAuth } from "@/lib/auth";
+import { useMotionSettings } from "@/lib/motion";
 import { TOUR_EVENT } from "@/components/guided-tour";
 
 const LINKS = [
@@ -19,44 +20,99 @@ const LINKS = [
   { to: "/scan", label: "สแกนเข้าร่วม" },
 ] as const;
 
+const MENU_ENTER_MS = 650;
+const MENU_EXIT_MS = 220;
+type MenuPhase = "closed" | "opening" | "open" | "closing";
+
 export function SpaceNav() {
-  const [open, setOpen] = useState(false);
+  const [phase, setPhase] = useState<MenuPhase>("closed");
   const { mode, displayName, signOut } = useAuth();
+  const { reducedMotion, lowSpec } = useMotionSettings();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLElement>(null);
+  const open = phase === "opening" || phase === "open";
+  const present = phase !== "closed";
+
+  const canAnimate = useCallback(
+    () =>
+      !reducedMotion &&
+      !lowSpec &&
+      !window.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+      !document.documentElement.hasAttribute("data-lowspec"),
+    [reducedMotion, lowSpec],
+  );
+
+  const openMenu = () => setPhase(canAnimate() ? "opening" : "open");
+  const closeMenu = useCallback(
+    ({ restoreFocus = true }: { restoreFocus?: boolean } = {}) => {
+      setPhase(canAnimate() ? "closing" : "closed");
+      if (restoreFocus) triggerRef.current?.focus({ preventScroll: true });
+    },
+    [canAnimate],
+  );
+
+  useEffect(() => {
+    if (phase !== "opening" && phase !== "closing") return;
+    if (!canAnimate()) {
+      setPhase(phase === "opening" ? "open" : "closed");
+      return;
+    }
+    const timer = window.setTimeout(
+      () => setPhase(phase === "opening" ? "open" : "closed"),
+      phase === "opening" ? MENU_ENTER_MS : MENU_EXIT_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [phase, canAnimate]);
+
+  // Keep the document locked through the exit, and always release it on route unmount.
+  useEffect(() => {
+    if (!present) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [present]);
 
   useEffect(() => {
     if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    menuRef.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+    if (!menuRef.current?.contains(document.activeElement)) {
+      menuRef.current?.querySelector<HTMLAnchorElement>("a")?.focus({ preventScroll: true });
+    }
     const keydown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpen(false);
-        triggerRef.current?.focus();
+        event.preventDefault();
+        closeMenu();
+        return;
       }
       if (event.key !== "Tab") return;
-      const controls = menuRef.current?.querySelectorAll<HTMLElement>("a[href],button");
+      const controls = menuRef.current?.querySelectorAll<HTMLElement>(
+        "a[href],button:not([disabled])",
+      );
       if (!controls?.length) return;
-      const first = controls[0];
-      const last = controls[controls.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      const first = controls[0]!;
+      const last = controls[controls.length - 1]!;
+      const active = document.activeElement;
+      if (!menuRef.current?.contains(active)) {
         event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+        first.focus();
+      } else if (event.shiftKey && active === first) {
         event.preventDefault();
-        first?.focus();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
     document.addEventListener("keydown", keydown);
-    return () => {
-      document.body.style.overflow = previous;
-      document.removeEventListener("keydown", keydown);
-    };
-  }, [open]);
+    return () => document.removeEventListener("keydown", keydown);
+  }, [open, closeMenu]);
 
   return (
     <>
+      <a href="#main-content" className="mission-skip">
+        ข้ามไปเนื้อหา
+      </a>
       <header className="space-nav">
         <Link to="/" aria-label="คนส. Connexts หน้าแรก" className="space-nav-brand">
           <Wordmark size="sm" withMark />
@@ -66,89 +122,103 @@ export function SpaceNav() {
             <Link
               key={link.to}
               to={link.to}
-              className="space-nav-link"
-              activeProps={{ className: "text-foreground" }}
+              className="space-nav-link nav-roll-target"
+              activeProps={{ className: "is-active", "aria-current": "page" }}
             >
-              {link.label}
+              <RollLabel text={link.label} />
             </Link>
           ))}
         </nav>
         <div className="flex items-center gap-3 sm:gap-6">
-          <Button asChild variant="outline" className="hidden h-11 rounded-none sm:inline-flex">
+          <Button
+            asChild
+            variant="outline"
+            className="nav-motion-cta nav-roll-target hidden h-11 rounded-none sm:inline-flex"
+          >
             <Link to={mode === "anon" ? "/onboarding" : "/update"}>
-              {mode === "anon" ? "เชื่อมพลัง" : "โปรไฟล์"}
-              <ArrowUpRight aria-hidden />
+              <RollLabel text={mode === "anon" ? "เชื่อมพลัง" : "โปรไฟล์"} />
+              <NavArrow />
             </Link>
           </Button>
           <Button
             ref={triggerRef}
             variant="ghost"
             size="icon"
-            className="h-11 w-11 rounded-none"
-            aria-label="เปิดเมนู"
+            className="space-menu-trigger h-11 w-11 rounded-none"
+            aria-label={open ? "ปิดเมนู" : "เปิดเมนู"}
             aria-expanded={open}
             aria-controls="space-menu"
-            onClick={() => setOpen(true)}
+            onClick={() => (open ? closeMenu() : openMenu())}
           >
-            <Menu aria-hidden />
+            <MenuLines open={open} />
           </Button>
         </div>
       </header>
-      {open && (
+      {present && (
         <nav
           ref={menuRef}
           id="space-menu"
           role="dialog"
-          aria-modal="true"
+          aria-modal={open || undefined}
+          aria-hidden={!open || undefined}
+          inert={!open}
           aria-label="เมนูทั้งหมด"
           className="space-menu"
+          data-phase={phase}
+          data-lenis-prevent
         >
           <div className="space-menu-top">
             <Wordmark size="sm" withMark />
             <Button
               variant="ghost"
               size="icon"
-              className="h-11 w-11 rounded-none"
+              className="space-menu-trigger space-menu-dismiss h-11 w-11 rounded-none"
               aria-label="ปิดเมนู"
-              onClick={() => {
-                setOpen(false);
-                triggerRef.current?.focus();
-              }}
+              onClick={() => closeMenu()}
             >
-              <X aria-hidden />
+              <MenuLines open />
             </Button>
           </div>
           <div className="space-menu-grid">
-            {LINKS.map((link, index) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setOpen(false)}
-                className="space-menu-item"
-              >
-                <span aria-hidden className="font-tech text-xs text-muted-foreground">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span className="min-w-0">{link.label}</span>
-                <ArrowUpRight className="ml-auto h-5 w-5 shrink-0" aria-hidden />
-              </Link>
-            ))}
+            <div className="space-menu-primary" role="group" aria-label="เส้นทางหลัก">
+              {LINKS.slice(0, 5).map((link, index) => (
+                <MenuRouteLink
+                  key={link.to}
+                  link={link}
+                  index={index}
+                  onNavigate={() => closeMenu({ restoreFocus: false })}
+                />
+              ))}
+            </div>
+            <div className="space-menu-secondary" role="group" aria-label="เมนูเพิ่มเติม">
+              <p className="space-menu-secondary-label">สำรวจเพิ่มเติม</p>
+              {LINKS.slice(5).map((link, index) => (
+                <MenuRouteLink
+                  key={link.to}
+                  link={link}
+                  index={index + 5}
+                  onNavigate={() => closeMenu({ restoreFocus: false })}
+                />
+              ))}
+            </div>
           </div>
           <div className="space-menu-footer">
             <Button
               variant="ghost"
+              className="nav-roll-target"
               onClick={() => {
-                setOpen(false);
+                closeMenu();
                 window.dispatchEvent(new Event(TOUR_EVENT));
               }}
             >
               <Compass aria-hidden />
-              แนะนำการใช้งาน
+              <RollLabel text="แนะนำการใช้งาน" />
             </Button>
             {mode === "anon" ? (
-              <Button asChild variant="outline">
-                <Link to="/auth" onClick={() => setOpen(false)}>
-                  เข้าสู่ระบบ / สมัคร
+              <Button asChild variant="outline" className="nav-roll-target nav-motion-cta">
+                <Link to="/auth" onClick={() => closeMenu({ restoreFocus: false })}>
+                  <RollLabel text="เข้าสู่ระบบ / สมัคร" />
+                  <NavArrow />
                 </Link>
               </Button>
             ) : (
@@ -156,13 +226,14 @@ export function SpaceNav() {
                 <span className="text-sm text-muted-foreground">{displayName}</span>
                 <Button
                   variant="ghost"
+                  className="nav-roll-target"
                   onClick={() => {
-                    setOpen(false);
+                    closeMenu();
                     void signOut();
                   }}
                 >
                   <LogOut aria-hidden />
-                  ออกจากระบบ
+                  <RollLabel text="ออกจากระบบ" />
                 </Button>
               </div>
             )}
@@ -170,5 +241,60 @@ export function SpaceNav() {
         </nav>
       )}
     </>
+  );
+}
+
+function MenuRouteLink({
+  link,
+  index,
+  onNavigate,
+}: {
+  link: (typeof LINKS)[number];
+  index: number;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      to={link.to}
+      onClick={onNavigate}
+      className="space-menu-item nav-roll-target"
+      activeProps={{ className: "is-active", "aria-current": "page" }}
+      style={{ "--nav-order": index } as CSSProperties}
+    >
+      <span aria-hidden className="space-menu-number font-tech text-xs text-muted-foreground">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+      <RollLabel text={link.label} className="space-menu-label" />
+      <NavArrow className="space-menu-arrow" />
+    </Link>
+  );
+}
+
+function RollLabel({ text, className = "" }: { text: string; className?: string }) {
+  return (
+    <span className={`nav-roll ${className}`}>
+      <span className="nav-roll-text">{text}</span>
+      <span className="nav-roll-echo" aria-hidden="true">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+function NavArrow({ className = "" }: { className?: string }) {
+  return (
+    <span className={`nav-arrow-motion ${className}`} aria-hidden="true">
+      <ArrowUpRight />
+      <ArrowUpRight />
+    </span>
+  );
+}
+
+function MenuLines({ open }: { open: boolean }) {
+  return (
+    <span className={`space-menu-lines${open ? " is-open" : ""}`} aria-hidden="true">
+      <span />
+      <span />
+    </span>
   );
 }

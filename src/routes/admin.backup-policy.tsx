@@ -1,20 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Save, ShieldCheck, Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
 import { getBackupPolicy, pruneBackupsNow, saveBackupPolicy } from "@/lib/backup.functions";
 
 export const Route = createFileRoute("/admin/backup-policy")({
-  head: () => ({ meta: [
-    { title: "นโยบายสำรองข้อมูล — คนส. Connexts" },
-    { name: "description", content: "นโยบายสำรองข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:title", content: "นโยบายสำรองข้อมูล — คนส. Connexts" },
-    { property: "og:description", content: "นโยบายสำรองข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "นโยบายสำรองข้อมูล — คนส. Connexts" },
+      { name: "description", content: "นโยบายสำรองข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts" },
+      { property: "og:title", content: "นโยบายสำรองข้อมูล — คนส. Connexts" },
+      {
+        property: "og:description",
+        content: "นโยบายสำรองข้อมูลสำหรับกิจกรรมและเครือข่าย คนส. Connexts",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: AdminBackupPolicy,
 });
 
@@ -73,16 +78,7 @@ function AdminBackupPolicy() {
   };
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="flex items-center gap-2 text-[18px] font-extrabold">
-          <ShieldCheck className="size-5" /> นโยบายการเก็บสำรองข้อมูล
-        </h1>
-        <p className="text-[12px] text-muted-foreground">
-          กำหนดจำนวนรายการสำรองสูงสุด และอายุสูงสุดที่เก็บไว้ในระบบ
-        </p>
-      </header>
-
+    <div className="admin-workspace admin-workspace-backup-policy space-y-4">
       <section className="card-soft space-y-4 rounded-2xl bg-card p-4">
         <label className="block space-y-1">
           <span className="text-xs font-bold text-muted-foreground">
