@@ -1,0 +1,189 @@
+html {
+  scrollbar-color: #159fff #05070b;
+  scrollbar-width: thin;
+}
+::view-transition-old(root) {
+  animation: route-fade-out 180ms ease-out both;
+}
+::view-transition-new(root) {
+  animation: route-fade-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.space-nav {
+  view-transition-name: site-navigation;
+}
+.admin-sidebar {
+  view-transition-name: admin-navigation;
+}
+.admin-topbar {
+  view-transition-name: admin-tools;
+}
+::view-transition-group(site-navigation),
+::view-transition-group(admin-navigation),
+::view-transition-group(admin-tools) {
+  animation-duration: 0s;
+}
+@keyframes route-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes route-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+html::-webkit-scrollbar {
+  width: 6px;
+}
+html::-webkit-scrollbar-thumb {
+  background: #159fff;
+}
+html::-webkit-scrollbar-track {
+  background: #05070b;
+}
+[data-motion-state] {
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    translate 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--motion-delay, 0ms);
+}
+[data-motion-state="pending"] {
+  opacity: 0;
+  translate: 0 28px;
+}
+[data-motion-state="visible"],
+[data-motion-state]:focus-within {
+  opacity: 1;
+  translate: 0 0;
+}
+.mission-visual [stroke-dasharray] {
+  animation: mission-orbit-flow 28s linear infinite;
+}
+.mission-visual g[fill="#70caff"] {
+  animation: mission-node-light 5s ease-in-out infinite alternate;
+}
+.mission-page-hero > .mission-visual {
+  animation: mission-art-float 8s ease-in-out infinite alternate;
+}
+.mission-action .mission-action-icon {
+  position: relative;
+  overflow: hidden;
+}
+.mission-action .mission-action-icon svg {
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mission-action .mission-action-icon::after {
+  content: "↗";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 400 28px/1 var(--font-display);
+  transform: translate(-110%, 110%);
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mission-action:is(:hover, :focus-visible) .mission-action-icon svg {
+  transform: translate(180%, -180%);
+}
+.mission-action:is(:hover, :focus-visible) .mission-action-icon::after {
+  transform: translate(0, 0);
+}
+@media (hover: hover) {
+  .site-experience :is(.publication-card, .core-idea-card, .mission-step) {
+    transition:
+      translate 500ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 350ms;
+  }
+  .site-experience :is(.publication-card, .core-idea-card, .mission-step):hover {
+    translate: 0 -5px;
+    border-color: #3e9bdb;
+  }
+}
+@keyframes mission-orbit-flow {
+  to {
+    stroke-dashoffset: -220;
+  }
+}
+@keyframes mission-node-light {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes mission-art-float {
+  from {
+    translate: 0 3px;
+  }
+  to {
+    translate: 0 -5px;
+  }
+}
+@media (max-width: 600px) {
+  [data-motion-state="pending"] {
+    translate: 0 14px;
+  }
+  [data-motion-state] {
+    transition-duration: 500ms;
+  }
+}
+html[data-lowspec] [data-motion-state] {
+  opacity: 1 !important;
+  translate: none !important;
+  transition: none !important;
+}
+html[data-lowspec] :is(.mission-visual, .mission-visual *, .mission-page-hero > .mission-visual) {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-group(*) {
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto !important;
+  }
+  [data-motion-state] {
+    opacity: 1 !important;
+    translate: none !important;
+    transition: none !important;
+  }
+  .mission-visual,
+  .mission-visual *,
+  .mission-page-hero > .mission-visual {
+    animation: none !important;
+  }
+  .mission-action .mission-action-icon::after {
+    display: none;
+  }
+  .mission-action .mission-action-icon svg {
+    transform: none !important;
+    transition: none !important;
+  }
+  .site-experience :is(.publication-card, .core-idea-card, .mission-step) {
+    transition: none !important;
+    translate: none !important;
+  }
+}
+@media print {
+  html.lenis,
+  html.lenis body {
+    overflow: visible !important;
+    height: auto !important;
+  }
+  [data-motion-state] {
+    opacity: 1 !important;
+    translate: none !important;
+    transition: none !important;
+  }
+  .mission-visual * {
+    animation: none !important;
+  }
+}

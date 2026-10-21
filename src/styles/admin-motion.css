@@ -1,0 +1,138 @@
+/* Local control-room interactions; viewport reveals are owned by MotionRuntime. */
+.admin-sidebar,
+.admin-topbar {
+  transform: none;
+}
+.admin-nav {
+  overscroll-behavior: contain;
+}
+.admin-nav-link > svg {
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.admin-person-overlay {
+  animation: admin-backdrop-in 180ms ease-out both;
+}
+.admin-person-overlay > .admin-person-detail {
+  animation: admin-dialog-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.admin-person-overlay.is-closing {
+  animation: admin-backdrop-out 180ms ease-in both;
+}
+.admin-person-overlay.is-closing > .admin-person-detail {
+  pointer-events: none;
+  animation: admin-dialog-out 180ms ease-in both;
+}
+.admin-content .admin-records > li > .space-y-3,
+.admin-backup-detail {
+  animation: admin-detail-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.admin-cost-files > li {
+  animation: admin-detail-in 180ms ease-out both;
+}
+.admin-cost-result-title {
+  width: fit-content;
+  scroll-margin-top: 108px;
+}
+.admin-cost-result-title:focus-visible,
+.admin-data-table:focus-visible,
+.admin-backup-detail:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 5px;
+}
+.admin-data-table,
+.admin-backup-detail {
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #37617f #080e15;
+}
+.admin-content tbody tr {
+  transition: background-color 160ms ease;
+}
+.admin-content tbody tr:focus-within {
+  background: rgb(19 155 255 / 6%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-nav-link:hover > svg {
+    transform: translateX(2px);
+  }
+}
+@keyframes admin-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes admin-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes admin-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes admin-dialog-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+}
+@keyframes admin-detail-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+html[data-lowspec] :is(.admin-person-overlay, .admin-person-detail, .admin-backup-detail),
+html[data-lowspec] .admin-content .admin-records > li > .space-y-3,
+html[data-lowspec] .admin-cost-files > li,
+html[data-lowspec] .admin-experience .animate-spin {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+html[data-lowspec] .admin-nav-link > svg {
+  transition: none;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce), print {
+  .admin-person-overlay,
+  .admin-person-detail,
+  .admin-backup-detail,
+  .admin-content .admin-records > li > .space-y-3,
+  .admin-cost-files > li,
+  .admin-experience .animate-spin {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .admin-nav-link > svg,
+  .admin-content tbody tr {
+    transition: none;
+    transform: none;
+  }
+  .admin-nav,
+  .admin-data-table,
+  .admin-backup-detail {
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,466 @@
+.mission-home .mission-story {
+  position: relative;
+  isolation: isolate;
+  color: #f1f7ff;
+  background: #02050b;
+}
+.mission-story .story-stage {
+  position: relative;
+}
+.mission-story .story-visual {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.mission-story .story-fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.4;
+  transition: opacity 900ms;
+}
+.mission-story.scene-ready .story-fallback {
+  opacity: 0;
+}
+.mission-story .story-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #02050b70, transparent 65%),
+    linear-gradient(0deg, #02050b70, transparent 24%);
+}
+.mission-story .story-scene {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 85svh;
+  padding: 120px 10% 160px;
+  overflow: clip;
+}
+.mission-story .story-scene :is(h1, h2, p) {
+  max-width: 980px;
+}
+.mission-story .story-scene .mission-eyebrow {
+  margin: 0 0 22px;
+  color: #45b5ff;
+  font: 500 13px/1.6 var(--font-tech);
+}
+.mission-story .story-scene .story-warm {
+  color: #e3a878;
+}
+.mission-story .story-title {
+  font: 700 clamp(50px, 7.4vw, 128px)/0.94 var(--font-display);
+  letter-spacing: -0.065em;
+}
+.mission-story .story-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.1em;
+}
+.mission-story .story-line > span {
+  display: block;
+}
+.mission-story .story-description {
+  margin-top: 26px;
+  max-width: 500px;
+  color: #9bafc4;
+  font-size: clamp(14px, 1.5vw, 19px);
+  line-height: 1.8;
+}
+.mission-story .story-ink {
+  font-size: clamp(34px, 4.1vw, 70px);
+  font-weight: 500;
+  line-height: 1.55;
+  letter-spacing: -0.03em;
+}
+.mission-story .story-ink > span {
+  display: block;
+}
+.mission-story .story-together {
+  text-align: center;
+  align-items: center;
+}
+.mission-story .story-together h2 {
+  display: flex;
+  justify-content: space-between;
+  gap: clamp(25px, 25vw, 430px);
+  max-width: 100%;
+  font-size: clamp(35px, 4.2vw, 72px);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.mission-story .story-step-title {
+  font: 700 clamp(64px, 11vw, 180px)/1 var(--font-display);
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+.mission-story .story-step-th {
+  margin-top: 18px;
+  font-size: clamp(22px, 2.6vw, 42px);
+  font-weight: 500;
+}
+.mission-story .story-step-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 22px;
+  min-height: 48px;
+  margin-top: 26px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #315876;
+  font-size: 14px;
+  color: #a1d8ff;
+}
+.mission-story .story-step-link svg {
+  transition: transform 350ms;
+}
+.mission-story .story-step-link:hover svg {
+  transform: translate(4px, -4px);
+}
+.mission-story .story-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 5% 38px;
+}
+.mission-story .story-scroll {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #7890a6;
+  font-size: 11px;
+  min-height: 44px;
+}
+.mission-story .story-scroll svg {
+  animation: story-scroll-cue 2s ease-in-out infinite;
+}
+.mission-story .story-chapters {
+  display: none;
+}
+.mission-story .story-skip {
+  position: absolute;
+  z-index: 8;
+  top: 85px;
+  left: 5%;
+  padding: 12px 18px;
+  background: #c7eaff;
+  color: #07101a;
+  transform: translateY(-240px);
+}
+.mission-story .story-skip:focus {
+  transform: none;
+}
+.mission-home .mission-story[data-story-enhanced] {
+  height: 900svh;
+}
+.mission-story[data-story-enhanced] .story-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+}
+.mission-story[data-story-enhanced] .story-copy-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.mission-story[data-story-enhanced] .story-scene {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  opacity: 0;
+  padding-bottom: 180px;
+  pointer-events: none;
+}
+.mission-story[data-story-enhanced] .story-scene:first-child {
+  opacity: 1;
+}
+.mission-story[data-story-enhanced] .story-scene:focus-within {
+  opacity: 1 !important;
+}
+.mission-story[data-story-enhanced] .story-visual {
+  z-index: 0;
+}
+.mission-story[data-story-enhanced] .story-intro {
+  padding-bottom: 150px;
+}
+.mission-story[data-story-enhanced] .story-intro .story-title {
+  max-width: 90%;
+}
+.mission-story[data-story-enhanced] .story-intro .story-description {
+  max-width: 440px;
+}
+.mission-story[data-story-enhanced] .story-intro .story-line > span {
+  animation: story-title-arrive 1000ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.mission-story[data-story-enhanced] .story-intro .story-line:nth-child(2) > span {
+  animation-delay: 110ms;
+}
+.mission-story[data-story-enhanced] .story-ink {
+  --ink: 0%;
+  background: linear-gradient(
+    90deg,
+    #f4f8ff 0%,
+    #f4f8ff var(--ink),
+    #283542 calc(var(--ink) + 10%),
+    #283542 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.mission-story[data-story-enhanced] .story-step-2,
+.mission-story[data-story-enhanced] .story-step-4 {
+  align-items: flex-end;
+  text-align: right;
+}
+.mission-story[data-story-enhanced] .story-step-2 .story-step-link,
+.mission-story[data-story-enhanced] .story-step-4 .story-step-link {
+  align-self: flex-end;
+}
+.mission-story[data-story-enhanced] .story-bottom {
+  position: absolute;
+  z-index: 5;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 5% 36px;
+}
+.mission-story[data-story-enhanced] .story-chapters {
+  position: absolute;
+  z-index: 5;
+  left: 10%;
+  right: 10%;
+  bottom: 100px;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition:
+    opacity 400ms ease,
+    transform 500ms ease;
+}
+.mission-story[data-story-enhanced][data-chapters-visible] .story-chapters,
+.mission-story[data-story-enhanced] .story-chapters:focus-within {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.mission-story .story-chapters > a {
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 38px;
+  background: #152337b0;
+  color: #657b91;
+  border-top: 1px solid #29415a;
+  padding: 8px;
+  font-size: 10px;
+  transition:
+    background 300ms,
+    color 300ms;
+}
+.mission-story .story-chapters > a > span:first-child {
+  font: 500 9px var(--font-tech);
+}
+.mission-story .story-chapters > a.is-active {
+  color: #b7e4ff;
+  background: #153d60;
+  border-top-color: #44baff;
+}
+.mission-story .story-chapters > a:hover {
+  color: #f0f9ff;
+  background: #1c486c;
+}
+.mission-story[data-story-enhanced] .story-stage::after {
+  content: "";
+  position: absolute;
+  z-index: 6;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background: #159fff;
+  transform: scaleX(var(--story-progress, 0));
+  transform-origin: left;
+  pointer-events: none;
+}
+.mission-home #explore-network {
+  scroll-margin-top: 72px;
+}
+@keyframes story-title-arrive {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes story-scroll-cue {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+@media (max-width: 900px) {
+  .mission-story .story-title {
+    font-size: clamp(48px, 9vw, 83px);
+  }
+  .mission-story .story-scene {
+    padding-inline: 7%;
+  }
+  .mission-story .story-together h2 {
+    gap: 10vw;
+    font-size: 32px;
+  }
+  .mission-story .story-chapters > a > span:nth-child(2) {
+    display: none;
+  }
+  .mission-story .story-chapters > a {
+    justify-content: center;
+  }
+}
+@media (max-width: 600px) {
+  .mission-home .mission-story[data-story-enhanced] {
+    height: 780svh;
+  }
+  .mission-story .story-scene {
+    padding: 100px 24px 155px;
+    min-height: 90svh;
+  }
+  .mission-story .story-title {
+    font-size: clamp(40px, 12.4vw, 72px);
+  }
+  .mission-story .story-description {
+    font-size: 14px;
+    margin-top: 22px;
+  }
+  .mission-story .story-ink {
+    font-size: clamp(27px, 7.5vw, 43px);
+    line-height: 1.65;
+  }
+  .mission-story .story-scene .mission-eyebrow {
+    font-size: 10px;
+    margin-bottom: 18px;
+  }
+  .mission-story .story-together h2 {
+    flex-direction: column;
+    gap: 150px;
+    font-size: 34px;
+  }
+  .mission-story .story-together .story-description {
+    margin-top: 18px;
+  }
+  .mission-story .story-step-title {
+    font-size: clamp(52px, 15vw, 85px);
+  }
+  .mission-story .story-step-th {
+    font-size: 25px;
+  }
+  .mission-story[data-story-enhanced] .story-scene {
+    padding-bottom: 240px;
+  }
+  .mission-story[data-story-enhanced] .story-intro {
+    justify-content: flex-end;
+    padding-bottom: 240px;
+  }
+  .mission-story[data-story-enhanced] .story-statement {
+    justify-content: center;
+    padding-bottom: 220px;
+  }
+  .mission-story[data-story-enhanced] .story-together {
+    padding-bottom: 235px;
+  }
+  .mission-story[data-story-enhanced] .story-bottom {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    padding: 18px 24px;
+  }
+  .mission-story .story-bottom .mission-action {
+    font-size: 14px;
+    gap: 12px;
+  }
+  .mission-story .story-bottom .mission-action-icon {
+    width: 42px;
+    height: 42px;
+  }
+  .mission-story .story-scroll > span {
+    display: none;
+  }
+  .mission-story[data-story-enhanced] .story-chapters {
+    left: 24px;
+    right: 24px;
+    bottom: calc(150px + env(safe-area-inset-bottom));
+    gap: 3px;
+  }
+  .mission-story .story-chapters > a {
+    padding: 6px 2px;
+    min-height: 30px;
+  }
+  .mission-story .story-fallback {
+    object-position: 62% center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mission-home .mission-story {
+    height: auto !important;
+  }
+  .mission-story .story-scroll svg,
+  .mission-story .story-line > span {
+    animation: none !important;
+  }
+  .mission-story .story-step-link svg {
+    transition: none;
+  }
+}
+@media print {
+  .mission-home .mission-story {
+    height: auto !important;
+    color: #111;
+    background: #fff;
+  }
+  .mission-story .story-stage {
+    position: static !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .mission-story .story-copy-stack {
+    position: static !important;
+  }
+  .mission-story .story-scene {
+    position: relative !important;
+    opacity: 1 !important;
+    transform: none !important;
+    min-height: 0 !important;
+    padding: 20px !important;
+    break-inside: avoid;
+  }
+  .mission-story .story-line > span {
+    transform: none !important;
+    animation: none !important;
+  }
+  .mission-story .story-ink {
+    color: #111 !important;
+    background: none !important;
+  }
+  .mission-story .story-visual,
+  .mission-story .story-bottom,
+  .mission-story .story-chapters,
+  .mission-story .story-skip {
+    display: none !important;
+  }
+}
