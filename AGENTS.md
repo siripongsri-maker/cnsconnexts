@@ -10,5 +10,6 @@
 <!-- LOVABLE:END -->
 
 - Homepage scroll reveals use the browser-only `useScrollReveal` hook and CSS opacity/transform animations; keep content visible without JavaScript and bypass motion for reduced-motion/low-spec users to preserve accessibility and scrolling performance.
+- Initialize the homepage orbit scene independently of the scroll timeline, within a viewport-sized visual; keep the fallback visible until the first successful frame to avoid a sequential loading delay.
 - Public app pages share `SpaceNav` and the editorial `AppShell`; site-wide visual tokens and surface rules live in `src/styles.css`, while interactive decks, maps, forms, data and authorization retain their existing domain behavior.
 - Focused onboarding, authentication, chat and profile flows keep their dedicated navigation with shared editorial styling; print sheets use scoped light paper tokens so QR codes remain readable independently of the site theme.
