@@ -24,6 +24,7 @@ import { UsageTracker } from "@/components/usage-tracker";
 import { CacheRefresher } from "@/components/cache-refresher";
 import { useMotionSettings } from "@/lib/motion";
 import { MissionState } from "@/components/mission-ui";
+import { MotionRuntime } from "@/components/motion-runtime";
 
 /* ปุ่มแบบสีทึบ (ไม่ใช้เกรเดียนต์) สำหรับหน้าแจ้งปัญหา — สูง 48px กดง่าย */
 const BTN_PRIMARY =
@@ -152,6 +153,7 @@ function RootComponent() {
           <UsageTracker />
           <CacheRefresher />
           <LowSpecFlag />
+          <MotionRuntime />
 
           <Toaster position="top-center" />
         </StoreProvider>

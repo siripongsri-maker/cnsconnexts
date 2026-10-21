@@ -190,6 +190,8 @@ function AdminBackups() {
               <button
                 type="button"
                 className="min-w-0 flex-1 text-left"
+                aria-expanded={openId === row.id}
+                aria-controls={`backup-snapshot-${row.id}`}
                 onClick={() => setOpenId(openId === row.id ? null : row.id)}
               >
                 <p className="truncate text-sm font-extrabold">{label(row)}</p>
@@ -215,7 +217,14 @@ function AdminBackups() {
               </button>
             </div>
             {openId === row.id ? (
-              <pre className="mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-2 text-xs leading-relaxed">
+              <pre
+                id={`backup-snapshot-${row.id}`}
+                tabIndex={0}
+                role="region"
+                aria-label="รายละเอียดสแนปช็อตสำรอง"
+                className="admin-backup-detail mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-2 text-xs leading-relaxed"
+                data-lenis-prevent
+              >
                 {JSON.stringify(row.old_data ?? row.new_data, null, 2)}
               </pre>
             ) : null}

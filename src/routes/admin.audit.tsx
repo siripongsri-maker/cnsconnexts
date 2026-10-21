@@ -173,16 +173,35 @@ function AdminAudit() {
         <span className="self-center text-sm text-muted-foreground">{rows.length} รายการ</span>
       </div>
 
-      <div className="admin-data-table overflow-x-auto rounded-2xl border">
+      <div
+        className="admin-data-table overflow-x-auto rounded-2xl border"
+        role="region"
+        aria-label="ตารางประวัติการเปลี่ยนแปลงข้อมูล"
+        tabIndex={0}
+        data-lenis-prevent
+      >
         <table className="w-full text-left text-sm">
+          <caption className="sr-only">ประวัติการเปลี่ยนแปลงข้อมูล</caption>
           <thead className="bg-muted/50 text-xs">
             <tr>
-              <th className="p-3">เวลา</th>
-              <th className="p-3">ผู้ทำรายการ</th>
-              <th className="p-3">ช่องทาง</th>
-              <th className="p-3">ตาราง</th>
-              <th className="p-3">การกระทำ</th>
-              <th className="p-3">รายการ</th>
+              <th scope="col" className="p-3">
+                เวลา
+              </th>
+              <th scope="col" className="p-3">
+                ผู้ทำรายการ
+              </th>
+              <th scope="col" className="p-3">
+                ช่องทาง
+              </th>
+              <th scope="col" className="p-3">
+                ตาราง
+              </th>
+              <th scope="col" className="p-3">
+                การกระทำ
+              </th>
+              <th scope="col" className="p-3">
+                รายการ
+              </th>
             </tr>
           </thead>
           <tbody>

@@ -502,16 +502,34 @@ function AdminLogs() {
         )}
       </div>
 
-      <section className="admin-data-table card-soft overflow-x-auto rounded-2xl bg-card">
+      <section
+        className="admin-data-table card-soft overflow-x-auto rounded-2xl bg-card"
+        aria-label="ตารางบันทึกการใช้งาน"
+        tabIndex={0}
+        data-lenis-prevent
+      >
         <table className="w-full text-left text-[12px]">
+          <caption className="sr-only">บันทึกการใช้งานล่าสุด</caption>
           <thead className="bg-muted/40 text-xs font-extrabold">
             <tr>
-              <th className="px-3 py-2">เวลา</th>
-              <th className="px-3 py-2">ประเภท</th>
-              <th className="px-3 py-2">เหตุการณ์</th>
-              <th className="px-3 py-2">หน้า</th>
-              <th className="px-3 py-2">ผู้ใช้</th>
-              <th className="px-3 py-2">หมดอายุ</th>
+              <th scope="col" className="px-3 py-2">
+                เวลา
+              </th>
+              <th scope="col" className="px-3 py-2">
+                ประเภท
+              </th>
+              <th scope="col" className="px-3 py-2">
+                เหตุการณ์
+              </th>
+              <th scope="col" className="px-3 py-2">
+                หน้า
+              </th>
+              <th scope="col" className="px-3 py-2">
+                ผู้ใช้
+              </th>
+              <th scope="col" className="px-3 py-2">
+                หมดอายุ
+              </th>
             </tr>
           </thead>
           <tbody>

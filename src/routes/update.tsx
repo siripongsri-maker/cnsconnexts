@@ -175,7 +175,10 @@ function UpdateMe() {
               try {
                 await saveProfile({ ...draft, source: session?.source });
                 setSaved(true);
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                const motionOff =
+                  window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+                  document.documentElement.hasAttribute("data-lowspec");
+                window.scrollTo({ top: 0, behavior: motionOff ? "instant" : "smooth" });
                 setTimeout(() => setSaved(false), 4000);
               } catch (err) {
                 console.error("[connexts] บันทึกโปรไฟล์ไม่สำเร็จ", err);

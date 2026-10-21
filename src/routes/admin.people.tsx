@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   Search,
   Save,
@@ -537,7 +537,25 @@ function UserDetail({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
+  const closeTimerRef = useRef<number | null>(null);
+  const closingRef = useRef(false);
+  const [closing, setClosing] = useState(false);
   const titleId = useId();
+
+  const requestClose = useCallback((afterClose?: () => void) => {
+    if (closingRef.current) return;
+    const complete = afterClose ?? closeRef.current;
+    const reduced =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.hasAttribute("data-lowspec");
+    if (reduced) {
+      complete();
+      return;
+    }
+    closingRef.current = true;
+    setClosing(true);
+    closeTimerRef.current = window.setTimeout(complete, 180);
+  }, []);
 
   useEffect(() => {
     closeRef.current = onClose;
@@ -552,7 +570,7 @@ function UserDetail({
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        closeRef.current();
+        requestClose();
         return;
       }
       if (event.key !== "Tab" || !panel) return;
@@ -581,9 +599,10 @@ function UserDetail({
     return () => {
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKey);
+      if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current);
       if (previousFocus?.isConnected) previousFocus.focus();
     };
-  }, []);
+  }, [requestClose]);
 
   const nameOf = (id: string) => users.find((u) => u.id === id)?.name ?? id;
   const st = profileStatus(user);
@@ -608,8 +627,10 @@ function UserDetail({
 
   return (
     <div
-      className="admin-person-overlay fixed inset-0 z-50 flex justify-center bg-foreground/40 backdrop-blur-sm"
-      onClick={onClose}
+      className={`admin-person-overlay${closing ? " is-closing" : ""} fixed inset-0 z-50 flex justify-center bg-foreground/40 backdrop-blur-sm`}
+      data-motion-local="true"
+      data-lenis-prevent
+      onClick={() => requestClose()}
     >
       <div
         ref={panelRef}
@@ -632,7 +653,7 @@ function UserDetail({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => requestClose()}
             aria-label="ปิดรายละเอียดสมาชิก"
             className="tap rounded-lg p-1.5 text-muted-foreground"
           >
@@ -776,7 +797,7 @@ function UserDetail({
 
           <button
             type="button"
-            onClick={onEdit}
+            onClick={() => requestClose(onEdit)}
             className="tap w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground"
           >
             แก้ไขข้อมูลผู้ใช้นี้

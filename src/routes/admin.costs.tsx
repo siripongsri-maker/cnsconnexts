@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { FileUp, Loader2, Sparkles, X } from "lucide-react";
@@ -56,6 +56,31 @@ function AdminCosts() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<CostSummary | null>(null);
+  const [resultRevision, setResultRevision] = useState(0);
+  const resultRef = useRef<HTMLElement>(null);
+  const resultHeadingRef = useRef<HTMLHeadingElement>(null);
+  const resultTitleId = useId();
+
+  useEffect(() => {
+    if (resultRevision === 0) return;
+    const panel = resultRef.current;
+    const heading = resultHeadingRef.current;
+    if (!panel || !heading) return;
+    const reduced =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.hasAttribute("data-lowspec");
+    heading.focus({ preventScroll: true });
+    heading.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    if (reduced || typeof panel.animate !== "function") return;
+    const animation = panel.animate(
+      [
+        { opacity: 0, transform: "translate3d(0, 18px, 0)" },
+        { opacity: 1, transform: "translate3d(0, 0, 0)" },
+      ],
+      { duration: 420, easing: "cubic-bezier(.16, 1, .3, 1)" },
+    );
+    return () => animation.cancel();
+  }, [resultRevision]);
 
   if (role && role !== "owner") {
     return (
@@ -83,6 +108,7 @@ function AdminCosts() {
       });
       if (res.ok) {
         setSummary(res.summary);
+        setResultRevision((revision) => revision + 1);
         toast.success("สรุปค่าใช้จ่ายเรียบร้อย");
       } else {
         setError(res.error);
@@ -101,7 +127,16 @@ function AdminCosts() {
         <span>{files.length} / 6 ไฟล์</span>
       </div>
 
-      <section className="admin-cost-input card-soft space-y-5">
+      <p role="status" aria-live="polite" className="sr-only">
+        {busy
+          ? "กำลังอ่านเอกสารและสรุปค่าใช้จ่าย"
+          : error
+            ? ""
+            : summary
+              ? "ผลสรุปค่าใช้จ่ายพร้อมแล้ว"
+              : ""}
+      </p>
+      <section className="admin-cost-input card-soft space-y-5" aria-busy={busy}>
         <label className="admin-upload-zone flex cursor-pointer flex-col items-center justify-center gap-3 border border-dashed border-border p-8 text-center hover:bg-accent">
           <FileUp className="h-6 w-6" aria-hidden />
           <span className="admin-upload-title">แนบไฟล์ค่าใช้จ่าย</span>
@@ -183,23 +218,52 @@ function AdminCosts() {
       </section>
 
       {summary && (
-        <section className="admin-cost-summary card-soft space-y-5" aria-live="polite">
+        <section
+          ref={resultRef}
+          className="admin-cost-summary card-soft space-y-5"
+          aria-labelledby={resultTitleId}
+          data-motion-local="true"
+        >
           <div className="admin-cost-summary-head flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
             <div>
-              <h2 className="admin-section-label">สรุปจากไฟล์</h2>
+              <h2
+                ref={resultHeadingRef}
+                id={resultTitleId}
+                tabIndex={-1}
+                className="admin-cost-result-title admin-section-label"
+              >
+                สรุปจากไฟล์
+              </h2>
               <p className="text-sm text-muted-foreground">{summary.period}</p>
               <p className="admin-cost-total">{thb(summary.total_thb)}</p>
             </div>
           </div>
-          <div className="admin-data-table overflow-x-auto">
+          <div
+            className="admin-data-table overflow-x-auto"
+            role="region"
+            aria-label="ตารางรายการค่าใช้จ่าย"
+            tabIndex={0}
+            data-lenis-prevent
+          >
             <table className="w-full text-sm">
+              <caption className="sr-only">รายการค่าใช้จ่ายจากไฟล์แนบ</caption>
               <thead className="text-left text-muted-foreground">
                 <tr>
-                  <th className="py-2 pr-4">รายการ</th>
-                  <th className="py-2 pr-4">หมวด</th>
-                  <th className="py-2 pr-4 text-right">เครดิต</th>
-                  <th className="py-2 pr-4 text-right">บาท</th>
-                  <th className="py-2">ที่มา</th>
+                  <th scope="col" className="py-2 pr-4">
+                    รายการ
+                  </th>
+                  <th scope="col" className="py-2 pr-4">
+                    หมวด
+                  </th>
+                  <th scope="col" className="py-2 pr-4 text-right">
+                    เครดิต
+                  </th>
+                  <th scope="col" className="py-2 pr-4 text-right">
+                    บาท
+                  </th>
+                  <th scope="col" className="py-2">
+                    ที่มา
+                  </th>
                 </tr>
               </thead>
               <tbody>

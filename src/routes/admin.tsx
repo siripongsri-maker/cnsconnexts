@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   ArrowUpRight,
@@ -194,6 +194,7 @@ function AdminLayout() {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
   const pathname = useRouterState({
     select: (state) => state.location.pathname.replace(/\/$/, ""),
   });
@@ -202,6 +203,27 @@ function AdminLayout() {
     ADMIN_PAGES.findIndex((page) => page.path === pathname),
   );
   const page = ADMIN_PAGES[pageIndex]!;
+
+  useEffect(() => {
+    if (!ready || !authed) return;
+    const nav = navRef.current;
+    if (!nav || !window.matchMedia("(max-width: 1099px)").matches) return;
+    const active = nav.querySelector<HTMLElement>('[data-admin-active="true"]');
+    if (!active || nav.scrollWidth <= nav.clientWidth) return;
+    const bounds = nav.getBoundingClientRect();
+    const item = active.getBoundingClientRect();
+    let left = nav.scrollLeft;
+    if (item.left < bounds.left + 8) left += item.left - bounds.left - 8;
+    else if (item.right > bounds.right - 8) left += item.right - bounds.right + 8;
+    else return;
+    const reduced =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.hasAttribute("data-lowspec");
+    nav.scrollTo({
+      left: Math.max(0, Math.min(left, nav.scrollWidth - nav.clientWidth)),
+      behavior: reduced ? "auto" : "smooth",
+    });
+  }, [pathname, ready, authed]);
 
   if (!ready) {
     return (
@@ -323,13 +345,19 @@ function AdminLayout() {
           คนส.<span>CONNEXTS / CONTROL</span>
         </Link>
         <p className="admin-nav-label">Mission control</p>
-        <nav aria-label="เมนูผู้ดูแล" className="admin-nav no-scrollbar">
+        <nav
+          ref={navRef}
+          aria-label="เมนูผู้ดูแล"
+          className="admin-nav no-scrollbar"
+          data-lenis-prevent
+        >
           {ADMIN_MENU.map(({ to, label, icon: Icon, ...rest }, index) => (
             <Link
               key={to}
               to={to}
               activeOptions={{ exact: "exact" in rest ? Boolean(rest.exact) : false }}
               activeProps={{ className: "is-active" }}
+              data-admin-active={pathname === to ? "true" : undefined}
               className="admin-nav-link tap"
             >
               <Icon className="size-4" aria-hidden="true" />
