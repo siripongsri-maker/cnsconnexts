@@ -1,11 +1,17 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "lenis/dist/lenis.css";
 @import "./styles/mission-system.css";
 @import "./styles/focused-pages.css";
 @import "./styles/core-pages.css";
 @import "./styles/admin-pages.css";
 @import "./styles/secondary-pages.css";
+@import "./styles/navigation-motion.css";
+@import "./styles/admin-motion.css";
+@import "./styles/scroll-motion.css";
+@import "./styles/orbit-scene.css";
+@import "./styles/mission-story.css";
 
 @custom-variant dark (&:is(.dark *));
 
