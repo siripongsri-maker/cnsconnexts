@@ -1,11 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, QrCode } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { SpaceNav } from "@/components/space-nav";
 import { MissionStory } from "@/components/mission-story";
 import { useStore } from "@/lib/store";
 import { getPublicStats } from "@/lib/stats.functions";
-import heroOrbit from "@/assets/hero-orbit-3d.jpg";
 import { PdpaConsent } from "@/components/pdpa-consent";
 import { SponsorFooter } from "@/components/sponsor-footer";
 import { BottomNav } from "@/components/bottom-nav";
@@ -61,42 +59,6 @@ function Welcome() {
       <BottomNav />
       <main id="main-content">
         <MissionStory />
-
-        <section id="explore-network" className="mission-map-section">
-          <img
-            src={heroOrbit}
-            alt="ประเทศไทยและเครือข่ายแสงจากวงโคจร"
-            loading="lazy"
-            width={1024}
-            height={1280}
-            className="mission-map-image"
-          />
-          <div className="mission-map-shade" aria-hidden />
-          <div className="mission-container relative">
-            <p data-reveal lang="en" className="mission-eyebrow">
-              One connected network
-            </p>
-            <h2 data-reveal className="mission-section-title">
-              ต่างพื้นที่
-              <br />
-              พลังเดียวกัน<span className="mission-period">.</span>
-            </h2>
-            <div data-reveal className="mt-10 flex flex-wrap gap-3">
-              <Button asChild variant="mission" className="h-12">
-                <Link to="/map">
-                  สำรวจแผนที่
-                  <ArrowUpRight aria-hidden />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="h-12 rounded-none">
-                <Link to="/marketplace">
-                  แลกเปลี่ยนไอเดีย
-                  <ArrowUpRight aria-hidden />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
 
         <section className="mission-container mission-live" aria-label="สถิติสดในงาน">
           <div data-reveal className="flex flex-wrap items-end justify-between gap-6">
