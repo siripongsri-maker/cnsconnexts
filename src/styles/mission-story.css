@@ -497,6 +497,14 @@
   }
 }
 /* Preserve motion in short previews while reserving room for the scene and actions. */
+@media (min-width: 601px) and (max-width: 1023px) {
+  .mission-story[data-story-enhanced] .story-bottom {
+    bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+  .mission-story[data-story-enhanced] .story-chapters {
+    bottom: calc(172px + env(safe-area-inset-bottom));
+  }
+}
 @media (max-height: 600px) {
   .mission-story[data-story-enhanced] .story-scene {
     padding-top: 76px;

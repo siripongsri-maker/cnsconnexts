@@ -19,7 +19,7 @@
   left: var(--thailand-anchor-x, 68%);
   top: var(--thailand-anchor-y, 52%);
   display: block;
-  width: min(46vw, 36svh, 560px);
+  width: min(46vw, 36svh, calc((96svh - 288px) * 0.625), 560px);
   height: auto;
   aspect-ratio: 5 / 8;
   overflow: visible;
@@ -121,6 +121,18 @@
 @media (max-height: 600px) and (min-width: 701px) {
   .thailand-network-map {
     width: min(34vw, 31.25svh, calc((104svh - 240px) * 0.625));
+  }
+}
+@media (min-width: 701px) and (max-width: 1023px) {
+  .thailand-network-map {
+    top: var(--thailand-anchor-y, 45%);
+    width: min(34vw, 32.5svh, calc((90svh - 340px - 2 * env(safe-area-inset-bottom)) * 0.625));
+  }
+}
+@media (min-width: 701px) and (max-width: 1023px) and (max-height: 600px) {
+  .thailand-network-map {
+    top: var(--thailand-anchor-y, 38%);
+    width: min(34vw, 31.25svh, calc((76svh - 160px - 2 * env(safe-area-inset-bottom)) * 0.625));
   }
 }
 @media (max-width: 700px) and (max-height: 600px) {
