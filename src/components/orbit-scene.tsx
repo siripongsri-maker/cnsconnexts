@@ -540,6 +540,7 @@ export function OrbitScene({
           let firstFrame = true;
           let tornDown = false;
           let compact = window.matchMedia("(max-width: 700px)").matches;
+          let mapAnchorY = compact ? 48 : 52;
           let needsPaint = true;
           let previousGlobeVisible = true;
           let currentProgress = Math.max(0, Math.min(1, progressRef.current || 0));
@@ -572,6 +573,8 @@ export function OrbitScene({
             if (!width || !height) return;
             const narrow = width < 768;
             compact = width <= 700;
+            // Reserve the bottom navigation on tablets and landscape phones.
+            mapAnchorY = compact ? 48 : width < 1024 ? (height <= 600 ? 38 : 45) : 52;
             needsPaint = true;
             activeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, narrow ? 1 : 1.5));
             activeRenderer.setSize(width, height, false);
@@ -647,7 +650,7 @@ export function OrbitScene({
               -0.1,
             );
             anchorDirection
-              .set(compact ? 0 : 0.36, compact ? 0.04 : -0.04, 0.5)
+              .set(compact ? 0 : 0.36, 1 - mapAnchorY / 50, 0.5)
               .unproject(camera)
               .sub(camera.position)
               .normalize();
@@ -674,11 +677,7 @@ export function OrbitScene({
                   : 68
                 : (projectedThailand.x + 1) * 50;
             const anchorY =
-              currentProgress < GLOBE_STORY_END
-                ? compact
-                  ? 48
-                  : 52
-                : (1 - projectedThailand.y) * 50;
+              currentProgress < GLOBE_STORY_END ? mapAnchorY : (1 - projectedThailand.y) * 50;
             story?.style.setProperty("--thailand-anchor-x", `${anchorX.toFixed(3)}%`);
             story?.style.setProperty("--thailand-anchor-y", `${anchorY.toFixed(3)}%`);
             setFade(1 - phase(currentProgress, 0.88, 0.94), focus);
