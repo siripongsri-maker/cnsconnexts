@@ -38,10 +38,11 @@ export function MotionRuntime() {
         locks.observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
         const print = () => lenis.stop();
         const scrollTo = (event: Event) => {
-          const top = (event as CustomEvent<{ top: number }>).detail?.top;
+          const detail = (event as CustomEvent<{ top: number; immediate?: boolean }>).detail;
+          const top = detail?.top;
           if (typeof top !== "number" || !Number.isFinite(top)) return;
           event.preventDefault();
-          lenis.scrollTo(top, { duration: 1.05 });
+          lenis.scrollTo(top, { duration: 1.05, immediate: detail.immediate === true });
         };
         const printed = () => {
           lenis.resize();

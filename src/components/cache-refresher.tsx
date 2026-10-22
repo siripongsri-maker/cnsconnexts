@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 /** เปลี่ยนเลขนี้ทุกครั้งที่ต้องการบังคับให้เครื่องผู้ใช้โหลดเวอร์ชันใหม่ */
-export const APP_BUILD = "2026-10-21-thailand-2";
+export const APP_BUILD = "2026-10-22-public-network";
 
 const KEY = "connexts-build";
 

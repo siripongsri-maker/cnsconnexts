@@ -145,7 +145,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
                 เริ่มเชื่อมพลัง <ArrowUpRight size={19} aria-hidden="true" />
               </Link>
               <Link to="/map" className="people-network-explore">
-                สำรวจแผนที่ <ArrowUpRight size={16} aria-hidden="true" />
+                ค้นหาคนรายจังหวัด <ArrowUpRight size={16} aria-hidden="true" />
               </Link>
             </div>
           </div>

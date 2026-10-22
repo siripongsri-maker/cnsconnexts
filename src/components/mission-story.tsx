@@ -20,6 +20,7 @@ const CHAPTERS = [
 ] as const;
 const CHAPTER_COUNT = CHAPTERS.length;
 const SLOT = 1 / CHAPTER_COUNT;
+const PUBLIC_NETWORK_HASH = "#collective-power";
 const STEPS = [
   { en: "Define", th: "บอกพลังของคุณ", description: "สิ่งที่มี · สิ่งที่มองหา", to: "/onboarding" },
   {
@@ -96,16 +97,54 @@ export function MissionStory() {
     [enhanced, disabled],
   );
 
+  const revealPublicNetwork = useCallback(
+    (immediate = false) => {
+      const target = document.getElementById(PUBLIC_NETWORK_HASH.slice(1));
+      if (!target) return false;
+      const margin = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop) || 0;
+      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - margin);
+      const instant = immediate || disabled;
+      const event = new CustomEvent("connexts:scroll-to", {
+        detail: { top, immediate: instant },
+        cancelable: true,
+      });
+      if (window.dispatchEvent(event)) {
+        window.scrollTo({ top, behavior: instant ? "instant" : "smooth" });
+      }
+      return true;
+    },
+    [disabled],
+  );
+
   useEffect(() => {
-    if (!enhanced) return;
-    const revealHash = () => {
+    let frame = 0;
+    let settledFrame = 0;
+    const revealHash = (immediate: boolean) => {
+      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(settledFrame);
+      if (window.location.hash === PUBLIC_NETWORK_HASH) {
+        // The story grows after its async scroll enhancement. Recompute the
+        // public map's position after that layout and router restoration settle.
+        frame = window.requestAnimationFrame(() => {
+          settledFrame = window.requestAnimationFrame(() => {
+            if (window.location.hash === PUBLIC_NETWORK_HASH) revealPublicNetwork(immediate);
+          });
+        });
+        return;
+      }
+      if (!enhanced) return;
       const index = CHAPTERS.findIndex(({ href }) => href === window.location.hash);
       if (index >= 0) jump(index);
     };
-    revealHash();
-    window.addEventListener("hashchange", revealHash);
-    return () => window.removeEventListener("hashchange", revealHash);
-  }, [enhanced, jump]);
+    revealHash(true);
+    const changed = () => revealHash(false);
+    window.addEventListener("hashchange", changed);
+    return () => {
+      window.removeEventListener("hashchange", changed);
+      window.cancelAnimationFrame(frame);
+      window.cancelAnimationFrame(settledFrame);
+    };
+  }, [enhanced, jump, revealPublicNetwork]);
 
   useEffect(() => {
     const el = host.current;
@@ -228,15 +267,14 @@ export function MissionStory() {
     >
       <a
         className="story-skip"
-        href="#explore-network"
+        href={PUBLIC_NETWORK_HASH}
         onClick={(event) => {
-          if (!enhanced) return;
+          if (!revealPublicNetwork()) return;
           event.preventDefault();
           event.stopPropagation();
-          jump(CHAPTER_COUNT - 1);
         }}
       >
-        ข้ามเรื่องราว ไปสำรวจเครือข่าย
+        ข้ามเรื่องราว ไปดูเครือข่ายจริง
       </a>
       <div className="story-stage">
         <div className="story-visual" aria-hidden="true">
@@ -383,9 +421,17 @@ export function MissionStory() {
                 <ThailandNetwork progressRef={progressRef} disabled />
               </div>
             )}
-            <Link to="/map" className="story-step-link">
-              สำรวจแผนที่พลัง <ArrowUpRight size={20} aria-hidden="true" />
-            </Link>
+            <a
+              href={PUBLIC_NETWORK_HASH}
+              className="story-step-link"
+              onClick={(event) => {
+                if (!revealPublicNetwork()) return;
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+            >
+              ดูเครือข่ายจริง <ArrowUpRight size={20} aria-hidden="true" />
+            </a>
             <p className="story-map-note">ภาพแนวคิดการเชื่อมโยงพื้นที่</p>
           </section>
         </div>
@@ -431,15 +477,20 @@ export function MissionStory() {
             <ArrowDown size={16} aria-hidden="true" />
             <span>เลื่อนเพื่อรู้จักเรา</span>
           </a>
-          <Link
-            to={enhanced && chapter === CHAPTER_COUNT - 1 ? "/map" : "/onboarding"}
+          <a
+            href={PUBLIC_NETWORK_HASH}
             className="mission-action"
+            onClick={(event) => {
+              if (!revealPublicNetwork()) return;
+              event.preventDefault();
+              event.stopPropagation();
+            }}
           >
-            {enhanced && chapter === CHAPTER_COUNT - 1 ? "สำรวจแผนที่พลัง" : "เริ่มเชื่อมพลัง"}
+            ดูเครือข่ายจริง
             <span className="mission-action-icon">
               <ArrowUpRight aria-hidden="true" />
             </span>
-          </Link>
+          </a>
         </div>
       </div>
     </section>
