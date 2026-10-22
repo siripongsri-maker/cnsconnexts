@@ -1,22 +1,25 @@
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, ArrowUpRight, MoveUpRight, Plus, Minus } from "lucide-react";
-import { buildPeopleNetwork } from "@/lib/people-network";
+import {
+  buildPeopleNetwork,
+  type NetworkPerson,
+  type NetworkConnection,
+} from "@/lib/people-network";
 import { PROVINCES } from "@/lib/thailand-geo";
 import { issueTh, provinceTh, STATUS_TH } from "@/lib/i18n";
-import type { Connection, User } from "@/lib/types";
 
 type Selection = { kind: "edge" | "person"; id: string } | null;
 type Props = {
-  users: User[];
-  connections: Connection[];
-  me: User | null;
+  users: NetworkPerson[];
+  connections: NetworkConnection[];
+  me: NetworkPerson | null;
   hydrated: boolean;
   available: boolean;
   totals: { people: number; ideas: number; connections: number };
 };
 
-/** Uses only the store's public profiles and authorized, recorded connections. */
+/** Displays the explicitly approved, minimal public network projection. */
 export function PeopleNetwork({ users, connections, me, hydrated, available, totals }: Props) {
   const uid = useId().replace(/:/g, "");
   const graph = useMemo(() => buildPeopleNetwork(users, connections, me), [users, connections, me]);
@@ -215,7 +218,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
                     data-muted={hasSelection && !activePeople.has(node.id)}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${node.user.name} · ${node.province.th} · ${node.degree} คู่เชื่อมที่แสดงได้`}
+                    aria-label={`${node.user.name} · ${node.province.th} · ${node.degree} คู่เชื่อม`}
                     aria-pressed={activePeople.has(node.id)}
                     aria-controls={`${uid}-details`}
                     onPointerEnter={() => activate("person", node.id)}
@@ -261,7 +264,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
             </div>
             <p id={`${uid}-map-note`} className="people-network-map-note">
               ตำแหน่งแสดงระดับจังหวัด · {graph.plottedEdges.length.toLocaleString("th-TH")}{" "}
-              เส้นที่คุณมีสิทธิ์ดู
+              คู่เชื่อมสาธารณะ
             </p>
           </div>
 
@@ -275,7 +278,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
               {edge
                 ? `${edge.source.name} เชื่อมกับ ${edge.target.name} ความสนใจที่ตรงกัน: ${edge.sharedInterests.length ? edge.sharedInterests.map(issueTh).join(" · ") : "ยังไม่มีประเด็นที่ระบุร่วมกัน"}`
                 : selectedPerson
-                  ? `${selectedPerson.name} ${provinceTh(selectedPerson.province)} ยังไม่มีคู่เชื่อมที่แสดงได้`
+                  ? `${selectedPerson.name} ${provinceTh(selectedPerson.province)} ยังไม่มีคู่เชื่อม`
                   : "เลือกจุดหรือเส้นเพื่อดูรายละเอียด"}
             </p>
             <div className="people-network-detail-head">
@@ -332,29 +335,16 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
                   )}
                   {selectedPerson && personEdges.length > 1 && (
                     <p className="people-network-unlocated">
-                      {selectedPerson.name} มี {personEdges.length} คู่เชื่อมที่แสดงได้
-                      เลือกดูทุกคู่ด้านล่าง
+                      {selectedPerson.name} มี {personEdges.length} คู่เชื่อม เลือกดูทุกคู่ด้านล่าง
                     </p>
                   )}
                 </>
               ) : selectedPerson ? (
                 <>
                   <Person person={selectedPerson} />
-                  <div className="people-network-topics">
-                    <h3>ความสนใจ</h3>
-                    {selectedPerson.interests.length ? (
-                      <ul>
-                        {[...new Set(selectedPerson.interests)].map((interest) => (
-                          <li key={interest}>{issueTh(interest)}</li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p>ยังไม่ระบุความสนใจ</p>
-                    )}
-                  </div>
                   <div className="people-network-empty">
-                    <h3>ยังไม่มีคู่เชื่อมที่แสดงได้</h3>
-                    <p>เส้นจะแสดงเมื่อมีบันทึกการเชื่อมต่อที่คุณมีสิทธิ์ดู</p>
+                    <h3>ยังไม่มีคู่เชื่อม</h3>
+                    <p>เส้นจะแสดงเมื่อมีบันทึกการเชื่อมต่อในระบบ</p>
                   </div>
                 </>
               ) : (
@@ -365,7 +355,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
                     <br />
                     แล้วรู้จักคนในเครือข่าย
                   </p>
-                  {!graph.edges.length && <p>ยังไม่มีคู่เชื่อมที่แสดงได้</p>}
+                  {!graph.edges.length && <p>ยังไม่มีคู่เชื่อม</p>}
                 </div>
               )}
             </div>
@@ -388,7 +378,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
                   {graph.edges.length ? "เลือกคู่ที่อยากรู้จัก" : "เลือกคนที่อยากรู้จัก"}
                 </option>
                 {!!graph.edges.length && (
-                  <optgroup label="คู่เชื่อมต่อที่คุณมีสิทธิ์ดู">
+                  <optgroup label="คู่เชื่อมต่อสาธารณะ">
                     {graph.edges.map((item) => (
                       <option key={item.id} value={`edge:${item.id}`}>
                         {item.source.name} ↔ {item.target.name}
@@ -444,7 +434,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
             {graph.unlocatedEdges.length > 0 &&
               `${graph.unlocatedEdges.length} คู่ยังระบุจังหวัดไม่ครบ · `}
             {locationMissing > 0 && `${locationMissing} คนยังไม่มีตำแหน่งจังหวัด · `}
-            เส้นเชื่อมแสดงเฉพาะข้อมูลที่คุณมีสิทธิ์ดู
+            เส้นเชื่อมจากบันทึกจริง · อัปเดตอัตโนมัติ
           </p>
         </div>
       </div>
@@ -452,7 +442,7 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
   );
 }
 
-function Person({ person }: { person: User }) {
+function Person({ person }: { person: NetworkPerson }) {
   return (
     <div className="people-network-person">
       <span className="people-network-avatar" aria-hidden="true">
