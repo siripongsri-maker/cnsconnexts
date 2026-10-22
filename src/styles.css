@@ -13,6 +13,7 @@
 @import "./styles/orbit-scene.css";
 @import "./styles/mission-story.css";
 @import "./styles/thailand-network.css";
+@import "./styles/people-network.css";
 
 @custom-variant dark (&:is(.dark *));
 
