@@ -994,7 +994,7 @@ body::after {
     linear-gradient(180deg, #02050b, #07111c 62%, #040a12);
 }
 .collective-inner {
-  padding-block: clamp(72px, 8vw, 132px) 0;
+  padding-block: clamp(64px, 6vw, 100px) 0;
 }
 .collective-heading {
   position: relative;
@@ -1002,7 +1002,7 @@ body::after {
   grid-template-columns: 1.2fr 1fr;
   align-items: center;
   gap: 24px;
-  min-height: 390px;
+  min-height: 350px;
 }
 .collective-copy {
   position: relative;
@@ -1057,7 +1057,7 @@ body::after {
 .collective-visual {
   pointer-events: none;
   aspect-ratio: 1;
-  width: min(100%, 550px);
+  width: min(100%, 380px);
   justify-self: end;
 }
 .collective-orbits {
@@ -1082,7 +1082,7 @@ body::after {
 .collective-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 68px;
+  margin-top: 48px;
   border-block: 1px solid #294156;
 }
 .collective-metric {
