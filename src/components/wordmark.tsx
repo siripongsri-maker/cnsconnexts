@@ -1,5 +1,3 @@
-import cnsMark from "@/assets/cns-mark.png.asset.json";
-
 /**
  * แบรนด์ "คนส. Connexts" — กิมมิค: ค-น-ส ↔ C-N-S
  * ในคำ connexts ตัว C N S จะถูกเน้นให้เชื่อมโยงกับ "คนส."
@@ -40,7 +38,6 @@ const MARK_SIZE: Record<Size, string> = {
   md: "h-7 w-7 sm:h-9 sm:w-9",
   hero: "h-9 w-9 sm:h-12 sm:w-12",
 };
-
 
 export function Wordmark({
   size = "sm",
@@ -94,11 +91,9 @@ export function Wordmark({
   if (!withMark) return text;
 
   return (
-    <span
-      className={`inline-flex min-w-0 max-w-full items-center gap-1.5 sm:gap-2 ${className}`}
-    >
+    <span className={`inline-flex min-w-0 max-w-full items-center gap-1.5 sm:gap-2 ${className}`}>
       <img
-        src={cnsMark.url}
+        src="/brand/cns-mark-transparent.svg"
         alt=""
         aria-hidden
         loading="lazy"
