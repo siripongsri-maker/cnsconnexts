@@ -1,10 +1,8 @@
-import logoAsset from "@/assets/cns-mark.png.asset.json";
-
-const logoUrl = logoAsset.url;
 import { issueTh, powerTh, REGION_LABEL } from "./i18n";
 import type { MatchResult } from "./matching";
 import type { User } from "./types";
 
+const logoUrl = "/brand/cns-mark-transparent.svg";
 const W = 1080;
 const H = 1350;
 
@@ -214,7 +212,9 @@ export async function renderShareCard(
   ctx.fillText(nameLines[0] ?? me.name, px + 148, y + 2);
   ctx.font = `400 30px ${FONT}`;
   ctx.fillStyle = "#6b6480";
-  const meta = [me.organization, me.province || REGION_LABEL[me.region]].filter(Boolean).join(" · ");
+  const meta = [me.organization, me.province || REGION_LABEL[me.region]]
+    .filter(Boolean)
+    .join(" · ");
   ctx.fillText(wrap(ctx, meta, W - px - 200 - 112, 1)[0] ?? "", px + 148, y + 48);
 
   y += 130;
@@ -290,7 +290,11 @@ export async function renderShareCard(
   ctx.fillText("สมัชชาสุขภาพแห่งชาติ · สแกน QR เพื่อเข้าร่วม", 72, H - 62);
 
   return await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("สร้างภาพไม่สำเร็จ"))), "image/png", 0.95),
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("สร้างภาพไม่สำเร็จ"))),
+      "image/png",
+      0.95,
+    ),
   );
 }
 
