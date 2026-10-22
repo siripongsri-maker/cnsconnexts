@@ -821,10 +821,10 @@ circle.people-network-node:focus-visible,
   }
   .people-network-pair {
     gap: 16px;
-    margin-top: 16px;
+    margin-top: 8px;
   }
   .people-network-topics {
-    margin-top: 16px;
+    margin-top: 12px;
     padding-top: 14px;
   }
   .people-network-topics ul,
@@ -836,7 +836,7 @@ circle.people-network-node:focus-visible,
     padding: 10px 16px;
   }
   .people-network-status {
-    margin-top: 14px;
+    margin-top: 10px;
   }
   .people-network-inspector > .people-network-unlocated {
     padding: 8px 16px;
