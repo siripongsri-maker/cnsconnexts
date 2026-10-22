@@ -1,4 +1,7 @@
 /* The real network is a single desktop viewport; smaller screens keep a normal document flow. */
+.site-experience .mission-home:has(.people-network) .space-nav {
+  background: #03080ef5;
+}
 .collective-power.people-network {
   background:
     radial-gradient(ellipse at 52% 40%, #0a37504d, transparent 58%),
