@@ -24,7 +24,11 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
   const [zoom, setZoom] = useState({ level: 1, x: 500, y: 800 });
   const inspectorRef = useRef<HTMLElement>(null);
   const selectedPerson =
-    selection?.kind === "person" ? graph.people.find((u) => u.id === selection.id) : null;
+    selection?.kind === "person"
+      ? graph.people.find((u) => u.id === selection.id)
+      : selection === null && !graph.edges.length
+        ? graph.people[0]
+        : null;
   const personEdges = selectedPerson
     ? graph.edges.filter(
         (edge) => edge.source.id === selectedPerson.id || edge.target.id === selectedPerson.id,
@@ -336,6 +340,18 @@ export function PeopleNetwork({ users, connections, me, hydrated, available, tot
               ) : selectedPerson ? (
                 <>
                   <Person person={selectedPerson} />
+                  <div className="people-network-topics">
+                    <h3>ความสนใจ</h3>
+                    {selectedPerson.interests.length ? (
+                      <ul>
+                        {[...new Set(selectedPerson.interests)].map((interest) => (
+                          <li key={interest}>{issueTh(interest)}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>ยังไม่ระบุความสนใจ</p>
+                    )}
+                  </div>
                   <div className="people-network-empty">
                     <h3>ยังไม่มีคู่เชื่อมที่แสดงได้</h3>
                     <p>เส้นจะแสดงเมื่อมีบันทึกการเชื่อมต่อที่คุณมีสิทธิ์ดู</p>
