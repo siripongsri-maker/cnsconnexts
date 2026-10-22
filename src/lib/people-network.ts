@@ -1,9 +1,15 @@
 import { PROVINCES, type ProvinceShape } from "./thailand-geo";
 import type { Connection, User } from "./types";
 
+export type NetworkPerson = Pick<User, "id" | "name" | "province" | "region" | "interests"> &
+  Pick<Partial<User>, "source" | "created_at" | "updated_at">;
+
+export type NetworkConnection = Pick<Connection, "id" | "user_a" | "user_b" | "status"> &
+  Pick<Partial<Connection>, "created_at" | "pending">;
+
 export type PeopleNetworkNode = {
   id: string;
-  user: User;
+  user: NetworkPerson;
   province: ProvinceShape;
   /** Diagram positions within the stated province, never a person's address. */
   x: number;
@@ -14,10 +20,10 @@ export type PeopleNetworkNode = {
 export type PeopleNetworkEdge = {
   /** Stable unordered pair key; a pair is drawn only once. */
   id: string;
-  source: User;
-  target: User;
-  /** Original records, newest first, without conflating their statuses. */
-  connections: Connection[];
+  source: NetworkPerson;
+  target: NetworkPerson;
+  /** Original records, newest first when dated, otherwise by stable ID. */
+  connections: NetworkConnection[];
   sharedInterests: string[];
   sourceNode: PeopleNetworkNode | null;
   targetNode: PeopleNetworkNode | null;
@@ -26,7 +32,7 @@ export type PeopleNetworkEdge = {
 };
 
 export type PeopleNetwork = {
-  people: User[];
+  people: NetworkPerson[];
   nodes: PeopleNetworkNode[];
   edges: PeopleNetworkEdge[];
   plottedEdges: PeopleNetworkEdge[];
@@ -138,17 +144,17 @@ function edgePath(source: PeopleNetworkNode, target: PeopleNetworkNode, id: stri
  * The caller must pass only records it is authorized to display.
  */
 export function buildPeopleNetwork(
-  users: readonly User[],
-  connections: readonly Connection[],
-  me: User | null = null,
+  users: readonly NetworkPerson[],
+  connections: readonly NetworkConnection[],
+  me: NetworkPerson | null = null,
 ): PeopleNetwork {
-  const byId = new Map<string, User>();
+  const byId = new Map<string, NetworkPerson>();
   for (const user of users) {
     if (user.source === "demo") continue;
     const existing = byId.get(user.id);
-    const revision = (profile: User) =>
+    const revision = (profile: NetworkPerson) =>
       JSON.stringify([
-        profile.updated_at || profile.created_at,
+        profile.updated_at || profile.created_at || "",
         profile.name,
         profile.province,
         [...profile.interests].sort(compare),
@@ -164,7 +170,10 @@ export function buildPeopleNetwork(
   }
   const resolve = (id: string) => byId.get(id === "me" && me ? me.id : id);
   const people = [...byId.values()].sort((a, b) => compare(a.id, b.id));
-  const pairs = new Map<string, { source: User; target: User; connections: Connection[] }>();
+  const pairs = new Map<
+    string,
+    { source: NetworkPerson; target: NetworkPerson; connections: NetworkConnection[] }
+  >();
   const degree = new Map<string, number>();
   let unresolvedRecords = 0;
   let pendingRecords = 0;
@@ -227,7 +236,7 @@ export function buildPeopleNetwork(
         id,
         ...pair,
         connections: [...pair.connections].sort(
-          (a, b) => compare(b.created_at, a.created_at) || compare(a.id, b.id),
+          (a, b) => compare(b.created_at ?? "", a.created_at ?? "") || compare(a.id, b.id),
         ),
         sharedInterests,
         sourceNode,
