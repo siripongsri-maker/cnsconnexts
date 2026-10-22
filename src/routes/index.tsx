@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SpaceNav } from "@/components/space-nav";
 import { MissionStory } from "@/components/mission-story";
 import { PeopleNetwork } from "@/components/people-network";
 import { useStore } from "@/lib/store";
 import { getPublicStats } from "@/lib/stats.functions";
+import { getPublicPeopleNetwork } from "@/lib/people-network.functions";
 import { PdpaConsent } from "@/components/pdpa-consent";
 import { SponsorFooter } from "@/components/sponsor-footer";
 import { BottomNav } from "@/components/bottom-nav";
@@ -30,10 +33,16 @@ export const Route = createFileRoute("/")({
   }),
   loader: async () => {
     try {
-      const stats = await getPublicStats();
-      return { stats };
+      const [stats, publicNetwork] = await Promise.all([
+        getPublicStats(),
+        getPublicPeopleNetwork(),
+      ]);
+      return { stats, publicNetwork };
     } catch {
-      return { stats: { participants: 0, ideas: 0, connections: 0 } };
+      return {
+        stats: { participants: 0, ideas: 0, connections: 0 },
+        publicNetwork: { people: [], connections: [], available: false },
+      };
     }
   },
   component: Welcome,
@@ -41,15 +50,30 @@ export const Route = createFileRoute("/")({
 
 function Welcome() {
   const revealRef = useScrollReveal();
-  const { stats } = Route.useLoaderData();
-  const { users, ideas, connections, me, hydrated, networkAvailable } = useStore();
+  const { stats, publicNetwork } = Route.useLoaderData();
+  const { users, ideas, connections, hydrated } = useStore();
+  const queryClient = useQueryClient();
+  const networkQuery = useQuery({
+    queryKey: ["public-people-network"],
+    queryFn: () => getPublicPeopleNetwork(),
+    initialData: publicNetwork,
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
+  const recordedRevision = connections
+    .filter((connection) => !connection.pending)
+    .map((connection) => `${connection.id}:${connection.status}`)
+    .sort()
+    .join("|");
+  useEffect(() => {
+    if (hydrated) void queryClient.invalidateQueries({ queryKey: ["public-people-network"] });
+  }, [recordedRevision, hydrated, queryClient]);
+  const network = networkQuery.data;
   const totals = {
     people: Math.max(stats.participants, users.length),
     ideas: Math.max(stats.ideas, ideas.length),
-    connections: Math.max(
-      stats.connections,
-      connections.filter((connection) => !connection.pending).length,
-    ),
+    connections: Math.max(stats.connections, network.connections.length),
   };
   return (
     <div ref={revealRef} className="mission-home">
@@ -60,11 +84,11 @@ function Welcome() {
         <MissionStory />
 
         <PeopleNetwork
-          users={users}
-          connections={connections}
-          me={me}
-          hydrated={hydrated}
-          available={networkAvailable}
+          users={network.people}
+          connections={network.connections}
+          me={null}
+          hydrated={true}
+          available={network.available && !networkQuery.isError}
           totals={totals}
         />
       </main>
