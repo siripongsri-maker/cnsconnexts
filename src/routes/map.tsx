@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Plus, X } from "lucide-react";
+import { ArrowUpRight, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { MissionVisual } from "@/components/mission-ui";
@@ -192,6 +192,14 @@ function PowerMap() {
       }
     >
       <div className="core-page core-map">
+        <Link
+          to="/"
+          hash="collective-power"
+          className="tap mx-5 mb-5 flex min-h-14 items-center justify-between gap-4 border border-primary bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
+        >
+          ดูเครือข่ายการเชื่อมต่อ
+          <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+        </Link>
         <details className="core-map-filters core-filter-panel px-5 py-3" open>
           <summary className="core-filter-summary">
             <span>
