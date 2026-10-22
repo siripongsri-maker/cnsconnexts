@@ -565,6 +565,7 @@
   }
   .mission-app-footer {
     width: calc(100% - 40px);
+    flex-direction: column;
     align-items: flex-start;
     gap: 24px;
     padding-block: 30px;
@@ -573,13 +574,8 @@
     font-size: 15px;
   }
   .mission-app-footer > footer {
-    min-width: 88px;
-  }
-  .mission-app-footer > footer img {
-    height: 44px;
-  }
-  .mission-app-footer > footer p {
-    font-size: 9px;
+    min-width: 0;
+    align-items: flex-start;
   }
   .mission-state {
     padding: 24px 16px;
