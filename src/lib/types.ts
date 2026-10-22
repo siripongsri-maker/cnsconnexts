@@ -119,6 +119,8 @@ export type Connection = {
   match_reason: string;
   status: ConnectionStatus;
   created_at: string;
+  /** Local optimistic record; excluded from recorded network views until refreshed. */
+  pending?: boolean;
 };
 
 export type Commitment = {

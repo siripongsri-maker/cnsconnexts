@@ -81,6 +81,8 @@ export type PendingProfile = {
 type Store = State & {
   /** โหลดข้อมูลรอบแรกจากฐานข้อมูลเสร็จแล้ว (หรือโหลดไม่สำเร็จ) */
   hydrated: boolean;
+  /** Whether the latest public profile/authorized connection read succeeded. */
+  networkAvailable: boolean;
   /** อ่านข้อมูลในเครื่องเสร็จแล้ว (เช่น รหัสโปรไฟล์ของฉัน) — ยังอาจรอข้อมูลจากฐานข้อมูลอยู่ */
   booted: boolean;
   /** โหลดรูปโปรไฟล์/รูปผลงานเบื้องหลังเสร็จแล้ว */
@@ -267,6 +269,7 @@ function writeMeCache(myId: string | null, me: User | null) {
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(initial);
   const [hydrated, setHydrated] = useState(false);
+  const [networkAvailable, setNetworkAvailable] = useState(true);
   const [booted, setBooted] = useState(false);
   const [photosLoaded, setPhotosLoaded] = useState(false);
   const photosLoadedRef = useRef(false);
@@ -340,6 +343,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       db.from("province_notes").select("*").order("created_at", { ascending: false }),
     ]);
 
+    setNetworkAvailable(!p.error && !c.error);
     const pRows = (p.data as Row[]) ?? [];
     const sRows = (sb.data as Row[]) ?? [];
     // หลังโหลดรูปรอบแรกแล้ว ดึงรูปเพิ่มเฉพาะแถวใหม่/แถวที่ถูกแก้
@@ -544,6 +548,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
         await refresh();
       } catch (e) {
+        setNetworkAvailable(false);
         console.error("[store] boot failed", e);
       } finally {
         // ไม่ว่าสำเร็จหรือไม่ ห้ามค้างหน้าโหลดไว้ตลอดไป
@@ -756,6 +761,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         match_reason: reason,
         status: "Connected",
         created_at: new Date().toISOString(),
+        pending: true,
       };
 
       setState((s) => {
@@ -1281,6 +1287,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       hydrated,
+      networkAvailable,
       booted,
       photosLoaded,
       saveProfile,
@@ -1318,7 +1325,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, booted, photosLoaded, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, networkAvailable, booted, photosLoaded, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
