@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Sparkles, HeartHandshake, Compass, CircleUserRound } from "lucide-react";
 
@@ -26,11 +27,35 @@ export function isNavActive(pathname: string, match: readonly string[]): boolean
   );
 }
 
+/**
+ * ความสูงจริงของเมนูล่าง (รวม safe area) เป็นตัวแปร CSS ที่ <html> — ของที่ลอยเหนือเมนู
+ * (เช่น แถบปุ่มของสำรับ) ใช้ var(--bottom-nav-height) แทนตัวเลขตายตัว จึงชิดพอดีทุกขนาดจอ
+ * (จอ < 360px ซ่อนคำเมนู เมนูเตี้ยลง หรือผู้ใช้ขยายตัวอักษร)
+ */
+export const BOTTOM_NAV_HEIGHT_VAR = "--bottom-nav-height";
+
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const root = document.documentElement;
+    const publish = () => root.style.setProperty(BOTTOM_NAV_HEIGHT_VAR, `${nav.offsetHeight}px`);
+    publish();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(publish);
+    observer.observe(nav);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty(BOTTOM_NAV_HEIGHT_VAR);
+    };
+  }, []);
 
   return (
     <nav
+      ref={navRef}
       aria-label="เมนูหลัก"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg"
     >

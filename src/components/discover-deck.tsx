@@ -10,15 +10,20 @@ import {
   swipeOutcome,
   swipeRotation,
   tryAcquireLock,
+  unseenEntries,
 } from "@/lib/deck-rules";
 import { useMotionSettings } from "@/lib/motion";
 import { useStore } from "@/lib/store";
 import type { Connection, User } from "@/lib/types";
+import { BOTTOM_NAV_HEIGHT_VAR } from "./bottom-nav";
 import { MatchCard } from "./match-card";
 import { MeadowScene } from "./meadow-scene";
 
-/** เมนูล่างสูง ~76px (+ขอบ) — แถบปุ่มลอยอยู่เหนือมันพอดี */
-const ACTION_BAR_BOTTOM = "calc(84px + env(safe-area-inset-bottom))";
+/**
+ * แถบปุ่มลอยชิดขอบบนของเมนูล่างพอดี (BottomNav วัดความสูงจริงใส่ตัวแปร CSS)
+ * ค่าสำรองก่อนวัดเสร็จ = เมนู 77px + safe area
+ */
+const ACTION_BAR_BOTTOM = `var(${BOTTOM_NAV_HEIGHT_VAR}, calc(77px + env(safe-area-inset-bottom)))`;
 /** ระยะลากที่เริ่มนับว่าเป็นการปัด (กันแตะลิงก์ในการ์ดแล้วการ์ดขยับ) */
 const DRAG_START = 8;
 /** เวลาให้การ์ดลอยออกก่อนเปลี่ยนใบ */
@@ -29,15 +34,19 @@ type Leave = "left" | "right";
 /**
  * สำรับจับคู่ — การ์ดใหญ่ทีละใบ ปุ่มใหญ่ ข้าม / ขอเชื่อมต่อ / เก็บไว้
  * ปัดซ้าย = ข้าม ปัดขวา = เก็บไว้ (ทางลัดเสริม ปุ่มใช้ได้เสมอ)
+ * ปุ่มหลักของแต่ละสถานะมี data-deck-primary ให้หน้าแม่ย้ายโฟกัสกลับมาได้ (เช่น หลังปิดจอฉลอง)
  */
 export function DiscoverDeck({
   entries,
   me,
+  loading = false,
   onNeedProfile,
   onConnected,
 }: {
   entries: DeckEntry[];
   me: User | null;
+  /** บังคับแสดงการ์ดโครงกำลังโหลด เช่น คนเดิมที่มีรหัสในเครื่องแต่โปรไฟล์ยังไม่มา */
+  loading?: boolean;
   onNeedProfile: (target: User) => void;
   onConnected: (c: Connection, entry: DeckEntry) => void;
 }) {
@@ -80,18 +89,15 @@ export function DiscoverDeck({
 
   // ข้ามคนที่ไม่มีชื่อ (buildDeck ฝั่งมีโปรไฟล์ไม่ได้กรองให้)
   const named = entries.filter((e) => e.user.name.trim() !== "");
-  const remaining = named.filter(
-    (e) =>
-      !skippedUsers.includes(e.user.id) &&
-      !likedUsers.includes(e.user.id) &&
-      !passed.includes(e.user.id),
-  );
-  const state = deckState({
-    hydrated,
-    networkAvailable,
-    total: named.length,
-    remaining: remaining.length,
-  });
+  const remaining = unseenEntries(named, [...skippedUsers, ...likedUsers, ...passed]);
+  const state = loading
+    ? "loading"
+    : deckState({
+        hydrated,
+        networkAvailable,
+        total: named.length,
+        remaining: remaining.length,
+      });
   const top = state === "ready" ? remaining[0] : undefined;
 
   const undoButton =
@@ -143,6 +149,7 @@ export function DiscoverDeck({
           <button
             type="button"
             onClick={retry}
+            data-deck-primary
             aria-disabled={retrying}
             aria-busy={retrying}
             className="meadow-btn-secondary tap aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
@@ -164,6 +171,7 @@ export function DiscoverDeck({
             <Link
               to="/commitments"
               hash="saved"
+              data-deck-primary
               className="meadow-btn-primary tap w-full max-w-sm text-center"
             >
               ดูคนที่เก็บไว้
@@ -339,6 +347,7 @@ export function DiscoverDeck({
         <button
           type="button"
           onClick={doPrimary}
+          data-deck-primary
           aria-disabled={locked}
           className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
         >

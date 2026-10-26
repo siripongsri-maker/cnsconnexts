@@ -6,7 +6,7 @@
 const CONNEXTS = "connexts".split("");
 const HILITE = new Set([0, 2, 7]); // c, n, s
 
-type Size = "xs" | "sm" | "md" | "hero";
+type Size = "xs" | "sm" | "md" | "hero" | "header";
 
 /** ขนาดฟอนต์แบบ responsive ในตัวเอง (ไม่พึ่งขนาดจาก parent) */
 const SIZES: Record<Size, { th: string; en: string; gap: string }> = {
@@ -30,6 +30,12 @@ const SIZES: Record<Size, { th: string; en: string; gap: string }> = {
     en: "text-[clamp(1.7rem,8.4vw,4.25rem)]",
     gap: "gap-y-0.5 sm:gap-y-1",
   },
+  /** แถบหัวธีมทุ่ง — ขนาดตายตัว ตัวไทยไม่ต่ำกว่า 20px บนทุกจอ */
+  header: {
+    th: "text-[20px]",
+    en: "text-[24px]",
+    gap: "gap-x-1.5",
+  },
 };
 
 const MARK_SIZE: Record<Size, string> = {
@@ -37,6 +43,7 @@ const MARK_SIZE: Record<Size, string> = {
   sm: "h-[18px] w-[18px] sm:h-6 sm:w-6",
   md: "h-7 w-7 sm:h-9 sm:w-9",
   hero: "h-9 w-9 sm:h-12 sm:w-12",
+  header: "h-10 w-10",
 };
 
 export function Wordmark({

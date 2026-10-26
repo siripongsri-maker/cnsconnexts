@@ -11,19 +11,11 @@ import {
   type QuickDraft,
   type QuickStep,
 } from "@/lib/quick-profile";
+import { isDevPreview } from "@/lib/dev-preview";
 import { useStore } from "@/lib/store";
 import { ISSUES, POWERS, REGIONS, type Power, type User } from "@/lib/types";
 
 const SAVE_ERROR = "บันทึกยังไม่สำเร็จ ข้อมูลที่กรอกยังอยู่ ลองกดอีกครั้ง";
-
-/** โหมดทดสอบเฉพาะตอน dev (?dryrun) — ไม่เรียก saveProfile ไม่เขียนข้อมูลจริง และไม่มีผลใน production build */
-function isDryRun(): boolean {
-  return (
-    import.meta.env.DEV &&
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("dryrun")
-  );
-}
 
 function toggle(list: string[], key: string): string[] {
   return list.includes(key) ? list.filter((k) => k !== key) : [...list, key];
@@ -92,14 +84,43 @@ function IssueToggle({
   );
 }
 
+export type QuickProfileFormProps = {
+  onSaved: (me: User) => void;
+  /**
+   * ร่างคำตอบแบบผู้เรียกถือเอง (ไม่ส่ง = ฟอร์มเก็บเอง) — แผ่นล่างที่ปิดแล้วเปิดใหม่จะได้คำตอบเดิม
+   * เพราะเนื้อหาแผ่นถูกถอดออกตอนปิด
+   */
+  draft?: QuickDraft;
+  onDraftChange?: (draft: QuickDraft) => void;
+  /** ขั้นปัจจุบันแบบผู้เรียกถือเอง (ไม่ส่ง = เริ่มขั้นที่ 1 และฟอร์มเก็บเอง) */
+  step?: QuickStep;
+  onStepChange?: (step: QuickStep) => void;
+};
+
 /**
  * ฟอร์มโปรไฟล์ด่วน 3 ขั้น — ชื่อ+ภาค → ประเด็นที่สนใจ → พลังที่มี/อยากได้
  * ใช้ทั้งใน QuickProfileSheet และหน้าเต็ม /onboarding
  */
-export function QuickProfileForm({ onSaved }: { onSaved: (me: User) => void }) {
+export function QuickProfileForm({
+  onSaved,
+  draft: draftProp,
+  onDraftChange,
+  step: stepProp,
+  onStepChange,
+}: QuickProfileFormProps) {
   const { saveProfile } = useStore();
-  const [step, setStep] = useState<QuickStep>(1);
-  const [draft, setDraft] = useState<QuickDraft>(EMPTY_QUICK_DRAFT);
+  const [ownStep, setOwnStep] = useState<QuickStep>(1);
+  const [ownDraft, setOwnDraft] = useState<QuickDraft>(EMPTY_QUICK_DRAFT);
+  const step = stepProp ?? ownStep;
+  const draft = draftProp ?? ownDraft;
+  const setStep = (next: QuickStep) => {
+    setOwnStep(next);
+    onStepChange?.(next);
+  };
+  const setDraft = (next: QuickDraft) => {
+    setOwnDraft(next);
+    onDraftChange?.(next);
+  };
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState(false);
   const savingRef = useRef(false);
@@ -118,7 +139,7 @@ export function QuickProfileForm({ onSaved }: { onSaved: (me: User) => void }) {
   const valid = quickStepValid(step, draft);
   const isLast = step === 3;
   const set = (patch: Partial<QuickDraft>) => {
-    setDraft((d) => ({ ...d, ...patch }));
+    setDraft({ ...draft, ...patch });
     if (failed) setFailed(false);
   };
 
@@ -129,7 +150,7 @@ export function QuickProfileForm({ onSaved }: { onSaved: (me: User) => void }) {
     setFailed(false);
     try {
       const input = toProfileInput(draft);
-      if (isDryRun()) {
+      if (isDevPreview("dryrun")) {
         onSaved(dryRunUser(input));
         return;
       }

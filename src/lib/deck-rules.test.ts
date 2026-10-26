@@ -6,6 +6,7 @@ import {
   swipeOutcome,
   swipeRotation,
   tryAcquireLock,
+  unseenEntries,
 } from "./deck-rules";
 
 describe("swipeOutcome", () => {
@@ -93,5 +94,22 @@ describe("tryAcquireLock (double-tap guard)", () => {
   });
   it("grants again once the window has passed", () => {
     expect(tryAcquireLock(1300, 1300)).toBe(1300 + ACTION_LOCK_MS);
+  });
+});
+
+describe("unseenEntries", () => {
+  const entry = (id: string, name = `คน ${id}`) => ({ user: { id, name }, match: null });
+
+  it("drops nameless cards and anyone already seen, keeping deck order", () => {
+    const entries = [entry("a"), entry("b", "  "), entry("c"), entry("d"), entry("e", "")];
+    expect(unseenEntries(entries, ["c"]).map((e) => e.user.id)).toEqual(["a", "d"]);
+  });
+
+  it("returns every named card when nothing has been seen", () => {
+    expect(unseenEntries([entry("a"), entry("b")], []).map((e) => e.user.id)).toEqual(["a", "b"]);
+  });
+
+  it("is empty when everyone has been seen", () => {
+    expect(unseenEntries([entry("a"), entry("b")], ["b", "a"])).toEqual([]);
   });
 });

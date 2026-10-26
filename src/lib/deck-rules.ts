@@ -73,3 +73,14 @@ export function tryAcquireLock(
 ): number | null {
   return now < lockedUntil ? null : now + windowMs;
 }
+
+/**
+ * การ์ดที่ยังรอให้ดู ตามลำดับเดิม — ตัดคนที่ไม่มีชื่อ และคนที่ดูไปแล้ว (ข้าม/เก็บไว้/เพิ่งเชื่อมต่อ)
+ * ใช้ร่วมกันทั้งสำรับและตัวนับ "เหลือ N คน" บนหน้าแรก เพื่อให้ตัวเลขตรงกับการ์ดเสมอ
+ */
+export function unseenEntries<T extends { user: { id: string; name: string } }>(
+  entries: readonly T[],
+  seen: readonly string[],
+): T[] {
+  return entries.filter((e) => e.user.name.trim() !== "" && !seen.includes(e.user.id));
+}

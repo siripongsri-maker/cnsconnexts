@@ -23,7 +23,7 @@ export function SponsorFooter({ className = "" }: { className?: string }) {
             className="absolute top-[-21.645%] left-[-39.113%] h-auto w-[180.242%] max-w-none"
           />
         </span>
-        <p className="text-left text-[12px] leading-relaxed font-medium text-foreground sm:text-sm print:text-[#240c87]">
+        <p className="text-left text-body font-medium text-foreground print:text-[#240c87]">
           <span className="block">สำนักงานคณะกรรมการ</span>
           <span className="block">สุขภาพแห่งชาติ (สช.)</span>
         </p>
