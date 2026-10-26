@@ -10,8 +10,6 @@ import {
   type ParticipantSession,
 } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
-import { useStore } from "@/lib/store";
-import { INTRO_KEY } from "@/components/intro-guide";
 
 export const Route = createFileRoute("/start")({
   head: () => ({
@@ -44,7 +42,6 @@ const STEPS = [
 function StartPage() {
   const navigate = useNavigate();
   const { enterGuest, mode } = useAuth();
-  const { me } = useStore();
   const [session, setSession] = useState<ParticipantSession | null>(null);
 
   const entrySource = sourceFromSearch(
@@ -68,14 +65,6 @@ function StartPage() {
   const begin = () => {
     if (mode !== "user") enterGuest();
     if (!getSession()) createSession(entrySource, null);
-    // หน้านี้อธิบาย 3 ขั้นตอนไปแล้ว ไม่ต้องโชว์ IntroGuide ซ้ำ
-    if (!me) {
-      try {
-        localStorage.setItem(INTRO_KEY, "1");
-      } catch {
-        /* ignore */
-      }
-    }
     void navigate({ to: "/", replace: true });
   };
 
