@@ -25,6 +25,7 @@ import { CacheRefresher } from "@/components/cache-refresher";
 import { useMotionSettings } from "@/lib/motion";
 import { MissionState } from "@/components/mission-ui";
 import { MotionRuntime } from "@/components/motion-runtime";
+import { themeClassFor } from "@/lib/theme";
 
 /* ปุ่มแบบสีทึบ (ไม่ใช้เกรเดียนต์) สำหรับหน้าแจ้งปัญหา — สูง 48px กดง่าย */
 const BTN_PRIMARY =
@@ -107,7 +108,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Prompt:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Kanit:wght@600;700&family=Prompt:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap",
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
@@ -120,8 +121,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  // ธีมทุ่งจับคู่ทุกหน้า ยกเว้นหลังบ้าน — เรนเดอร์จากเซิร์ฟเวอร์ ไม่กะพริบ
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <html lang="th">
+    <html lang="th" className={themeClassFor(pathname)}>
       <head>
         <HeadContent />
       </head>

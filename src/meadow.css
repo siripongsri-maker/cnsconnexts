@@ -1,0 +1,216 @@
+/*
+ * ธีม "ทุ่งจับคู่" (Meadow Match)
+ * โทนสว่างตามธีมสมัชชาสุขภาพแห่งชาติ ครั้งที่ 19 — มีผลเฉพาะเมื่อ <html class="meadow">
+ * (ทุกหน้าของผู้เข้าร่วม ยกเว้น /admin ดู src/lib/theme.ts)
+ * หลังบ้านยังใช้ธีมอวกาศเดิมใน styles.css — ห้ามแก้กฎเดิม ให้ทับเฉพาะใต้ html.meadow
+ */
+
+@theme static {
+  /* สเกลตัวอักษร — ตัวเล็กสุดบนหน้าผู้เข้าร่วมคือ 20px */
+  --text-body: 20px;
+  --text-body--line-height: 1.6;
+  --text-lead: 22px;
+  --text-lead--line-height: 1.55;
+  --text-title: 28px;
+  --text-title--line-height: 1.35;
+  --text-display: 34px;
+  --text-display--line-height: 1.25;
+  --text-score: 30px;
+  --text-score--line-height: 1.1;
+
+  --color-sky: #cfeafb;
+  --color-sky-soft: #eaf6fd;
+  --color-paper: #fffdf8;
+  --color-meadow: #a9cc93;
+  --color-ink-soft: #4a4870;
+
+  /* บล็อกสีตกแต่ง (ตัวอักษรบนบล็อกใช้คู่สีจาก src/lib/issue-colors.ts) */
+  --color-block-purple: #6a2c91;
+  --color-block-blue: #1488d8;
+  --color-block-yellow: #f2b21b;
+  --color-block-green: #5da130;
+  --color-block-teal: #129e8c;
+  --color-block-orange: #f47b20;
+
+  --font-heading: "Kanit", "Noto Sans Thai", sans-serif;
+}
+
+html.meadow {
+  color-scheme: light;
+
+  --sky: #cfeafb;
+  --sky-soft: #eaf6fd;
+  --paper: #fffdf8;
+  --meadow: #a9cc93;
+  --ink: #2b2878;
+  --ink-soft: #4a4870;
+
+  /* โทเคน shadcn */
+  --radius: 0.75rem; /* rounded-xl = 18px (ปุ่มหลัก), rounded-2xl = 24px (การ์ด) */
+  --background: var(--paper);
+  --foreground: #2b2878;
+  --card: #ffffff;
+  --card-foreground: #2b2878;
+  --popover: #ffffff;
+  --popover-foreground: #2b2878;
+  --primary: #6a2c91;
+  --primary-foreground: #ffffff;
+  --secondary: #f1eff8;
+  --secondary-foreground: #2b2878;
+  --muted: #f1eff8;
+  --muted-foreground: #4a4870;
+  --accent: #eaf6fd;
+  --accent-foreground: #2b2878;
+  --border: #e6e3f2;
+  --input: #d9d5ea;
+  --ring: #6a2c91;
+
+  /* สีตัวอักษรเน้นเดิมสว่างไว้สำหรับพื้นมืด — เปลี่ยนเป็นโทนเข้มจากคู่สีป้ายแท็ก */
+  --coral-ink: #b8520f;
+  --electric-ink: #0f6db0;
+  --lime-ink: #3d7a1c;
+  --gradient-power: linear-gradient(#6a2c91, #6a2c91);
+  --gradient-brand-text: linear-gradient(#6a2c91, #6a2c91);
+  --shadow-card: 0 8px 24px -12px rgba(43, 40, 120, 0.25);
+  --glass: #ffffff;
+  --glass-edge: #e6e3f2;
+
+  /* ยกขนาดตัวอักษรเล็กของ Tailwind ให้ทุก text-xs/sm/base เดิมเป็น 20px */
+  --text-xs: 20px;
+  --text-xs--line-height: 1.6;
+  --text-sm: 20px;
+  --text-sm--line-height: 1.6;
+  --text-base: 20px;
+  --text-base--line-height: 1.6;
+  --text-lg: 22px;
+  --text-lg--line-height: 1.55;
+}
+
+/* อยู่ใน layer base เพื่อให้ utility (เช่น text-white บนแถบสี) ยังชนะได้ และหน้าพิมพ์ยังเป็นพื้นขาว */
+@layer base {
+  html.meadow body {
+    background: linear-gradient(var(--sky-soft), var(--paper) 420px);
+    background-color: var(--paper);
+    color: var(--ink);
+    font-size: 20px;
+    line-height: 1.6;
+  }
+
+  html.meadow :is(h1, h2, h3, .font-heading) {
+    font-family: var(--font-heading);
+    color: var(--ink);
+  }
+}
+
+/* ข้อความแจ้งเตือน (sonner) ก็ต้องไม่เล็กกว่า 20px */
+html.meadow [data-sonner-toast],
+html.meadow [data-sonner-toast] :is([data-title], [data-description], [data-button]) {
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+/* ปิดของตกแต่งธีมอวกาศ (ออโรรา/ดาว) */
+html.meadow body::before,
+html.meadow body::after {
+  display: none;
+}
+
+/* คืนมุมโค้งที่ .site-experience บังคับให้เป็นเหลี่ยม */
+html.meadow .site-experience .rounded-md {
+  border-radius: var(--radius-md);
+}
+html.meadow .site-experience .rounded-lg {
+  border-radius: var(--radius-lg);
+}
+html.meadow .site-experience .rounded-xl {
+  border-radius: var(--radius-xl);
+}
+html.meadow .site-experience .rounded-2xl {
+  border-radius: var(--radius-2xl);
+}
+html.meadow .site-experience .rounded-3xl {
+  border-radius: var(--radius-3xl);
+}
+html.meadow .site-experience :is(button, a.tap).rounded-full {
+  border-radius: 9999px;
+}
+html.meadow .site-experience .gradient-power {
+  background-image: var(--gradient-power);
+  background-color: var(--primary);
+}
+html.meadow .site-experience .input-line {
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+}
+
+/* การ์ดและปุ่มของธีม — อยู่ใน layer components เพื่อให้ utility ปรับแต่งเพิ่มได้ */
+@layer components {
+  .meadow-card {
+    border-radius: 24px;
+    background: #ffffff;
+    border: 1px solid #e6e3f2;
+    box-shadow: 0 8px 24px -12px rgba(43, 40, 120, 0.25);
+    color: var(--ink);
+  }
+
+  .meadow-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 64px;
+    padding: 0 1.5rem;
+    border-radius: 18px;
+    background: var(--primary);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: var(--text-lead);
+    line-height: var(--text-lead--line-height);
+  }
+  .meadow-btn-primary:hover {
+    background: color-mix(in srgb, var(--primary) 88%, black);
+  }
+
+  .meadow-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 56px;
+    padding: 0 1.25rem;
+    border-radius: 18px;
+    background: #ffffff;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    font-weight: 600;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+  .meadow-btn-secondary:hover {
+    background: var(--sky-soft);
+  }
+
+  :is(.meadow-btn-primary, .meadow-btn-secondary):disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+/* ช่องกรอกข้อมูล: ตัวอักษร 20px สูงอย่างน้อย 56px (ไม่รวมช่องติ๊ก/ปุ่มเลือก/สไลเดอร์) */
+html.meadow
+  :is(
+    input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="range"],
+      [type="hidden"],
+      [type="file"],
+      [type="color"]
+    ),
+    select,
+    textarea
+  ) {
+  font-size: 20px;
+  min-height: 56px;
+}
