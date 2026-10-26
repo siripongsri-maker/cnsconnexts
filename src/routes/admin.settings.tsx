@@ -3,7 +3,7 @@ import { AlertTriangle, KeyRound, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
-import { ADMIN_PASSWORD, ADMIN_USER } from "@/lib/admin-auth";
+import { ADMIN_PASSWORD, ADMIN_USER, SUPERADMIN_PASSWORD, SUPERADMIN_USER } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => ({
@@ -32,7 +32,12 @@ function AdminSettings() {
           <KeyRound className="h-4 w-4 text-primary" /> บัญชีผู้ดูแล
         </h2>
         <p className="text-[13px] text-muted-foreground">
-          ผู้ใช้: <span className="font-extrabold text-foreground">{ADMIN_USER}</span> · รหัสผ่าน:{" "}
+          ซูเปอร์แอดมิน — ผู้ใช้:{" "}
+          <span className="font-extrabold text-foreground">{SUPERADMIN_USER}</span> · รหัสผ่าน:{" "}
+          <span className="font-extrabold text-foreground">{SUPERADMIN_PASSWORD}</span>
+        </p>
+        <p className="text-[13px] text-muted-foreground">
+          ผู้ดูแลสูงสุด — ผู้ใช้: <span className="font-extrabold text-foreground">{ADMIN_USER}</span> · รหัสผ่าน:{" "}
           <span className="font-extrabold text-foreground">{ADMIN_PASSWORD}</span>
         </p>
         <p className="text-[12px] text-muted-foreground">
