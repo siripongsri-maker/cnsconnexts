@@ -149,17 +149,16 @@ function Commitments() {
           <h2 id="agreed-heading" className="font-heading text-title font-semibold text-ink">
             สิ่งที่ตกลงจะทำ
           </h2>
+          {mine.length > 0 && (
+            <Link to="/calendar" className="meadow-btn-secondary tap mt-4 w-full text-center">
+              <CalendarDays className="h-6 w-6" aria-hidden /> ปฏิทินนัดหมาย
+            </Link>
+          )}
           {myCommitments.length === 0 ? (
             mine.length > 0 ? (
-              <Link
-                to="/calendar"
-                className="meadow-card tap mt-4 flex min-h-12 items-center justify-between gap-3 p-5 text-body font-semibold text-ink"
-              >
-                <span>ยังไม่มีสิ่งที่ตกลงกัน ชวนกันนัดก้าวแรก</span>
-                <span aria-hidden className="text-primary">
-                  →
-                </span>
-              </Link>
+              <p className="meadow-card mt-4 p-5 text-body text-ink-soft">
+                ยังไม่มีสิ่งที่ตกลงกัน ชวนกันนัดก้าวแรกได้จากปุ่ม "ทำอะไรต่อ" ด้านบน
+              </p>
             ) : (
               <p className="meadow-card mt-4 p-5 text-body text-ink-soft">
                 เมื่อเชื่อมกับใครแล้ว สิ่งที่ตกลงจะทำด้วยกันจะมารวมอยู่ตรงนี้
