@@ -23,32 +23,23 @@ import { GuidedTour } from "@/components/guided-tour";
 import { UsageTracker } from "@/components/usage-tracker";
 import { CacheRefresher } from "@/components/cache-refresher";
 import { useMotionSettings } from "@/lib/motion";
-import { MissionState } from "@/components/mission-ui";
+import { MeadowState, STATE_PRIMARY, STATE_SECONDARY } from "@/components/meadow-state";
 import { MotionRuntime } from "@/components/motion-runtime";
 import { themeClassFor } from "@/lib/theme";
 
-/* ปุ่มแบบสีทึบ (ไม่ใช้เกรเดียนต์) สำหรับหน้าแจ้งปัญหา — สูง 48px กดง่าย */
-const BTN_PRIMARY =
-  "tap inline-flex h-12 min-w-[44px] items-center justify-center rounded-2xl bg-primary px-5 text-sm font-bold text-primary-foreground hover:bg-primary/90";
-const BTN_SECONDARY =
-  "tap inline-flex h-12 items-center justify-center rounded-2xl border border-border bg-card px-5 text-sm font-bold text-foreground hover:bg-accent";
-
 function NotFoundComponent() {
   return (
-    <MissionState
-      code="404 / Signal not found"
+    <MeadowState
       title="เส้นทางนี้ยังไม่เชื่อมถึงกัน"
-      description="ลิงก์อาจไม่ครบหรือหมดอายุ กลับไปค้นหาคนที่คุณอยากเจอได้เลย"
+      description="ลิงก์อาจไม่ครบหรือหมดอายุ กลับไปจับคู่กับคนที่น่าเจอได้เลย"
     >
-      <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <Link to="/matches" className={BTN_PRIMARY}>
-          <span>ไปหาคนที่ควรเจอ</span>
-        </Link>
-        <Link to="/" className={BTN_SECONDARY}>
-          <span>กลับหน้าแรก</span>
-        </Link>
-      </div>
-    </MissionState>
+      <Link to="/" className={STATE_PRIMARY}>
+        <span>ไปจับคู่</span>
+      </Link>
+      <Link to="/commitments" className={STATE_SECONDARY}>
+        <span>ดูคู่ของฉัน</span>
+      </Link>
+    </MeadowState>
   );
 }
 
@@ -60,30 +51,27 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
   }, [error]);
 
   return (
-    <MissionState
-      code="Connection interrupted"
+    <MeadowState
       title="สัญญาณสะดุดนิดหน่อย"
       description="หน้านี้ยังโหลดไม่สำเร็จ ลองเชื่อมต่ออีกครั้งได้เลย"
     >
       <span className="sr-only" role="alert">
         หน้านี้โหลดไม่สำเร็จ
       </span>
-      <div className="mt-6 flex flex-wrap justify-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            router.invalidate();
-            reset();
-          }}
-          className={BTN_PRIMARY}
-        >
-          <span>ลองอีกครั้ง</span>
-        </button>
-        <a href="/" className={BTN_SECONDARY}>
-          <span>กลับหน้าแรก</span>
-        </a>
-      </div>
-    </MissionState>
+      <button
+        type="button"
+        onClick={() => {
+          router.invalidate();
+          reset();
+        }}
+        className={STATE_PRIMARY}
+      >
+        <span>ลองอีกครั้ง</span>
+      </button>
+      <a href="/" className={STATE_SECONDARY}>
+        <span>กลับหน้าแรก</span>
+      </a>
+    </MeadowState>
   );
 }
 
@@ -98,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Discover who to connect with at Thailand's National Health Assembly. Everyone brings a different kind of power.",
       },
-      { name: "theme-color", content: "#05070b" },
+      { name: "theme-color", content: "#CFEAFB" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -196,5 +184,5 @@ function HydrationGate({ children }: { children: ReactNode }) {
   const gatedAlways = ALWAYS_GATED.some((p) => pathname === p || pathname.startsWith(`${p}/`));
   // อ่านข้อมูลในเครื่องเสร็จแล้ว + รอนานพอ → เปิดหน้าได้ (แต่ละหน้ามีสถานะ "กำลังโหลด" ของตัวเอง)
   if (booted && waitedEnough && !gatedAlways) return children;
-  return <LoadingScreen message="กำลังเชื่อม" />;
+  return <LoadingScreen />;
 }

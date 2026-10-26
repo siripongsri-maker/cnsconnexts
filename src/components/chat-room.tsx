@@ -58,17 +58,20 @@ export function ChatRoom({
   };
 
   return (
-    <div className="core-chat-room card-soft rounded-3xl bg-card p-4">
+    <div className="meadow-card p-4">
       {!hideHeader && (
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/12 text-primary">
-            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink"
+          >
+            <MessageCircle className="h-6 w-6" strokeWidth={2.2} />
           </span>
           <div className="min-w-0">
-            <h2 className="truncate text-[15px] font-extrabold">
+            <h2 className="font-heading text-lead font-semibold text-ink [overflow-wrap:anywhere]">
               แชทกับ {other?.name ?? "เพื่อนร่วมงาน"}
             </h2>
-            <p className="text-xs text-muted-foreground">คุยสั้น ๆ แล้วนัดหมายการลงมือทำ</p>
+            <p className="text-body text-ink-soft">คุยสั้น ๆ แล้วนัดหมายการลงมือทำ</p>
           </div>
         </div>
       )}
@@ -83,12 +86,12 @@ export function ChatRoom({
         aria-live="polite"
         tabIndex={0}
         aria-label={`ข้อความกับ ${other?.name ?? "เพื่อนร่วมงาน"}`}
-        className={`${hideHeader ? "" : "mt-3"} space-y-2 overflow-y-auto pr-1 ${compact ? "max-h-64" : "max-h-[52vh]"}`}
+        className={`${hideHeader ? "" : "mt-3"} space-y-3 overflow-y-auto rounded-2xl pr-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${compact ? "max-h-80" : "max-h-[52vh]"}`}
       >
         {thread.length === 0 && (
-          <div className="core-chat-empty">
+          <div className="flex flex-col items-center gap-2 px-2 py-6 text-center text-ink-soft">
             <MessageCircle className="h-9 w-9" aria-hidden="true" />
-            <p>เริ่มด้วยคำทักทาย แล้วเล่าสิ่งที่อยากทำร่วมกัน</p>
+            <p className="text-body">เริ่มด้วยคำทักทาย แล้วเล่าสิ่งที่อยากทำร่วมกัน</p>
           </div>
         )}
         {thread.map((m) => {
@@ -96,16 +99,14 @@ export function ChatRoom({
           const author = mine ? me : other;
           return (
             <div key={m.id} className={`flex items-end gap-2 ${mine ? "justify-end" : ""}`}>
-              {!mine && author && <Avatar user={author} size={28} />}
+              {!mine && author && <Avatar user={author} size={40} />}
               <div
-                className={`max-w-[78%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
-                  mine
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border bg-background text-foreground"
+                className={`max-w-[82%] rounded-2xl px-4 py-2.5 text-body ${
+                  mine ? "bg-primary text-white" : "bg-sky-soft text-ink"
                 }`}
               >
-                <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                <p className={`mt-1 text-xs ${mine ? "opacity-90" : "text-muted-foreground"}`}>
+                <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{m.text}</p>
+                <p className={`mt-1 text-body ${mine ? "text-white/90" : "text-ink-soft"}`}>
                   {clock(m.created_at)}
                 </p>
               </div>
@@ -123,7 +124,7 @@ export function ChatRoom({
               setText(q);
               inputRef.current?.focus();
             }}
-            className="tap inline-flex min-h-11 items-center rounded-full border border-border bg-background px-3.5 text-xs font-bold"
+            className="tap inline-flex min-h-12 max-w-full items-center rounded-full border-2 border-[#C9C6E0] bg-white px-4 py-1 text-left text-body font-semibold text-ink"
           >
             {q}
           </button>
@@ -143,15 +144,14 @@ export function ChatRoom({
           onChange={(e) => setText(e.target.value)}
           placeholder="พิมพ์ข้อความ…"
           aria-label="ข้อความ"
-          className="h-12 flex-1 rounded-2xl border border-border bg-background px-4 text-sm outline-none focus:border-primary"
+          className="min-w-0 flex-1 rounded-2xl border-2 bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft/70"
         />
         <button
           type="submit"
           disabled={!text.trim()}
-          aria-label="ส่งข้อความ"
-          className="tap grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground disabled:opacity-40"
+          className="meadow-btn-primary tap min-h-14 shrink-0 px-4"
         >
-          <Send className="h-4 w-4" aria-hidden="true" />
+          <Send className="h-6 w-6" aria-hidden="true" /> ส่ง
         </button>
       </form>
     </div>

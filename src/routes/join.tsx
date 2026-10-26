@@ -3,8 +3,8 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect } from "react";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { MissionVisual } from "@/components/mission-ui";
-import { Wordmark } from "@/components/wordmark";
+import { EntryShell } from "@/components/entry-shell";
+import { MeadowScene } from "@/components/meadow-scene";
 import { createSession, sourceFromSearch } from "@/lib/session";
 
 const searchSchema = z.object({
@@ -47,39 +47,33 @@ function Join() {
   }, [c, code, source, navigate]);
 
   return (
-    <div className="focused-page join-page min-h-screen">
-      <header className="focused-topbar">
-        <div className="focused-topbar-inner">
-          <Link to="/" aria-label="หน้าแรก">
-            <Wordmark size="sm" />
-          </Link>
-          <span className="focused-system-label">CONNECTION ESTABLISHED</span>
-        </div>
-      </header>
-      <main className="join-welcome">
-        <div className="join-signal-visual">
-          <MissionVisual variant="signal" />
-        </div>
-        <div className="join-welcome-copy">
-          <span className="mission-kicker">
-            <CheckCircle2 className="h-4 w-4" aria-hidden /> CONNECTION / READY
-          </span>
-          <h1>
-            คุณเข้าห้องแล้ว<span>เริ่มเชื่อมพลังกัน</span>
-          </h1>
-          <p>ยินดีต้อนรับสู่ คนส. Connexts</p>
-          {(c || code) && <span className="join-room-code">ROOM / {c || code}</span>}
-          <div className="join-progress" aria-hidden>
-            <span />
-          </div>
-          <p role="status" className="join-status">
+    <EntryShell
+      title={
+        <>
+          คุณเข้าห้องแล้ว
+          <br />
+          เริ่มเชื่อมพลังกัน
+        </>
+      }
+      subtitle="ยินดีต้อนรับสู่ คนส. Connexts"
+    >
+      <div className="meadow-card overflow-hidden text-center">
+        <MeadowScene variant="empty" className="pointer-events-none" />
+        <div className="flex flex-col items-center gap-3 p-6">
+          {(c || code) && (
+            <p className="inline-flex items-center gap-2 rounded-full bg-sky-soft px-4 py-1 text-body font-semibold text-ink">
+              <CheckCircle2 className="h-6 w-6 shrink-0 text-[#3D7A1C]" aria-hidden />
+              รหัสห้อง {c || code}
+            </p>
+          )}
+          <p role="status" className="text-body text-ink-soft">
             กำลังพาคุณไปสร้างโปรไฟล์…
           </p>
-          <Link to="/start" className="tap join-continue">
-            ไปต่อ <ArrowRight className="h-4 w-4" aria-hidden />
+          <Link to="/start" className="meadow-btn-primary tap w-full max-w-sm text-center">
+            ไปต่อ <ArrowRight className="h-6 w-6" aria-hidden />
           </Link>
         </div>
-      </main>
-    </div>
+      </div>
+    </EntryShell>
   );
 }

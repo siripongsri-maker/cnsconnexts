@@ -5,7 +5,7 @@ import { Bell, BellOff, Volume2, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { useStore, useUserMap } from "@/lib/store";
 import { Avatar } from "@/components/power-bits";
-import { MissionEmpty } from "@/components/mission-ui";
+import { MeadowScene } from "@/components/meadow-scene";
 import { isSoundOn, playConnext, setSoundOn, unlockAudio } from "@/lib/notify";
 
 export const Route = createFileRoute("/notifications")({
@@ -49,98 +49,67 @@ function NotificationsPage() {
     return () => clearTimeout(t);
   }, [markNotificationsRead]);
 
+  const toggleSound = () => {
+    const next = !sound;
+    setSound(next);
+    setSoundOn(next);
+    if (next) {
+      unlockAudio();
+      playConnext({ force: true });
+    }
+  };
+
   return (
-    <AppShell title="การแจ้งเตือน" subtitle="สัญญาณการเชื่อมต่อของคุณ">
-      <div className="notification-page-grid px-5 py-4">
-        <aside className="notification-settings mission-panel">
-          <p className="mission-kicker mb-6" lang="en">
-            Stay connected
-          </p>
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/12 text-primary">
-              {sound ? <Volume2 className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
-            </span>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-medium">เสียงแจ้งเตือน</h2>
-              <p className="text-[12px] text-muted-foreground">เล่นเสียงเมื่อมีการเชื่อมต่อใหม่</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                const next = !sound;
-                setSound(next);
-                setSoundOn(next);
-                if (next) {
-                  unlockAudio();
-                  playConnext({ force: true });
-                }
-              }}
-              className={`tap h-9 rounded-full px-4 text-[13px] font-bold ${
-                sound ? "gradient-power text-primary-foreground" : "bg-accent text-foreground"
-              }`}
-            >
-              {sound ? "เปิด" : "ปิด"}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              unlockAudio();
-              playConnext({ force: true });
-            }}
-            className="tap w-full rounded-xl border border-border bg-card py-3 text-sm font-bold"
-          >
-            ลองฟังเสียงแจ้งเตือน
-          </button>
-          <p className="mission-side-note mt-6">
-            สัญญาณใหม่จากคนที่เชื่อมต่อ จะรวมไว้ที่นี่ เพื่อให้คุณไปต่อได้ทันทุกนัด
-          </p>
-        </aside>
-
-        <section className="notification-feed" aria-label="รายการแจ้งเตือน">
+    <AppShell title="การแจ้งเตือน" subtitle="ข่าวใหม่จากคนที่คุณเชื่อมกัน">
+      <div className="flex flex-col gap-6">
+        <section aria-label="รายการแจ้งเตือน">
           {notifications.length === 0 ? (
-            <MissionEmpty
-              title="รอสัญญาณใหม่"
-              description="เริ่มเชื่อมกับคนที่คุณอยากคุย แล้วติดตามคำตอบและนัดหมายได้ที่นี่"
-              variant="signal"
-            >
-              <Link
-                to="/matches"
-                className="tap mt-2 inline-flex h-10 items-center rounded-xl gradient-power px-5 text-sm font-bold text-primary-foreground"
-              >
-                ไปหาคู่เชื่อม
-              </Link>
-            </MissionEmpty>
+            <div className="meadow-card overflow-hidden text-center">
+              <MeadowScene variant="empty" className="pointer-events-none" />
+              <div className="flex flex-col items-center gap-3 p-6">
+                <h2 className="font-heading text-title font-semibold text-ink">รอข่าวใหม่</h2>
+                <p className="text-body text-ink-soft">
+                  เริ่มเชื่อมกับคนที่คุณอยากคุย แล้วติดตามคำตอบและนัดหมายได้ที่นี่
+                </p>
+                <Link to="/" className="meadow-btn-primary tap mt-1 w-full max-w-sm text-center">
+                  ไปจับคู่
+                </Link>
+              </div>
+            </div>
           ) : (
             <>
-              <ul className="space-y-2">
+              <ul className="flex flex-col gap-3">
                 {notifications.map((n, i) => {
                   const u = users[n.from_id];
                   const body = (
                     <div
-                      className={`notification-card card-soft animate-rise flex items-start gap-3 p-5 ${
-                        n.read ? "" : "ring-1 ring-primary/40"
+                      className={`meadow-card animate-rise flex items-start gap-3 p-4 ${
+                        n.read ? "" : "border-2 border-primary"
                       }`}
                       style={{ animationDelay: `${i * 50}ms` }}
                     >
                       {u ? (
-                        <Avatar user={u} size={42} />
+                        <Avatar user={u} size={48} />
                       ) : (
-                        <span className="grid h-[42px] w-[42px] place-items-center rounded-full bg-accent">
-                          🔔
+                        <span
+                          aria-hidden
+                          className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink"
+                        >
+                          <Bell className="h-6 w-6" strokeWidth={2.2} />
                         </span>
                       )}
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-extrabold">{n.title}</p>
-                        <p className="text-[13px] text-muted-foreground">{n.body}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {timeAgo(n.created_at)}
+                        <p className="text-body font-semibold text-ink [overflow-wrap:anywhere]">
+                          {!n.read && (
+                            <span className="mr-2 inline-flex items-center rounded-full bg-primary px-3 text-body font-semibold text-white">
+                              ใหม่
+                            </span>
+                          )}
+                          {n.title}
                         </p>
+                        <p className="text-body text-ink [overflow-wrap:anywhere]">{n.body}</p>
+                        <p className="mt-1 text-body text-ink-soft">{timeAgo(n.created_at)}</p>
                       </div>
-                      {!n.read && (
-                        <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-coral" />
-                      )}
                     </div>
                   );
                   return (
@@ -149,7 +118,7 @@ function NotificationsPage() {
                         <Link
                           to="/connection/$id"
                           params={{ id: n.connection_id }}
-                          className="block"
+                          className="block rounded-3xl"
                         >
                           {body}
                         </Link>
@@ -163,12 +132,57 @@ function NotificationsPage() {
               <button
                 type="button"
                 onClick={clearNotifications}
-                className="tap inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-card py-3 text-sm font-bold text-muted-foreground"
+                className="meadow-btn-secondary tap mt-4 w-full"
               >
-                <Trash2 className="h-4 w-4" /> ล้างการแจ้งเตือนทั้งหมด
+                <Trash2 className="h-6 w-6" aria-hidden /> ล้างการแจ้งเตือนทั้งหมด
               </button>
             </>
           )}
+        </section>
+
+        <section aria-labelledby="sound-h" className="meadow-card p-5">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink"
+            >
+              {sound ? (
+                <Volume2 className="h-6 w-6" strokeWidth={2.2} />
+              ) : (
+                <BellOff className="h-6 w-6" strokeWidth={2.2} />
+              )}
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 id="sound-h" className="font-heading text-lead font-semibold text-ink">
+                เสียงแจ้งเตือน
+              </h2>
+              <p className="text-body text-ink-soft">เล่นเสียงเมื่อมีคนเชื่อมกับคุณ</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={sound}
+              aria-labelledby="sound-h"
+              onClick={toggleSound}
+              className={`tap inline-flex min-h-12 min-w-20 shrink-0 items-center justify-center rounded-full border-2 px-4 text-body font-semibold ${
+                sound
+                  ? "border-primary bg-primary text-white"
+                  : "border-[#C9C6E0] bg-white text-ink"
+              }`}
+            >
+              {sound ? "เปิด" : "ปิด"}
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              unlockAudio();
+              playConnext({ force: true });
+            }}
+            className="meadow-btn-secondary tap mt-4 w-full"
+          >
+            ลองฟังเสียงแจ้งเตือน
+          </button>
         </section>
       </div>
     </AppShell>

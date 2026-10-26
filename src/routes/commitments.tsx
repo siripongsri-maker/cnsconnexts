@@ -81,6 +81,7 @@ function Commitments() {
             <ul className="mt-4 flex flex-col gap-4">
               {mine.map((c) => {
                 const other = partnerOf(c.id)?.other ?? null;
+                const who = other?.name ?? "คนที่เชื่อมกัน";
                 return (
                   <li key={c.id} className="meadow-card p-4">
                     <div className="flex items-center gap-4">
@@ -94,16 +95,26 @@ function Commitments() {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 break-words text-lead font-semibold text-ink">
-                          {other?.name ?? "คนที่เชื่อมกัน"}
+                          {who}
                         </p>
                         <p className="text-body text-ink-soft">{STATUS_TH[c.status]}</p>
                       </div>
                     </div>
                     <div className="mt-4 flex gap-3">
-                      <Link to="/chat/$id" params={{ id: c.id }} className={ROW_BUTTON}>
+                      <Link
+                        to="/chat/$id"
+                        params={{ id: c.id }}
+                        aria-label={`คุยกับ ${who}`}
+                        className={ROW_BUTTON}
+                      >
                         คุย
                       </Link>
-                      <Link to="/connection/$id" params={{ id: c.id }} className={ROW_BUTTON}>
+                      <Link
+                        to="/connection/$id"
+                        params={{ id: c.id }}
+                        aria-label={`ทำอะไรต่อกับ ${who}`}
+                        className={ROW_BUTTON}
+                      >
                         ทำอะไรต่อ
                       </Link>
                     </div>
@@ -135,6 +146,7 @@ function Commitments() {
                   <Link
                     to="/people/$id"
                     params={{ id: u.id }}
+                    aria-label={`ดูโปรไฟล์ของ ${u.name}`}
                     className="meadow-btn-secondary tap mt-4 w-full text-center"
                   >
                     ดูโปรไฟล์
@@ -200,13 +212,18 @@ function Commitments() {
                     {info?.isMine && (
                       <div className="mt-4 flex flex-wrap gap-3">
                         {!m.follow_up_date && m.status !== "Completed" && (
-                          <Link to="/calendar" className={ROW_BUTTON}>
+                          <Link
+                            to="/calendar"
+                            aria-label={`นัดวันลงมือกับ ${other?.name ?? "คนที่เชื่อมกัน"}`}
+                            className={ROW_BUTTON}
+                          >
                             <CalendarDays className="h-6 w-6" aria-hidden /> นัดวันลงมือ
                           </Link>
                         )}
                         <Link
                           to="/chat/$id"
                           params={{ id: m.connection_id }}
+                          aria-label={`คุยต่อกับ ${other?.name ?? "คนที่เชื่อมกัน"}`}
                           className={ROW_BUTTON}
                         >
                           <MessageCircle className="h-6 w-6" aria-hidden /> คุยต่อ

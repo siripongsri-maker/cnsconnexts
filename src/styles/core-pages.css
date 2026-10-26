@@ -272,59 +272,6 @@
 }
 
 /* Live data always shows real values; empty charts use an explicit placeholder. */
-.core-chat-room {
-  border-radius: 0;
-  border-top: 2px solid var(--primary);
-  padding: 1.5rem;
-}
-.core-chat-room > div:first-child h2 {
-  font-size: 1.1rem;
-  font-weight: 400;
-}
-.core-chat-room [role="log"] {
-  min-height: 180px;
-  margin-block: 1.5rem;
-}
-.core-chat-empty {
-  display: flex;
-  min-height: 180px;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1rem;
-  border-block: 1px solid var(--border);
-  padding: 1.5rem;
-  background: radial-gradient(
-    ellipse at 90% 50%,
-    color-mix(in srgb, var(--primary) 9%, transparent),
-    transparent 70%
-  );
-}
-.core-chat-empty svg {
-  color: var(--primary);
-  stroke-width: 1;
-}
-.core-chat-empty p {
-  max-width: 30rem;
-  color: var(--muted-foreground);
-  font-size: 0.8rem;
-  line-height: 1.8;
-}
-.core-chat-room > div:nth-last-of-type(1) > button {
-  border-radius: 2px;
-  font-weight: 400;
-}
-.core-chat-room > form {
-  border-top: 1px solid var(--border);
-  padding-top: 1.25rem;
-}
-.core-chat-room > form > input {
-  min-width: 0;
-  width: 0;
-  border-radius: 0;
-}
-.core-chat-room > form > button {
-  border-radius: 0;
-}
 
 @media (max-width: 900px) {
   .core-progress-overview {
@@ -418,22 +365,10 @@
   .core-commitment-title {
     margin-top: 2rem;
   }
-  .core-chat-room {
-    padding: 1.1rem;
-  }
-  .core-chat-room > div:nth-last-of-type(1) > button {
-    font-size: 0.65rem;
-  }
 }
 @media (max-width: 360px) {
   .core-status-grid > button {
     flex-wrap: wrap;
     padding-inline: 0.5rem;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .core-chat-room * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
   }
 }

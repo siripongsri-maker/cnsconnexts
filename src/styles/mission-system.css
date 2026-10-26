@@ -295,11 +295,6 @@
   font-size: 14px;
   line-height: 1.8;
 }
-.mission-focused-layout {
-  width: 88%;
-  max-width: 1280px;
-  margin: auto;
-}
 .mission-side-note {
   border-left: 1px solid #2a89c6;
   padding-left: 20px;
@@ -396,10 +391,6 @@
 }
 .site-experience :is(button, a.tap) {
   text-underline-offset: 4px;
-}
-.site-experience .mission-bottom-nav {
-  border-top-color: #25445e;
-  background: #050d16f5;
 }
 .site-experience .space-nav {
   background: #030b13f5;
@@ -582,9 +573,6 @@
   }
   .mission-state .mission-page-hero {
     min-height: 340px;
-  }
-  .mission-focused-layout {
-    width: calc(100% - 32px);
   }
 }
 @media (prefers-reduced-motion: reduce) {

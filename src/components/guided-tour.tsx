@@ -41,32 +41,32 @@ const STEPS: Step[] = [
   {
     icon: Compass,
     title: "เลือกคนที่อยากคุย",
-    body: "พบคนที่เข้ากับคุณ พร้อมเหตุผลว่าทำไมควรคุยกัน",
-    tip: "ปัดขวาเพื่อสนใจ ซ้ายเพื่อข้าม กรองตามพื้นที่หรือประเด็นได้",
-    to: "/matches",
-    cta: "ค้นหาคู่เชื่อม",
+    body: "แท็บ จับคู่ แสดงทีละคน พร้อมเหตุผลว่าทำไมควรคุยกัน",
+    tip: "กด ขอเชื่อมต่อ ถ้าอยากคุย กด ข้าม ถ้ายังไม่ใช่ หรือกด เก็บไว้ ดูทีหลัง",
+    to: "/",
+    cta: "ไปแท็บ จับคู่",
   },
   {
     icon: Handshake,
     title: "ขอเชื่อมต่อ",
     body: "ส่งคำขอให้อีกฝ่าย เมื่อตอบรับก็เริ่มคุยกันต่อได้เลย",
-    tip: "หาไอเดียเปิดบทสนทนาได้ที่ตลาดพลัง",
+    tip: "หาไอเดียเปิดบทสนทนาได้ที่แท็บ สำรวจ แล้วเลือก ไอเดีย",
     to: "/marketplace",
-    cta: "สำรวจตลาดพลัง",
+    cta: "ดูไอเดีย",
   },
   {
     icon: CheckCircle2,
     title: "นัดก้าวต่อไป",
-    body: "ตกลงสิ่งที่จะทำ ผู้รับผิดชอบ และวันติดตามผล",
-    tip: "เพิ่มนัดเข้าปฏิทิน พร้อมรับการเตือนก่อนถึงเวลา",
+    body: "ตกลงสิ่งที่จะทำและวันติดตามผลกับคนที่เชื่อมกันแล้ว",
+    tip: "คนที่เชื่อมกันอยู่ในแท็บ คู่ของฉัน เพิ่มนัดเข้าปฏิทินและรับการเตือนก่อนถึงเวลาได้",
     to: "/commitments",
-    cta: "นัดก้าวต่อไป",
+    cta: "ไปแท็บ คู่ของฉัน",
   },
   {
     icon: Sparkles,
     title: "พร้อมไปต่อด้วยกัน",
-    body: "ติดตามคู่เชื่อม นัดหมาย และความคืบหน้าของทั้งงานแบบสด ๆ",
-    tip: "เปิดทัวร์นี้อีกครั้งได้จากแท็บ ฉัน",
+    body: "ติดตามคู่ของคุณ นัดหมาย และความคืบหน้าของทั้งงานแบบสด ๆ",
+    tip: "ดูภาพรวมสดได้จากแท็บ ฉัน และเปิดทัวร์นี้อีกครั้งได้ที่นั่นเช่นกัน",
     to: "/dashboard",
     cta: "ดูภาพรวมสด",
   },
@@ -161,7 +161,7 @@ export function GuidedTour() {
       aria-modal="true"
       aria-labelledby="tour-title"
       aria-describedby="tour-body"
-      className="fixed inset-0 z-60 grid place-items-center bg-sky-soft/90 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-60 grid place-items-center meadow-tour-overlay bg-sky-soft/90 p-4 backdrop-blur-sm"
     >
       <div
         ref={cardRef}
@@ -206,18 +206,18 @@ export function GuidedTour() {
           {step.cta}
         </Link>
 
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-3">
           <div className="flex items-center gap-1.5" aria-hidden="true">
             {steps.map((s, n) => (
               <span
                 key={s.title}
-                className={`h-2 rounded-full transition-all ${
+                className={`h-2 rounded-full transition-all motion-reduce:transition-none ${
                   n === idx ? "w-6 bg-primary" : "w-2 bg-[#C9C6E0]"
                 }`}
               />
             ))}
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
             {idx > 0 && (
               <button
                 type="button"

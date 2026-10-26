@@ -7,15 +7,16 @@ import {
   notFound,
 } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, Chip } from "@/components/power-bits";
+import { Avatar, IssueBlock } from "@/components/power-bits";
 import { ChatRoom } from "@/components/chat-room";
+import { ChoicePill } from "@/components/choice-pill";
+import { MeadowState, STATE_PRIMARY } from "@/components/meadow-state";
 import { RsvpButtons } from "@/components/rsvp-buttons";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
-import { issueTh, powerTh, STATUS_TH, ACTION_TYPES_TH } from "@/lib/i18n";
-import { MissionState, MissionVisual } from "@/components/mission-ui";
+import { powerTh, STATUS_TH, ACTION_TYPES_TH } from "@/lib/i18n";
 
 export const Route = createFileRoute("/connection/$id")({
   head: () => ({
@@ -33,18 +34,11 @@ export const Route = createFileRoute("/connection/$id")({
   }),
   component: ConnectionDetail,
   notFoundComponent: () => (
-    <MissionState
-      code="Connection unavailable"
-      title="ยังไม่พบคอนเนกชันนี้"
-      description="ลองเปิดจากรายการคู่เชื่อมของคุณอีกครั้ง"
-    >
-      <Link
-        to="/matches"
-        className="tap mt-4 inline-flex min-h-11 items-center rounded-2xl bg-primary px-5 text-sm font-bold text-primary-foreground"
-      >
-        กลับไปหาคู่เชื่อม
+    <MeadowState title="ยังไม่พบคู่นี้" description="ลองเปิดจากรายการคู่ของคุณอีกครั้ง">
+      <Link to="/commitments" className={STATE_PRIMARY}>
+        กลับไปที่คู่ของฉัน
       </Link>
-    </MissionState>
+    </MeadowState>
   ),
 });
 
@@ -65,7 +59,7 @@ function ConnectionDetail() {
 
   // ระหว่างที่ยังโหลดข้อมูลจากฐานข้อมูลไม่เสร็จ อย่าเพิ่งบอกว่า "ไม่พบ"
   if (!hydrated) {
-    return <MissionState code="Your connection" title="กำลังเปิดคอนเนกชัน…" />;
+    return <MeadowState loading title="กำลังเปิดหน้าของคู่นี้…" />;
   }
 
   if (!conn || !a || !b) throw notFound();
@@ -77,78 +71,87 @@ function ConnectionDetail() {
   ].map(powerTh);
 
   return (
-    <div className="editorial-focused mission-connection-page min-h-screen pb-36">
-      <header className="connection-masthead relative border-b border-border px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-foreground">
-        <MissionVisual variant="action" />
-        <button
-          type="button"
-          aria-label="ย้อนกลับ"
-          onClick={() => (canGoBack ? router.history.back() : navigate({ to: "/matches" }))}
-          className="tap mb-6 inline-grid h-11 w-11 place-items-center rounded-full bg-accent"
-        >
-          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-        </button>
-        <p className="mission-kicker mb-6" lang="en">
-          From connection to action
-        </p>
-        <div className="connection-portraits flex items-center justify-center gap-3">
-          <Avatar user={a} size={64} />
-          <span className="h-0.5 w-8 bg-border" />
-          <span className="h-3 w-3 rounded-full bg-electric" />
-          <span className="h-0.5 w-8 bg-border" />
-          <Avatar user={b} size={64} />
+    <div className="min-h-dvh pb-48">
+      <header className="bg-sky-soft pb-6 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="mx-auto w-full max-w-xl px-4 lg:max-w-3xl">
+          <button
+            type="button"
+            aria-label="ย้อนกลับ"
+            onClick={() => (canGoBack ? router.history.back() : navigate({ to: "/commitments" }))}
+            className="tap inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-4 text-body font-semibold text-ink shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
+          >
+            <ArrowLeft className="h-6 w-6" aria-hidden="true" />
+            ย้อนกลับ
+          </button>
+          <div className="mt-5 flex items-center justify-center gap-3" aria-hidden="true">
+            <Avatar user={a} size={64} />
+            <span className="h-0.5 w-8 rounded-full bg-primary/40" />
+            <span className="h-3 w-3 rounded-full bg-primary" />
+            <span className="h-0.5 w-8 rounded-full bg-primary/40" />
+            <Avatar user={b} size={64} />
+          </div>
+          <h1 className="mt-4 text-center font-heading text-title font-bold text-ink [overflow-wrap:anywhere]">
+            {a.name} × {b.name}
+          </h1>
+          <p className="mt-1 text-center text-body text-ink-soft">แมตช์กัน {conn.match_score}%</p>
         </div>
-        <h1 className="mt-4 text-center text-2xl font-extrabold">
-          {a.name} × {b.name}
-        </h1>
-        <p className="mt-1 text-center text-sm opacity-90">แมตช์กัน {conn.match_score}%</p>
       </header>
 
-      <main id="main-content" className="connection-content-grid mx-auto px-5 py-5">
-        <div className="connection-summary card-soft p-6">
+      <main
+        id="main-content"
+        className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-5 lg:max-w-3xl"
+      >
+        <section aria-label="สรุปคู่นี้" className="meadow-card p-5">
           {powerCombo.length > 0 && (
             <>
-              <p className="text-xs font-extrabold text-muted-foreground">พลังรวมของเรา</p>
-              <p className="mt-1 text-lg font-extrabold leading-snug">{powerCombo.join(" + ")}</p>
+              <p className="text-body text-ink-soft">พลังรวมของเรา</p>
+              <p className="font-heading text-lead font-semibold text-ink [overflow-wrap:anywhere]">
+                {powerCombo.join(" + ")}
+              </p>
             </>
           )}
           {sharedIssues.length > 0 && (
             <>
-              <p className="mb-1.5 mt-3 text-xs font-bold text-muted-foreground">
-                สนใจประเด็นเดียวกัน
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {sharedIssues.map(issueTh).map((s) => (
-                  <Chip key={s} tone="primary">
-                    {s}
-                  </Chip>
+              <p className="mt-4 text-body text-ink-soft">สนใจประเด็นเดียวกัน</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sharedIssues.map((i) => (
+                  <IssueBlock key={i} issue={i} />
                 ))}
               </div>
             </>
           )}
-          <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-            {conn.match_reason}
-          </p>
-        </div>
+          {conn.match_reason && (
+            <p className="mt-4 text-body text-ink [overflow-wrap:anywhere]">{conn.match_reason}</p>
+          )}
+        </section>
 
         {myCommitments.length > 0 && (
-          <section className="connection-agreements mission-panel">
-            <p className="mb-2 text-xs font-extrabold text-muted-foreground">
+          <section aria-labelledby="agreed-h" className="meadow-card p-5">
+            <h2 id="agreed-h" className="font-heading text-lead font-semibold text-ink">
               ก้าวต่อไปที่ตกลงกันแล้ว
-            </p>
-            <ul className="space-y-3">
+            </h2>
+            <ul className="mt-3 flex flex-col gap-3">
               {myCommitments.map((m) => (
-                <li key={m.id} className="rounded-2xl bg-accent/50 p-3">
-                  <p className="text-sm font-bold">{m.action_type}</p>
-                  <p className="text-xs text-muted-foreground">{m.description}</p>
+                <li key={m.id} className="rounded-2xl bg-sky-soft p-4">
+                  <p className="text-body font-semibold text-ink [overflow-wrap:anywhere]">
+                    {m.action_type}
+                  </p>
+                  {m.description && m.description !== m.action_type && (
+                    <p className="text-body text-ink-soft [overflow-wrap:anywhere]">
+                      {m.description}
+                    </p>
+                  )}
                   {m.follow_up_date && (
-                    <p className="mt-1 text-xs font-semibold text-primary">
-                      นัด{" "}
-                      {new Date(m.follow_up_date).toLocaleString("th-TH", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}{" "}
-                      น.
+                    <p className="mt-2 flex items-start gap-2 text-body font-semibold text-primary">
+                      <CalendarDays className="mt-1 h-6 w-6 shrink-0" aria-hidden="true" />
+                      <span>
+                        นัด{" "}
+                        {new Date(m.follow_up_date).toLocaleString("th-TH", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}{" "}
+                        น.
+                      </span>
                     </p>
                   )}
                   {m.follow_up_date ? (
@@ -156,9 +159,9 @@ function ConnectionDetail() {
                   ) : (
                     <Link
                       to="/calendar"
-                      className="tap mt-1 inline-flex min-h-11 items-center text-xs font-bold text-primary"
+                      className="meadow-btn-secondary tap mt-3 w-full py-2 text-center"
                     >
-                      ยังไม่ได้นัดวัน · นัดวันคุยกันเลย →
+                      ยังไม่ได้นัดวัน · นัดวันคุยกันเลย
                     </Link>
                   )}
                 </li>
@@ -167,37 +170,23 @@ function ConnectionDetail() {
           </section>
         )}
 
-        <div className="connection-plan mission-panel">
-          <h2 id="together-h" className="scroll-mt-4 text-xl font-extrabold">
+        <section className="meadow-card p-5">
+          <h2 id="together-h" className="scroll-mt-4 font-heading text-lead font-semibold text-ink">
             จะลุยด้วยกันแบบไหนดี?
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">เลือกสิ่งที่อยากเริ่มด้วยกัน</p>
+          <p className="mt-1 text-body text-ink-soft">เลือกสิ่งที่อยากเริ่มด้วยกัน</p>
           <div role="group" aria-labelledby="together-h" className="mt-3 flex flex-wrap gap-2">
             {ACTION_TYPES_TH.map((act) => (
-              <button
-                key={act}
-                type="button"
-                aria-pressed={action === act}
-                onClick={() => setAction(act)}
-                className={`tap inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2.5 text-[13px] font-bold ${
-                  action === act
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card"
-                }`}
-              >
-                {action === act && <Check className="h-4 w-4" aria-hidden="true" />}
+              <ChoicePill key={act} active={action === act} onClick={() => setAction(act)}>
                 {act}
-              </button>
+              </ChoicePill>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="connection-next-step mission-panel">
-          <label
-            htmlFor="next-step"
-            className="mb-2 block text-xs font-extrabold text-muted-foreground"
-          >
-            ก้าวต่อไปของเรา <span className="font-normal">(ไม่บังคับ)</span>
+        <section className="meadow-card p-5">
+          <label htmlFor="next-step" className="block text-body font-semibold text-ink">
+            ก้าวต่อไปของเรา <span className="font-normal text-ink-soft">(ไม่บังคับ)</span>
           </label>
           <textarea
             id="next-step"
@@ -205,68 +194,57 @@ function ConnectionDetail() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="เช่น จัดแคมเปญดิจิทัลเพื่อเยาวชนร่วมกันก่อนสิ้นปีนี้"
-            className="w-full rounded-2xl border border-border bg-card p-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="mt-2 w-full rounded-2xl border-2 bg-white p-4 text-body text-ink outline-none placeholder:text-ink-soft/70"
           />
-        </div>
+        </section>
 
-        <div className="connection-stage mission-panel">
-          <p id="status-l" className="mb-2 text-xs font-extrabold text-muted-foreground">
+        <section className="meadow-card p-5">
+          <p id="status-l" className="text-body font-semibold text-ink">
             ตอนนี้เราอยู่ขั้นไหน?
           </p>
-          <div role="group" aria-labelledby="status-l" className="flex flex-wrap gap-2">
+          <div role="group" aria-labelledby="status-l" className="mt-3 flex flex-wrap gap-2">
             {(["Connected", "Planning", "In Progress", "Completed"] as ConnectionStatus[]).map(
               (s) => (
-                <button
-                  key={s}
-                  type="button"
-                  aria-pressed={status === s}
-                  onClick={() => setStatus(s)}
-                  className={`tap inline-flex min-h-11 items-center rounded-full border px-4 text-[12px] font-bold ${
-                    status === s
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card"
-                  }`}
-                >
+                <ChoicePill key={s} active={status === s} onClick={() => setStatus(s)}>
                   {STATUS_TH[s]}
-                </button>
+                </ChoicePill>
               ),
             )}
           </div>
-        </div>
+        </section>
 
         <ChatRoom connectionId={conn.id} compact />
       </main>
 
-      <div className="mission-detail-actionbar fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
-        <button
-          type="button"
-          disabled={!action}
-          aria-describedby={!action ? "cta-hint" : undefined}
-          onClick={() => {
-            addCommitment({
-              connection_id: conn.id,
-              action_type: action!,
-              description: text.trim() || action!,
-              status,
-              follow_up_date: null,
-            });
-            toast.success("สร้างคำมั่นสัญญาแล้ว 🎉", {
-              description: "ดูได้ในลิสต์ 'จะทำอะไรต่อดี?' ของคุณ",
-            });
-            navigate({ to: "/commitments" });
-          }}
-          className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo text-base font-extrabold text-primary-foreground disabled:bg-none disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none"
-        >
-          สร้างคำมั่นสัญญา
-        </button>
-        {!action && (
-          <p
-            id="cta-hint"
-            className="mx-auto mt-1.5 max-w-xl text-center text-xs text-muted-foreground"
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E6E3F2] bg-paper px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+        <div className="mx-auto w-full max-w-xl lg:max-w-3xl">
+          <button
+            type="button"
+            disabled={!action}
+            aria-describedby={!action ? "cta-hint" : undefined}
+            onClick={() => {
+              addCommitment({
+                connection_id: conn.id,
+                action_type: action!,
+                description: text.trim() || action!,
+                status,
+                follow_up_date: null,
+              });
+              toast.success("สร้างคำมั่นสัญญาแล้ว", {
+                description: "ดูได้ในแท็บ คู่ของฉัน ในหัวข้อ สิ่งที่ตกลงจะทำ",
+              });
+              navigate({ to: "/commitments" });
+            }}
+            className="meadow-btn-primary tap w-full text-center"
           >
-            เลือกสิ่งที่อยากทำด้วยกัน 1 อย่างเพื่อไปต่อ
-          </p>
-        )}
+            สร้างคำมั่นสัญญา
+          </button>
+          {!action && (
+            <p id="cta-hint" className="mt-2 text-center text-body text-ink-soft">
+              เลือกสิ่งที่อยากทำด้วยกัน 1 อย่างเพื่อไปต่อ
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

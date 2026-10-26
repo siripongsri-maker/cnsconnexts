@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useMotionSettings } from "@/lib/motion";
 
 const PANELS =
-  ".mission-page-hero,.mission-panel,.mission-empty,.card-soft,.publication-group,.person-masthead,.connection-masthead,.guide-explore";
+  ".mission-page-hero,.mission-panel,.mission-empty,.card-soft,.publication-group,.guide-explore";
 const NATIVE_SCROLL =
   '[data-lenis-prevent],[role="dialog"],[role="log"],textarea,select,input,.space-menu,.admin-nav,.overflow-x-auto,.overflow-y-auto';
 

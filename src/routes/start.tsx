@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Link2, UserCircle2 } from "lucide-react";
-import { MissionHeader, MissionVisual } from "@/components/mission-ui";
-import { Wordmark } from "@/components/wordmark";
+import { ArrowRight, CheckCircle2, Link2 } from "lucide-react";
+import { EntryShell } from "@/components/entry-shell";
 
 import {
   createSession,
@@ -35,10 +34,11 @@ export const Route = createFileRoute("/start")({
   component: StartPage,
 });
 
+/** ขั้นตอน 3 ข้อ — เลขบนบล็อกสี ใช้คู่สีป้ายแท็กของธีม (ตัวอักษรขาว/พื้นเข้ม) */
 const STEPS = [
-  { t: "บอกตัวตน", d: "ชื่อและพื้นที่ของคุณ" },
-  { t: "เลือกประเด็น", d: "เรื่องที่คุณใส่ใจ" },
-  { t: "แบ่งปันพลัง", d: "สิ่งที่มีให้และกำลังมองหา" },
+  { t: "บอกตัวตน", d: "ชื่อและพื้นที่ของคุณ", bg: "#6A2C91" },
+  { t: "เลือกประเด็น", d: "เรื่องที่คุณใส่ใจ", bg: "#0F6DB0" },
+  { t: "แบ่งปันพลัง", d: "สิ่งที่มีให้และกำลังมองหา", bg: "#3D7A1C" },
 ];
 
 function StartPage() {
@@ -79,76 +79,78 @@ function StartPage() {
   };
 
   return (
-    <div className="focused-page access-page min-h-screen">
-      <header className="focused-topbar">
-        <div className="focused-topbar-inner">
-          <Link to="/" className="focused-back-link tap" aria-label="กลับหน้าแรก">
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            <Wordmark size="sm" />
+    <EntryShell
+      title={
+        <>
+          พร้อมเชื่อมพลัง
+          <br />
+          ในแบบของคุณ
+        </>
+      }
+      subtitle="สร้างโปรไฟล์ครั้งเดียว แล้วพบคนที่ควรเจอ"
+    >
+      <div className="flex flex-col gap-4">
+        <section aria-labelledby="start-h" className="meadow-card p-5">
+          <p className="flex flex-wrap items-center gap-2 text-body font-semibold text-[#3D7A1C]">
+            <CheckCircle2 className="h-6 w-6 shrink-0" aria-hidden />
+            <span>เข้าห้องสำเร็จ</span>
+            {session && (
+              <span className="rounded-full bg-sky-soft px-3 text-ink">
+                รหัสห้อง {session.code ?? "NHA26"}
+              </span>
+            )}
+          </p>
+          <h2 id="start-h" className="mt-2 font-heading text-title font-semibold text-ink">
+            2 นาที เพื่อก้าวต่อไป
+          </h2>
+          <ol className="mt-3 flex flex-col gap-3">
+            {STEPS.map((step, index) => (
+              <li key={step.t} className="flex items-start gap-3">
+                <span
+                  aria-hidden
+                  className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl font-heading text-title font-bold text-white"
+                  style={{ backgroundColor: step.bg }}
+                >
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <h3 className="font-heading text-lead font-semibold text-ink">{step.t}</h3>
+                  <p className="text-body text-ink-soft">{step.d}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <button type="button" onClick={begin} className="meadow-btn-primary tap mt-5 w-full">
+            {hydrated && me ? "แก้ไขโปรไฟล์ของฉัน" : "เริ่มสร้างโปรไฟล์"}
+            <ArrowRight className="h-6 w-6" aria-hidden />
+          </button>
+          <p className="mt-3 text-center text-body text-ink-soft" role="status">
+            กำลังพาคุณไปต่อ · ไม่ต้องล็อกอิน
+          </p>
+        </section>
+
+        <section aria-labelledby="account-h" className="meadow-card p-5">
+          <div className="flex items-start gap-3">
+            <span
+              aria-hidden
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink"
+            >
+              <Link2 className="h-6 w-6" strokeWidth={2.2} />
+            </span>
+            <div className="min-w-0">
+              <h2 id="account-h" className="font-heading text-lead font-semibold text-ink">
+                เริ่มเลย ผูกบัญชีทีหลัง
+              </h2>
+              <p className="text-body text-ink-soft">
+                ผู้เยี่ยมชมเก็บโปรไฟล์ในเครื่องนี้ ผูกอีเมลหรือ Google เพื่อใช้ต่อข้ามอุปกรณ์ได้
+              </p>
+            </div>
+          </div>
+          <Link to="/auth" className="meadow-btn-secondary tap mt-4 w-full">
+            ผูกบัญชีตอนนี้
           </Link>
-          <span className="focused-system-label">JOIN / CONNEXTS</span>
-        </div>
-      </header>
-      <main className="focused-content">
-        <MissionHeader
-          kicker="WELCOME TO THE NETWORK"
-          title={
-            <>
-              พร้อมเชื่อมพลัง
-              <br />
-              ในแบบของคุณ
-            </>
-          }
-          description="สร้างโปรไฟล์ครั้งเดียว แล้วพบคนที่ควรเจอ"
-          number="01"
-          variant="network"
-        />
-        <div className="access-layout">
-          <section className="mission-panel access-steps-panel">
-            <div className="access-ready-label">
-              <CheckCircle2 className="h-4 w-4" aria-hidden />
-              <span>เข้าห้องสำเร็จ</span>
-              {session && <span className="access-room">{session.code ?? "NHA26"}</span>}
-            </div>
-            <h2>2 นาที เพื่อก้าวต่อไป</h2>
-            <ol className="access-steps">
-              {STEPS.map((step, index) => (
-                <li key={step.t}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <h3>{step.t}</h3>
-                    <p>{step.d}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </li>
-              ))}
-            </ol>
-            <button type="button" onClick={begin} className="tap focused-primary-action">
-              <span>{hydrated && me ? "แก้ไขโปรไฟล์ของฉัน" : "เริ่มสร้างโปรไฟล์"}</span>
-              <ArrowRight className="h-5 w-5" aria-hidden />
-            </button>
-            <p className="access-action-note" role="status">
-              กำลังพาคุณไปต่อ · ไม่ต้องล็อกอิน
-            </p>
-          </section>
-          <aside className="access-network-panel">
-            <MissionVisual variant="network" />
-            <div className="access-account-note">
-              <Link2 className="h-5 w-5" aria-hidden />
-              <div>
-                <h2>เริ่มเลย ผูกบัญชีทีหลัง</h2>
-                <p>
-                  ผู้เยี่ยมชมเก็บโปรไฟล์ในเครื่องนี้ ผูกอีเมลหรือ Google เพื่อใช้ต่อข้ามอุปกรณ์ได้
-                </p>
-                <Link to="/auth" className="tap">
-                  <UserCircle2 className="h-4 w-4" aria-hidden /> ผูกบัญชีตอนนี้{" "}
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Link>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </main>
-    </div>
+        </section>
+      </div>
+    </EntryShell>
   );
 }

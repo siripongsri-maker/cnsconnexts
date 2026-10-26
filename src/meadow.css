@@ -108,6 +108,11 @@ html.meadow [data-sonner-toast] :is([data-title], [data-description], [data-butt
   font-size: 20px;
   line-height: 1.6;
 }
+/* ปุ่มในข้อความแจ้งเตือน (เช่น "เปิดดู") สูงอย่างน้อย 48px */
+html.meadow [data-sonner-toast] :is([data-button], [data-cancel]) {
+  min-height: 48px;
+  padding-inline: 16px;
+}
 
 /* ปิดของตกแต่งธีมอวกาศ (ออโรรา/ดาว) */
 html.meadow body::before,
@@ -364,4 +369,21 @@ html[data-lowspec] .meadow-rotor {
 }
 html[data-lowspec] .meadow-celebrate [class*="meadow-celebrate-"] {
   animation: none;
+}
+
+/* ฉากหลังเบลอของทัวร์แนะนำ — เครื่องสเปกต่ำปิดเบลอ เหลือแค่พื้นสีฟ้าอ่อนโปร่ง */
+html[data-lowspec] .meadow-tour-overlay {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* แถบเลื่อนเดิมเป็นฟ้าบนพื้นดำ (scroll-motion.css) — บนธีมทุ่งใช้ม่วงหลักบนฟ้าอ่อน (ค่านี้สืบทอดไปกล่องเลื่อนในหน้าด้วย เช่นกล่องแชท) */
+html.meadow {
+  scrollbar-color: #6a2c91 #eaf6fd;
+}
+html.meadow::-webkit-scrollbar-thumb {
+  background: #6a2c91;
+}
+html.meadow::-webkit-scrollbar-track {
+  background: #eaf6fd;
 }

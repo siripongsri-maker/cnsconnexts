@@ -117,6 +117,23 @@ export function PowerIcon({
   return <Icon aria-hidden className={className} />;
 }
 
+/**
+ * ป้ายพลังสีทึบ + ไอคอน (ตัวอักษรกับพื้นใช้คู่สีป้ายแท็กของธีม) — have = เขียว, need = ส้ม
+ * ความหมาย "มีให้/กำลังหา" ต้องบอกด้วยหัวข้อของส่วนนั้นเสมอ ไม่พึ่งสีอย่างเดียว
+ */
+export function PowerPill({ name, kind }: { name: string; kind: "have" | "need" }) {
+  const tag = BLOCK_TAG[kind === "have" ? "green" : "orange"];
+  return (
+    <span
+      className="inline-flex min-h-12 items-center gap-2 rounded-full px-4 py-1 text-body font-semibold"
+      style={{ backgroundColor: tag.bg, color: tag.fg }}
+    >
+      <PowerIcon name={name} className="h-6 w-6 shrink-0" />
+      {powerTh(name)}
+    </span>
+  );
+}
+
 /** บรรทัดเดียว: ไอคอนพลังแรก + ชื่อพลัง + " +N" เมื่อมีมากกว่าหนึ่ง */
 export function PowerLine({ label, powers }: { label: string; powers: string[] }) {
   const first = powers[0];
@@ -156,54 +173,6 @@ export function ScoreRing({ score, size = 84 }: { score: number; size?: number }
       >
         <span className="font-heading text-score font-bold text-primary">{pct}%</span>
         <span className="text-body leading-none text-ink-soft">แมตช์</span>
-      </div>
-    </div>
-  );
-}
-
-/** แอนิเมชันสองจุดเชื่อมกันหลังกด "เชื่อมต่อ" — วางในกล่องที่เป็น relative */
-export function ConnectBurst({ name }: { name: string }) {
-  const nodeStyle = { transformBox: "fill-box", transformOrigin: "center" } as const;
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-background/75 backdrop-blur-sm"
-    >
-      <div className="animate-pop grid place-items-center gap-2 px-4 text-center">
-        <svg width="120" height="24" viewBox="0 0 120 24" aria-hidden>
-          <line
-            x1="12"
-            y1="12"
-            x2="108"
-            y2="12"
-            stroke="var(--primary)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeDasharray="200"
-            className="animate-draw"
-          />
-          <circle
-            cx="12"
-            cy="12"
-            r="8"
-            fill="var(--primary)"
-            className="animate-pulse-node"
-            style={nodeStyle}
-          />
-          <circle
-            cx="108"
-            cy="12"
-            r="8"
-            fill="var(--coral)"
-            className="animate-pulse-node"
-            style={nodeStyle}
-          />
-        </svg>
-        <p className="text-sm font-extrabold">เชื่อมกันแล้ว ✨</p>
-        <p className="text-xs text-muted-foreground">
-          คุณกับ {name} · <span lang="en">New Connection Created</span>
-        </p>
       </div>
     </div>
   );

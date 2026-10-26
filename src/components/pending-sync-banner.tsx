@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowUpRight, CloudUpload, X } from "lucide-react";
+import { CloudUpload, Send } from "lucide-react";
 import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
@@ -24,38 +24,45 @@ export function PendingSyncBanner() {
   };
 
   return (
-    <div className="pending-profile-wrap">
-      <div className="pending-profile-banner" role="status">
-        <span className="pending-profile-icon">
-          <CloudUpload className="h-5 w-5" strokeWidth={1.6} aria-hidden />
-        </span>
-        <div className="pending-profile-copy">
-          <p className="mission-kicker">PROFILE / WAITING TO SYNC</p>
-          <h2>โปรไฟล์ของ {pendingProfile.name} ยังรอส่ง</h2>
-          <p>คนในงานจะเห็นคุณหลังส่งโปรไฟล์ขึ้นระบบ</p>
+    <div className="mx-auto w-full max-w-xl px-4 pt-4 lg:max-w-3xl">
+      <div role="status" className="meadow-card p-4">
+        <div className="flex items-start gap-3">
+          <span
+            aria-hidden
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink"
+          >
+            <CloudUpload className="h-6 w-6" strokeWidth={2.2} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-heading text-lead font-semibold text-ink [overflow-wrap:anywhere]">
+              โปรไฟล์ของ {pendingProfile.name} ยังรอส่ง
+            </h2>
+            <p className="text-body text-ink-soft">คนในงานจะเห็นคุณหลังส่งโปรไฟล์ขึ้นระบบ</p>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => void onSync()}
-          disabled={busy}
-          className="tap pending-profile-send"
-        >
-          {busy ? (
-            "กำลังส่ง…"
-          ) : (
-            <>
-              ส่งโปรไฟล์ <ArrowUpRight className="h-4 w-4" aria-hidden />
-            </>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={dismissPendingProfile}
-          className="tap pending-profile-dismiss"
-          aria-label="ปิดไว้ก่อน"
-        >
-          <X className="h-4 w-4" strokeWidth={2.4} aria-hidden />
-        </button>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => void onSync()}
+            disabled={busy}
+            className="meadow-btn-primary tap flex-1"
+          >
+            {busy ? (
+              "กำลังส่ง…"
+            ) : (
+              <>
+                <Send className="h-6 w-6" aria-hidden /> ส่งโปรไฟล์
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={dismissPendingProfile}
+            className="meadow-btn-secondary tap sm:w-auto"
+          >
+            ปิดไว้ก่อน
+          </button>
+        </div>
       </div>
     </div>
   );

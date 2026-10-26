@@ -714,42 +714,11 @@ body::after {
 .mission-home {
   padding-bottom: 80px;
 }
-.editorial-auth {
-  padding-top: 64px;
-}
-.editorial-auth > div {
-  max-width: 520px;
-}
-.editorial-auth form {
-  padding-top: 16px;
-}
 .mission-profile-scrim {
   background: var(--profile-scrim);
 }
-.mission-idea h3 {
-  font-weight: 500;
-}
-.mission-idea > div {
-  padding: 24px;
-}
 .mission-deck > div:last-of-type {
   gap: 16px;
-}
-.editorial-focused > :is(header, div:first-child) {
-  max-width: 1024px;
-  margin-inline: auto;
-}
-.editorial-focused > header {
-  border-bottom: 1px solid var(--border);
-  padding-block: 28px;
-}
-.editorial-focused > header h1 {
-  font-size: 26px;
-  font-weight: 500;
-  white-space: normal;
-}
-.editorial-focused > main {
-  padding-top: 32px;
 }
 .editorial-journey main > .card-soft {
   background: transparent;

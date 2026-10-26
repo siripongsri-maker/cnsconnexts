@@ -1,29 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  Camera,
-  CameraOff,
-  Clock,
-  QrCode,
-  ScanLine,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Camera, CameraOff, Clock, LogIn, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
-const GUIDE: { t: string; d: string }[] = [
-  { t: "สแกนหรือกรอกรหัส", d: "ดู QR และรหัสห้องบนป้ายในงาน" },
-  { t: "บอกตัวตนและพลัง", d: "เลือกประเด็น สิ่งที่มีให้ และกำลังมองหา" },
-  { t: "พบคนที่ควรเจอ", d: "เลือกเชื่อมต่อ แล้วนัดร่วมทำ" },
+/** ขั้นตอน 3 ข้อ — เลขบนบล็อกสี ใช้คู่สีป้ายแท็กของธีม (ตัวอักษรขาว/พื้นเข้ม) */
+const GUIDE: { t: string; d: string; bg: string }[] = [
+  { t: "สแกนหรือกรอกรหัส", d: "ดู QR และรหัสห้องบนป้ายในงาน", bg: "#6A2C91" },
+  { t: "บอกตัวตนและพลัง", d: "เลือกประเด็น สิ่งที่มีให้ และกำลังมองหา", bg: "#0F6DB0" },
+  { t: "พบคนที่ควรเจอ", d: "เลือกเชื่อมต่อ แล้วนัดร่วมทำ", bg: "#3D7A1C" },
 ];
 
 import { createSession, makeJoinCode } from "@/lib/session";
 import { useAuth } from "@/lib/auth";
 import type { UserSource } from "@/lib/types";
-import { MissionHeader, MissionVisual } from "@/components/mission-ui";
-import { Wordmark } from "@/components/wordmark";
+import { EntryShell } from "@/components/entry-shell";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -141,213 +131,191 @@ function ScanPage() {
     }
   }, [join, stop]);
 
+  const camLabel =
+    cam === "live"
+      ? "กำลังสแกน"
+      : cam === "starting"
+        ? "กำลังเปิดกล้อง"
+        : cam === "denied" || cam === "unsupported"
+          ? "กรอกรหัสห้องได้เลย"
+          : "พร้อมเริ่ม";
+
   return (
-    <div className="focused-page scan-page min-h-screen">
-      <header className="focused-topbar">
-        <div className="focused-topbar-inner">
-          <Link to="/" aria-label="กลับหน้าแรก" className="focused-back-link tap">
-            <ArrowLeft className="h-4 w-4" aria-hidden />
-            <Wordmark size="sm" />
-          </Link>
-          <span className="focused-system-label">NETWORK ACCESS / 01</span>
-        </div>
-      </header>
-      <main className="focused-content">
-        <MissionHeader
-          kicker="SCAN. CONNECT. CREATE."
-          title={
-            <>
-              สแกนหนึ่งครั้ง
-              <br />
-              เริ่มเชื่อมพลัง
-            </>
-          }
-          description="สแกน QR ที่หน้างาน หรือเข้าร่วมได้ทันทีโดยไม่ต้องสมัคร"
-          number="01"
-          variant="signal"
-        />
-        <div className="scan-layout">
-          <section className="mission-panel scan-camera-panel" aria-label="กล้องสแกน QR">
-            <div className="scan-console-label">
-              <span>
-                <ScanLine className="h-4 w-4" aria-hidden /> CAMERA / INPUT 01
-              </span>
-              <span
-                role="status"
-                aria-live="polite"
-                className={`scan-camera-status ${cam === "live" ? "is-live" : ""}`}
-              >
-                <span aria-hidden />
-                {cam === "live"
-                  ? "กำลังสแกน"
-                  : cam === "starting"
-                    ? "กำลังเปิด"
-                    : cam === "denied" || cam === "unsupported"
-                      ? "กรอกรหัสได้"
-                      : "พร้อมเริ่ม"}
-              </span>
-            </div>
-            <div className="scan-viewfinder">
-              <video
-                ref={videoRef}
-                playsInline
-                muted
-                aria-label="ภาพจากกล้องสำหรับสแกน QR"
-                className={`h-full w-full object-cover ${cam === "live" ? "" : "opacity-0"}`}
-              />
-              <div className="scan-corners" aria-hidden>
-                <i />
-                <i />
-                <i />
-                <i />
+    <EntryShell
+      title={
+        <>
+          สแกนหนึ่งครั้ง
+          <br />
+          เริ่มเชื่อมพลัง
+        </>
+      }
+      subtitle="สแกน QR ที่หน้างาน หรือเข้าร่วมได้ทันทีโดยไม่ต้องสมัคร"
+    >
+      <div className="flex flex-col gap-4">
+        <section aria-label="กล้องสแกน QR" className="meadow-card p-4">
+          <p role="status" aria-live="polite" className="text-body font-semibold text-ink">
+            กล้อง: <span className="text-primary">{camLabel}</span>
+          </p>
+          <div className="relative mt-3 aspect-[4/3] w-full overflow-hidden rounded-2xl border-2 border-dashed border-[#8F8BB8] bg-sky-soft">
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              aria-label="ภาพจากกล้องสำหรับสแกน QR"
+              className={`h-full w-full object-cover ${cam === "live" ? "" : "opacity-0"}`}
+            />
+            {cam !== "live" && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
+                {cam === "denied" || cam === "unsupported" ? (
+                  <>
+                    <CameraOff className="h-10 w-10 text-ink" aria-hidden />
+                    <h2 className="font-heading text-lead font-semibold text-ink">
+                      {cam === "denied" ? "ยังใช้กล้องไม่ได้" : "สแกนผ่านกล้องมือถือได้เลย"}
+                    </h2>
+                    <p className="text-body text-ink-soft">
+                      {cam === "denied"
+                        ? "อนุญาตให้ใช้กล้อง หรือลองกรอกรหัสห้อง"
+                        : "เบราว์เซอร์นี้ไม่รองรับการสแกน ใช้แอปกล้องส่อง QR หรือกรอกรหัสห้อง"}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <QrCode className="h-10 w-10 text-ink" aria-hidden />
+                    <h2 className="font-heading text-lead font-semibold text-ink">
+                      {cam === "starting" ? "กำลังเปิดกล้อง…" : "วาง QR ไว้ในกรอบ"}
+                    </h2>
+                    <p className="text-body text-ink-soft">
+                      {cam === "starting"
+                        ? "อนุญาตให้เบราว์เซอร์ใช้กล้องของคุณ"
+                        : "กดเปิดกล้อง แล้วส่อง QR ที่หน้างาน"}
+                    </p>
+                  </>
+                )}
               </div>
-              {cam !== "live" && (
-                <div className="scan-camera-placeholder">
-                  <MissionVisual variant="signal" className="scan-idle-art" />
-                  {cam === "denied" || cam === "unsupported" ? (
-                    <div className="scan-camera-message">
-                      <CameraOff className="h-8 w-8" aria-hidden />
-                      <h2>
-                        {cam === "denied" ? "ยังใช้กล้องไม่ได้" : "สแกนผ่านกล้องมือถือได้เลย"}
-                      </h2>
-                      <p>
-                        {cam === "denied"
-                          ? "อนุญาตให้ใช้กล้อง หรือลองกรอกรหัสห้อง"
-                          : "เบราว์เซอร์นี้ไม่รองรับการสแกน ใช้แอปกล้องส่อง QR หรือกรอกรหัสห้อง"}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="scan-camera-message">
-                      <QrCode className="h-9 w-9" aria-hidden />
-                      <h2>{cam === "starting" ? "กำลังเปิดกล้อง…" : "วาง QR ไว้ในกรอบ"}</h2>
-                      <p>
-                        {cam === "starting"
-                          ? "อนุญาตให้เบราว์เซอร์ใช้กล้องของคุณ"
-                          : "กดเปิดกล้อง แล้วส่อง QR ที่หน้างาน"}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-              {cam === "live" && <span className="scan-live-hint">วาง QR ให้อยู่กลางกรอบ</span>}
-            </div>
-            <div className="scan-camera-controls">
-              <span>
-                <Clock className="h-4 w-4" aria-hidden /> สร้างโปรไฟล์ใน 2 นาที
+            )}
+            {cam === "live" && (
+              <span className="absolute inset-x-3 bottom-3 rounded-xl bg-white px-3 py-1 text-center text-body font-semibold text-ink">
+                วาง QR ให้อยู่กลางกรอบ
               </span>
-              {cam === "live" ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    stop();
-                    setCam("idle");
-                  }}
-                  className="tap"
-                >
-                  <CameraOff className="h-4 w-4" aria-hidden /> ปิดกล้อง
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={cam === "starting"}
-                  aria-busy={cam === "starting"}
-                  onClick={() => void startCamera()}
-                  className="tap"
-                >
-                  <Camera className="h-4 w-4" aria-hidden />
-                  {cam === "starting" ? "กำลังเปิด…" : "เปิดกล้องสแกน"}
-                  <ArrowUpRight className="h-4 w-4" aria-hidden />
-                </button>
-              )}
-            </div>
-          </section>
+            )}
+          </div>
+          <p className="mt-3 flex items-center gap-2 text-body text-ink-soft">
+            <Clock className="h-6 w-6 shrink-0" aria-hidden /> สร้างโปรไฟล์ใน 2 นาที
+          </p>
+          {cam === "live" ? (
+            <button
+              type="button"
+              onClick={() => {
+                stop();
+                setCam("idle");
+              }}
+              className="meadow-btn-secondary tap mt-3 w-full"
+            >
+              <CameraOff className="h-6 w-6" aria-hidden /> ปิดกล้อง
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={cam === "starting"}
+              aria-busy={cam === "starting"}
+              onClick={() => void startCamera()}
+              className="meadow-btn-primary tap mt-3 w-full"
+            >
+              <Camera className="h-6 w-6" aria-hidden />
+              {cam === "starting" ? "กำลังเปิด…" : "เปิดกล้องสแกน"}
+            </button>
+          )}
+        </section>
 
-          <aside className="scan-entry-options">
-            <section className="scan-direct-panel mission-panel">
-              <span className="mission-kicker">QUICK ACCESS</span>
-              <h2>
-                ไม่มี QR
-                <br />
-                <span>ก็เริ่มได้</span>
-              </h2>
-              <p>เข้าแบบผู้เยี่ยมชม แล้วสร้างโปรไฟล์ของคุณได้ทันที</p>
-              <button
-                type="button"
-                onClick={() => join(makeJoinCode(), "direct")}
-                className="tap focused-primary-action"
-              >
-                <span>เข้าร่วมทันที</span>
-                <ArrowRight className="h-5 w-5" aria-hidden />
-              </button>
-              <span className="scan-entry-note">ข้อมูลอยู่ในเครื่องนี้ · ผูกบัญชีภายหลังได้</span>
-            </section>
-            <section className="scan-manual-panel mission-panel">
-              <label htmlFor="room" className="mission-kicker">
-                ROOM CODE / รหัสห้อง
-              </label>
-              <div className="scan-room-input">
-                <input
-                  id="room"
-                  value={manual}
-                  aria-invalid={!!hint}
-                  aria-describedby={hint ? "room-hint" : undefined}
-                  onChange={(e) => {
-                    setManual(e.target.value.toUpperCase());
-                    setHint(null);
-                  }}
-                  placeholder="เช่น NHA26"
-                  className="outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!manual.trim()) {
-                      setHint("ใส่รหัสห้องจากป้ายในงานก่อนนะ");
-                      return;
-                    }
-                    join(manual.trim(), "direct");
-                  }}
-                  aria-label="เข้าร่วมด้วยรหัสห้อง"
-                  className="tap"
-                >
-                  <ArrowRight className="h-5 w-5" aria-hidden />
-                </button>
-              </div>
-              {hint && (
-                <p
-                  id="room-hint"
-                  role="alert"
-                  className="mt-2 text-[12px] font-semibold text-coral-ink"
-                >
-                  {hint}
-                </p>
-              )}
-            </section>
-          </aside>
-        </div>
+        <section aria-labelledby="manual-h" className="meadow-card p-5">
+          <h2 id="manual-h" className="font-heading text-lead font-semibold text-ink">
+            มีรหัสห้องใช่ไหม
+          </h2>
+          <label htmlFor="room" className="mt-2 block text-body text-ink-soft">
+            รหัสห้องบนป้ายในงาน
+          </label>
+          <div className="mt-2 flex gap-2">
+            <input
+              id="room"
+              value={manual}
+              aria-invalid={!!hint}
+              aria-describedby={hint ? "room-hint" : undefined}
+              autoCapitalize="characters"
+              onChange={(e) => {
+                setManual(e.target.value.toUpperCase());
+                setHint(null);
+              }}
+              placeholder="เช่น NHA26"
+              className="min-w-0 flex-1 rounded-2xl border-2 bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft/70"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (!manual.trim()) {
+                  setHint("ใส่รหัสห้องจากป้ายในงานก่อนนะ");
+                  return;
+                }
+                join(manual.trim(), "direct");
+              }}
+              className="meadow-btn-primary tap min-h-14 shrink-0 px-4"
+            >
+              เข้าห้อง
+            </button>
+          </div>
+          {hint && (
+            <p id="room-hint" role="alert" className="mt-2 text-body font-semibold text-[#B3261E]">
+              {hint}
+            </p>
+          )}
+        </section>
 
-        <ol className="scan-process-strip">
+        <section aria-labelledby="direct-h" className="meadow-card p-5">
+          <h2 id="direct-h" className="font-heading text-lead font-semibold text-ink">
+            ไม่มี QR ก็เริ่มได้
+          </h2>
+          <p className="mt-1 text-body text-ink-soft">
+            เข้าแบบผู้เยี่ยมชม แล้วสร้างโปรไฟล์ของคุณได้ทันที
+          </p>
+          <button
+            type="button"
+            onClick={() => join(makeJoinCode(), "direct")}
+            className="meadow-btn-primary tap mt-3 w-full"
+          >
+            เข้าร่วมทันที
+            <ArrowRight className="h-6 w-6" aria-hidden />
+          </button>
+          <p className="mt-2 text-body text-ink-soft">
+            ข้อมูลอยู่ในเครื่องนี้ · ผูกบัญชีภายหลังได้
+          </p>
+        </section>
+
+        <ol aria-label="ขั้นตอนเข้าร่วม" className="flex flex-col gap-3">
           {GUIDE.map((item, index) => (
-            <li key={item.t}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <div>
-                <h2>{item.t}</h2>
-                <p>{item.d}</p>
+            <li key={item.t} className="meadow-card flex items-start gap-3 p-4">
+              <span
+                aria-hidden
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl font-heading text-title font-bold text-white"
+                style={{ backgroundColor: item.bg }}
+              >
+                {index + 1}
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-heading text-lead font-semibold text-ink">{item.t}</h2>
+                <p className="text-body text-ink-soft">{item.d}</p>
               </div>
             </li>
           ))}
         </ol>
-        <div className="scan-footer-links">
-          <Link to="/qr" className="tap">
-            <QrCode className="h-4 w-4" aria-hidden /> แสดง QR สำหรับหน้างาน{" "}
-            <ArrowUpRight className="h-4 w-4" aria-hidden />
+
+        <div className="flex flex-col gap-3">
+          <Link to="/qr" className="meadow-btn-secondary tap w-full">
+            <QrCode className="h-6 w-6" aria-hidden /> แสดง QR สำหรับหน้างาน
           </Link>
-          <Link to="/auth" className="tap">
-            <Sparkles className="h-4 w-4" aria-hidden /> เข้าสู่ระบบ{" "}
-            <ArrowUpRight className="h-4 w-4" aria-hidden />
+          <Link to="/auth" className="meadow-btn-secondary tap w-full">
+            <LogIn className="h-6 w-6" aria-hidden /> เข้าสู่ระบบ
           </Link>
         </div>
-      </main>
-    </div>
+      </div>
+    </EntryShell>
   );
 }

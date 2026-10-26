@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { ChatRoom } from "@/components/chat-room";
 import { useStore } from "@/lib/store";
-import { MissionHeader, MissionState, MissionVisual } from "@/components/mission-ui";
+import { MeadowState, STATE_PRIMARY } from "@/components/meadow-state";
 
 export const Route = createFileRoute("/chat/$id")({
   head: () => ({
@@ -21,18 +21,11 @@ export const Route = createFileRoute("/chat/$id")({
   }),
   component: ChatPage,
   notFoundComponent: () => (
-    <MissionState
-      code="Signal unavailable"
-      title="ยังไม่พบห้องแชทนี้"
-      description="ลองเปิดจากรายการคู่เชื่อมของคุณอีกครั้ง"
-    >
-      <Link
-        to="/matches"
-        className="tap mt-4 inline-flex min-h-11 items-center rounded-2xl bg-primary px-5 text-sm font-bold text-primary-foreground"
-      >
-        กลับไปหาคู่เชื่อม
+    <MeadowState title="ยังไม่พบห้องแชทนี้" description="ลองเปิดจากรายการคู่ของคุณอีกครั้ง">
+      <Link to="/commitments" className={STATE_PRIMARY}>
+        กลับไปที่คู่ของฉัน
       </Link>
-    </MissionState>
+    </MeadowState>
   ),
 });
 
@@ -44,43 +37,30 @@ function ChatPage() {
   const otherId = conn ? (conn.user_a === "me" ? conn.user_b : conn.user_a) : "";
   const other = users.find((u) => u.id === otherId);
 
+  const otherName = other?.name ?? "คู่ของคุณ";
+
   return (
-    <div className="editorial-focused mission-chat-page min-h-screen">
-      <header className="mission-focused-topbar sticky top-0 z-20 bg-background/90 px-5 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-xl">
-        <div className="flex items-center gap-3">
+    <div className="min-h-dvh pb-10">
+      <header className="bg-sky-soft pb-5 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="mx-auto w-full max-w-xl px-4 lg:max-w-3xl">
           <Link
             to="/connection/$id"
             params={{ id }}
             replace
-            aria-label="กลับไปที่การ์ดคอนเนกชัน"
-            className="tap grid h-11 w-11 shrink-0 place-items-center rounded-full bg-muted"
+            aria-label="กลับไปที่หน้าของคู่นี้"
+            className="tap inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-4 text-body font-semibold text-ink shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <ArrowLeft className="h-6 w-6" aria-hidden="true" />
+            ย้อนกลับ
           </Link>
-          <div className="min-w-0">
-            <p className="truncate text-[17px] font-medium leading-tight">
-              คุยกับ {other?.name ?? "คู่เชื่อมของคุณ"}
-            </p>
-            <p className="text-[12px] text-muted-foreground">คนส. Connexts</p>
-          </div>
+          <h1 className="mt-4 font-heading text-title font-bold text-ink [overflow-wrap:anywhere]">
+            คุยกับ {otherName}
+          </h1>
+          <p className="text-body text-ink-soft">แลกไอเดียกันสั้น ๆ แล้วนัดก้าวต่อไปด้วยกัน</p>
         </div>
       </header>
-      <main id="main-content" className="chat-page-layout mx-auto px-5 pb-10 pt-2">
-        <aside className="chat-mission-aside">
-          <p className="mission-kicker" lang="en">
-            A shared next step
-          </p>
-          <h1>
-            เริ่มจากบทสนทนา
-            <br />
-            ไปสู่การลงมือทำ
-          </h1>
-          <MissionVisual variant="signal" />
-          <p className="mission-side-note">
-            แลกไอเดียกับ {other?.name ?? "คู่เชื่อมของคุณ"} แล้วนัดก้าวต่อไปด้วยกัน
-          </p>
-        </aside>
-        <section className="chat-page-console" aria-label="บทสนทนา">
+      <main id="main-content" className="mx-auto w-full max-w-xl px-4 pt-4 lg:max-w-3xl">
+        <section aria-label="บทสนทนา">
           {hydrated ? (
             <>
               <ChatRoom connectionId={id} hideHeader />
@@ -88,13 +68,13 @@ function ChatPage() {
                 to="/connection/$id"
                 params={{ id }}
                 hash="together-h"
-                className="tap mt-4 flex min-h-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-sm font-extrabold text-primary"
+                className="meadow-btn-secondary tap mt-4 w-full text-center"
               >
                 ตกลงก้าวต่อไปด้วยกัน
               </Link>
             </>
           ) : (
-            <p role="status" className="py-10 text-center text-sm text-muted-foreground">
+            <p role="status" className="meadow-card p-6 text-center text-body text-ink-soft">
               กำลังเปิดห้องแชท…
             </p>
           )}

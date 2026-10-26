@@ -41,6 +41,8 @@ export const Route = createFileRoute("/admin")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
+      // หลังบ้านยังเป็นธีมมืด — ทับสีแถบเบราว์เซอร์ของราก (ฟ้าอ่อนสำหรับหน้าผู้เข้าร่วม)
+      { name: "theme-color", content: "#05070b" },
     ],
   }),
   component: AdminLayout,

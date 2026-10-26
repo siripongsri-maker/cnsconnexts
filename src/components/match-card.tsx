@@ -10,6 +10,8 @@ export function MatchCard({ entry, me }: { entry: DeckEntry; me: User | null }) 
   const { user, match } = entry;
   const { shown, more } = pickTags(user.interests, me?.interests ?? [], 2);
   const place = [provinceTh(user.province), user.organization].filter(Boolean).join(" · ");
+  // guestBlurb อาจคืนข้อความว่าง — ไม่แสดงกล่องเหตุผลเปล่า ๆ
+  const reason = match?.reason ?? guestBlurb(user);
 
   return (
     <article className="meadow-card p-5" aria-label={user.name}>
@@ -23,9 +25,9 @@ export function MatchCard({ entry, me }: { entry: DeckEntry; me: User | null }) 
       </h3>
       {place && <p className="line-clamp-2 break-words text-body text-ink-soft">{place}</p>}
 
-      <p className="mt-3 rounded-2xl bg-sky-soft p-4 text-lead text-ink">
-        {match?.reason ?? guestBlurb(user)}
-      </p>
+      {reason.trim() && (
+        <p className="mt-3 rounded-2xl bg-sky-soft p-4 text-lead text-ink">{reason}</p>
+      )}
 
       {(shown.length > 0 || more > 0) && (
         <div className="mt-3 flex flex-wrap gap-2">

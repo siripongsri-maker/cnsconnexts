@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Camera, CheckCircle2, Pencil, X } from "lucide-react";
+import { Camera, Check, CheckCircle2, Pencil, X } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { MissionEmpty } from "@/components/mission-ui";
+import { ChoicePill } from "@/components/choice-pill";
+import { MeadowScene } from "@/components/meadow-scene";
+import { Avatar, IssueBlock } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { COURSES, type Course } from "@/lib/types";
-import { issueTh, REGION_LABEL } from "@/lib/i18n";
+import { provinceTh, REGION_LABEL } from "@/lib/i18n";
 import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
 
 export const Route = createFileRoute("/submit")({
@@ -117,18 +119,23 @@ function SubmitPage() {
   if (hydrated && !me) {
     return (
       <AppShell title="ส่งผลงาน" subtitle="ต้องมีโปรไฟล์ก่อน">
-        <MissionEmpty
-          title="ให้เครือข่ายรู้จักงานของคุณ"
-          description="สร้างโปรไฟล์ก่อน แล้วเราจะเติมชื่อ พื้นที่ และประเด็นให้ คุณเล่าเฉพาะเรื่องงานได้เลย"
-          variant="archive"
-        >
-          <Link
-            to="/onboarding"
-            className="tap mt-5 inline-flex items-center justify-center rounded-3xl gradient-power px-6 py-3 text-sm font-extrabold text-primary-foreground"
-          >
-            สร้างโปรไฟล์ของฉัน
-          </Link>
-        </MissionEmpty>
+        <div className="meadow-card overflow-hidden text-center">
+          <MeadowScene variant="empty" className="pointer-events-none" />
+          <div className="flex flex-col items-center gap-3 p-6">
+            <h2 className="font-heading text-title font-semibold text-ink">
+              ให้เครือข่ายรู้จักงานของคุณ
+            </h2>
+            <p className="text-body text-ink-soft">
+              สร้างโปรไฟล์ก่อน แล้วเราจะเติมชื่อ พื้นที่ และประเด็นให้ คุณเล่าเฉพาะเรื่องงานได้เลย
+            </p>
+            <Link
+              to="/onboarding"
+              className="meadow-btn-primary tap mt-1 w-full max-w-sm text-center"
+            >
+              สร้างโปรไฟล์ของฉัน
+            </Link>
+          </div>
+        </div>
       </AppShell>
     );
   }
@@ -136,20 +143,18 @@ function SubmitPage() {
   if (done) {
     return (
       <AppShell title="ส่งผลงานแล้ว" subtitle="ขอบคุณที่แบ่งปันพลังของคุณ">
-        <div className="submission-success mission-panel px-5 py-10 text-center">
-          <CheckCircle2 className="mx-auto h-14 w-14 text-lime" />
-          <h2 className="mt-4 text-xl font-extrabold">บันทึกผลงานเรียบร้อย</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+        <div className="meadow-card flex flex-col items-center gap-3 p-6 text-center">
+          <CheckCircle2 className="h-14 w-14 text-[#3D7A1C]" aria-hidden />
+          <h2 className="font-heading text-title font-semibold text-ink">บันทึกผลงานเรียบร้อย</h2>
+          <p className="text-body text-ink-soft">
             ผลงานของคุณจะไปปรากฏในหนังสือรวมผลงาน (e-book) และบอร์ดนิทรรศการทันที
           </p>
-          <div className="mt-6 grid gap-3">
-            <Link
-              to="/ebook"
-              className="tap flex h-14 items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground"
-            >
+          <div className="mt-2 flex w-full flex-col gap-3">
+            <Link to="/ebook" className="meadow-btn-primary tap w-full text-center">
               ดูหนังสือรวมผลงาน
             </Link>
             <button
+              type="button"
               onClick={() => {
                 setDone(false);
                 setSummary("");
@@ -157,13 +162,14 @@ function SubmitPage() {
                 setWanted("");
                 setPhoto(undefined);
               }}
-              className="tap flex h-14 items-center justify-center rounded-3xl border border-border bg-card text-sm font-bold"
+              className="meadow-btn-secondary tap w-full"
             >
               ส่งผลงานอีกชิ้น
             </button>
             <button
+              type="button"
               onClick={() => navigate({ to: "/map" })}
-              className="tap text-xs font-bold text-muted-foreground"
+              className="tap min-h-12 text-body font-semibold text-primary underline underline-offset-4"
             >
               ไปดูแผนที่พลัง
             </button>
@@ -175,58 +181,41 @@ function SubmitPage() {
 
   return (
     <AppShell title="ส่งผลงาน" subtitle="กรอกเฉพาะเรื่องงาน ข้อมูลอื่นดึงจากโปรไฟล์">
-      <div className="submission-form-grid px-5 pb-32 pt-4">
+      <div className="flex flex-col gap-4">
         {me && (
-          <div className="submission-author card-soft rounded-3xl bg-card p-6">
+          <section aria-label="ข้อมูลจากโปรไฟล์ของคุณ" className="meadow-card p-5">
             <div className="flex items-start gap-3">
-              <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-accent text-2xl">
-                {me.photo ? (
-                  <img src={me.photo} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  me.avatar
-                )}
-              </span>
+              <Avatar user={me} size={56} />
               <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-extrabold leading-tight">{me.name}</p>
-                <p className="text-[12px] text-muted-foreground">
-                  {REGION_LABEL[me.region]} · {me.province} · {me.organization}
+                <p className="font-heading text-lead font-semibold text-ink [overflow-wrap:anywhere]">
+                  {me.name}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {me.interests.map((i) => (
-                    <span
-                      key={i}
-                      className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary"
-                    >
-                      {issueTh(i)}
-                    </span>
-                  ))}
-                </div>
+                <p className="text-body text-ink-soft [overflow-wrap:anywhere]">
+                  {[REGION_LABEL[me.region], provinceTh(me.province), me.organization]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
               </div>
-              <Link
-                to="/update"
-                className="tap inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1.5 text-xs font-bold"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                แก้ไข
-              </Link>
             </div>
-          </div>
+            {me.interests.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {me.interests.map((i) => (
+                  <IssueBlock key={i} issue={i} />
+                ))}
+              </div>
+            )}
+            <Link to="/update" className="meadow-btn-secondary tap mt-4 w-full">
+              <Pencil className="h-6 w-6" aria-hidden /> แก้ไขโปรไฟล์
+            </Link>
+          </section>
         )}
 
         <Field label="รุ่น / หลักสูตร">
-          <div className="flex flex-wrap gap-2">
+          <div role="group" aria-label="หลักสูตร" className="flex flex-wrap gap-2">
             {COURSES.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCourse(c)}
-                className={`tap rounded-2xl border px-4 py-2 text-sm font-bold ${
-                  course === c
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border bg-card"
-                }`}
-              >
+              <ChoicePill key={c} active={course === c} onClick={() => setCourse(c)}>
                 {c}
-              </button>
+              </ChoicePill>
             ))}
           </div>
           <input
@@ -234,7 +223,7 @@ function SubmitPage() {
             value={batch}
             onChange={(e) => setBatch(e.target.value)}
             placeholder="รุ่นที่ (เช่น รุ่น 7)"
-            className="input-line mt-2"
+            className={`${INPUT} mt-3`}
           />
         </Field>
 
@@ -246,7 +235,7 @@ function SubmitPage() {
             rows={3}
             maxLength={220}
             placeholder="ทำอะไร กับใคร ที่ไหน"
-            className="input-line resize-none py-3"
+            className={`${INPUT} resize-none py-3`}
           />
         </Field>
 
@@ -258,7 +247,7 @@ function SubmitPage() {
             rows={2}
             maxLength={180}
             placeholder="ชิ้นงานหรือผลลัพธ์ที่ภูมิใจที่สุด"
-            className="input-line resize-none py-3"
+            className={`${INPUT} resize-none py-3`}
           />
         </Field>
 
@@ -270,11 +259,9 @@ function SubmitPage() {
             rows={2}
             maxLength={180}
             placeholder="อยากได้ทักษะ ทรัพยากร หรือเครือข่ายแบบไหน"
-            className="input-line resize-none py-3"
+            className={`${INPUT} resize-none py-3`}
           />
-          <p className="mt-2 text-xs text-muted-foreground">
-            เว้นว่างเพื่อใช้พลังที่กำลังมองหาในโปรไฟล์
-          </p>
+          <p className="mt-2 text-body text-ink-soft">เว้นว่างเพื่อใช้พลังที่กำลังมองหาในโปรไฟล์</p>
         </Field>
 
         <Field label="แนบรูปผลงาน (ไม่บังคับ)">
@@ -283,20 +270,20 @@ function SubmitPage() {
               <img
                 src={photo}
                 alt="รูปผลงาน"
-                className="h-40 w-40 rounded-2xl border border-border object-cover"
+                className="h-40 w-40 rounded-2xl border border-[#E6E3F2] object-cover"
               />
               <button
                 type="button"
                 onClick={() => setPhoto(undefined)}
-                className="tap absolute -right-3 -top-3 grid h-11 w-11 place-items-center rounded-full bg-foreground text-background"
+                className="tap absolute -right-3 -top-3 grid h-12 w-12 place-items-center rounded-full bg-ink text-white"
                 aria-label="ลบรูป"
               >
-                <X className="h-4 w-4" aria-hidden />
+                <X className="h-6 w-6" aria-hidden />
               </button>
             </div>
           ) : (
-            <label className="tap flex h-28 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-card text-sm font-bold text-muted-foreground">
-              <Camera className="h-5 w-5" aria-hidden />
+            <label className="tap flex min-h-24 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#8F8BB8] bg-white px-4 py-3 text-center text-body font-semibold text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
+              <Camera className="h-6 w-6 shrink-0" aria-hidden />
               {shrinking ? "กำลังเตรียมรูป…" : "เลือกรูปจากเครื่อง"}
               <input
                 type="file"
@@ -313,37 +300,52 @@ function SubmitPage() {
           type="button"
           aria-pressed={stageReady}
           onClick={() => setStageReady((v) => !v)}
-          className={`submission-stage tap flex w-full items-center gap-3 rounded-2xl border p-5 text-left ${
-            stageReady ? "border-lime bg-lime/15" : "border-border bg-card"
+          className={`tap flex min-h-16 w-full items-center gap-3 rounded-3xl border-2 p-4 text-left ${
+            stageReady ? "border-[#3D7A1C] bg-[#EEF6E8]" : "border-[#C9C6E0] bg-white"
           }`}
         >
           <span
-            className={`grid h-6 w-6 shrink-0 place-items-center rounded-md border ${
-              stageReady ? "border-lime bg-lime text-lime-foreground" : "border-border"
+            aria-hidden
+            className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg border-2 ${
+              stageReady ? "border-[#3D7A1C] bg-[#3D7A1C] text-white" : "border-[#8F8BB8] bg-white"
             }`}
           >
-            {stageReady && <CheckCircle2 className="h-4 w-4" />}
+            {stageReady && <Check className="h-5 w-5" strokeWidth={3} />}
           </span>
-          <span className="text-sm font-bold">ยินดีขึ้นเวทีนำเสนอสั้น ๆ (3–5 นาที)</span>
+          <span className="text-body font-semibold text-ink">
+            ยินดีขึ้นเวทีนำเสนอสั้น ๆ (3–5 นาที)
+          </span>
         </button>
 
-        <button
-          type="button"
-          onClick={submit}
-          disabled={!valid}
-          className="submission-save tap flex h-14 w-full items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground disabled:opacity-40"
-        >
-          ส่งผลงาน
-        </button>
+        <div>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={!valid}
+            aria-describedby={!valid ? "submit-hint" : undefined}
+            className="meadow-btn-primary tap w-full text-center"
+          >
+            ส่งผลงาน
+          </button>
+          {!valid && (
+            <p id="submit-hint" className="mt-2 text-center text-body text-ink-soft">
+              {shrinking ? "กำลังเตรียมรูป รอสักครู่" : "เขียนสรุปงานสั้น ๆ ก่อน แล้วกดส่งได้เลย"}
+            </p>
+          )}
+        </div>
       </div>
     </AppShell>
   );
 }
 
+/** ช่องกรอกข้อความ 20px (ความสูงขั้นต่ำ 56px มาจาก meadow.css) */
+const INPUT =
+  "w-full rounded-2xl border-2 bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft/70";
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section className="submission-field mission-panel">
-      <p className="mb-2 text-[13px] font-extrabold">{label}</p>
+    <section className="meadow-card p-5">
+      <h2 className="mb-3 font-heading text-lead font-semibold text-ink">{label}</h2>
       {children}
     </section>
   );

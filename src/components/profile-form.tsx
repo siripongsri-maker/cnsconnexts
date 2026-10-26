@@ -402,7 +402,7 @@ export function ProfileForm({
           className="h-2 overflow-hidden rounded-full bg-sky"
         >
           <div
-            className="h-full rounded-full bg-primary transition-[width]"
+            className="h-full rounded-full bg-primary transition-[width] motion-reduce:transition-none"
             style={{ width: `${(answered / 3) * 100}%` }}
           />
         </div>

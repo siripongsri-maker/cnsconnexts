@@ -1,12 +1,12 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import { Avatar, Chip, ConnectBurst, PowerChip } from "@/components/power-bits";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { MatchCelebration } from "@/components/match-celebration";
+import { MeadowState, STATE_PRIMARY } from "@/components/meadow-state";
+import { Avatar, IssueBlock, PowerPill, ScoreRing } from "@/components/power-bits";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
-import { issueTh, provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
-import { MissionState, MissionVisual } from "@/components/mission-ui";
+import { provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
 
 export const Route = createFileRoute("/people/$id")({
   head: () => ({
@@ -21,29 +21,26 @@ export const Route = createFileRoute("/people/$id")({
   }),
   component: Person,
   notFoundComponent: () => (
-    <MissionState
-      code="Profile unavailable"
+    <MeadowState
       title="ไม่พบโปรไฟล์นี้"
-      description="โปรไฟล์อาจถูกลบ หรือลิงก์ไม่ครบ ลองค้นหาคนอื่นในเครือข่ายได้เลย"
+      description="โปรไฟล์อาจถูกลบ หรือลิงก์ไม่ครบ ลองจับคู่กับคนอื่นในเครือข่ายได้เลย"
     >
-      <Link
-        to="/matches"
-        className="tap inline-flex h-11 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
-      >
-        กลับไปดูคนที่น่าเจอ
+      <Link to="/" className={STATE_PRIMARY}>
+        กลับไปจับคู่
       </Link>
-    </MissionState>
+    </MeadowState>
   ),
 });
 
 function Person() {
   const { id } = Route.useParams();
   const { users, me, connect, connections, ideas, hydrated } = useStore();
-  const navigate = useNavigate();
-  const [burst, setBurst] = useState(false);
+  const [celebration, setCelebration] = useState<{ connectionId: string; reason: string } | null>(
+    null,
+  );
   const user = users.find((u) => u.id === id);
   if (!hydrated && !user) {
-    return <MissionState code="Power profile" title="กำลังเปิดโปรไฟล์…" />;
+    return <MeadowState loading title="กำลังเปิดโปรไฟล์…" />;
   }
   if (!user) throw notFound();
 
@@ -53,127 +50,136 @@ function Person() {
       (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
   );
   const theirIdeas = ideas.filter((i) => i.owner_id === user.id);
+  const place = [provinceTh(user.province), REGION_LABEL[user.region]].filter(Boolean).join(" · ");
+  const work = [user.organization, GENERATION_TH[user.generation]].filter(Boolean).join(" · ");
 
   return (
-    <div className="editorial-focused mission-person-page min-h-screen pb-32">
-      <header className="person-masthead relative border-b border-border px-5 pb-8 pt-[max(1rem,env(safe-area-inset-top))] text-foreground">
-        <MissionVisual variant="profile" />
-        <Link
-          to="/matches"
-          aria-label="กลับไปหน้าคนที่น่าเจอ"
-          className="tap mb-6 inline-grid h-11 w-11 place-items-center rounded-full bg-accent"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-        </Link>
-        <p className="mission-kicker mb-6" lang="en">
-          Meet your next connection
-        </p>
-        <div className="person-identity flex items-end gap-4">
-          <Avatar user={user} size={72} />
-          <div className="min-w-0">
-            <h1 className="break-words text-2xl font-medium">{user.name}</h1>
-            <p className="truncate text-sm">
-              {[provinceTh(user.province), REGION_LABEL[user.region]].filter(Boolean).join(" · ")}
-            </p>
-            <p className="truncate text-[12px]">
-              {user.organization} · {GENERATION_TH[user.generation]}
-            </p>
+    <div className="min-h-dvh pb-40">
+      <header className="bg-sky-soft pb-6 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <div className="mx-auto w-full max-w-xl px-4 lg:max-w-3xl">
+          <Link
+            to="/"
+            aria-label="กลับไปหน้าจับคู่"
+            className="tap inline-flex min-h-12 items-center gap-2 rounded-full bg-white px-4 text-body font-semibold text-ink shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
+          >
+            <ArrowLeft className="h-6 w-6" aria-hidden />
+            ย้อนกลับ
+          </Link>
+          <div className="mt-5 flex items-center gap-4">
+            <Avatar user={user} size={72} />
+            <div className="min-w-0 flex-1">
+              <h1 className="font-heading text-title font-bold text-ink [overflow-wrap:anywhere]">
+                {user.name}
+              </h1>
+              {place && <p className="text-body text-ink-soft [overflow-wrap:anywhere]">{place}</p>}
+              {work && <p className="text-body text-ink-soft [overflow-wrap:anywhere]">{work}</p>}
+            </div>
           </div>
         </div>
       </header>
 
-      <main id="main-content" className="person-details-grid mx-auto px-5 py-5">
-        {user.bio && (
-          <p className="person-bio card-soft p-6 text-[15px] leading-relaxed">“{user.bio}”</p>
-        )}
-
+      <main
+        id="main-content"
+        className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-5 lg:max-w-3xl"
+      >
         {match && (
-          <div className="person-match card-soft p-6">
-            <p className="mission-kicker" lang="en">
-              Shared potential
-            </p>
-            <p className="mt-3 text-3xl font-extrabold text-gradient">แมตช์กัน {match.score}%</p>
-            <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{match.reason}</p>
-          </div>
+          <section aria-label="ความเข้ากัน" className="meadow-card flex items-center gap-4 p-5">
+            <ScoreRing score={match.score} size={84} />
+            <div className="min-w-0 flex-1">
+              <p className="font-heading text-lead font-semibold text-ink">แมตช์กัน</p>
+              <p className="text-body text-ink-soft [overflow-wrap:anywhere]">{match.reason}</p>
+            </div>
+          </section>
         )}
 
-        <Block title="ใส่ใจเรื่อง">
-          {user.interests.map((i) => (
-            <Chip key={i} tone="primary">
-              {issueTh(i)}
-            </Chip>
-          ))}
-        </Block>
-        <Block title="มีพลังด้าน">
-          {user.powers_have.map((p) => (
-            <PowerChip key={p} name={p} tone="lime" />
-          ))}
-        </Block>
-        <Block title="กำลังมองหา">
-          {user.powers_need.map((p) => (
-            <PowerChip key={p} name={p} tone="coral" />
-          ))}
-        </Block>
+        {user.bio && (
+          <p className="meadow-card p-5 text-body text-ink [overflow-wrap:anywhere]">
+            “{user.bio}”
+          </p>
+        )}
+
+        {user.interests.length > 0 && (
+          <Block title="ใส่ใจเรื่อง">
+            {user.interests.map((i) => (
+              <IssueBlock key={i} issue={i} />
+            ))}
+          </Block>
+        )}
+        {user.powers_have.length > 0 && (
+          <Block title="มีพลังด้าน">
+            {user.powers_have.map((p) => (
+              <PowerPill key={p} name={p} kind="have" />
+            ))}
+          </Block>
+        )}
+        {user.powers_need.length > 0 && (
+          <Block title="กำลังมองหา">
+            {user.powers_need.map((p) => (
+              <PowerPill key={p} name={p} kind="need" />
+            ))}
+          </Block>
+        )}
 
         {theirIdeas.length > 0 && (
-          <div className="person-ideas card-soft p-6">
-            <p className="mb-2 text-xs font-extrabold text-muted-foreground">ไอเดียในตลาดพลัง</p>
-            {theirIdeas.map((i) => (
-              <Link
-                key={i.id}
-                to="/marketplace"
-                className="block rounded-xl bg-accent/60 p-3 text-sm font-bold"
-              >
-                {i.title} →
-              </Link>
-            ))}
-          </div>
+          <section aria-labelledby="their-ideas" className="meadow-card p-5">
+            <h2 id="their-ideas" className="mb-3 font-heading text-lead font-semibold text-ink">
+              ไอเดียของเขา
+            </h2>
+            <ul className="flex flex-col gap-2">
+              {theirIdeas.map((i) => (
+                <li key={i.id}>
+                  <Link
+                    to="/marketplace"
+                    className="tap flex min-h-14 items-center justify-between gap-2 rounded-2xl bg-sky-soft px-4 py-2 text-body font-semibold text-ink"
+                  >
+                    <span className="min-w-0 [overflow-wrap:anywhere]">{i.title}</span>
+                    <ChevronRight className="h-6 w-6 shrink-0" aria-hidden />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </main>
 
-      {burst && (
-        <div className="pointer-events-none fixed inset-0 z-40">
-          <ConnectBurst name={user.name} />
-        </div>
+      {celebration && me && (
+        <MatchCelebration
+          me={me}
+          other={user}
+          reason={celebration.reason}
+          connectionId={celebration.connectionId}
+          onClose={() => setCelebration(null)}
+        />
       )}
 
-      <div className="mission-detail-actionbar fixed inset-x-0 bottom-0 border-t border-border/60 bg-background/90 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl">
-        {existing ? (
-          <Link
-            to="/connection/$id"
-            params={{ id: existing.id }}
-            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl bg-lime text-base font-extrabold text-lime-foreground"
-          >
-            เปิดการ์ดคอนเนกชัน
-          </Link>
-        ) : !me ? (
-          <Link
-            to="/onboarding"
-            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo px-4 text-center text-base font-extrabold text-primary-foreground"
-          >
-            สร้างโปรไฟล์เพื่อเชื่อมต่อ
-          </Link>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              if (!match) return;
-              const c = connect(user.id, match.score, match.reason);
-              setBurst(true);
-              setTimeout(() => setBurst(false), 1200);
-              toast.success("เชื่อมกันแล้ว! ✨", {
-                description: `คุณกับ ${user.name} เป็นคอนเนกชันใหม่ · New connection created`,
-                action: {
-                  label: "ก้าวต่อไป",
-                  onClick: () => navigate({ to: "/connection/$id", params: { id: c.id } }),
-                },
-              });
-            }}
-            className="tap mx-auto flex h-14 w-full max-w-xl items-center justify-center rounded-2xl cta-holo px-4 text-base font-extrabold text-primary-foreground"
-          >
-            เชื่อมต่อกับ {user.name}
-          </button>
-        )}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E6E3F2] bg-paper px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+        <div className="mx-auto w-full max-w-xl lg:max-w-3xl">
+          {existing ? (
+            <Link
+              to="/connection/$id"
+              params={{ id: existing.id }}
+              className="meadow-btn-primary tap w-full text-center"
+            >
+              เชื่อมกันแล้ว · ทำอะไรต่อ
+            </Link>
+          ) : !me ? (
+            <Link to="/onboarding" className="meadow-btn-primary tap w-full text-center">
+              สร้างโปรไฟล์เพื่อเชื่อมต่อ
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                if (!match) return;
+                const c = connect(user.id, match.score, match.reason);
+                setCelebration({ connectionId: c.id, reason: match.reason });
+              }}
+              className="meadow-btn-primary tap w-full py-2 text-center [overflow-wrap:anywhere]"
+            >
+              ขอเชื่อมต่อกับ {user.name}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -181,9 +187,9 @@ function Person() {
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="person-power-section card-soft p-6">
-      <h2 className="mb-4 text-sm font-medium text-muted-foreground">{title}</h2>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
+    <section className="meadow-card p-5">
+      <h2 className="mb-3 font-heading text-lead font-semibold text-ink">{title}</h2>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </section>
   );
 }
