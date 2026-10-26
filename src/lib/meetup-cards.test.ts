@@ -1,6 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { inviteReason, notifyAccepted, notifyInvite, selectVisibleCard } from "./meetup-cards";
+import {
+  entryState,
+  INVITE_RESULT_TOAST,
+  inviteReason,
+  inviteSentNote,
+  notifyAccepted,
+  notifyInvite,
+  selectVisibleCard,
+} from "./meetup-cards";
 import type { Meetup } from "./meetup-rules";
 import type { User } from "./types";
 
@@ -97,5 +105,55 @@ describe("inviteReason", () => {
     const text = inviteReason(base, { ...base, id: "y" });
     expect(typeof text).toBe("string");
     expect(text!.trim().length).toBeGreaterThan(0);
+  });
+});
+
+describe("entryState (หน้าคู่)", () => {
+  const now = Date.parse("2026-10-27T10:05:00Z");
+
+  it("no active meetup -> invite", () => {
+    expect(entryState([], "c1", "a", now)).toEqual({ kind: "invite" });
+    expect(entryState([meetup("m", { status: "declined" })], "c1", "a", now)).toEqual({
+      kind: "invite",
+    });
+  });
+
+  it("expired pending/accepted does not block inviting or starting", () => {
+    const late = Date.parse("2026-10-27T10:31:00Z");
+    expect(entryState([meetup("m", { status: "accepted" })], "c1", "a", late)).toEqual({
+      kind: "invite",
+    });
+  });
+
+  it("accepted active meetup -> start, for inviter and invitee alike", () => {
+    const m = meetup("m", { status: "accepted" });
+    expect(entryState([m], "c1", "a", now)).toEqual({ kind: "start", meetup: m });
+    expect(entryState([m], "c1", "b", now)).toEqual({ kind: "start", meetup: m });
+  });
+
+  it("my pending invite -> waiting; an invite waiting for me -> none", () => {
+    const m = meetup("m");
+    expect(entryState([m], "c1", "a", now)).toEqual({ kind: "waiting" });
+    expect(entryState([m], "c1", "b", now)).toEqual({ kind: "none" });
+  });
+
+  it("only looks at this connection; no identity -> none", () => {
+    expect(entryState([meetup("m", { connectionId: "other" })], "c1", "a", now)).toEqual({
+      kind: "invite",
+    });
+    expect(entryState([], "c1", null, now)).toEqual({ kind: "none" });
+  });
+});
+
+describe("invite copy", () => {
+  it("uses the partner name in the note", () => {
+    expect(inviteSentNote("มะลิ")).toBe("ส่งคำชวนเจอแล้ว รอ มะลิ ตอบ");
+  });
+  it("keeps the three result toasts verbatim", () => {
+    expect(INVITE_RESULT_TOAST).toEqual({
+      sent: "ส่งคำชวนเจอแล้ว",
+      existing: "มีคำชวนที่รออยู่แล้ว",
+      failed: "ยังส่งคำชวนเจอไม่สำเร็จ กดชวนใหม่ได้",
+    });
   });
 });

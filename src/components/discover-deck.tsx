@@ -14,6 +14,7 @@ import {
 } from "@/lib/deck-rules";
 import { connectionWith } from "@/lib/connect-rules";
 import { useMotionSettings } from "@/lib/motion";
+import { useConnectAndInvite } from "@/lib/meetup-context";
 import { useStore } from "@/lib/store";
 import { ProfileSyncFailed } from "@/components/profile-sync-failed";
 import { useRetryProfileSync } from "@/lib/use-retry-profile-sync";
@@ -55,7 +56,6 @@ export function DiscoverDeck({
   onConnected: (c: Connection, entry: DeckEntry) => void;
 }) {
   const {
-    connect,
     connections,
     toggleLikeUser,
     likedUsers,
@@ -67,6 +67,7 @@ export function DiscoverDeck({
     refresh,
     pendingProfile,
   } = useStore();
+  const connect = useConnectAndInvite();
   const { retrying: syncing, retry: retryProfileSync } = useRetryProfileSync();
   const navigate = useNavigate();
   const { reducedMotion } = useMotionSettings();

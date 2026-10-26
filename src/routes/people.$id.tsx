@@ -11,6 +11,8 @@ import { isDevPreview } from "@/lib/dev-preview";
 import { hasLocalParticipantId, homeVisitor } from "@/lib/guest";
 import { scoreMatch } from "@/lib/matching";
 import { EMPTY_QUICK_DRAFT, type QuickDraft, type QuickStep } from "@/lib/quick-profile";
+import { useConnectAndInvite } from "@/lib/meetup-context";
+import { inviteSentNote } from "@/lib/meetup-cards";
 import { useStore } from "@/lib/store";
 import type { User } from "@/lib/types";
 import { ProfileSyncFailed } from "@/components/profile-sync-failed";
@@ -51,12 +53,14 @@ const DRYRUN_CONNECTION_ID = "dryrun";
  */
 function Person() {
   const { id } = Route.useParams();
-  const { users, me, connect, connections, ideas, hydrated, pendingProfile } = useStore();
+  const { users, me, connections, ideas, hydrated, pendingProfile } = useStore();
+  const connect = useConnectAndInvite();
   const { retrying: syncing, retry: retryProfileSync } = useRetryProfileSync();
   const [celebration, setCelebration] = useState<{
     me: User;
     connectionId: string;
     reason: string;
+    inviteNote?: string | undefined;
   } | null>(null);
   /** กำลังรอฐานข้อมูลยืนยันการเชื่อมต่อ — ล็อกปุ่ม จอฉลองขึ้นเมื่อสำเร็จเท่านั้น */
   const [connecting, setConnecting] = useState(false);
@@ -106,9 +110,9 @@ function Person() {
     pendingProfile: pendingProfile !== null,
   });
 
-  const celebrate = (who: User, connectionId: string, reason: string) => {
+  const celebrate = (who: User, connectionId: string, reason: string, inviteNote?: string) => {
     celebratingRef.current = true;
-    setCelebration({ me: who, connectionId, reason });
+    setCelebration({ me: who, connectionId, reason, inviteNote });
   };
 
   /** ขอเชื่อมต่อจริง — ฉลองเมื่อฐานข้อมูลยืนยันเท่านั้น (ไม่สำเร็จ store ถอนออกและแจ้ง toast แล้ว) */
@@ -116,7 +120,9 @@ function Person() {
     setConnecting(true);
     void connect(user.id, score, reason).then((result) => {
       setConnecting(false);
-      if (result.ok && !result.existed) celebrate(who, result.connection.id, reason);
+      if (result.ok && !result.existed) {
+        celebrate(who, result.connection.id, reason, inviteSentNote(user.name));
+      }
     });
   };
 
@@ -127,7 +133,7 @@ function Person() {
     const m = scoreMatch(newMe, user);
     // โหมดทดสอบ ?dryrun: newMe เป็นผู้ใช้ปลอม ห้ามเรียก connect (เขียนฐานข้อมูลจริง)
     if (isDevPreview("dryrun")) {
-      celebrate(newMe, DRYRUN_CONNECTION_ID, m.reason);
+      celebrate(newMe, DRYRUN_CONNECTION_ID, m.reason, inviteSentNote(user.name));
       return;
     }
     connectWith(newMe, m.score, m.reason);
@@ -262,6 +268,7 @@ function Person() {
           other={user}
           reason={celebration.reason}
           connectionId={celebration.connectionId}
+          inviteNote={celebration.inviteNote}
           onClose={() => {
             celebratingRef.current = false;
             focusActionAfterCelebration.current = true;

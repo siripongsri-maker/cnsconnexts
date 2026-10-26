@@ -116,6 +116,8 @@ function FindModeDialog({
   const badge = useMemo(() => pairBadge(session.signalKey), [session.signalKey]);
   const colors = useMemo(() => findColors(badge), [badge]);
   const partner = partnerOf(session);
+  /** องค์ประกอบที่โฟกัสอยู่ก่อนเปิดโหมดนี้ — ตอนปิดดูว่ายังอยู่ในหน้าไหม */
+  const openerRef = useRef<HTMLElement | null>(null);
 
   useScreenWakeLock();
 
@@ -277,6 +279,26 @@ function FindModeDialog({
           style={style}
           aria-describedby="find-mode-instruction"
           onPointerDownOutside={(e) => e.preventDefault()}
+          onOpenAutoFocus={() => {
+            const active = document.activeElement;
+            openerRef.current =
+              active instanceof HTMLElement && active !== document.body ? active : null;
+          }}
+          onCloseAutoFocus={(event) => {
+            // Dialog ไม่มี Trigger จึงไม่คืนโฟกัสเอง — คืนให้ปุ่มที่เปิดโหมดนี้ (ปุ่ม "เริ่มหากัน" บนหน้าคู่)
+            // ปุ่มบนการ์ดคำชวนหายไปแล้ว (โฟกัสจะตกไป BODY) → ย้ายไปเนื้อหาหลักของหน้าแทน
+            event.preventDefault();
+            const opener = openerRef.current;
+            if (opener?.isConnected) {
+              opener.focus({ preventScroll: true });
+              return;
+            }
+            const main = document.querySelector<HTMLElement>("main");
+            if (!main) return;
+            if (!main.hasAttribute("tabindex")) main.tabIndex = -1;
+            main.style.outline = "none";
+            main.focus({ preventScroll: true });
+          }}
         >
           {/* ชั้นพื้นสี — เต้นเฉพาะชั้นนี้ (key เปลี่ยนเพื่อเริ่มแอนิเมชันใหม่ทุกครั้งที่ส่ง/รับสัญญาณ) */}
           <div

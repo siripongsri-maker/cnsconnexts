@@ -1,6 +1,6 @@
 /** ตรรกะล้วนของการ์ดคำชวนเจอ — เลือกการ์ดที่จะโชว์, เสียงแจ้ง, บรรทัดเหตุผล (ไม่แตะ React) */
 import { scoreMatch } from "./matching";
-import type { Meetup } from "./meetup-rules";
+import { isActive, type Meetup } from "./meetup-rules";
 import { playConnext } from "./notify";
 import type { User } from "./types";
 
@@ -50,4 +50,40 @@ export function inviteReason(me: User | null, other: User | undefined): string |
   if (!me || !other) return null;
   const reason = scoreMatch(me, other).reason.trim();
   return reason || null;
+}
+
+/** บรรทัดใต้เหตุผลบนจอฉลองหลังเชื่อมใหม่ (คำชวนเจอส่งให้อัตโนมัติ) */
+export function inviteSentNote(name: string): string {
+  return `ส่งคำชวนเจอแล้ว รอ ${name} ตอบ`;
+}
+
+/** ปุ่ม "ชวนเจอกันตอนนี้" บอกผลด้วย toast: ข้อความตามผล (คงที่ตามสเปก) */
+export const INVITE_RESULT_TOAST = {
+  sent: "ส่งคำชวนเจอแล้ว",
+  existing: "มีคำชวนที่รออยู่แล้ว",
+  failed: "ยังส่งคำชวนเจอไม่สำเร็จ กดชวนใหม่ได้",
+} as const;
+
+export type EntryState =
+  { kind: "start"; meetup: Meetup } | { kind: "invite" } | { kind: "waiting" } | { kind: "none" };
+
+/**
+ * ปุ่มบนหน้าคู่ (/commitments, /connection/$id) ของคอนเนกชันนี้:
+ * มีคำชวนที่รับแล้วและยังไม่หมดเวลา (ทั้งสองฝั่ง) → "เริ่มหากัน"; ไม่มีคำชวนที่ active → "ชวนเจอกันตอนนี้";
+ * คำชวนของฉันยังรอตอบ → ข้อความ "รอ… ตอบคำชวน"; คำชวนที่รอฉันตอบ → ไม่แสดง (การ์ดด้านบนถามอยู่แล้ว)
+ */
+export function entryState(
+  meetups: readonly Meetup[],
+  connectionId: string,
+  meId: string | null,
+  now: number,
+): EntryState {
+  if (!meId) return { kind: "none" };
+  const active = meetups.filter((m) => m.connectionId === connectionId && isActive(m, now));
+  const accepted = active.find((m) => m.status === "accepted");
+  if (accepted) return { kind: "start", meetup: accepted };
+  if (active.length === 0) return { kind: "invite" };
+  return active.some((m) => m.status === "pending" && m.inviter === meId)
+    ? { kind: "waiting" }
+    : { kind: "none" };
 }

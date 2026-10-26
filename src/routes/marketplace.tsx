@@ -28,6 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { scoreMatch } from "@/lib/matching";
+import { useConnectAndInvite } from "@/lib/meetup-context";
 import { useStore } from "@/lib/store";
 import { ISSUES, POWERS, REGIONS, type Idea, type Region } from "@/lib/types";
 import { issueTh, powerTh, REGION_LABEL, regionLabel } from "@/lib/i18n";
@@ -53,8 +54,8 @@ export const Route = createFileRoute("/marketplace")({
 type Scope = "all" | "fit" | "mine" | "saved";
 
 function Marketplace() {
-  const { ideas, users, savedIdeas, toggleSaveIdea, connect, connections, me, removeIdea } =
-    useStore();
+  const { ideas, users, savedIdeas, toggleSaveIdea, connections, me, removeIdea } = useStore();
+  const connect = useConnectAndInvite();
   const navigate = useNavigate();
   const [issue, setIssue] = useState<string | null>(null);
   const [region, setRegion] = useState<Region | null>(null);

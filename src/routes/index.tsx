@@ -16,6 +16,8 @@ import { isDevPreview } from "@/lib/dev-preview";
 import { hasLocalParticipantId, homeVisitor } from "@/lib/guest";
 import { buildDeck, dayKey, scoreMatch, type DeckEntry } from "@/lib/matching";
 import { EMPTY_QUICK_DRAFT, type QuickDraft, type QuickStep } from "@/lib/quick-profile";
+import { useConnectAndInvite } from "@/lib/meetup-context";
+import { inviteSentNote } from "@/lib/meetup-cards";
 import { useStore } from "@/lib/store";
 import type { Connection, User } from "@/lib/types";
 
@@ -41,7 +43,14 @@ export const Route = createFileRoute("/")({
 });
 
 /** จอฉลองที่กำลังแสดง */
-type Celebration = { me: User; other: User; reason: string; connectionId: string };
+type Celebration = {
+  me: User;
+  other: User;
+  reason: string;
+  connectionId: string;
+  /** "ส่งคำชวนเจอแล้ว รอ … ตอบ" — เฉพาะเชื่อมใหม่ (หรือตัวอย่าง dev) */
+  inviteNote?: string | undefined;
+};
 
 /** รหัสคอนเนกชันปลอมของโหมดทดสอบ (?dryrun / ?celebrate) — ไม่มีแถวนี้ในฐานข้อมูล */
 const DRYRUN_CONNECTION_ID = "dryrun";
@@ -56,7 +65,8 @@ const PREVIEW_CONNECTION_ID = "celebrate-preview";
  * จนกว่า store จะโหลดเสร็จ (กติกาทั้งหมดอยู่ใน homeVisitor — src/lib/guest.ts)
  */
 function Home() {
-  const { me, users, notifications, hydrated, skippedUsers, likedUsers, connect } = useStore();
+  const { me, users, notifications, hydrated, skippedUsers, likedUsers } = useStore();
+  const connect = useConnectAndInvite();
 
   // localStorage มีแค่ฝั่งเบราว์เซอร์ — ก่อน mount ยังไม่รู้ว่าเป็นใคร: แสดงการ์ดโครง ไม่มีแถบ
   // (เรนเดอร์ฝั่งเซิร์ฟเวอร์กับรอบแรกฝั่งเบราว์เซอร์ตรงกัน และแถบไม่กะพริบให้คนเดิมเห็น)
@@ -126,7 +136,13 @@ function Home() {
 
   const onConnected = (c: Connection, entry: DeckEntry) => {
     if (!me) return;
-    showCelebration({ me, other: entry.user, reason: c.match_reason, connectionId: c.id });
+    showCelebration({
+      me,
+      other: entry.user,
+      reason: c.match_reason,
+      connectionId: c.id,
+      inviteNote: inviteSentNote(entry.user.name),
+    });
   };
 
   const onSaved = (newMe: User) => {
@@ -144,6 +160,7 @@ function Home() {
         other: target,
         reason: m.reason,
         connectionId: DRYRUN_CONNECTION_ID,
+        inviteNote: inviteSentNote(target.name),
       });
       return;
     }
@@ -155,6 +172,7 @@ function Home() {
         other: target,
         reason: m.reason,
         connectionId: result.connection.id,
+        inviteNote: result.existed ? undefined : inviteSentNote(target.name),
       });
     });
   };
@@ -178,6 +196,7 @@ function Home() {
           other: second,
           reason: scoreMatch(first, second).reason,
           connectionId: PREVIEW_CONNECTION_ID,
+          inviteNote: inviteSentNote(second.name),
         }
       : null;
   const shown = celebration ?? preview;
@@ -310,6 +329,7 @@ function Home() {
           other={shown.other}
           reason={shown.reason}
           connectionId={shown.connectionId}
+          inviteNote={shown.inviteNote}
           onClose={closeCelebration}
         />
       )}
