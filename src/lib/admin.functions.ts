@@ -32,8 +32,11 @@ function assertInput(input: AdminInput): AdminInput {
 }
 
 function checkPassword(password: string) {
-  const expected = process.env["ADMIN_PASSWORD"] ?? "cns2026";
-  if (password !== expected) throw new Error("unauthorized");
+  const expected = [
+    process.env["ADMIN_PASSWORD"] ?? "cns2026",
+    process.env["SUPERADMIN_PASSWORD"] ?? "CNS-Super#2026",
+  ];
+  if (!expected.includes(password)) throw new Error("unauthorized");
 }
 
 export const adminDeleteRow = createServerFn({ method: "POST" })
