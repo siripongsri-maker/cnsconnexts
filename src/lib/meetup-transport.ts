@@ -109,13 +109,24 @@ type RealtimeClient = Pick<typeof supabase, "channel" | "removeChannel" | "getCh
 
 /** เก็บช่องไว้ครู่หนึ่งหลังผู้ฟังคนสุดท้ายออก — React StrictMode ถอด/ต่อ effect ทันที */
 const LINGER_MS = 1_500;
+/** เว้นก่อนต่อใหม่เมื่อเซิร์ฟเวอร์ปิดช่อง หรือเปิดช่องไม่สำเร็จ — กันวนต่อถี่ๆ */
+const RETRY_MS = 2_000;
 
-type Sub = { onMessage: (payload: unknown) => void; onState?: (s: ChannelState) => void };
+type Sub = {
+  /** hub ปัจจุบันของผู้ฟังคนนี้ — ย้ายไป hub ใหม่ได้เมื่อช่องเดิมถูกปิด */
+  hub: Hub;
+  onMessage: (payload: unknown) => void;
+  onState?: (s: ChannelState) => void;
+};
 type Hub = {
+  topic: string;
+  event: string;
   channel: RealtimeChannel | null;
   state: ChannelState;
   subs: Set<Sub>;
   closeTimer: ReturnType<typeof setTimeout> | null;
+  /** ส่งค้างไว้ระหว่างที่ยังไม่มีช่อง (เก็บแค่ครั้งล่าสุด) */
+  queued: (() => void) | null;
 };
 
 export function createSupabaseTransport(deps: {
@@ -127,26 +138,95 @@ export function createSupabaseTransport(deps: {
   /** ช่องที่กำลังปิด — supabase.channel(ชื่อเดิม) จะคืนช่องเก่าที่กำลังปิด จึงต้องรอให้ปิดเสร็จก่อน */
   const closing = new Map<string, Promise<void>>();
 
-  function startHub(topic: string, event: string, hub: Hub) {
-    if (hubs.get(topic) !== hub) return; // ถูกปิดไปก่อนได้เริ่ม
-    const channel = realtime.channel(topic, { config: { broadcast: { self: false } } });
-    channel.on("broadcast", { event }, (msg: { payload?: unknown }) => {
-      for (const sub of hub.subs) sub.onMessage(msg.payload);
-    });
-    channel.subscribe((status: string) => {
-      const state = channelStateFromStatus(status);
-      if (!state || hubs.get(topic) !== hub) return;
-      hub.state = state;
-      for (const sub of hub.subs) sub.onState?.(state);
-    });
-    hub.channel = channel;
+  const isCurrent = (hub: Hub) => hubs.get(hub.topic) === hub;
+
+  function setState(hub: Hub, state: ChannelState) {
+    if (hub.state === state) return;
+    hub.state = state;
+    for (const sub of hub.subs) sub.onState?.(state);
   }
 
-  function closeHub(topic: string, hub: Hub) {
-    if (hubs.get(topic) !== hub) return;
-    hubs.delete(topic);
+  function retryLater(hub: Hub) {
+    setTimeout(() => startHub(hub), RETRY_MS);
+  }
+
+  function startHub(hub: Hub) {
+    if (!isCurrent(hub) || hub.channel) return; // ถูกปิดหรือเริ่มไปแล้ว
+    const { topic, event } = hub;
+    // ช่องหัวข้อเดียวกันที่ยังค้างในไคลเอนต์ (ถอดไม่สำเร็จ) — supabase.channel() จะคืนตัวเก่าที่
+    // subscribe ซ้ำไม่ได้ จึงถอดมันออกก่อนแล้วค่อยลองใหม่
+    const stale = realtime.getChannels().find((c) => c.topic === `realtime:${topic}`);
+    if (stale) {
+      void realtime
+        .removeChannel(stale)
+        .catch(() => undefined)
+        .finally(() => retryLater(hub));
+      return;
+    }
+    let channel: RealtimeChannel;
+    try {
+      channel = realtime.channel(topic, { config: { broadcast: { self: false } } });
+      channel.on("broadcast", { event }, (msg: { payload?: unknown }) => {
+        if (!isCurrent(hub)) return;
+        for (const sub of hub.subs) sub.onMessage(msg.payload);
+      });
+      channel.subscribe((status: string) => {
+        const state = channelStateFromStatus(status);
+        if (!state || !isCurrent(hub) || hub.channel !== channel) return;
+        if (status === "CLOSED") serverClosed(hub);
+        else setState(hub, state);
+      });
+    } catch {
+      setState(hub, "lost");
+      retryLater(hub);
+      return;
+    }
+    hub.channel = channel;
+    setState(hub, "connecting");
+    const queued = hub.queued;
+    hub.queued = null;
+    queued?.();
+  }
+
+  /**
+   * เซิร์ฟเวอร์ปิดช่องเอง (ไม่ใช่เราถอด) — ช่องนี้จะไม่ต่อใหม่เอง จึงทิ้ง hub นี้
+   * แล้วย้ายผู้ฟังที่ยังอยู่ไป hub ใหม่ที่เริ่มหลังเว้นระยะ
+   */
+  function serverClosed(hub: Hub) {
+    setState(hub, "lost");
+    hubs.delete(hub.topic);
+    if (hub.closeTimer) clearTimeout(hub.closeTimer);
+    if (hub.subs.size === 0) return;
+    const fresh = newHub(hub.topic, hub.event, "lost");
+    for (const sub of hub.subs) {
+      sub.hub = fresh;
+      fresh.subs.add(sub);
+    }
+    hub.subs.clear();
+    fresh.queued = hub.queued;
+    retryLater(fresh);
+  }
+
+  function newHub(topic: string, event: string, state: ChannelState): Hub {
+    const hub: Hub = {
+      topic,
+      event,
+      channel: null,
+      state,
+      subs: new Set(),
+      closeTimer: null,
+      queued: null,
+    };
+    hubs.set(topic, hub);
+    return hub;
+  }
+
+  function closeHub(hub: Hub) {
+    if (!isCurrent(hub)) return;
+    hubs.delete(hub.topic);
     const channel = hub.channel;
     if (!channel) return;
+    const topic = hub.topic;
     const done: Promise<void> = realtime
       .removeChannel(channel)
       .then(
@@ -159,28 +239,32 @@ export function createSupabaseTransport(deps: {
     closing.set(topic, done);
   }
 
-  function acquire(topic: string, event: string, sub: Sub) {
+  function acquire(
+    topic: string,
+    event: string,
+    handlers: Pick<Sub, "onMessage" | "onState">,
+  ): { sub: Sub; release(): void } {
     let hub = hubs.get(topic);
     if (!hub) {
-      const fresh: Hub = { channel: null, state: "connecting", subs: new Set(), closeTimer: null };
-      hubs.set(topic, fresh);
+      const fresh = newHub(topic, event, "connecting");
       const pending = closing.get(topic);
-      if (pending) void pending.then(() => startHub(topic, event, fresh));
-      else startHub(topic, event, fresh);
+      if (pending) void pending.then(() => startHub(fresh));
+      else startHub(fresh);
       hub = fresh;
     }
     if (hub.closeTimer) {
       clearTimeout(hub.closeTimer);
       hub.closeTimer = null;
     }
+    const sub: Sub = { hub, ...handlers };
     hub.subs.add(sub);
     sub.onState?.(hub.state);
-    const owned = hub;
     return {
-      hub: owned,
+      sub,
       release() {
+        const owned = sub.hub;
         if (!owned.subs.delete(sub) || owned.subs.size > 0) return;
-        owned.closeTimer = setTimeout(() => closeHub(topic, owned), LINGER_MS);
+        owned.closeTimer = setTimeout(() => closeHub(owned), LINGER_MS);
       },
     };
   }
@@ -279,7 +363,7 @@ export function createSupabaseTransport(deps: {
 
     joinSignal(signalKey, meId, onPing, onState) {
       let left = false;
-      const { hub, release } = acquire(`meet:${signalKey}`, "ping", {
+      const { sub, release } = acquire(`meet:${signalKey}`, "ping", {
         onMessage(payload) {
           const from = (payload as { from?: unknown } | null)?.from;
           if (!left && typeof from === "string" && from !== meId) onPing(from);
@@ -290,13 +374,19 @@ export function createSupabaseTransport(deps: {
       });
       return {
         async ping() {
-          if (left || !hub.channel) return;
-          // ถ้าช่องยังไม่เชื่อม supabase-js จะส่งทาง REST แทน
-          await hub.channel.send({
-            type: "broadcast",
-            event: "ping",
-            payload: { type: "ping", from: meId },
-          });
+          if (left) return;
+          const send = () =>
+            sub.hub.channel?.send({
+              type: "broadcast",
+              event: "ping",
+              payload: { type: "ping", from: meId },
+            });
+          // ยังไม่มีช่อง (กำลังต่อใหม่) → เก็บไว้ส่งทันทีที่มีช่อง; ถ้าช่องยังไม่เชื่อม supabase-js ส่งทาง REST แทน
+          if (!sub.hub.channel) {
+            sub.hub.queued = () => void send();
+            return;
+          }
+          await send();
         },
         leave() {
           if (left) return;
@@ -316,10 +406,12 @@ let localTransport: MeetupTransport | null = null;
  * กิ่งนี้จึงเป็นโค้ดตายใน production และ meetup-transport-local ถูกตัดทิ้งทั้งไฟล์
  */
 export function getMeetupTransport(): MeetupTransport {
+  // ตัดสินครั้งเดียวต่อการเปิดหน้า: เข้า meetsim แล้วอยู่ในเครื่องตลอด แม้ลิงก์ภายในจะทิ้ง `?meetsim`
+  // ไม่อย่างนั้นการกดลิงก์จะสลับไปเขียนฐานข้อมูลจริงเงียบๆ
   if (
     import.meta.env.DEV &&
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("meetsim")
+    (localTransport !== null ||
+      (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("meetsim")))
   ) {
     if (!localTransport) {
       const pair = meetsimPairFromSearch(window.location.search);

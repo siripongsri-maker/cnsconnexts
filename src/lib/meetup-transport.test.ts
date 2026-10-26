@@ -204,52 +204,105 @@ describe("supabase transport — list", () => {
   });
 });
 
-/** ตัวปลอมของ supabase realtime — จำช่อง, ตัวฟัง และสิ่งที่ส่ง */
-function fakeRealtime(opts: { httpFails?: boolean } = {}) {
+/**
+ * ตัวปลอมของ supabase realtime ที่ทำตัวเหมือนของจริงในจุดที่สำคัญ:
+ * channel(ชื่อเดิม) คืนช่องเดิมที่ยังอยู่ในรายการ, subscribe ซ้ำไม่ทำอะไร,
+ * removeChannel ล้มได้ (ช่องค้างในรายการ), เซิร์ฟเวอร์ปิดช่องได้ (CLOSED)
+ */
+function fakeRealtime(
+  opts: { httpFails?: boolean; removeFails?: number; subscribeThrows?: number } = {},
+) {
   type Ch = {
     topic: string;
     params: unknown;
     handlers: Map<string, (msg: { payload: unknown }) => void>;
     status?: (s: string) => void;
+    subscribed: boolean;
     sent: unknown[];
     httpSent: unknown[];
   };
+  type Api = { topic: string; _ch: Ch; subscribe(cb: (s: string) => void): unknown };
   const made: Ch[] = [];
   const removed: Ch[] = [];
+  let live: Api[] = [];
+  let removeFails = opts.removeFails ?? 0;
+  let subscribeThrows = opts.subscribeThrows ?? 0;
+  const drop = (ch: Ch) => void (live = live.filter((a) => a._ch !== ch));
+
+  function channel(topic: string, params?: unknown) {
+    const existing = live.find((a) => a._ch.topic === topic);
+    if (existing) return existing;
+    const ch: Ch = {
+      topic,
+      params,
+      handlers: new Map(),
+      subscribed: false,
+      sent: [],
+      httpSent: [],
+    };
+    made.push(ch);
+    const api = {
+      topic: `realtime:${topic}`,
+      _ch: ch,
+      on(_type: string, filter: { event: string }, cb: (msg: { payload: unknown }) => void) {
+        ch.handlers.set(filter.event, cb);
+        return api;
+      },
+      subscribe(cb: (s: string) => void) {
+        if (subscribeThrows > 0) {
+          subscribeThrows--;
+          throw new Error("tried to join multiple times");
+        }
+        if (ch.subscribed) return api; // เหมือนของจริง: ช่องที่ยังไม่ปิด subscribe ซ้ำแล้วเงียบ
+        ch.subscribed = true;
+        ch.status = cb;
+        return api;
+      },
+      async send(args: unknown) {
+        ch.sent.push(args);
+        return "ok";
+      },
+      async httpSend(event: string, payload: unknown) {
+        if (opts.httpFails) throw new Error("nope");
+        ch.httpSent.push({ event, payload });
+        return { success: true };
+      },
+    };
+    live.push(api);
+    return api;
+  }
+
   const realtime = {
-    channel(topic: string, params: unknown) {
-      const ch: Ch = { topic, params, handlers: new Map(), sent: [], httpSent: [] };
-      made.push(ch);
-      const api = {
-        on(_type: string, filter: { event: string }, cb: (msg: { payload: unknown }) => void) {
-          ch.handlers.set(filter.event, cb);
-          return api;
-        },
-        subscribe(cb: (s: string) => void) {
-          ch.status = cb;
-          return api;
-        },
-        async send(args: unknown) {
-          ch.sent.push(args);
-          return "ok";
-        },
-        async httpSend(event: string, payload: unknown) {
-          if (opts.httpFails) throw new Error("nope");
-          ch.httpSent.push({ event, payload });
-          return { success: true };
-        },
-        _ch: ch,
-      };
-      return api;
-    },
-    async removeChannel(api: { _ch: Ch }) {
+    channel,
+    async removeChannel(api: Api) {
       removed.push(api._ch);
+      if (removeFails > 0) {
+        removeFails--;
+        return "error";
+      }
+      drop(api._ch);
+      api._ch.status?.("CLOSED");
       return "ok";
     },
-    getChannels: () => [],
+    getChannels: () => [...live],
   };
   const t = createSupabaseTransport({ db: {} as never, realtime: realtime as never });
-  return { t, made, removed };
+  return {
+    t,
+    made,
+    removed,
+    /** เซิร์ฟเวอร์ปิดช่องเอง */
+    serverClose(ch: Ch) {
+      drop(ch);
+      ch.status?.("CLOSED");
+    },
+    /** ช่องค้างจากการถอดที่ไม่สำเร็จ (ยัง join อยู่) */
+    leftover(topic: string) {
+      const api = channel(topic);
+      api.subscribe(() => {});
+      return api._ch;
+    },
+  };
 }
 
 describe("supabase transport — realtime", () => {
@@ -327,6 +380,155 @@ describe("supabase transport — realtime", () => {
       expect(removed).toEqual([made[0]]);
     } finally {
       vi.useRealTimers();
+    }
+  });
+
+  it("a server-closed channel is replaced: lost → connecting → open, queued ping is sent", async () => {
+    vi.useFakeTimers();
+    try {
+      const { t, made, serverClose } = fakeRealtime();
+      const onPing = vi.fn();
+      const onState = vi.fn();
+      const s = t.joinSignal("key", "me", onPing, onState);
+      made[0]!.status?.("SUBSCRIBED");
+      serverClose(made[0]!);
+      expect(onState).toHaveBeenLastCalledWith("lost");
+
+      await s.ping(); // ไม่มีช่องอยู่ → เก็บไว้ส่งเมื่อต่อได้
+      await vi.advanceTimersByTimeAsync(5_000);
+      expect(made).toHaveLength(2);
+      expect(made[1]!.topic).toBe("meet:key");
+      expect(onState).toHaveBeenLastCalledWith("connecting");
+      expect(made[1]!.sent).toEqual([
+        { type: "broadcast", event: "ping", payload: { type: "ping", from: "me" } },
+      ]);
+      made[1]!.status?.("SUBSCRIBED");
+      expect(onState.mock.calls.map((c) => c[0])).toEqual([
+        "connecting",
+        "open",
+        "lost",
+        "connecting",
+        "open",
+      ]);
+
+      made[0]!.handlers.get("ping")?.({ payload: { type: "ping", from: "old" } });
+      made[1]!.handlers.get("ping")?.({ payload: { type: "ping", from: "you" } });
+      expect(onPing.mock.calls).toEqual([["you"]]);
+
+      await s.ping();
+      expect(made[1]!.sent).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a channel closed by the server while lingering is not reused by the next join", () => {
+    vi.useFakeTimers();
+    try {
+      const { t, made, serverClose } = fakeRealtime();
+      t.joinSignal(
+        "key",
+        "me",
+        () => {},
+        () => {},
+      ).leave();
+      serverClose(made[0]!);
+      const onState = vi.fn();
+      t.joinSignal("key", "me", () => {}, onState);
+      expect(made).toHaveLength(2);
+      made[1]!.status?.("SUBSCRIBED");
+      expect(onState).toHaveBeenLastCalledWith("open");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a leftover joined channel with the same topic is removed before a fresh subscribe", async () => {
+    vi.useFakeTimers();
+    try {
+      const { t, made, removed, leftover } = fakeRealtime({ removeFails: 1 });
+      const stale = leftover("meet:key");
+      const onState = vi.fn();
+      const s = t.joinSignal("key", "me", () => {}, onState);
+      await s.ping();
+      expect(stale.sent).toEqual([]); // ไม่ส่งผ่านช่องค้าง
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(removed.filter((c) => c === stale)).toHaveLength(2); // ครั้งแรกถอดไม่สำเร็จ → ลองใหม่
+      const fresh = made.at(-1)!;
+      expect(fresh).not.toBe(stale);
+      expect(fresh.sent).toHaveLength(1);
+      fresh.status?.("SUBSCRIBED");
+      expect(onState).toHaveBeenLastCalledWith("open");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a throwing subscribe reports lost and retries instead of leaving pings dead", async () => {
+    vi.useFakeTimers();
+    try {
+      const { t, made, removed } = fakeRealtime({ subscribeThrows: 1 });
+      const onState = vi.fn();
+      const s = t.joinSignal("key", "me", () => {}, onState);
+      expect(onState).toHaveBeenLastCalledWith("lost");
+      await vi.advanceTimersByTimeAsync(10_000);
+      const broken = made[0]!;
+      expect(removed).toContain(broken);
+      const fresh = made.at(-1)!;
+      expect(fresh).not.toBe(broken);
+      fresh.status?.("SUBSCRIBED");
+      expect(onState).toHaveBeenLastCalledWith("open");
+      await s.ping();
+      expect(fresh.sent).toHaveLength(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("getMeetupTransport", () => {
+  it("stays on the local transport after a navigation drops ?meetsim", async () => {
+    vi.resetModules();
+    const store = new Map<string, string>();
+    const location = { search: "?meetsim&pair=a1,b2" };
+    vi.stubGlobal("window", { location });
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+    });
+    try {
+      const mod = await import("./meetup-transport");
+      const local = mod.getMeetupTransport();
+      location.search = ""; // ลิงก์ภายในพาไปหน้าที่ไม่มี ?meetsim
+      const later = mod.getMeetupTransport();
+      expect(later).toBe(local);
+      // ยังเป็นตัวจำลอง: สร้างคำชวนบนคอนเนกชันจำลองได้โดยไม่แตะเครือข่าย
+      const res = await later.create({
+        connectionId: "meetsim-a1-b2",
+        inviter: "a1",
+        invitee: "b2",
+      });
+      expect(res.ok).toBe(true);
+      expect(store.get("meetsim:meetups")).toContain("meetsim-a1-b2");
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
+    }
+  });
+
+  it("without ?meetsim it picks a different (Supabase) transport", async () => {
+    vi.resetModules();
+    const location = { search: "" };
+    vi.stubGlobal("window", { location });
+    try {
+      const mod = await import("./meetup-transport");
+      const prod = mod.getMeetupTransport();
+      expect(mod.getMeetupTransport()).toBe(prod);
+      location.search = "?meetsim";
+      expect(mod.getMeetupTransport()).not.toBe(prod);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.resetModules();
     }
   });
 });
