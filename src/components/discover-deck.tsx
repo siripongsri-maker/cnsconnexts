@@ -3,7 +3,14 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Bookmark, Undo2, X } from "lucide-react";
 import { scoreMatch, type DeckEntry } from "@/lib/matching";
-import { deckPrimaryAction, deckState, swipeOutcome, swipeRotation } from "@/lib/deck-rules";
+import {
+  ACTION_LOCK_MS,
+  deckPrimaryAction,
+  deckState,
+  swipeOutcome,
+  swipeRotation,
+  tryAcquireLock,
+} from "@/lib/deck-rules";
 import { useMotionSettings } from "@/lib/motion";
 import { useStore } from "@/lib/store";
 import type { Connection, User } from "@/lib/types";
@@ -58,13 +65,15 @@ export function DiscoverDeck({
   const [passed, setPassed] = useState<string[]>([]);
   const startX = useRef<number | null>(null);
   const moved = useRef(false);
-  /** กันแตะซ้ำแบบทันที (state ยังไม่ทันอัปเดต) */
-  const busyRef = useRef(false);
+  /** ล็อกปุ่มถึงเวลานี้ (ms) — กันแตะซ้ำแล้วไปโดนการ์ดใบถัดไป */
+  const lockUntil = useRef(0);
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
     () => () => {
       if (leaveTimer.current) clearTimeout(leaveTimer.current);
+      if (lockTimer.current) clearTimeout(lockTimer.current);
     },
     [],
   );
@@ -134,9 +143,9 @@ export function DiscoverDeck({
           <button
             type="button"
             onClick={retry}
-            disabled={retrying}
+            aria-disabled={retrying}
             aria-busy={retrying}
-            className="meadow-btn-secondary tap"
+            className="meadow-btn-secondary tap aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
           >
             ลองอีกครั้ง
           </button>
@@ -178,6 +187,24 @@ export function DiscoverDeck({
   const saved = likedUsers.includes(user.id);
   const locked = busy || leaving !== null;
 
+  /**
+   * ขอสิทธิ์ทำงานหนึ่งครั้ง — ล็อกปุ่มไว้ ACTION_LOCK_MS ให้การ์ดเลื่อนและฉากถัดไปขึ้นก่อน
+   * แตะซ้ำในช่วงนี้ไม่มีผล (ใช้ ref จึงกันได้แม้ state ยังไม่ทันอัปเดต)
+   */
+  const acquire = (): boolean => {
+    if (leaving) return false;
+    const next = tryAcquireLock(lockUntil.current, Date.now());
+    if (next === null) return false;
+    lockUntil.current = next;
+    setBusy(true);
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+    lockTimer.current = setTimeout(() => {
+      lockTimer.current = null;
+      setBusy(false);
+    }, ACTION_LOCK_MS);
+    return true;
+  };
+
   /** ให้การ์ดลอยออกก่อน แล้วค่อยเปลี่ยนใบ (ลดการเคลื่อนไหว = เปลี่ยนทันที) */
   const leave = (dir: Leave, run: () => void) => {
     startX.current = null;
@@ -197,7 +224,7 @@ export function DiscoverDeck({
   };
 
   const doSkip = () => {
-    if (locked) return;
+    if (!acquire()) return;
     leave("left", () => {
       skipUser(user.id);
       toast(`ข้าม ${user.name} แล้ว`, {
@@ -209,7 +236,7 @@ export function DiscoverDeck({
   };
 
   const doSave = () => {
-    if (locked) return;
+    if (!acquire()) return;
     leave("right", () => {
       toggleLikeUser(user.id);
       toast(`เก็บ ${user.name} ไว้แล้ว`, { id: "deck-save" });
@@ -217,6 +244,7 @@ export function DiscoverDeck({
   };
 
   const doPrimary = () => {
+    if (!acquire()) return;
     if (action === "open-profile-sheet") {
       onNeedProfile(user);
       return;
@@ -225,19 +253,12 @@ export function DiscoverDeck({
       if (existing) navigate({ to: "/connection/$id", params: { id: existing.id } });
       return;
     }
-    // action === "connect": เรียกครั้งเดียว กันแตะซ้ำด้วย busyRef
-    if (busyRef.current || leaving || !me) return;
-    busyRef.current = true;
-    setBusy(true);
-    try {
-      const m = top.match ?? scoreMatch(me, user);
-      const c = connect(user.id, m.score, m.reason);
-      setPassed((p) => [...p, user.id]);
-      onConnected(c, top);
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
+    // action === "connect": เรียกครั้งเดียว ล็อกจาก acquire() ยังค้างอยู่ตอนการ์ดเลื่อนไปใบถัดไป
+    if (!me) return;
+    const m = top.match ?? scoreMatch(me, user);
+    const c = connect(user.id, m.score, m.reason);
+    setPassed((p) => [...p, user.id]);
+    onConnected(c, top);
   };
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
@@ -309,8 +330,8 @@ export function DiscoverDeck({
           type="button"
           aria-label={`ข้าม ${user.name}`}
           onClick={doSkip}
-          disabled={locked}
-          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-ink-soft disabled:opacity-55"
+          aria-disabled={locked}
+          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-ink-soft aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
         >
           <X className="h-7 w-7" strokeWidth={2.6} aria-hidden />
         </button>
@@ -318,8 +339,8 @@ export function DiscoverDeck({
         <button
           type="button"
           onClick={doPrimary}
-          disabled={busy}
-          className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center"
+          aria-disabled={locked}
+          className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
         >
           {action === "open-connection" ? "เชื่อมกันแล้ว · คุยต่อ" : "ขอเชื่อมต่อ"}
         </button>
@@ -329,8 +350,8 @@ export function DiscoverDeck({
           aria-label={`เก็บ ${user.name} ไว้`}
           aria-pressed={saved}
           onClick={doSave}
-          disabled={locked}
-          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-primary disabled:opacity-55"
+          aria-disabled={locked}
+          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
         >
           <Bookmark
             className="h-7 w-7"

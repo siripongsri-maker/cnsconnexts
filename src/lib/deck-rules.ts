@@ -58,3 +58,18 @@ export function deckState({
   }
   return remaining === 0 ? "empty" : "ready";
 }
+
+/** ล็อกปุ่มหลังกดนานเท่าไร (ms) — ครอบช่วงการ์ดเลื่อนและฉากฉลองขึ้น กันแตะซ้ำไปโดนคนถัดไป */
+export const ACTION_LOCK_MS = 300;
+
+/**
+ * กันแตะซ้ำ: ถ้ายังอยู่ในช่วงล็อก (now < lockedUntil) คืน null = ห้ามทำ
+ * ไม่งั้นคืนเวลาสิ้นสุดล็อกใหม่ให้เก็บไว้
+ */
+export function tryAcquireLock(
+  lockedUntil: number,
+  now: number,
+  windowMs: number = ACTION_LOCK_MS,
+): number | null {
+  return now < lockedUntil ? null : now + windowMs;
+}

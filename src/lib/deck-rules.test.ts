@@ -1,5 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { deckPrimaryAction, deckState, swipeOutcome, swipeRotation } from "./deck-rules";
+import { describe, expect, it, vi } from "vitest";
+import {
+  ACTION_LOCK_MS,
+  deckPrimaryAction,
+  deckState,
+  swipeOutcome,
+  swipeRotation,
+  tryAcquireLock,
+} from "./deck-rules";
 
 describe("swipeOutcome", () => {
   it("skips at -90px or further left", () => {
@@ -63,5 +70,28 @@ describe("deckState (Review Focus 4)", () => {
     expect(deckState({ hydrated: false, networkAvailable: true, total: 3, remaining: 3 })).toBe(
       "ready",
     );
+  });
+});
+
+describe("tryAcquireLock (double-tap guard)", () => {
+  it("grants the first activation and locks for ACTION_LOCK_MS", () => {
+    expect(tryAcquireLock(0, 1000)).toBe(1000 + ACTION_LOCK_MS);
+  });
+  it("refuses a second primary activation within the lock window, so connect is not called", () => {
+    const connect = vi.fn();
+    let lockedUntil = 0;
+    const press = (now: number) => {
+      const next = tryAcquireLock(lockedUntil, now);
+      if (next === null) return;
+      lockedUntil = next;
+      connect();
+    };
+    press(1000);
+    press(1000 + 50);
+    press(1000 + ACTION_LOCK_MS - 1);
+    expect(connect).toHaveBeenCalledTimes(1);
+  });
+  it("grants again once the window has passed", () => {
+    expect(tryAcquireLock(1300, 1300)).toBe(1300 + ACTION_LOCK_MS);
   });
 });
