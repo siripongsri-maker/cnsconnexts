@@ -150,10 +150,14 @@ export function LiveNetwork({
 
   if (edges.length === 0) {
     return (
-      <div className={`grid place-items-center rounded-2xl bg-muted/50 p-6 text-center ${className}`}>
+      <div
+        className={`grid place-items-center rounded-2xl bg-sky-soft p-6 text-center ${className}`}
+      >
         <div>
-          <p className="text-[14px] font-extrabold">ยังไม่มีคู่เชื่อม — ลองชวนคนแรกคุยกันเลย</p>
-          <p lang="en" className="mt-1 text-[13px] text-muted-foreground">
+          <p className="text-body font-semibold text-ink">
+            ยังไม่มีคู่เชื่อม — ลองชวนคนแรกคุยกันเลย
+          </p>
+          <p lang="en" className="mt-1 text-body text-ink-soft">
             No connections yet — start the first one
           </p>
           {emptyAction && <div className="mt-3">{emptyAction}</div>}

@@ -13,6 +13,7 @@ import {
   BellOff,
   BookmarkPlus,
   CheckCircle2,
+  ChevronDown,
   Handshake,
   Link2,
   LogOut,
@@ -21,22 +22,18 @@ import {
   Share2,
   SlidersHorizontal,
   Sparkles,
+  UserRound,
   Users,
   X,
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { MissionVisual } from "@/components/mission-ui";
-import { LiveNetwork, NetworkBackground } from "@/components/network-background";
+import { ChoicePill } from "@/components/choice-pill";
+import { LiveNetwork } from "@/components/network-background";
+import { Avatar, PowerIcon } from "@/components/power-bits";
+import { BLOCK_TAG } from "@/lib/issue-colors";
 import { useStore, useUserMap } from "@/lib/store";
-import {
-  ISSUES,
-  POWER_EMOJI,
-  POWERS,
-  REGIONS,
-  type ConnectionStatus,
-  type User,
-} from "@/lib/types";
+import { ISSUES, POWERS, REGIONS, type ConnectionStatus, type User } from "@/lib/types";
 import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 import { makeJoinCode } from "@/lib/session";
 import {
@@ -249,7 +246,7 @@ function Dashboard() {
         toast.success("แชร์แล้ว");
       } else if (navigator.clipboard) {
         await navigator.clipboard.writeText(url);
-        toast.success("คัดลอกลิงก์แล้ว", { icon: <Link2 className="h-4 w-4" /> });
+        toast.success("คัดลอกลิงก์แล้ว", { icon: <Link2 className="h-5 w-5" /> });
       } else {
         window.prompt("คัดลอกลิงก์นี้", url);
       }
@@ -429,41 +426,42 @@ function Dashboard() {
     const needRank = rank("powers_need");
     const haveRank = rank("powers_have");
     return (
-      <main className="core-dashboard-present relative min-h-dvh overflow-hidden bg-background px-[4vw] py-[3vh] text-foreground">
+      <main className="relative min-h-dvh overflow-hidden bg-paper px-[4vw] py-[3vh] text-ink">
         <header className="flex flex-wrap items-center gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-[clamp(1.75rem,3.5vw,3.25rem)] font-extrabold leading-tight">
+          <div className="w-full min-w-0 sm:w-auto sm:flex-1">
+            <h1 className="font-heading text-[clamp(1.75rem,3.5vw,3.25rem)] leading-tight font-bold text-ink">
               พลังที่เชื่อมถึงกัน
             </h1>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-[18px] font-extrabold text-primary-foreground">
-            <span aria-hidden="true" className="h-3 w-3 animate-pulse-node rounded-full bg-lime" />
-            LIVE
+          <span className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-4 text-body font-semibold text-white">
+            <span
+              aria-hidden="true"
+              className="h-3 w-3 animate-pulse-node rounded-full bg-block-yellow"
+            />
+            สด
           </span>
-          <button
-            type="button"
-            onClick={exitPresent}
-            className="tap inline-flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-card px-4 text-[16px] font-extrabold"
-          >
-            <LogOut className="h-5 w-5" aria-hidden="true" />
+          <button type="button" onClick={exitPresent} className="meadow-btn-secondary">
+            <LogOut className="h-6 w-6 shrink-0" aria-hidden="true" />
             ออกจากจอใหญ่
           </button>
         </header>
 
-        <div className="mt-[2vh] rounded-3xl bg-primary px-[2vw] py-[2vh] text-primary-foreground">
+        <div className="mt-[2vh] rounded-3xl bg-primary px-[2vw] py-[2vh] text-white">
           <RotatingPrompt size="lg" />
         </div>
 
         <div className="mt-[2vh] grid grid-cols-2 gap-[2vw] lg:grid-cols-4">
-          <BigCard n={stats.people} label="คน" />
-          <BigCard n={stats.connections} label="คู่เชื่อม" />
-          <BigCard n={stats.ideas} label="ไอเดีย" />
-          <BigCard n={stats.commitments} label="นัดลงมือทำ" />
+          <BigCard n={stats.people} label="คน" tag={BLOCK_TAG.purple} />
+          <BigCard n={stats.connections} label="คู่เชื่อม" tag={BLOCK_TAG.blue} />
+          <BigCard n={stats.ideas} label="ไอเดีย" tag={BLOCK_TAG.green} />
+          <BigCard n={stats.commitments} label="นัดลงมือทำ" tag={BLOCK_TAG.orange} />
         </div>
 
         <div className="mt-[2vh] grid grid-cols-1 gap-[2vw] lg:grid-cols-3">
-          <section className="card-soft relative p-5 lg:col-span-2">
-            <h2 className="text-[22px] font-extrabold">เครือข่ายที่เกิดขึ้น</h2>
+          <section className="meadow-card relative p-5 lg:col-span-2">
+            <h2 className="font-heading text-title font-semibold! text-ink">
+              เครือข่ายที่เกิดขึ้น
+            </h2>
             <div className="mt-3 h-[58vh] min-h-[320px]">
               <LiveNetwork users={fUsers} connections={fConnections} className="h-full" />
             </div>
@@ -487,7 +485,7 @@ function Dashboard() {
                 <Bar
                   key={p}
                   size="lg"
-                  label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                  label={<PowerLabel name={p} />}
                   value={c}
                   max={needRank[0]![1]}
                   tone="coral"
@@ -499,7 +497,7 @@ function Dashboard() {
                 <Bar
                   key={p}
                   size="lg"
-                  label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                  label={<PowerLabel name={p} />}
                   value={c}
                   max={haveRank[0]![1]}
                   tone="lime"
@@ -521,11 +519,13 @@ function Dashboard() {
                   />
                 ))}
             </Panel>
-            <div className="card-soft flex items-center gap-4 p-4">
+            <div className="meadow-card flex items-center gap-4 p-4">
               <div className="shrink-0 rounded-2xl bg-white p-3">
                 <QRCodeSVG value={joinUrl} size={160} level="M" />
               </div>
-              <p className="text-[20px] font-extrabold leading-snug">สแกนแล้วมาเชื่อมพลังกัน</p>
+              <p className="font-heading text-lead leading-snug font-semibold text-ink">
+                สแกนแล้วมาเชื่อมพลังกัน
+              </p>
             </div>
           </div>
         </div>
@@ -534,31 +534,30 @@ function Dashboard() {
   }
 
   const feedPanel = (
-    <Panel title={view === "me" ? "กิจกรรมของคุณและทั้งงาน" : <>การเชื่อมต่อล่าสุด</>}>
+    <Panel title={view === "me" ? "กิจกรรมของคุณและทั้งงาน" : "การเชื่อมต่อล่าสุด"}>
       {feed.length === 0 && (
-        <p className="text-[13px] text-muted-foreground">ยังไม่มีกิจกรรม — เริ่มเชื่อมต่อกันเลย</p>
+        <p className="text-body text-ink-soft">ยังไม่มีกิจกรรม — เริ่มเชื่อมต่อกันเลย</p>
       )}
-      <ul className="space-y-2.5">
+      <ul className="space-y-3">
         {feed.map((f) => (
           <li key={f.id} className="flex items-start gap-3">
             <span
-              className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${
-                f.icon === "connect" ? "bg-primary/12 text-primary" : "bg-lime/20 text-ink"
+              aria-hidden="true"
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white ${
+                f.icon === "connect" ? "bg-primary" : "bg-block-green"
               }`}
             >
               {f.icon === "connect" ? (
-                <Handshake className="h-4 w-4" aria-hidden="true" />
+                <Handshake className="h-5 w-5" />
               ) : (
-                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                <CheckCircle2 className="h-5 w-5" />
               )}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-bold">{f.title}</p>
-              <p className="truncate text-[12px] text-muted-foreground">{f.detail}</p>
+              <p className="line-clamp-2 text-body font-semibold break-words text-ink">{f.title}</p>
+              <p className="line-clamp-2 text-body break-words text-ink-soft">{f.detail}</p>
+              <p className="text-body text-ink-soft">{ago(f.created_at, now)}</p>
             </div>
-            <span className="ml-auto shrink-0 text-xs font-bold text-muted-foreground">
-              {ago(f.created_at, now)}
-            </span>
           </li>
         ))}
       </ul>
@@ -566,16 +565,18 @@ function Dashboard() {
   );
 
   const progressPanel = (
-    <Panel title={<>ความคืบหน้า</>}>
-      <div className="mb-3 flex items-end justify-between">
-        <p className="font-tech text-3xl font-extrabold text-primary">{completion}%</p>
-        <p className="text-[12px] font-bold text-muted-foreground">
+    <Panel title="ความคืบหน้า">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <p className="font-heading text-display leading-none font-bold text-primary">
+          {completion}%
+        </p>
+        <p className="text-body font-semibold text-ink-soft">
           สำเร็จ {done}/{fCommitments.length} นัด
         </p>
       </div>
-      <div className="mb-3 h-2.5 overflow-hidden rounded-full bg-muted">
+      <div className="mb-3 h-3 overflow-hidden rounded-full bg-sky-soft">
         <div
-          className="h-full rounded-full bg-lime transition-all duration-700"
+          className="h-full rounded-full bg-block-green transition-all duration-700"
           style={{ width: `${completion}%` }}
         />
       </div>
@@ -589,10 +590,7 @@ function Dashboard() {
         />
       ))}
       {view === "organizer" && (
-        <Link
-          to="/admin/export"
-          className="tap mt-1 inline-flex min-h-11 items-center text-[12px] font-bold text-muted-foreground underline underline-offset-4"
-        >
+        <Link to="/admin/export" className="meadow-btn-secondary mt-2 w-full">
           ผู้จัด: ดาวน์โหลดข้อมูล
         </Link>
       )}
@@ -605,200 +603,193 @@ function Dashboard() {
   return (
     <AppShell
       title="พลังในงานตอนนี้"
-      titleEn="Live dashboard"
       action={
         view === "organizer" ? (
-          <button
-            type="button"
-            onClick={openPresent}
-            className="tap inline-flex min-h-11 items-center gap-2 rounded-2xl border border-border bg-card px-4 text-[13px] font-extrabold"
-          >
-            <MonitorPlay className="h-4 w-4" aria-hidden="true" />
+          <button type="button" onClick={openPresent} className="meadow-btn-secondary">
+            <MonitorPlay className="h-6 w-6 shrink-0" aria-hidden="true" />
             เปิดจอใหญ่
           </button>
         ) : undefined
       }
     >
-      <div className="core-page core-dashboard">
-        <div className="core-dashboard-modes px-5 pt-4">
-          <div className="core-mode-tabs flex rounded-2xl border border-border bg-card p-1">
-            {(
-              [
-                { k: "organizer", l: "มุมผู้จัด" },
-                { k: "me", l: "มุมของฉัน" },
-              ] as const
-            ).map((t) => (
-              <button
-                key={t.k}
-                type="button"
-                onClick={() => setView(t.k)}
-                aria-pressed={view === t.k}
-                className={`tap h-11 flex-1 rounded-xl text-[13px] font-extrabold transition ${
-                  view === t.k ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {t.l}
-              </button>
-            ))}
-          </div>
+      <div className="space-y-5 pb-8">
+        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-sky-soft p-1.5">
+          {(
+            [
+              { k: "organizer", l: "มุมผู้จัด" },
+              { k: "me", l: "มุมของฉัน" },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.k}
+              type="button"
+              onClick={() => setView(t.k)}
+              aria-pressed={view === t.k}
+              className={`tap min-h-14 rounded-xl text-body font-semibold ${
+                view === t.k ? "bg-primary text-white" : "bg-white text-ink"
+              }`}
+            >
+              {t.l}
+            </button>
+          ))}
         </div>
 
-        <div className="core-dashboard-filter px-5 pt-3">
-          <details
-            open={searchOpen}
-            onToggle={(e) => setSearchOpen(e.currentTarget.open)}
-            className="card-soft"
-          >
-            <summary className="tap flex min-h-11 cursor-pointer items-center justify-between gap-2 px-4 text-sm font-extrabold">
-              <span className="flex items-center gap-2">
-                <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                ค้นหาและกรอง
-              </span>
+        <details
+          open={searchOpen}
+          onToggle={(e) => setSearchOpen(e.currentTarget.open)}
+          className="meadow-card group"
+        >
+          <summary className="tap flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-2 text-body font-semibold text-ink [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-3">
+              <Search className="h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+              ค้นหาและกรอง
+            </span>
+            <span className="flex items-center gap-2">
               {activeCount > 0 && (
-                <span className="text-[12px] text-muted-foreground">{activeCount} ตัวกรอง</span>
+                <span className="inline-flex min-h-10 items-center rounded-xl bg-primary px-3 text-body font-semibold text-white">
+                  {activeCount} ตัวกรอง
+                </span>
               )}
-            </summary>
+              <ChevronDown
+                className="h-6 w-6 shrink-0 transition-transform group-open:rotate-180"
+                aria-hidden="true"
+              />
+            </span>
+          </summary>
 
-            <div className="space-y-2 px-3 pb-3">
-              <div className="flex min-w-0 gap-2">
-                <label className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-2xl border border-border bg-card px-3">
-                  <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <span className="sr-only">ค้นหาคนในงาน</span>
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    placeholder="ค้นหาชื่อ องค์กร จังหวัด ประเด็น..."
-                    className="min-w-0 flex-1 bg-transparent text-[13px] outline-none"
-                  />
-                  {q && (
-                    <button
-                      type="button"
-                      aria-label="ล้างคำค้น"
-                      onClick={() => setQ("")}
-                      className="tap -mr-2 grid h-9 w-9 shrink-0 place-items-center rounded-full"
-                    >
-                      <X className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    </button>
-                  )}
-                </label>
+          <div className="space-y-4 px-4 pb-4">
+            <div className="relative">
+              <Search
+                className="pointer-events-none absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-ink-soft"
+                aria-hidden="true"
+              />
+              <label>
+                <span className="sr-only">ค้นหาคนในงาน</span>
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="ค้นหาชื่อ องค์กร จังหวัด ประเด็น..."
+                  className="w-full min-w-0 rounded-xl border-2 bg-white pl-12 pr-14 text-body text-ink"
+                />
+              </label>
+              {q && (
                 <button
                   type="button"
-                  onClick={() => setShowFilters((v) => !v)}
-                  aria-expanded={showFilters}
-                  aria-label={activeCount ? `กรอง · เลือกไว้ ${activeCount} รายการ` : undefined}
-                  className={`tap flex h-11 shrink-0 items-center gap-1.5 rounded-2xl border px-3 text-[13px] font-extrabold ${
-                    activeCount
-                      ? "border-transparent bg-primary text-primary-foreground"
-                      : "border-border bg-card"
-                  }`}
+                  aria-label="ล้างคำค้น"
+                  onClick={() => setQ("")}
+                  className="tap absolute right-1 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full"
                 >
-                  <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-                  {activeCount ? activeCount : "กรอง"}
+                  <X className="h-6 w-6 text-ink-soft" aria-hidden="true" />
                 </button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setShowFilters((v) => !v)}
+                aria-expanded={showFilters}
+                className={`tap inline-flex min-h-14 items-center gap-2 rounded-xl border-2 px-4 text-body font-semibold ${
+                  activeCount
+                    ? "border-primary bg-primary text-white"
+                    : "border-ink bg-white text-ink"
+                }`}
+              >
+                <SlidersHorizontal className="h-6 w-6 shrink-0" aria-hidden="true" />
+                {activeCount ? `กรอง · เลือกไว้ ${activeCount}` : "กรอง"}
+              </button>
+              <button
+                type="button"
+                onClick={shareCurrentUrl}
+                className="tap inline-flex min-h-14 items-center gap-2 rounded-xl border-2 border-ink bg-white px-4 text-body font-semibold text-ink"
+              >
+                <Share2 className="h-6 w-6 shrink-0" aria-hidden="true" />
+                แชร์ลิงก์
+              </button>
+            </div>
+
+            {showFilters && (
+              <div className="space-y-4 rounded-2xl bg-sky-soft p-4">
+                <div className="grid grid-cols-1 gap-3">
+                  <select
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    aria-label="ภูมิภาค"
+                    className="w-full rounded-xl border-2 bg-white px-3 text-body text-ink"
+                  >
+                    <option value="all">ทุกภูมิภาค</option>
+                    {REGIONS.map((r) => (
+                      <option key={r} value={r}>
+                        {REGION_LABEL[r]}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={issue}
+                    onChange={(e) => setIssue(e.target.value)}
+                    aria-label="ประเด็น"
+                    className="w-full rounded-xl border-2 bg-white px-3 text-body text-ink"
+                  >
+                    <option value="all">ทุกประเด็น</option>
+                    {ISSUES.map((i) => (
+                      <option key={i} value={i}>
+                        {issueTh(i)}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={power}
+                    onChange={(e) => setPower(e.target.value)}
+                    aria-label="ประเภทพลัง"
+                    className="w-full rounded-xl border-2 bg-white px-3 text-body text-ink"
+                  >
+                    <option value="all">ทุกประเภทพลัง</option>
+                    {POWERS.map((p) => (
+                      <option key={p.key} value={p.key}>
+                        {p.th}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    [
+                      { k: "any", l: "มี/ต้องการ" },
+                      { k: "have", l: "มีพลังนี้" },
+                      { k: "need", l: "ต้องการพลังนี้" },
+                    ] as const
+                  ).map((m) => (
+                    <ChoicePill
+                      key={m.k}
+                      active={powerMode === m.k}
+                      onClick={() => setPowerMode(m.k)}
+                    >
+                      {m.l}
+                    </ChoicePill>
+                  ))}
+                </div>
                 <button
                   type="button"
-                  onClick={shareCurrentUrl}
-                  aria-label="แชร์ลิงก์หน้านี้"
-                  title="แชร์ลิงก์หน้าผลลัพธ์ที่ใช้ตัวกรองปัจจุบัน"
-                  className="tap flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-border bg-card text-[13px] font-extrabold text-primary"
+                  onClick={clearFilters}
+                  className="meadow-btn-secondary w-full"
                 >
-                  <Share2 className="h-4 w-4" aria-hidden="true" />
+                  ล้างตัวกรอง
                 </button>
-              </div>
 
-              {showFilters && (
-                <div className="space-y-2 rounded-2xl border border-border bg-background/60 p-3">
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <select
-                      value={region}
-                      onChange={(e) => setRegion(e.target.value)}
-                      aria-label="ภูมิภาค"
-                      className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
-                    >
-                      <option value="all">ทุกภูมิภาค</option>
-                      {REGIONS.map((r) => (
-                        <option key={r} value={r}>
-                          {REGION_LABEL[r]}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={issue}
-                      onChange={(e) => setIssue(e.target.value)}
-                      aria-label="ประเด็น"
-                      className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
-                    >
-                      <option value="all">ทุกประเด็น</option>
-                      {ISSUES.map((i) => (
-                        <option key={i} value={i}>
-                          {issueTh(i)}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={power}
-                      onChange={(e) => setPower(e.target.value)}
-                      aria-label="ประเภทพลัง"
-                      className="h-11 rounded-xl border border-border bg-background px-2 text-[13px]"
-                    >
-                      <option value="all">ทุกประเภทพลัง</option>
-                      {POWERS.map((p) => (
-                        <option key={p.key} value={p.key}>
-                          {p.emoji} {p.th}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="flex flex-1 rounded-xl border border-border bg-background p-1">
-                      {(
-                        [
-                          { k: "any", l: "มี/ต้องการ" },
-                          { k: "have", l: "มีพลังนี้" },
-                          { k: "need", l: "ต้องการพลังนี้" },
-                        ] as const
-                      ).map((m) => (
-                        <button
-                          key={m.k}
-                          type="button"
-                          onClick={() => setPowerMode(m.k)}
-                          aria-pressed={powerMode === m.k}
-                          className={`tap h-9 flex-1 rounded-lg text-xs font-extrabold ${
-                            powerMode === m.k
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground"
-                          }`}
-                        >
-                          {m.l}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={clearFilters}
-                      className="tap h-11 rounded-xl border border-border px-3 text-[12px] font-extrabold text-muted-foreground"
-                    >
-                      ล้าง
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
-                    <p className="text-xs font-bold text-muted-foreground">
-                      ชุดตัวกรองที่บันทึกไว้
-                    </p>
-                    <button
-                      type="button"
-                      onClick={saveCurrentPreset}
-                      disabled={activeCount === 0}
-                      className="tap flex h-9 items-center gap-1 rounded-lg border border-border px-2 text-xs font-extrabold disabled:opacity-40"
-                    >
-                      <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                      บันทึกชุดนี้
-                    </button>
-                  </div>
+                <div className="space-y-3 border-t-2 border-white pt-4">
+                  <p className="text-body font-semibold text-ink">ชุดตัวกรองที่บันทึกไว้</p>
+                  <button
+                    type="button"
+                    onClick={saveCurrentPreset}
+                    disabled={activeCount === 0}
+                    className="meadow-btn-secondary w-full"
+                  >
+                    <BookmarkPlus className="h-6 w-6 shrink-0" aria-hidden="true" />
+                    บันทึกชุดนี้
+                  </button>
                   {presets.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-body text-ink-soft">
                       บันทึกตัวกรองเพื่อรับแจ้งเตือนเมื่อมีคนใหม่ที่ตรงเงื่อนไข
                     </p>
                   ) : (
@@ -806,10 +797,10 @@ function Dashboard() {
                       {presets.map((p) => (
                         <span
                           key={p.id}
-                          className={`flex items-center gap-2 rounded-full border px-2 py-1 text-xs font-extrabold ${
+                          className={`flex max-w-full items-center rounded-full border-2 ${
                             activePresetId === p.id
-                              ? "border-transparent bg-primary text-primary-foreground"
-                              : "border-border bg-background"
+                              ? "border-primary bg-primary text-white"
+                              : "border-[#C9C6E0] bg-white text-ink"
                           }`}
                         >
                           <button
@@ -817,7 +808,7 @@ function Dashboard() {
                             onClick={() => applyPreset(p)}
                             title={describeFilters(p.filters)}
                             aria-pressed={activePresetId === p.id}
-                            className="tap min-h-6 px-1"
+                            className="tap min-h-12 min-w-0 px-4 text-left text-body font-semibold break-words"
                           >
                             {p.name}
                           </button>
@@ -829,186 +820,155 @@ function Dashboard() {
                             aria-pressed={p.alerts}
                             title={p.alerts ? "แจ้งเตือนเปิดอยู่" : "แจ้งเตือนปิดอยู่"}
                             onClick={() => toggleAlerts(p.id)}
-                            className="tap relative grid h-6 w-6 place-items-center rounded-full after:absolute after:-inset-2 after:content-['']"
+                            className="tap grid h-12 w-12 shrink-0 place-items-center rounded-full"
                           >
                             {p.alerts ? (
-                              <Bell className="h-3 w-3" aria-hidden="true" />
+                              <Bell className="h-6 w-6" aria-hidden="true" />
                             ) : (
-                              <BellOff className="h-3 w-3 opacity-60" aria-hidden="true" />
+                              <BellOff className="h-6 w-6 opacity-60" aria-hidden="true" />
                             )}
                           </button>
                           <button
                             type="button"
                             aria-label={`ลบชุด ${p.name}`}
                             onClick={() => removePreset(p.id)}
-                            className="tap relative grid h-6 w-6 place-items-center rounded-full opacity-70 after:absolute after:-inset-2 after:content-['']"
+                            className="tap grid h-12 w-12 shrink-0 place-items-center rounded-full"
                           >
-                            <X className="h-3 w-3" aria-hidden="true" />
+                            <X className="h-6 w-6" aria-hidden="true" />
                           </button>
                         </span>
                       ))}
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+            )}
 
-              <div className="-mx-3 flex items-center gap-1.5 overflow-x-auto px-3 pb-0.5">
-                <span className="flex shrink-0 items-center gap-1 text-xs font-extrabold text-muted-foreground">
-                  <ArrowUpDown className="h-3.5 w-3.5" aria-hidden="true" /> เรียงโดย
-                </span>
+            <div>
+              <p className="mb-2 flex items-center gap-2 text-body font-semibold text-ink">
+                <ArrowUpDown className="h-5 w-5 shrink-0" aria-hidden="true" /> เรียงโดย
+              </p>
+              <div className="flex flex-wrap gap-2">
                 {SORT_OPTIONS.map((s) => (
-                  <button
-                    key={s.key}
-                    type="button"
-                    onClick={() => setSort(s.key)}
-                    aria-pressed={sort === s.key}
-                    className={`tap shrink-0 rounded-full border px-2.5 py-1 text-xs font-extrabold ${
-                      sort === s.key
-                        ? "border-transparent bg-primary text-primary-foreground"
-                        : "border-border bg-card text-muted-foreground"
-                    }`}
-                  >
+                  <ChoicePill key={s.key} active={sort === s.key} onClick={() => setSort(s.key)}>
                     {s.label}
-                  </button>
+                  </ChoicePill>
                 ))}
               </div>
+            </div>
 
-              {activeCount > 0 && (
-                <p className="text-xs font-bold text-muted-foreground">
-                  กำลังกรอง · {fUsers.length} คน · {fConnections.length} คู่เชื่อม ·{" "}
-                  {fCommitments.length} นัดลงมือทำ
+            {activeCount > 0 && (
+              <p className="text-body font-semibold text-ink-soft">
+                กำลังกรอง · {fUsers.length} คน · {fConnections.length} คู่เชื่อม ·{" "}
+                {fCommitments.length} นัดลงมือทำ
+              </p>
+            )}
+
+            <div>
+              <h2 className="mb-3 text-body font-semibold text-ink-soft">
+                ผลการค้นหา · {results.length} คน · เรียงตาม
+                {SORT_OPTIONS.find((s) => s.key === sort)?.label ?? ""}
+              </h2>
+              {results.length === 0 ? (
+                <p className="text-body text-ink-soft">
+                  ไม่พบคนที่ตรงตัวกรอง ลองล้างหรือเปลี่ยนคำค้น
                 </p>
-              )}
-
-              <div className="pt-1">
-                <h2 className="mb-2 text-[13px] font-extrabold text-muted-foreground">
-                  ผลการค้นหา · {results.length} คน · เรียงตาม
-                  {SORT_OPTIONS.find((s) => s.key === sort)?.label ?? ""}
-                </h2>
-                {results.length === 0 ? (
-                  <p className="text-[12px] text-muted-foreground">
-                    ไม่พบคนที่ตรงตัวกรอง ลองล้างหรือเปลี่ยนคำค้น
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {results.slice(0, resultLimit).map((r) => (
-                      <Link
-                        key={r.user.id}
-                        to="/people/$id"
-                        params={{ id: r.user.id }}
-                        className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-2.5"
-                      >
-                        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-muted text-lg">
-                          {r.user.photo ? (
-                            <img
-                              src={r.user.photo}
-                              alt=""
-                              className="h-10 w-10 rounded-xl object-cover"
-                            />
-                          ) : (
-                            <span aria-hidden="true">{r.user.avatar}</span>
-                          )}
+              ) : (
+                <div className="space-y-3">
+                  {results.slice(0, resultLimit).map((r) => (
+                    <Link
+                      key={r.user.id}
+                      to="/people/$id"
+                      params={{ id: r.user.id }}
+                      className="tap flex items-start gap-3 rounded-2xl bg-sky-soft p-3"
+                    >
+                      <Avatar user={r.user} size={48} />
+                      <span className="min-w-0 flex-1">
+                        <span className="line-clamp-2 block text-body font-semibold break-words text-ink">
+                          {r.user.name}
                         </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-baseline gap-2">
-                            <span className="truncate text-[13px] font-extrabold">
-                              {r.user.name}
-                            </span>
-                            <span className="shrink-0 text-xs font-bold text-muted-foreground">
-                              {REGION_LABEL[r.user.region]}
-                            </span>
-                          </span>
-                          <span className="mt-0.5 flex flex-wrap gap-1">
+                        <span className="block text-body text-ink-soft">
+                          {REGION_LABEL[r.user.region]}
+                        </span>
+                        <span className="block text-body font-semibold text-primary">
+                          ความเกี่ยวข้อง {r.relevance}%
+                          {r.match != null ? ` · แมตช์ ${r.match}%` : ""}
+                        </span>
+                        {r.reasons.length > 0 && (
+                          <span className="mt-1 flex flex-wrap gap-1.5">
                             {r.reasons.map((reason) => (
                               <span
                                 key={reason}
-                                className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-bold text-muted-foreground"
+                                className="inline-flex min-h-10 items-center rounded-xl bg-white px-3 py-1 text-body font-semibold text-ink"
                               >
                                 {reason}
                               </span>
                             ))}
                           </span>
-                        </span>
-                        <span className="shrink-0 text-right">
-                          <span className="block font-tech text-sm font-extrabold tabular-nums text-primary">
-                            {r.relevance}%
-                          </span>
-                          <span className="block text-xs font-bold text-muted-foreground">
-                            {r.match != null ? `แมตช์ ${r.match}%` : "ความเกี่ยวข้อง"}
-                          </span>
-                        </span>
-                      </Link>
-                    ))}
-                    {results.length > resultLimit && (
-                      <button
-                        type="button"
-                        onClick={() => setResultLimit((n) => n + 12)}
-                        className="tap h-11 w-full rounded-2xl border border-border text-[12px] font-extrabold"
-                      >
-                        ดูเพิ่ม ({results.length - resultLimit})
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </details>
-        </div>
-
-        <div className="core-dashboard-overview px-5 py-4">
-          <div className="core-live-metrics relative overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground">
-            <div className="absolute inset-0 text-white/70">
-              <NetworkBackground count={20} seed={12} />
-            </div>
-            <div className="relative flex items-center gap-2 pb-3 text-[13px] font-bold">
-              <span
-                aria-hidden="true"
-                className="h-2 w-2 rounded-full bg-lime animate-pulse-node"
-              />
-              LIVE
-            </div>
-            <div className="relative pb-4">
-              <RotatingPrompt />
-            </div>
-            <div className="core-live-metric-grid relative grid grid-cols-2 gap-4">
-              {view === "organizer" ? (
-                <>
-                  <Big n={stats.people} label="คน" />
-                  <Big n={stats.connections} label="คู่เชื่อม" />
-                  <Big n={stats.ideas} label="ไอเดีย" />
-                  <Big n={stats.commitments} label="นัดลงมือทำ" />
-                </>
-              ) : (
-                <>
-                  <Big n={mine?.conns.length ?? 0} label="คู่เชื่อมของฉัน" />
-                  <Big n={mine?.comms.length ?? 0} label="นัดลงมือทำ" />
-                  <Big n={mine?.active ?? 0} label="กำลังทำ" />
-                  <Big n={mine?.done ?? 0} label="สำเร็จแล้ว" />
-                </>
+                        )}
+                      </span>
+                    </Link>
+                  ))}
+                  {results.length > resultLimit && (
+                    <button
+                      type="button"
+                      onClick={() => setResultLimit((n) => n + 12)}
+                      className="meadow-btn-secondary w-full"
+                    >
+                      ดูเพิ่ม ({results.length - resultLimit})
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
-        </div>
+        </details>
 
-        <div className="core-dashboard-grid px-5 pb-6">
+        <section aria-label="ตัวเลขสดของงาน" className="meadow-card bg-sky-soft p-5">
+          <p className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-3 text-body font-semibold text-white">
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 animate-pulse-node rounded-full bg-block-yellow"
+            />
+            ข้อมูลสด
+          </p>
+          <div className="py-3 text-ink">
+            <RotatingPrompt tone="card" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {view === "organizer" ? (
+              <>
+                <Big n={stats.people} label="คน" tag={BLOCK_TAG.purple} />
+                <Big n={stats.connections} label="คู่เชื่อม" tag={BLOCK_TAG.blue} />
+                <Big n={stats.ideas} label="ไอเดีย" tag={BLOCK_TAG.green} />
+                <Big n={stats.commitments} label="นัดลงมือทำ" tag={BLOCK_TAG.orange} />
+              </>
+            ) : (
+              <>
+                <Big n={mine?.conns.length ?? 0} label="คู่เชื่อมของฉัน" tag={BLOCK_TAG.purple} />
+                <Big n={mine?.comms.length ?? 0} label="นัดลงมือทำ" tag={BLOCK_TAG.blue} />
+                <Big n={mine?.active ?? 0} label="กำลังทำ" tag={BLOCK_TAG.green} />
+                <Big n={mine?.done ?? 0} label="สำเร็จแล้ว" tag={BLOCK_TAG.orange} />
+              </>
+            )}
+          </div>
+        </section>
+
+        <div className="space-y-5">
           {view === "organizer" && (
             <>
-              <section className="core-network-panel card-soft p-4">
-                <p className="mission-kicker">LIVE CONNECTIONS</p>
-                <h2 className="text-[15px] font-extrabold">เครือข่ายที่เกิดขึ้น</h2>
-                <p className="mt-0.5 text-[12px] text-muted-foreground">
-                  {fConnections.length} คู่ในแผนที่นี้
-                </p>
-                <div className="core-live-network mx-auto mt-3 aspect-[5/8] max-h-[420px] w-full">
+              <section className="meadow-card p-5">
+                <h2 className="font-heading text-lead font-semibold! text-ink">
+                  เครือข่ายที่เกิดขึ้น
+                </h2>
+                <p className="mt-1 text-body text-ink-soft">{fConnections.length} คู่ในแผนที่นี้</p>
+                <div className="mx-auto mt-3 aspect-[5/8] max-h-[420px] w-full">
                   <LiveNetwork
                     users={fUsers}
                     connections={fConnections}
                     className="h-full"
                     emptyAction={
-                      <Link
-                        to="/matches"
-                        className="tap inline-flex min-h-11 items-center rounded-xl bg-primary px-4 text-[13px] font-extrabold text-primary-foreground"
-                      >
+                      <Link to="/matches" className="meadow-btn-primary">
                         หาคนที่ใช่
                       </Link>
                     }
@@ -1028,12 +988,12 @@ function Dashboard() {
                 ))}
               </Panel>
 
-              <div className="core-resource-panels grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
                 <Panel title="พลังที่ยังตามหา">
                   {needRank.map(([p, c]) => (
                     <Bar
                       key={p}
-                      label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                      label={<PowerLabel name={p} />}
                       value={c}
                       max={needRank[0]![1]}
                       tone="coral"
@@ -1044,7 +1004,7 @@ function Dashboard() {
                   {haveRank.map(([p, c]) => (
                     <Bar
                       key={p}
-                      label={`${POWER_EMOJI[p] ?? ""} ${powerTh(p)}`}
+                      label={<PowerLabel name={p} />}
                       value={c}
                       max={haveRank[0]![1]}
                       tone="lime"
@@ -1073,17 +1033,18 @@ function Dashboard() {
           {view === "me" && (
             <>
               {!me && (
-                <section className="core-empty mission-empty">
-                  <MissionVisual variant="profile" className="core-empty-visual" />
-                  <p className="mission-kicker">YOUR PERSONAL VIEW</p>
-                  <p className="text-sm font-bold">ยังไม่มีโปรไฟล์ในเครื่องนี้</p>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    สร้างโปรไฟล์เพื่อดูคู่เชื่อมของคุณ
-                  </p>
-                  <Link
-                    to="/onboarding"
-                    className="tap mt-4 inline-flex h-12 items-center justify-center rounded-2xl gradient-power px-6 text-sm font-extrabold text-primary-foreground"
+                <section className="meadow-card p-6 text-center">
+                  <span
+                    aria-hidden="true"
+                    className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-sky-soft text-primary"
                   >
+                    <UserRound className="h-8 w-8" />
+                  </span>
+                  <h2 className="mt-4 font-heading text-title font-semibold! text-ink">
+                    ยังไม่มีโปรไฟล์ในเครื่องนี้
+                  </h2>
+                  <p className="mt-2 text-body text-ink-soft">สร้างโปรไฟล์เพื่อดูคู่เชื่อมของคุณ</p>
+                  <Link to="/onboarding" className="meadow-btn-primary mt-5 w-full">
                     สร้างโปรไฟล์
                   </Link>
                 </section>
@@ -1094,7 +1055,7 @@ function Dashboard() {
               {mine && (
                 <Panel title="คู่เชื่อมของฉัน">
                   {mine.conns.length === 0 && (
-                    <p className="text-[13px] text-muted-foreground">
+                    <p className="text-body text-ink-soft">
                       ยังไม่มีคู่เชื่อม — ไปหาคนที่ใช่กันก่อน
                     </p>
                   )}
@@ -1105,31 +1066,28 @@ function Dashboard() {
                         key={c.id}
                         to="/connection/$id"
                         params={{ id: c.id }}
-                        className="tap flex items-center gap-3 rounded-2xl border border-border bg-background p-3"
+                        className="tap flex items-center gap-3 rounded-2xl bg-sky-soft p-3"
                       >
-                        <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/12 text-primary">
-                          <Users className="h-4 w-4" aria-hidden="true" />
+                        <span
+                          aria-hidden="true"
+                          className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary text-white"
+                        >
+                          <Users className="h-6 w-6" />
                         </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-[13px] font-bold">
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-2 text-body font-semibold break-words text-ink">
                             {other?.name ?? "ผู้เข้าร่วม"}
                           </p>
-                          <p className="truncate text-[12px] text-muted-foreground">
+                          <p className="text-body text-ink-soft">
                             แมตช์ {c.match_score}% · {STATUS_TH[c.status]}
                           </p>
                         </div>
-                        <Sparkles
-                          className="ml-auto h-4 w-4 shrink-0 text-muted-foreground"
-                          aria-hidden="true"
-                        />
+                        <Sparkles className="h-6 w-6 shrink-0 text-ink-soft" aria-hidden="true" />
                       </Link>
                     );
                   })}
-                  <Link
-                    to="/matches"
-                    className="tap mt-1 flex h-12 items-center justify-center gap-2 rounded-2xl border border-border text-sm font-extrabold"
-                  >
-                    <Activity className="h-4 w-4" aria-hidden="true" /> หาคู่เชื่อมเพิ่ม
+                  <Link to="/matches" className="meadow-btn-secondary mt-1 w-full">
+                    <Activity className="h-6 w-6 shrink-0" aria-hidden="true" /> หาคู่เชื่อมเพิ่ม
                   </Link>
                 </Panel>
               )}
@@ -1146,33 +1104,50 @@ function Dashboard() {
   );
 }
 
-function BigCard({ n, label }: { n: number; label: string }) {
+function BigCard({ n, label, tag }: { n: number; label: string; tag: { bg: string; fg: string } }) {
   const v = useCountUp(n);
   return (
-    <div className="core-screen-stat card-soft rounded-3xl p-[2vw]">
+    <div className="rounded-3xl p-[2vw]" style={{ backgroundColor: tag.bg, color: tag.fg }}>
       <p
         key={n}
-        className="font-tech animate-pop text-[clamp(3rem,8vw,9rem)] font-extrabold leading-none text-primary"
+        className="animate-pop font-heading text-[clamp(3rem,8vw,9rem)] leading-none font-bold text-inherit"
       >
         {v}
       </p>
-      <p className="mt-2 text-[clamp(1.125rem,1.8vw,1.75rem)] font-extrabold">{label}</p>
+      <p className="mt-2 text-[clamp(1.375rem,1.8vw,1.75rem)] font-semibold">{label}</p>
     </div>
   );
 }
 
-function Big({ n, label }: { n: number; label: React.ReactNode }) {
+function Big({
+  n,
+  label,
+  tag,
+}: {
+  n: number;
+  label: React.ReactNode;
+  tag: { bg: string; fg: string };
+}) {
   const v = useCountUp(n);
   return (
-    <div>
+    <div className="rounded-2xl p-4" style={{ backgroundColor: tag.bg, color: tag.fg }}>
       <p
         key={n}
-        className="font-tech animate-pop text-[clamp(2rem,11vw,3rem)] font-extrabold leading-none"
+        className="animate-pop font-heading text-[clamp(2rem,11vw,3rem)] leading-none font-bold text-inherit"
       >
         {v}
       </p>
-      <p className="text-[13px] font-bold">{label}</p>
+      <p className="mt-1 text-body font-semibold break-words">{label}</p>
     </div>
+  );
+}
+
+function PowerLabel({ name }: { name: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <PowerIcon name={name} className="h-6 w-6 shrink-0 text-primary" />
+      {powerTh(name)}
+    </span>
   );
 }
 
@@ -1186,19 +1161,18 @@ function Panel({
   size?: "md" | "lg";
 }) {
   return (
-    <section className="core-data-panel card-soft p-4">
+    <section className="meadow-card p-5">
       <h2
-        className={`mb-3 font-extrabold ${
-          size === "lg" ? "text-[20px] text-foreground" : "text-[13px] text-muted-foreground"
+        className={`mb-3 font-heading font-semibold! text-ink ${
+          size === "lg" ? "text-title" : "text-lead"
         }`}
       >
         {title}
       </h2>
-      <div className="core-data-panel-body space-y-2">
+      <div className="space-y-3">
         {Array.isArray(children) && children.length === 0 ? (
-          <div className="core-data-empty">
-            <span aria-hidden="true">—</span>
-            <p>ข้อมูลจะแสดงเมื่อมีการร่วมกิจกรรม</p>
+          <div className="rounded-2xl bg-sky-soft p-4 text-center">
+            <p className="text-body text-ink-soft">ข้อมูลจะแสดงเมื่อมีการร่วมกิจกรรม</p>
           </div>
         ) : (
           children
@@ -1215,7 +1189,7 @@ function Bar({
   tone,
   size = "md",
 }: {
-  label: string;
+  label: React.ReactNode;
   value: number;
   max: number;
   tone: "primary" | "coral" | "lime" | "electric";
@@ -1223,25 +1197,31 @@ function Bar({
 }) {
   const bg: Record<string, string> = {
     primary: "bg-primary",
-    coral: "bg-coral",
-    lime: "bg-lime",
-    electric: "bg-electric",
+    coral: "bg-block-orange",
+    lime: "bg-block-green",
+    electric: "bg-block-blue",
   };
   const lg = size === "lg";
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-      <div className="min-w-0">
-        <p className={`truncate font-bold ${lg ? "text-[18px]" : "text-[13px]"}`}>{label}</p>
-        <div className={`mt-1 overflow-hidden rounded-full bg-muted ${lg ? "h-3" : "h-2"}`}>
-          <div
-            className={`h-full rounded-full ${bg[tone]} transition-all duration-700`}
-            style={{ width: `${(value / max) * 100}%` }}
-          />
-        </div>
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <p
+          className={`min-w-0 font-semibold break-words text-ink ${lg ? "text-lead" : "text-body"}`}
+        >
+          {label}
+        </p>
+        <span
+          className={`shrink-0 font-heading font-bold text-ink tabular-nums ${lg ? "text-title" : "text-lead"}`}
+        >
+          {value}
+        </span>
       </div>
-      <span className={`font-tech font-extrabold tabular-nums ${lg ? "text-2xl" : "text-sm"}`}>
-        {value}
-      </span>
+      <div className={`mt-1 overflow-hidden rounded-full bg-sky-soft ${lg ? "h-4" : "h-3"}`}>
+        <div
+          className={`h-full rounded-full ${bg[tone]} transition-all duration-700`}
+          style={{ width: `${(value / max) * 100}%` }}
+        />
+      </div>
     </div>
   );
 }

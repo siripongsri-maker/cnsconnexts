@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "@/components/app-shell";
-import { Button } from "@/components/ui/button";
+import { BLOCK_TAG } from "@/lib/issue-colors";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -42,6 +42,7 @@ const STEPS = [
     body: "ใส่ชื่อ จังหวัด ประเด็นที่สนใจ สิ่งที่มีและต้องการ ใช้ไม่ถึง 2 นาที เริ่มได้โดยไม่ต้องล็อกอิน",
     to: "/onboarding" as const,
     cta: "เริ่มสร้างโปรไฟล์",
+    tag: BLOCK_TAG.purple,
   },
   {
     icon: Sparkles,
@@ -49,6 +50,7 @@ const STEPS = [
     body: "ดูคนที่เหมาะกับคุณพร้อมเหตุผล แล้วกด “ขอเชื่อมต่อ”",
     to: "/matches" as const,
     cta: "ดูคู่เชื่อมของฉัน",
+    tag: BLOCK_TAG.blue,
   },
   {
     icon: CheckCircle2,
@@ -56,7 +58,19 @@ const STEPS = [
     body: "ตกลงสิ่งที่จะทำและนัดวันไว้ ระบบจะเตือนทั้งสองฝ่ายให้ร่วมทำหลังจบงาน",
     to: "/commitments" as const,
     cta: "ดูก้าวต่อไป",
+    tag: BLOCK_TAG.green,
   },
+];
+
+const EXPLORE = [
+  { icon: MapPin, to: "/map" as const, label: "แผนที่พลัง", hint: "ดูคนและงานในแต่ละจังหวัด" },
+  {
+    icon: MessageCircle,
+    to: "/marketplace" as const,
+    label: "ตลาดพลัง",
+    hint: "ลงไอเดีย หาเพื่อนร่วมทำ",
+  },
+  { icon: QrCode, to: "/scan" as const, label: "สแกน QR", hint: "ชวนคนข้าง ๆ เข้าร่วม" },
 ];
 
 const FAQ = [
@@ -72,106 +86,96 @@ const FAQ = [
 
 function GuidePage() {
   return (
-    <AppShell title="คู่มือใช้งาน" titleEn="Guide">
-      <div className="editorial-guide mx-auto w-full space-y-8 pb-8">
-        <section className="guide-intro mission-panel">
-          <p className="inline-flex items-center gap-1.5 rounded-full bg-primary/12 px-3 py-1 text-[12px] font-bold text-primary">
-            <Compass className="h-3.5 w-3.5" /> รู้จัก เชื่อมต่อ ร่วมทำ
+    <AppShell title="คู่มือใช้งาน">
+      <div className="mx-auto w-full space-y-5 pb-8">
+        <section className="meadow-card bg-sky-soft p-5">
+          <p className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-primary px-3 py-1 text-body font-semibold text-white">
+            <Compass className="h-5 w-5 shrink-0" aria-hidden="true" /> รู้จัก เชื่อมต่อ ร่วมทำ
           </p>
-          <p className="mt-3 text-[16px] font-semibold leading-relaxed">
+          <p className="mt-3 text-lead font-semibold text-ink">
             คนส. Connexts จับคู่สิ่งที่คุณมี กับสิ่งที่อีกฝ่ายต้องการ
           </p>
-          <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
-            เจอคนที่ใช่ แล้วนัดก้าวต่อไปก่อนแยกย้าย
-          </p>
+          <p className="mt-2 text-body text-ink-soft">เจอคนที่ใช่ แล้วนัดก้าวต่อไปก่อนแยกย้าย</p>
         </section>
 
-        <div className="guide-step-grid">
-          {STEPS.map(({ icon: Icon, title, body, to, cta }, index) => (
-            <section key={title} className="guide-step-card mission-panel">
-              <p className="mission-kicker mb-6" lang="en">
-                0{index + 1} / Your next move
-              </p>
+        <div className="space-y-4">
+          {STEPS.map(({ icon: Icon, title, body, to, cta, tag }) => (
+            <section key={title} className="meadow-card p-5">
               <div className="flex items-start gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/12">
-                  <Icon className="h-5 w-5 text-primary" />
+                <span
+                  aria-hidden="true"
+                  className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl"
+                  style={{ backgroundColor: tag.bg, color: tag.fg }}
+                >
+                  <Icon className="h-6 w-6" />
                 </span>
-                <div className="min-w-0">
-                  <h2 className="text-[17px] font-extrabold leading-snug">{title}</h2>
-                  <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted-foreground">
-                    {body}
-                  </p>
-                  <Button asChild variant="outline" className="mt-5">
-                    <Link to={to}>{cta}</Link>
-                  </Button>
-                </div>
+                <h2 className="min-w-0 pt-1 font-heading text-title font-semibold! break-words text-ink">
+                  {title}
+                </h2>
               </div>
+              <p className="mt-3 text-body text-ink-soft">{body}</p>
+              <Link to={to} className="meadow-btn-secondary mt-4 w-full">
+                {cta}
+              </Link>
             </section>
           ))}
         </div>
 
-        <section className="guide-gestures mission-panel">
-          <h2 className="flex items-center gap-2 text-[17px] font-extrabold">
-            <Hand className="h-5 w-5 text-primary" /> วิธีใช้การ์ดคู่เชื่อม
+        <section className="meadow-card p-5">
+          <h2 className="flex items-center gap-3 font-heading text-title font-semibold! text-ink">
+            <Hand className="h-7 w-7 shrink-0 text-primary" aria-hidden="true" />{" "}
+            วิธีใช้การ์ดคู่เชื่อม
           </h2>
-          <div className="mt-3 space-y-2.5 text-[14.5px] leading-relaxed">
-            <p className="flex items-start gap-2 rounded-2xl bg-muted/60 p-3">
-              <ArrowLeftRight className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <div className="mt-4 space-y-3 text-body text-ink">
+            <p className="flex items-start gap-3 rounded-2xl bg-sky-soft p-4">
+              <ArrowLeftRight className="mt-1 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
               <span>
                 <b>ปัดขวา</b> = เก็บในรายการถูกใจ · <b>ปัดซ้าย</b> = ข้าม
               </span>
             </p>
-            <p className="rounded-2xl bg-muted/60 p-3">
+            <p className="rounded-2xl bg-sky-soft p-4">
               ใช้ปุ่มใต้การ์ดแทนได้: <b>ข้าม</b> · <b>ขอเชื่อมต่อ</b> · <b>สนใจ</b>
             </p>
-            <p className="rounded-2xl bg-muted/60 p-3">
+            <p className="rounded-2xl bg-sky-soft p-4">
               ดูเป็นรายชื่อได้ที่ปุ่ม <b>รายการ</b> ด้านบน
             </p>
           </div>
         </section>
 
-        <section className="guide-faq mission-panel">
-          <h2 className="text-[17px] font-extrabold">คำถามที่พบบ่อย</h2>
-          <div className="mt-3 space-y-3">
+        <section className="meadow-card p-5">
+          <h2 className="font-heading text-title font-semibold! text-ink">คำถามที่พบบ่อย</h2>
+          <div className="mt-4 space-y-4">
             {FAQ.map((f) => (
               <div key={f.q}>
-                <p className="text-[15px] font-extrabold">{f.q}</p>
-                <p className="mt-1 text-[14px] leading-relaxed text-muted-foreground">{f.a}</p>
+                <h3 className="text-body font-bold text-ink">{f.q}</h3>
+                <p className="mt-1 text-body text-ink-soft">{f.a}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="guide-explore mission-panel">
-          <h2 className="text-[17px] font-extrabold">สำรวจต่อ</h2>
-          <ul className="mt-3 space-y-2 text-[14.5px]">
-            <li className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />{" "}
-              <Link to="/map" className="font-bold underline underline-offset-4">
-                แผนที่พลัง
-              </Link>{" "}
-              — ดูคนและงานในแต่ละจังหวัด
-            </li>
-            <li className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-primary" />{" "}
-              <Link to="/marketplace" className="font-bold underline underline-offset-4">
-                ตลาดพลัง
-              </Link>{" "}
-              — ลงไอเดีย หาเพื่อนร่วมทำ
-            </li>
-            <li className="flex items-center gap-2">
-              <QrCode className="h-4 w-4 text-primary" />{" "}
-              <Link to="/scan" className="font-bold underline underline-offset-4">
-                สแกน QR
-              </Link>{" "}
-              — ชวนคนข้าง ๆ เข้าร่วม
-            </li>
+        <section className="meadow-card p-5">
+          <h2 className="font-heading text-title font-semibold! text-ink">สำรวจต่อ</h2>
+          <ul className="mt-4 space-y-3">
+            {EXPLORE.map(({ icon: Icon, to, label, hint }) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  className="tap flex min-h-14 items-start gap-3 rounded-2xl bg-sky-soft p-4 text-body text-ink"
+                >
+                  <Icon className="mt-1 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+                  <span>
+                    <b className="underline underline-offset-4">{label}</b> — {hint}
+                  </span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
 
-        <Button asChild variant="mission" className="h-14">
-          <Link to="/onboarding">เริ่มใช้งานเลย</Link>
-        </Button>
+        <Link to="/onboarding" className="meadow-btn-primary w-full">
+          เริ่มใช้งานเลย
+        </Link>
       </div>
     </AppShell>
   );

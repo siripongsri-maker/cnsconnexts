@@ -212,55 +212,6 @@
 .notification-feed > button {
   margin-top: 20px;
 }
-.app-content .publication-page {
-  padding: 0;
-}
-.publication-toolbar > :first-child {
-  margin-right: auto;
-}
-.publication-group-heading h2 {
-  font-size: 28px;
-  font-weight: 500;
-}
-.publication-group-heading > span {
-  display: inline-flex;
-  min-height: 28px;
-  align-items: center;
-  padding: 3px 10px;
-  background: #0d2538;
-  color: #6ebcff;
-}
-.publication-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-}
-.publication-card {
-  position: relative;
-  border-top: 2px solid #268bcf !important;
-}
-.publication-card::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, transparent 49%, #15324a 50%);
-  pointer-events: none;
-}
-.publication-card h3 {
-  font-size: 20px;
-  line-height: 1.5;
-  white-space: normal;
-}
-.publication-card > div > img {
-  width: 72px;
-  height: 72px;
-}
-.publication-card p {
-  line-height: 1.85;
-}
 .app-content .submission-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -301,64 +252,6 @@
 .submission-success > .mt-6 {
   max-width: 420px;
   margin-inline: auto;
-}
-.app-content .editorial-guide {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 24px;
-  padding: 0;
-}
-.app-content .editorial-guide > * {
-  margin: 0;
-}
-.guide-intro,
-.guide-step-grid,
-.guide-explore,
-.editorial-guide > a:last-child {
-  grid-column: 1/-1;
-}
-.guide-step-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-}
-.guide-step-card {
-  display: flex;
-  flex-direction: column;
-}
-.guide-step-card > div {
-  display: block;
-}
-.guide-step-card > div > span {
-  margin-bottom: 24px;
-}
-.guide-step-card h2 {
-  min-height: 64px;
-  font-size: 23px;
-  font-weight: 500;
-}
-.guide-step-card p {
-  font-size: 14px !important;
-}
-.guide-step-card a {
-  margin-top: 24px;
-}
-.guide-gestures h2,
-.guide-faq h2,
-.guide-explore h2 {
-  margin-bottom: 20px;
-  font-size: 23px;
-  font-weight: 500;
-}
-.guide-explore ul {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-}
-.guide-explore li {
-  flex-wrap: wrap;
-  align-content: start;
 }
 .site-experience .editorial-journey {
   background: radial-gradient(ellipse at 85% 1%, #0a243c, transparent 45%), #03070c;
@@ -452,15 +345,6 @@
 }
 
 @media (max-width: 1023px) {
-  .guide-step-grid {
-    gap: 16px;
-  }
-  .guide-step-card {
-    padding: 20px;
-  }
-  .guide-step-card h2 {
-    font-size: 20px;
-  }
   .mission-chat-page .chat-page-layout {
     gap: 28px;
   }
@@ -553,47 +437,12 @@
   .notification-feed .mission-empty {
     grid-template-columns: 1fr;
   }
-  .publication-grid,
   .app-content .submission-form-grid {
     grid-template-columns: 1fr;
     gap: 18px;
   }
-  .publication-toolbar > div {
-    width: 100%;
-  }
-  .publication-toolbar > div > button {
-    flex: 1;
-  }
-  .publication-toolbar > button:last-child {
-    margin-left: 0;
-  }
-  .publication-group-heading h2 {
-    font-size: 23px;
-  }
-  .publication-card {
-    padding: 20px;
-  }
-  .publication-card > div > img {
-    width: 48px;
-    height: 48px;
-  }
   .submission-success {
     padding: 28px 20px;
-  }
-  .app-content .editorial-guide,
-  .guide-step-grid,
-  .guide-explore ul {
-    grid-template-columns: 1fr;
-  }
-  .guide-step-card h2 {
-    min-height: 0;
-    margin-bottom: 12px;
-  }
-  .guide-step-card > div {
-    display: flex;
-  }
-  .guide-step-card > div > span {
-    margin-bottom: 0;
   }
   .editorial-journey .journey-content {
     width: calc(100% - 32px);
@@ -639,15 +488,6 @@
   }
   .editorial-print .print-sheet header {
     display: flex !important;
-  }
-  .publication-grid {
-    display: block;
-  }
-  .publication-card {
-    margin-bottom: 16px;
-  }
-  .publication-card::after {
-    display: none;
   }
   .editorial-journey .journey-content {
     width: 100%;

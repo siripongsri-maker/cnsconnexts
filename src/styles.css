@@ -751,14 +751,6 @@ body::after {
 .editorial-focused > main {
   padding-top: 32px;
 }
-.editorial-guide h2 {
-  font-size: 24px;
-  font-weight: 500;
-}
-.editorial-guide p {
-  font-size: 16px;
-  line-height: 1.8;
-}
 .editorial-journey main > .card-soft {
   background: transparent;
   border: 0;

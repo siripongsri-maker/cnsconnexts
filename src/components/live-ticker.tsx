@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { BOTTOM_NAV_HEIGHT_VAR } from "@/components/bottom-nav";
 import { useLiveEvents, type LiveEvent, type LiveKind } from "@/lib/live";
 import { useMotionSettings } from "@/lib/motion";
 import { playConnext } from "@/lib/notify";
@@ -24,12 +25,13 @@ const ICON: Record<LiveKind, typeof Handshake> = {
   message: MessageCircle,
 };
 
+/** สีป้ายไอคอนตามชนิดกิจกรรม — ใช้คู่สีป้ายแท็กของธีม (พื้นทึบ + ตัวอักษร/ไอคอนตัดกัน) */
 const TONE: Record<LiveKind, string> = {
-  match: "bg-primary/12 text-primary",
-  like: "bg-coral/15 text-coral",
-  connect: "bg-electric/15 text-electric",
-  commitment: "bg-lime/20 text-ink",
-  message: "bg-primary/12 text-primary",
+  match: "bg-primary text-white",
+  like: "bg-block-orange text-white",
+  connect: "bg-block-blue text-white",
+  commitment: "bg-block-green text-white",
+  message: "bg-primary text-white",
 };
 
 const KIND_TH: Record<LiveKind, string> = {
@@ -77,45 +79,44 @@ export function LiveTicker({ toastOnly = false }: { toastOnly?: boolean } = {}) 
   return (
     <>
       {!toastOnly && (
-        <div className="core-live-ticker card-soft rounded-3xl bg-card p-5">
-          <div className="flex items-center gap-2">
-            <span className="relative grid h-8 w-8 place-items-center rounded-xl bg-coral/15 text-coral">
-              <Radio className="h-4 w-4" aria-hidden="true" />
-              <span
-                aria-hidden="true"
-                className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse-node rounded-full bg-coral"
-              />
+        <div className="meadow-card p-5">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-block-orange text-white"
+            >
+              <Radio className="h-6 w-6" />
+              <span className="absolute -right-0.5 -top-0.5 h-3 w-3 animate-pulse-node rounded-full bg-block-yellow" />
             </span>
-            <h2 className="text-[15px] font-extrabold">กิจกรรมล่าสุดของฉัน</h2>
+            <h2 className="min-w-0 font-heading text-lead font-semibold! text-ink">
+              กิจกรรมล่าสุดของฉัน
+            </h2>
           </div>
 
           {events.length === 0 ? (
-            <p className="mt-3 text-[13px] text-muted-foreground">
+            <p className="mt-3 text-body text-ink-soft">
               เมื่อคุณถูกใจ เชื่อมต่อ หรือนัดลงมือทำ กิจกรรมจะแสดงที่นี่
             </p>
           ) : (
-            <ul className="mt-3 space-y-2.5">
+            <ul className="mt-4 space-y-3">
               {events.map((e) => {
                 const Icon = ICON[e.kind];
                 return (
-                  <li key={e.id} className="flex items-start gap-3 animate-rise">
+                  <li key={e.id} className="flex animate-rise items-start gap-3">
                     <span
-                      className={`mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-xl ${TONE[e.kind]}`}
+                      aria-hidden="true"
+                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${TONE[e.kind]}`}
                     >
-                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      <Icon className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-[13px] font-bold">
+                      <p className="text-body font-semibold break-words text-ink">
                         {e.title}
-                        <span className="ml-2 text-xs font-bold text-muted-foreground">
-                          {KIND_TH[e.kind]}
-                        </span>
+                        <span className="ml-2 font-normal text-ink-soft">{KIND_TH[e.kind]}</span>
                       </p>
-                      <p className="truncate text-[12px] text-muted-foreground">{e.detail}</p>
+                      <p className="line-clamp-2 text-body break-words text-ink-soft">{e.detail}</p>
+                      <p className="text-body text-ink-soft">{ago(e.created_at, now)}</p>
                     </div>
-                    <span className="ml-auto shrink-0 text-xs font-bold text-muted-foreground">
-                      {ago(e.created_at, now)}
-                    </span>
                   </li>
                 );
               })}
@@ -128,20 +129,24 @@ export function LiveTicker({ toastOnly = false }: { toastOnly?: boolean } = {}) 
         <div
           role="status"
           aria-live="polite"
-          className="pointer-events-none fixed inset-x-4 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-50 mx-auto max-w-md animate-rise"
+          className="pointer-events-none fixed inset-x-4 z-50 mx-auto max-w-md animate-rise"
+          style={{ bottom: `calc(var(${BOTTOM_NAV_HEIGHT_VAR}, 77px) + 1rem)` }}
         >
-          <div className="card-soft flex items-center gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 backdrop-blur">
+          <div className="meadow-card flex items-center gap-3 px-4 py-3">
             <span
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${TONE[toast.kind]}`}
+              aria-hidden="true"
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${TONE[toast.kind]}`}
             >
               {(() => {
                 const Icon = ICON[toast.kind];
-                return <Icon className="h-4 w-4" aria-hidden="true" />;
+                return <Icon className="h-5 w-5" />;
               })()}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-extrabold">{toast.title}</p>
-              <p className="truncate text-[12px] text-muted-foreground">{toast.detail}</p>
+              <p className="line-clamp-2 text-body font-semibold break-words text-ink">
+                {toast.title}
+              </p>
+              <p className="line-clamp-2 text-body break-words text-ink-soft">{toast.detail}</p>
             </div>
           </div>
         </div>
@@ -192,7 +197,7 @@ export function RotatingPrompt({
       </p>
       <div
         aria-hidden="true"
-        className={lg ? "min-h-[5.5rem] min-w-0 flex-1" : "min-h-[4rem] min-w-0 flex-1"}
+        className={lg ? "min-h-[5.5rem] min-w-0 flex-1" : "min-h-[9.5rem] min-w-0 flex-1"}
       >
         <p
           key={i}
@@ -218,14 +223,14 @@ export function RotatingPrompt({
           onClick={() => setPaused((p) => !p)}
           aria-pressed={paused}
           aria-label={paused ? "เล่นข้อความต่อ / Resume messages" : "หยุดข้อความ / Pause messages"}
-          className={`tap grid h-11 w-11 shrink-0 place-items-center rounded-full ${
+          className={`tap grid h-12 w-12 shrink-0 place-items-center rounded-full ${
             tone === "brand" ? "bg-white/15" : "bg-muted text-foreground"
           }`}
         >
           {paused ? (
-            <Play className="h-4 w-4" aria-hidden="true" />
+            <Play className="h-5 w-5" aria-hidden="true" />
           ) : (
-            <Pause className="h-4 w-4" aria-hidden="true" />
+            <Pause className="h-5 w-5" aria-hidden="true" />
           )}
         </button>
       )}

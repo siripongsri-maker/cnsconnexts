@@ -1,6 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarClock, CheckCircle2, Handshake, Sparkles, Zap } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  CalendarClock,
+  CheckCircle2,
+  Handshake,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
@@ -85,34 +93,44 @@ export function LiveProgress() {
                 cta: "ไปตลาดพลัง",
               };
 
-  const ctaClass =
-    "tap mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-[13px] font-extrabold text-primary-foreground";
+  const ctaClass = "meadow-btn-primary mt-4";
 
   return (
     <section
-      className={`core-live-progress card-soft rounded-3xl bg-card p-5 transition-shadow ${pulse ? "ring-2 ring-primary/40" : ""}`}
+      className={`meadow-card p-5 transition-shadow ${pulse ? "ring-2 ring-primary/40" : ""}`}
     >
-      <div className="flex items-center gap-2">
-        <span className="grid h-8 w-8 place-items-center rounded-xl bg-lime/25 text-ink">
-          <Zap className="h-4 w-4" aria-hidden="true" />
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-block-yellow text-ink"
+        >
+          <Zap className="h-6 w-6" />
         </span>
-        <h2 className="text-[15px] font-extrabold">จากรู้จัก สู่ลงมือทำ</h2>
+        <h2 className="min-w-0 font-heading text-lead font-semibold! text-ink">
+          จากรู้จัก สู่ลงมือทำ
+        </h2>
       </div>
 
-      <ol className="mt-4 grid grid-cols-4 gap-2">
+      <ol className="mt-4 grid grid-cols-2 gap-3">
         {steps.map((s, i) => {
           const Icon = s.icon;
           return (
-            <li key={s.label} className="text-center">
-              <span
-                className={`mx-auto grid h-10 w-10 place-items-center rounded-2xl ${
-                  s.done ? "bg-primary/12 text-primary" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <p className="mt-1 text-lg font-extrabold leading-none">{s.value}</p>
-              <p className="mt-0.5 text-xs font-bold text-muted-foreground">
+            <li
+              key={s.label}
+              className={`rounded-2xl p-3 ${s.done ? "bg-sky-soft" : "bg-[#F1EFF8]"}`}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                    s.done ? "bg-primary text-white" : "bg-white text-ink-soft"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
+                <p className="font-heading text-title leading-none font-bold text-ink">{s.value}</p>
+              </div>
+              <p className="mt-2 text-body font-semibold text-ink">
                 {i + 1}. {s.label}
               </p>
             </li>
@@ -122,27 +140,30 @@ export function LiveProgress() {
 
       <div aria-live="polite" aria-atomic="true">
         {latest && (
-          <p className="mt-4 truncate rounded-xl bg-muted/60 px-3 py-2 text-[12px] text-muted-foreground">
-            ล่าสุด: <span className="font-bold text-foreground">{latest.title}</span> ·{" "}
-            {latest.detail}
+          <p className="mt-4 rounded-xl bg-sky-soft px-3 py-2 text-body break-words text-ink-soft">
+            ล่าสุด: <span className="font-semibold text-ink">{latest.title}</span> · {latest.detail}
           </p>
         )}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-dashed border-primary/40 p-4">
-        <p className="text-[14px] font-extrabold">{next.title}</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">{next.detail}</p>
+      <div className="mt-4 rounded-2xl border-2 border-dashed border-primary/50 p-4">
+        <p className="font-heading text-lead font-semibold text-ink">{next.title}</p>
+        <p className="mt-1 text-body text-ink-soft">{next.detail}</p>
         {mine.length > 0 && myCommitments.length === 0 && latestConn ? (
-          <Link to="/connection/$id" params={{ id: latestConn.id }} className={ctaClass}>
-            {next.cta} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          <Link
+            to="/connection/$id"
+            params={{ id: latestConn.id }}
+            className={`${ctaClass} w-full`}
+          >
+            {next.cta} <ArrowRight className="h-6 w-6 shrink-0" aria-hidden="true" />
           </Link>
         ) : next.to === "/commitments" && pathname === "/commitments" ? (
-          <a href="#my-commitments" className={ctaClass}>
-            {next.cta} <span aria-hidden="true">↓</span>
+          <a href="#my-commitments" className={`${ctaClass} w-full`}>
+            {next.cta} <ArrowDown className="h-6 w-6 shrink-0" aria-hidden="true" />
           </a>
         ) : (
-          <Link to={next.to} className={ctaClass}>
-            {next.cta} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          <Link to={next.to} className={`${ctaClass} w-full`}>
+            {next.cta} <ArrowRight className="h-6 w-6 shrink-0" aria-hidden="true" />
           </Link>
         )}
       </div>

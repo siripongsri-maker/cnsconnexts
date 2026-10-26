@@ -259,6 +259,16 @@ html.meadow .site-experience [role="dialog"].meadow-sheet {
   }
 }
 
+/* กฎ .site-experience [role="tablist"] / [role="tab"][data-state="active"] เดิมทำพื้นมืด — คืนเป็นสีของทุ่ง */
+html.meadow .site-experience [role="tablist"] {
+  border-color: transparent;
+  background: var(--sky-soft);
+}
+html.meadow .site-experience [role="tab"][data-state="active"] {
+  background: var(--primary);
+  color: #ffffff;
+}
+
 /* ใบพัดกังหันลมใน <MeadowScene> (src/components/meadow-scene.tsx) — คลาสนี้ใช้เฉพาะฉากทุ่งหญ้า */
 @keyframes meadow-spin {
   to {

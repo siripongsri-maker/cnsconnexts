@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Download, Sparkles, Star, Mic } from "lucide-react";
+import { BookOpen, Download, Sparkles, Star, Mic } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { MissionEmpty } from "@/components/mission-ui";
+import { ChoicePill } from "@/components/choice-pill";
+import { IssueBlock } from "@/components/power-bits";
+import { BLOCK_TAG } from "@/lib/issue-colors";
 import { useStore } from "@/lib/store";
 import { REGIONS, type Region, type Submission } from "@/lib/types";
 import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
@@ -61,142 +63,144 @@ function Ebook() {
       title="คลังผลงานของเรา"
       subtitle={`${submissions.length} ผลงาน · ยกขึ้นเวที ${showcaseCount} กรณีศึกษา`}
     >
-      <div className="publication-page px-5 pb-32 pt-4">
-        <div className="publication-toolbar mission-toolbar no-print">
-          <div className="flex rounded-2xl border border-border bg-card p-1">
+      <div className="space-y-5 pb-8">
+        <div className="no-print space-y-3">
+          <div className="flex flex-wrap gap-2">
             {(["region", "issue"] as const).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                aria-pressed={mode === m}
-                className={`tap rounded-xl px-4 py-2 text-[13px] font-bold ${
-                  mode === m ? "gradient-power text-primary-foreground" : "text-muted-foreground"
-                }`}
-              >
+              <ChoicePill key={m} active={mode === m} onClick={() => setMode(m)}>
                 {m === "region" ? "ตามภาค" : "ตามประเด็น"}
-              </button>
+              </ChoicePill>
             ))}
+            <ChoicePill active={onlyShowcase} onClick={() => setOnlyShowcase((v) => !v)}>
+              <Star className="h-5 w-5 shrink-0" aria-hidden="true" />
+              กรณีศึกษาขึ้นเวที
+            </ChoicePill>
           </div>
           <button
-            onClick={() => setOnlyShowcase((v) => !v)}
-            aria-pressed={onlyShowcase}
-            className={`tap flex items-center gap-1.5 rounded-2xl border px-3.5 py-2 text-[13px] font-bold ${
-              onlyShowcase ? "border-coral bg-coral/12 text-coral" : "border-border bg-card"
-            }`}
-          >
-            <Star className="h-4 w-4" />
-            กรณีศึกษาขึ้นเวที
-          </button>
-          <button
+            type="button"
             onClick={() => window.print()}
-            className="tap ml-auto flex items-center gap-2 rounded-2xl gradient-power px-4 py-2.5 text-[13px] font-extrabold text-primary-foreground"
+            className="meadow-btn-secondary w-full"
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-6 w-6 shrink-0" aria-hidden="true" />
             บันทึกเป็น PDF
           </button>
         </div>
 
-        <div className="print-book mt-6 space-y-8">
+        <div className="print-book space-y-8">
           <div className="hidden print-cover">
             <h1 className="text-3xl font-extrabold">หนังสือรวมผลงานเครือข่าย</h1>
             <p className="text-sm">คนส. Connexts · สมัชชาสุขภาพแห่งชาติ</p>
           </div>
 
           {groups.length === 0 && (
-            <MissionEmpty
-              title="พื้นที่สำหรับผลงานต่อไป"
-              description="แบ่งปันสิ่งที่คุณทำ เพื่อให้เพื่อนในเครือข่ายได้เรียนรู้และร่วมต่อยอด"
-              variant="archive"
-            >
-              <Link
-                to="/submit"
-                className="tap inline-flex min-h-12 items-center bg-primary px-5 text-sm font-medium text-primary-foreground"
+            <section className="meadow-card p-6 text-center">
+              <span
+                aria-hidden="true"
+                className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-sky-soft text-primary"
               >
+                <BookOpen className="h-8 w-8" />
+              </span>
+              <h2 className="mt-4 font-heading text-title font-semibold! text-ink">
+                พื้นที่สำหรับผลงานต่อไป
+              </h2>
+              <p className="mt-2 text-body text-ink-soft">
+                แบ่งปันสิ่งที่คุณทำ เพื่อให้เพื่อนในเครือข่ายได้เรียนรู้และร่วมต่อยอด
+              </p>
+              <Link to="/submit" className="meadow-btn-primary mt-5 w-full">
                 แบ่งปันผลงาน
               </Link>
-            </MissionEmpty>
+            </section>
           )}
 
           {groups.map((g) => (
-            <section key={g.key} className="publication-group">
-              <div className="publication-group-heading flex items-baseline gap-3 border-b border-border pb-4">
-                <h2 className="text-lg font-extrabold">{g.label}</h2>
-                <span className="text-xs font-bold text-muted-foreground">
+            <section key={g.key}>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-[#E6E3F2] pb-3">
+                <h2 className="min-w-0 font-heading text-title font-semibold! break-words text-ink">
+                  {g.label}
+                </h2>
+                <span className="inline-flex min-h-10 items-center rounded-xl bg-sky-soft px-3 py-1 text-body font-semibold text-ink">
                   {g.items.length} ผลงาน
                 </span>
               </div>
-              <div className="publication-grid mt-5">
+              <div className="mt-4 space-y-4">
                 {g.items.map((s) => (
-                  <article
-                    key={`${g.key}-${s.id}`}
-                    className="publication-card card-soft break-inside-avoid rounded-2xl bg-card p-6"
-                  >
-                    <div className="flex gap-3">
+                  <article key={`${g.key}-${s.id}`} className="meadow-card break-inside-avoid p-5">
+                    <div className="flex items-start gap-3">
                       {s.photo && (
                         <img
                           src={s.photo}
                           alt={s.name}
-                          className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover"
+                          className="h-16 w-16 shrink-0 rounded-xl border border-[#E6E3F2] object-cover"
                         />
                       )}
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-start gap-2">
-                          <div className="min-w-0">
-                            <h3 className="truncate text-base font-extrabold">{s.name}</h3>
-                            <p className="text-[12px] text-muted-foreground">
-                              {s.course} {s.batch} · {provinceTh(s.province)} ·{" "}
-                              {REGION_LABEL[s.region]}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => toggleShowcase(s.id)}
-                            className={`no-print tap ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full border ${
-                              s.showcase
-                                ? "border-coral bg-coral/15 text-coral"
-                                : "border-border text-muted-foreground"
-                            }`}
-                            aria-label="ยกเป็นกรณีศึกษาขึ้นเวที"
-                          >
-                            <Star className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <p className="mt-2 text-[14px] leading-relaxed">{s.summary}</p>
-                        {s.highlight && (
-                          <p className="mt-2 flex gap-1.5 text-[13px] text-muted-foreground">
-                            <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-                            <span>
-                              <span className="font-bold text-foreground">ผลงานเด่น: </span>
-                              {s.highlight}
-                            </span>
-                          </p>
-                        )}
-                        {s.wanted && (
-                          <p className="mt-1.5 text-[13px] text-muted-foreground">
-                            <span className="font-bold text-foreground">อยากชวนร่วม: </span>
-                            {s.wanted}
-                          </p>
-                        )}
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {s.policy_issues.map((i) => (
-                            <span
-                              key={i}
-                              className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
-                            >
-                              {issueTh(i)}
-                            </span>
-                          ))}
-                          {s.stage_ready && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-lime/25 px-2.5 py-1 text-xs font-semibold text-lime-foreground">
-                              <Mic className="h-3 w-3" /> ยินดีขึ้นเวที
-                            </span>
-                          )}
-                          {s.showcase && (
-                            <span className="rounded-full bg-coral/12 px-2.5 py-1 text-xs font-semibold text-coral">
-                              กรณีศึกษาขึ้นเวที
-                            </span>
-                          )}
-                        </div>
+                        <h3 className="font-heading text-lead font-semibold break-words text-ink">
+                          {s.name}
+                        </h3>
+                        <p className="mt-1 text-body break-words text-ink-soft">
+                          {s.course} {s.batch} · {provinceTh(s.province)} · {REGION_LABEL[s.region]}
+                        </p>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleShowcase(s.id)}
+                        aria-pressed={!!s.showcase}
+                        aria-label="ยกเป็นกรณีศึกษาขึ้นเวที"
+                        className={`no-print tap grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 ${
+                          s.showcase
+                            ? "border-[#F2B21B] bg-[#F2B21B] text-ink"
+                            : "border-[#C9C6E0] bg-white text-ink"
+                        }`}
+                      >
+                        <Star
+                          className="h-6 w-6"
+                          fill={s.showcase ? "currentColor" : "none"}
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </div>
+                    <p className="mt-3 text-body break-words">{s.summary}</p>
+                    {s.highlight && (
+                      <p className="mt-3 flex items-start gap-2 text-body break-words">
+                        <Sparkles
+                          className="mt-1 h-5 w-5 shrink-0 text-primary"
+                          aria-hidden="true"
+                        />
+                        <span>
+                          <b className="text-ink">ผลงานเด่น: </b>
+                          {s.highlight}
+                        </span>
+                      </p>
+                    )}
+                    {s.wanted && (
+                      <p className="mt-3 text-body break-words">
+                        <b className="text-ink">อยากชวนร่วม: </b>
+                        {s.wanted}
+                      </p>
+                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {s.policy_issues.map((i) => (
+                        <IssueBlock key={i} issue={i} />
+                      ))}
+                      {s.stage_ready && (
+                        <span
+                          className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 py-1 text-body font-bold"
+                          style={{ backgroundColor: BLOCK_TAG.teal.bg, color: BLOCK_TAG.teal.fg }}
+                        >
+                          <Mic className="h-5 w-5 shrink-0" aria-hidden="true" /> ยินดีขึ้นเวที
+                        </span>
+                      )}
+                      {s.showcase && (
+                        <span
+                          className="inline-flex min-h-10 items-center gap-2 rounded-xl px-3 py-1 text-body font-bold"
+                          style={{
+                            backgroundColor: BLOCK_TAG.yellow.bg,
+                            color: BLOCK_TAG.yellow.fg,
+                          }}
+                        >
+                          <Star className="h-5 w-5 shrink-0" aria-hidden="true" /> กรณีศึกษาขึ้นเวที
+                        </span>
+                      )}
                     </div>
                   </article>
                 ))}

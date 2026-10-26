@@ -1,28 +1,4 @@
 /* Content systems for discovery, the network, ideas and follow-through. */
-.core-page {
-  min-width: 0;
-  padding-bottom: 2rem;
-}
-.core-page > [class*="px-5"] {
-  padding-inline: 0;
-}
-.core-mode-tabs {
-  max-width: 38rem;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: transparent;
-  padding: 4px;
-}
-.core-mode-tabs > :is(button, a) {
-  border-radius: 0;
-  font-size: 0.8rem;
-}
-.core-mode-tabs > [aria-pressed="true"],
-.core-mode-tabs > [aria-selected="true"] {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  box-shadow: none;
-}
 .core-filter-strip {
   margin-block: 1rem 2rem;
   border-bottom: 1px solid var(--border);
@@ -32,73 +8,6 @@
   min-height: 42px;
   border-radius: 2px;
   font-weight: 400;
-}
-.core-empty {
-  position: relative;
-  display: flex;
-  grid-column: 1 / -1;
-  min-height: 360px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.8rem;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  padding: clamp(1.5rem, 4vw, 3rem);
-  background:
-    radial-gradient(
-      ellipse at 92% 40%,
-      color-mix(in srgb, var(--primary) 9%, transparent),
-      transparent 65%
-    ),
-    var(--card);
-  text-align: left;
-}
-.core-empty > :not(.core-empty-visual) {
-  position: relative;
-  z-index: 1;
-  max-width: 60%;
-}
-.core-empty > .core-empty-visual {
-  position: absolute;
-  top: 50%;
-  right: -4%;
-  width: 46%;
-  max-height: 94%;
-  transform: translateY(-50%);
-  opacity: 0.75;
-  pointer-events: none;
-}
-.core-empty > .mission-kicker {
-  font-size: 0.62rem;
-}
-.core-empty h2 {
-  font-size: clamp(1.4rem, 3vw, 2.1rem);
-  font-weight: 400;
-  line-height: 1.45;
-}
-.core-empty p {
-  line-height: 1.8;
-}
-.core-empty :is(a, button) {
-  width: auto;
-  min-width: 160px;
-  margin-top: 0.7rem;
-  border-radius: 0;
-  padding-inline: 1.3rem;
-}
-.core-empty-action {
-  display: inline-flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-size: 0.8rem;
-}
-.core-empty-action:hover {
-  filter: brightness(1.15);
 }
 
 /* Discovery is a workspace on desktop and a swipe deck on a phone. */
@@ -269,25 +178,6 @@
 /* A framed map and the directory form one connected network view. */
 
 /* Follow-through keeps the same restrained, instrument-panel language. */
-.core-follow-tabs {
-  margin-bottom: 2rem;
-  padding-inline: 0;
-}
-.core-follow-tabs > div {
-  max-width: 420px;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: transparent;
-  padding: 4px;
-}
-.core-follow-tabs a {
-  border-radius: 0;
-  font-size: 0.8rem;
-}
-.core-follow-tabs a[aria-selected="true"] {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
 .core-progress-overview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
@@ -295,58 +185,6 @@
 }
 .core-progress-main {
   padding: 0 !important;
-}
-.core-live-progress {
-  height: 100%;
-  border-radius: 0;
-  border-top: 2px solid var(--primary);
-  padding: 1.75rem;
-  background: linear-gradient(
-    130deg,
-    color-mix(in srgb, var(--primary) 6%, var(--card)),
-    var(--card)
-  );
-}
-.core-live-progress > div:first-child h2 {
-  font-size: 1.1rem;
-  font-weight: 400;
-}
-.core-live-progress > ol {
-  position: relative;
-  margin-block: 2rem;
-  gap: 1rem;
-}
-.core-live-progress > ol::before {
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  top: 20px;
-  height: 1px;
-  background: var(--border);
-  content: "";
-}
-.core-live-progress > ol > li {
-  position: relative;
-}
-.core-live-progress > ol > li > span {
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: var(--card);
-}
-.core-live-progress > ol > li > p:nth-child(2) {
-  margin-block: 0.8rem 0.4rem;
-  font-family: var(--font-tech);
-  font-size: 1.8rem;
-  font-weight: 400;
-}
-.core-live-progress > div:last-child {
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: color-mix(in srgb, var(--background) 50%, transparent);
-}
-.core-live-progress > div:last-child > a {
-  border-radius: 0;
-  font-weight: 400;
 }
 .core-commitment-stats {
   grid-template-columns: 1fr;
@@ -400,9 +238,7 @@
 }
 .core-commitment-grid > *,
 .core-progress-overview > *,
-.core-ready-grid > *,
-.core-calendar-board > *,
-.core-calendar-pending > ul > li {
+.core-ready-grid > * {
   min-width: 0;
   max-width: 100%;
 }
@@ -434,305 +270,8 @@
   grid-column: 1 / -1;
   border-radius: 0;
 }
-.core-calendar-board {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  align-items: start;
-  gap: 1.5rem;
-}
-.core-calendar-export {
-  grid-column: 1 / -1;
-  justify-content: flex-end;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  border-radius: 0;
-  background: transparent;
-  padding-inline: 0.25rem;
-  color: var(--muted-foreground);
-  font-weight: 400;
-}
-.core-month {
-  border-radius: 0;
-  padding: 1.75rem;
-}
-.core-month > .mission-kicker {
-  margin-bottom: 1.75rem;
-}
-.core-month > div:first-of-type > p {
-  font-size: 1.2rem;
-  font-weight: 400;
-}
-.core-month > div:first-of-type > button {
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: transparent;
-}
-.core-month > div:nth-of-type(2) {
-  margin-block: 1.5rem 0.7rem;
-  font-weight: 400;
-}
-.core-month > div:nth-of-type(3) > button {
-  min-height: 52px;
-  border: 1px solid transparent;
-  border-radius: 0;
-  font-family: var(--font-tech);
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-.core-month > div:nth-of-type(3) > button:hover {
-  border-color: var(--primary);
-}
-.core-selected-day {
-  min-height: 100%;
-  border-radius: 0;
-  padding: 1.75rem;
-  background:
-    radial-gradient(
-      ellipse at 100% 0,
-      color-mix(in srgb, var(--primary) 7%, transparent),
-      transparent 70%
-    ),
-    var(--card);
-}
-.core-selected-day > .mission-kicker {
-  margin-bottom: 1.5rem;
-}
-.core-selected-day > h2 {
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 1.3rem;
-  font-size: 1rem;
-  font-weight: 400;
-}
-.core-day-empty {
-  display: grid;
-  min-height: 285px;
-  align-content: center;
-  justify-items: center;
-  gap: 0.9rem;
-  text-align: center;
-}
-.core-day-empty > svg {
-  margin-bottom: 0.7rem;
-  color: var(--primary);
-  stroke-width: 1;
-}
-.core-day-empty > h3 {
-  font-size: 1.1rem;
-  font-weight: 400;
-}
-.core-day-empty > p {
-  max-width: 210px;
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-  line-height: 1.8;
-}
-.core-calendar-pending {
-  grid-column: 1 / -1;
-  border-radius: 0;
-  padding: 1.75rem;
-}
-.core-calendar-pending > ul {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-.core-calendar-pending :is(input, select, button, a) {
-  border-radius: 2px;
-}
-.core-calendar :is(input, select) {
-  min-width: 0;
-  max-width: 100%;
-}
-.core-calendar-no-connections {
-  min-height: 300px;
-}
 
 /* Live data always shows real values; empty charts use an explicit placeholder. */
-.core-dashboard-filter {
-  margin-block: 1rem;
-}
-.core-dashboard-filter > details {
-  border-radius: 0;
-}
-.core-dashboard-filter summary {
-  min-height: 58px;
-  padding: 1rem 1.5rem;
-  font-size: 0.85rem;
-  font-weight: 400;
-}
-.core-dashboard-filter summary + div {
-  padding: 1.25rem 1.5rem 1.75rem;
-}
-.core-dashboard-filter :is(input, select, button, label) {
-  border-radius: 2px;
-}
-.core-live-metrics {
-  border: 1px solid var(--border);
-  border-top: 2px solid var(--primary);
-  border-radius: 0;
-  padding: 2rem;
-  background:
-    radial-gradient(
-      ellipse at 100% 0,
-      color-mix(in srgb, var(--primary) 12%, transparent),
-      transparent 60%
-    ),
-    var(--card);
-  color: var(--foreground);
-}
-.core-live-metrics > div:first-child {
-  opacity: 0.17;
-  color: var(--primary);
-}
-.core-live-metrics > div:nth-child(2) {
-  padding-bottom: 1.5rem;
-  font-family: var(--font-tech);
-  font-size: 0.65rem;
-  font-weight: 400;
-  letter-spacing: 0.15em;
-  color: var(--primary);
-}
-.core-live-metrics > div:nth-child(3) {
-  max-width: 38rem;
-  padding-bottom: 2rem;
-}
-.core-live-metrics > div:nth-child(3) p {
-  font-weight: 400;
-}
-.core-live-metrics > div:nth-child(3) p[lang="en"] {
-  font-size: 0.8rem;
-  color: var(--muted-foreground);
-}
-.core-live-metric-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-}
-.core-live-metric-grid > div {
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-}
-.core-live-metric-grid > div > p:first-child {
-  color: var(--primary);
-  font-size: clamp(2.3rem, 5vw, 4.5rem);
-  font-weight: 400;
-}
-.core-live-metric-grid > div > p:last-child {
-  margin-top: 0.8rem;
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-  font-weight: 400;
-}
-.core-dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-width: 0;
-  align-items: start;
-  gap: 1.5rem;
-}
-.core-dashboard-grid > *,
-.core-resource-panels > *,
-.core-data-panel-body {
-  min-width: 0;
-  max-width: 100%;
-}
-.core-network-panel {
-  grid-row: span 2;
-  min-height: 520px;
-  border-radius: 0;
-  padding: 1.75rem;
-  background:
-    radial-gradient(
-      ellipse at 50% 50%,
-      color-mix(in srgb, var(--primary) 6%, transparent),
-      transparent 70%
-    ),
-    var(--card);
-}
-.core-network-panel > .mission-kicker {
-  margin-bottom: 0.8rem;
-}
-.core-network-panel > h2 {
-  font-size: 1.15rem;
-  font-weight: 400;
-}
-.core-live-network {
-  aspect-ratio: 1;
-  height: 410px;
-  min-width: 0;
-  max-width: 100%;
-}
-.core-resource-panels {
-  grid-column: 1 / -1;
-}
-.core-data-panel {
-  min-height: 230px;
-  border-radius: 0;
-  padding: 1.75rem;
-}
-.core-data-panel > h2 {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.1rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 1rem;
-  font-weight: 400;
-}
-.core-data-panel-body > div > div > p {
-  font-weight: 400;
-}
-.core-data-panel-body > div {
-  gap: 1rem;
-}
-.core-data-panel-body > div + div {
-  margin-top: 1rem;
-}
-.core-data-panel-body > div > div > div {
-  height: 4px;
-  border-radius: 0;
-}
-.core-data-panel-body > div > div > div > div {
-  border-radius: 0;
-}
-.core-data-empty {
-  display: grid;
-  min-height: 125px;
-  align-content: center;
-  gap: 0.7rem;
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-}
-.core-data-empty > span {
-  color: var(--primary);
-  font-family: var(--font-tech);
-  font-size: 2rem;
-}
-.core-live-ticker {
-  border-radius: 0;
-  padding: 1.75rem;
-}
-.core-live-ticker > div h2 {
-  font-size: 1rem;
-  font-weight: 400;
-}
-.core-live-ticker > ul > li {
-  padding-block: 0.7rem;
-  border-bottom: 1px solid var(--border);
-}
-.core-screen-stat {
-  border-radius: 0;
-}
-.core-dashboard-present > header {
-  padding-block: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-.core-dashboard-present > div:nth-of-type(1) {
-  border: 1px solid var(--border);
-  border-radius: 0;
-  background: var(--card);
-  color: var(--foreground);
-}
-.core-dashboard-present .card-soft {
-  border-radius: 0;
-}
 .core-chat-room {
   border-radius: 0;
   border-top: 2px solid var(--primary);
@@ -805,9 +344,6 @@
   }
 }
 @media (max-width: 640px) {
-  .core-page > [class*="px-5"] {
-    padding-inline: 0;
-  }
   .core-match-grid,
   .core-commitment-grid,
   .core-ready-grid {
@@ -823,31 +359,6 @@
   }
   .core-match-card > div:nth-of-type(2) {
     min-height: 0;
-  }
-  .core-empty {
-    min-height: 380px;
-    justify-content: flex-end;
-    padding: 1.5rem;
-  }
-  .core-empty > :not(.core-empty-visual) {
-    max-width: 100%;
-  }
-  .core-empty > .core-empty-visual {
-    top: 0;
-    right: -20px;
-    width: 190px;
-    height: 170px;
-    transform: none;
-    opacity: 0.45;
-  }
-  .core-empty > .mission-kicker {
-    margin-top: 130px;
-  }
-  .core-empty h2 {
-    font-size: 1.5rem;
-  }
-  .core-empty :is(a, button) {
-    min-width: 0;
   }
   .core-discovery-space {
     margin-inline: -1rem;
@@ -901,85 +412,11 @@
     min-height: 140px;
     gap: 0.7rem;
   }
-  .core-live-progress {
-    padding: 1.2rem;
-  }
-  .core-live-progress > ol {
-    gap: 0.3rem;
-  }
-  .core-live-progress > ol > li > p:last-child {
-    font-size: 0.6rem;
-    font-weight: 400;
-  }
   .core-ready-section {
     margin-top: 2rem;
   }
   .core-commitment-title {
     margin-top: 2rem;
-  }
-  .core-calendar-board {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-  }
-  .core-calendar-export {
-    justify-content: center;
-    font-size: 0.7rem;
-  }
-  .core-month,
-  .core-selected-day,
-  .core-calendar-pending {
-    padding: 1.2rem;
-  }
-  .core-month > .mission-kicker {
-    margin-bottom: 1.25rem;
-  }
-  .core-month > div:nth-of-type(3) > button {
-    min-height: 42px;
-    min-width: 0;
-    aspect-ratio: auto;
-  }
-  .core-selected-day {
-    min-height: 270px;
-  }
-  .core-day-empty {
-    min-height: 210px;
-  }
-  .core-calendar-pending > ul {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .core-live-metrics {
-    padding: 1.4rem;
-  }
-  .core-live-metrics > div:nth-child(3) {
-    padding-bottom: 1.3rem;
-  }
-  .core-live-metric-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem;
-  }
-  .core-live-metric-grid > div {
-    padding-top: 1rem;
-  }
-  .core-live-metric-grid > div > p:first-child {
-    font-size: 2.8rem;
-  }
-  .core-dashboard-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-  }
-  .core-network-panel {
-    min-height: 420px;
-    padding: 1.2rem;
-  }
-  .core-live-network {
-    height: 330px;
-  }
-  .core-data-panel {
-    min-height: 220px;
-    padding: 1.2rem;
-  }
-  .core-resource-panels {
-    grid-template-columns: minmax(0, 1fr);
   }
   .core-chat-room {
     padding: 1.1rem;
@@ -989,40 +426,12 @@
   }
 }
 @media (max-width: 360px) {
-  .core-month {
-    padding: 0.75rem;
-  }
-  .core-month > div:nth-of-type(2),
-  .core-month > div:nth-of-type(3) {
-    gap: 3px;
-  }
-  .core-month > div:nth-of-type(3) > button {
-    min-height: 36px;
-  }
-  .core-selected-day,
-  .core-calendar-pending {
-    padding: 1rem;
-  }
-  .core-selected-day > h2 {
-    flex-wrap: wrap;
-  }
-  .core-date-proposal {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .core-date-proposal > input {
-    width: 100%;
-  }
-  .core-date-proposal > button {
-    justify-self: end;
-  }
   .core-status-grid > button {
     flex-wrap: wrap;
     padding-inline: 0.5rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .core-page *,
   .core-chat-room * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
