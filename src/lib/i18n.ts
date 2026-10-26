@@ -31,6 +31,11 @@ export const REGION_LABEL: Record<Region, string> = {
   Nationwide: "ทั่วประเทศ",
 };
 
+/** Thai label for a region, or "" when the value is missing or not a known region. */
+export function regionLabel(r: string | null | undefined): string {
+  return r != null && Object.hasOwn(REGION_LABEL, r) ? REGION_LABEL[r as Region] : "";
+}
+
 export const GENERATION_TH: Record<Generation, string> = {
   "Gen Z": "เจน Z",
   Millennial: "เจน Y",

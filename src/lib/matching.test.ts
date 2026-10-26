@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildDeck, dayKey, guestBlurb, rankForGuest } from "./matching";
-import type { User } from "./types";
+import { regionLabel } from "./i18n";
+import { buildDeck, dayKey, guestBlurb, rankForGuest, scoreMatch } from "./matching";
+import type { Region, User } from "./types";
 
 const LONG_NAME =
   "นางสาวกัญญารัตน์ ศรีสวัสดิ์วัฒนาพงษ์ มูลนิธิเครือข่ายสุขภาวะชุมชนภาคตะวันออกเฉียงเหนือ";
@@ -108,5 +109,75 @@ describe("dayKey", () => {
   it("uses the Asia/Bangkok calendar day", () => {
     expect(dayKey(new Date("2026-10-28T20:00:00Z"))).toBe("2026-10-29");
     expect(dayKey(new Date("2026-10-28T16:59:59Z"))).toBe("2026-10-28");
+  });
+});
+
+describe("regionLabel", () => {
+  it("returns the Thai label for known regions and empty string otherwise", () => {
+    expect(regionLabel("North")).toBe("ภาคเหนือ");
+    expect(regionLabel("Bangkok")).toBe("กรุงเทพฯ");
+    expect(regionLabel("Mars")).toBe("");
+    expect(regionLabel("")).toBe("");
+    expect(regionLabel("constructor")).toBe("");
+    expect(regionLabel(null)).toBe("");
+    expect(regionLabel(undefined)).toBe("");
+  });
+});
+
+describe("scoreMatch with an unknown region", () => {
+  // no shared issues, no shared powers → falls through to the region sentence
+  const bare = {
+    interests: ["Youth"],
+    powers_have: ["Ideas"],
+    powers_need: ["Funding / Resources"],
+  };
+  const me = (region: string) =>
+    mk("me", {
+      ...bare,
+      interests: ["Health"],
+      powers_have: ["Media"],
+      powers_need: ["Legal"],
+      region: region as Region,
+    });
+  const other = (region: string) => mk("o", { ...bare, region: region as Region });
+  const FALLBACK = "ทำงานคนละแบบ ไอเดียใหม่มักเริ่มตรงนี้";
+
+  it.each([
+    ["Mars", "North"],
+    ["", "North"],
+    ["North", "Mars"],
+    ["Mars", "Mars"],
+    ["", ""],
+  ])("never prints undefined (me=%j other=%j)", (a, b) => {
+    const r = scoreMatch(me(a), other(b));
+    expect(r.reason).not.toContain("undefined");
+    expect(r.reason).toBe(FALLBACK);
+    r.highlights.forEach((h) => expect(h).not.toContain("undefined"));
+    expect(r.highlights.some((h) => h.includes("ภาค"))).toBe(false);
+  });
+
+  it("keeps the region sentence when both regions are known", () => {
+    expect(scoreMatch(me("North"), other("North")).reason).toBe(
+      "ทำงานคนละแบบ แต่ทำงานอยู่ภาคเหนือเหมือนกัน ไอเดียใหม่มักเริ่มตรงนี้",
+    );
+    expect(scoreMatch(me("North"), other("South")).reason).toBe(
+      "ทำงานคนละแบบ แต่ได้เชื่อมภาคเหนือกับภาคใต้ ไอเดียใหม่มักเริ่มตรงนี้",
+    );
+    expect(scoreMatch(me("North"), other("South")).highlights).toContain("ข้ามภาค: ภาคใต้");
+    expect(scoreMatch(me("North"), other("North")).highlights).toContain("ภาคเดียวกัน: ภาคเหนือ");
+  });
+
+  it("leaves the score untouched (pinned)", () => {
+    expect(scoreMatch(me("Mars"), other("North")).score).toBe(45);
+    expect(scoreMatch(me(""), other("North")).score).toBe(45);
+    expect(scoreMatch(me("Mars"), other("Mars")).score).toBe(48);
+    expect(scoreMatch(me("North"), other("North")).score).toBe(48);
+    expect(scoreMatch(me("North"), other("South")).score).toBe(45);
+    expect(scoreMatch(me("Nationwide"), other("South")).score).toBe(48);
+  });
+
+  it("also covers the shared-issue + power paths without undefined", () => {
+    const r = scoreMatch(mk("me", { region: "Mars" as Region }), mk("o", { region: "" as Region }));
+    expect(JSON.stringify(r)).not.toContain("undefined");
   });
 });

@@ -294,6 +294,16 @@ html[data-lowspec] .meadow-rotor {
   animation: none;
 }
 
+/* ปุ่มกดแล้วยุบเล็กน้อย (.tap) — ผู้ที่ลดการเคลื่อนไหวไม่ต้องเจอทั้งการยุบและทรานสิชัน */
+@media (prefers-reduced-motion: reduce) {
+  html.meadow .tap {
+    transition: none;
+  }
+  html.meadow .tap:active {
+    transform: none;
+  }
+}
+
 /*
  * จอฉลองตอนเชื่อมกันสำเร็จ <MatchCelebration> (src/components/match-celebration.tsx)
  * สไตล์ปกติของทุกชิ้นคือภาพสุดท้าย keyframes มีแค่ from จึงหยุดเป็นภาพสุดท้ายทันทีเมื่อปิดแอนิเมชัน

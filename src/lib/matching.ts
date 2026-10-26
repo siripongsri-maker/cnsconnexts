@@ -1,5 +1,5 @@
 import type { User } from "./types";
-import { issueTh, powerTh, REGION_LABEL } from "./i18n";
+import { issueTh, powerTh, regionLabel } from "./i18n";
 
 const overlap = (a: string[], b: string[]) => a.filter((x) => b.includes(x));
 
@@ -41,20 +41,28 @@ export function scoreMatch(me: User, other: User): MatchResult {
     parts.push(`คุณสองคนสนใจเรื่อง${sharedIssues.slice(0, 2).map(issueTh).join("และ")}เหมือนกัน`);
   if (theyGiveMe.length) parts.push(`เขามี “${powerTh(theyGiveMe[0]!)}” ที่คุณกำลังมองหา`);
   else if (iGiveThem.length) parts.push(`คุณมี “${powerTh(iGiveThem[0]!)}” ที่เขาต้องการพอดี`);
+  // ถ้าภาคไม่รู้จัก (ข้อมูลเก่า/ไม่ถูกต้อง) ใช้ประโยคที่ไม่พูดถึงภาค
+  const myRegion = regionLabel(me.region);
+  const theirRegion = regionLabel(other.region);
+  const regionsKnown = myRegion !== "" && theirRegion !== "";
   const geoBit =
     me.region === other.region
-      ? `ทำงานอยู่${REGION_LABEL[me.region]}เหมือนกัน`
-      : `ได้เชื่อม${REGION_LABEL[me.region]}กับ${REGION_LABEL[other.region]}`;
+      ? `ทำงานอยู่${myRegion}เหมือนกัน`
+      : `ได้เชื่อม${myRegion}กับ${theirRegion}`;
   const reason = parts.length
     ? parts.join(" แถม")
-    : `ทำงานคนละแบบ แต่${geoBit} ไอเดียใหม่มักเริ่มตรงนี้`;
+    : regionsKnown
+      ? `ทำงานคนละแบบ แต่${geoBit} ไอเดียใหม่มักเริ่มตรงนี้`
+      : "ทำงานคนละแบบ ไอเดียใหม่มักเริ่มตรงนี้";
 
   const highlights: string[] = [];
   if (sharedIssues.length) highlights.push(`ประเด็นร่วม: ${issueTh(sharedIssues[0]!)}`);
   if (theyGiveMe.length) highlights.push(`เติมให้คุณ: ${powerTh(theyGiveMe[0]!)}`);
   if (iGiveThem.length) highlights.push(`คุณช่วยเขา: ${powerTh(iGiveThem[0]!)}`);
-  if (me.region === other.region) highlights.push(`ภาคเดียวกัน: ${REGION_LABEL[me.region]}`);
-  else highlights.push(`ข้ามภาค: ${REGION_LABEL[other.region]}`);
+  if (regionsKnown) {
+    if (me.region === other.region) highlights.push(`ภาคเดียวกัน: ${myRegion}`);
+    else highlights.push(`ข้ามภาค: ${theirRegion}`);
+  }
 
   return {
     user: other,

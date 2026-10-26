@@ -313,7 +313,10 @@ export function DiscoverDeck({
         className="relative mx-auto w-full max-w-xl touch-pan-y select-none px-4"
         style={{
           transform,
-          transition: dragging ? undefined : `transform ${LEAVE_MS}ms cubic-bezier(0.22,1,0.36,1)`,
+          transition:
+            dragging || reducedMotion
+              ? undefined
+              : `transform ${LEAVE_MS}ms cubic-bezier(0.22,1,0.36,1)`,
         }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
