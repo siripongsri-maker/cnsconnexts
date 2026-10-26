@@ -8,7 +8,7 @@ import { MeadowScene } from "@/components/meadow-scene";
 import { Avatar, IssueBlock } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { COURSES, type Course } from "@/lib/types";
-import { provinceTh, REGION_LABEL } from "@/lib/i18n";
+import { provinceTh, regionLabel } from "@/lib/i18n";
 import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
 
 export const Route = createFileRoute("/submit")({
@@ -191,7 +191,7 @@ function SubmitPage() {
                   {me.name}
                 </p>
                 <p className="text-body text-ink-soft [overflow-wrap:anywhere]">
-                  {[REGION_LABEL[me.region], provinceTh(me.province), me.organization]
+                  {[regionLabel(me.region), provinceTh(me.province), me.organization]
                     .filter(Boolean)
                     .join(" · ")}
                 </p>

@@ -14,7 +14,7 @@ import { BOTTOM_NAV_HEIGHT_VAR } from "@/components/bottom-nav";
 import { useLiveEvents, type LiveEvent, type LiveKind } from "@/lib/live";
 import { useMotionSettings } from "@/lib/motion";
 import { playConnext } from "@/lib/notify";
-import { issueTh, REGION_LABEL, STATUS_TH } from "@/lib/i18n";
+import { issueTh, regionLabel, STATUS_TH } from "@/lib/i18n";
 import type { Commitment, Connection, User } from "@/lib/types";
 
 const ICON: Record<LiveKind, typeof Handshake> = {
@@ -281,7 +281,7 @@ export function buildFeed({
       items.push({
         id: `c-${c.id}`,
         icon: "connect",
-        title: `คนจาก${a ? REGION_LABEL[a.region] : "ในงาน"} 🤝 คนจาก${b ? REGION_LABEL[b.region] : "ในงาน"}`,
+        title: `คนจาก${regionLabel(a?.region) || "ในงาน"} 🤝 คนจาก${regionLabel(b?.region) || "ในงาน"}`,
         detail: `${shared ? `สนใจเรื่อง${issueTh(shared)} · ` : ""}แมตช์ ${c.match_score}%`,
         created_at: c.created_at,
       });

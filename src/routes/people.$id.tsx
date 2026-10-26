@@ -6,7 +6,7 @@ import { MeadowState, STATE_PRIMARY } from "@/components/meadow-state";
 import { Avatar, IssueBlock, PowerPill, ScoreRing } from "@/components/power-bits";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
-import { provinceTh, REGION_LABEL, GENERATION_TH } from "@/lib/i18n";
+import { provinceTh, regionLabel, GENERATION_TH } from "@/lib/i18n";
 
 export const Route = createFileRoute("/people/$id")({
   head: () => ({
@@ -62,7 +62,7 @@ function Person() {
       (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
   );
   const theirIdeas = ideas.filter((i) => i.owner_id === user.id);
-  const place = [provinceTh(user.province), REGION_LABEL[user.region]].filter(Boolean).join(" · ");
+  const place = [provinceTh(user.province), regionLabel(user.region)].filter(Boolean).join(" · ");
   const work = [user.organization, GENERATION_TH[user.generation]].filter(Boolean).join(" · ");
 
   return (

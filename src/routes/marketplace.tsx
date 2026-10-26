@@ -30,7 +30,7 @@ import {
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
 import { ISSUES, POWERS, REGIONS, type Idea, type Region } from "@/lib/types";
-import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
+import { issueTh, powerTh, REGION_LABEL, regionLabel } from "@/lib/i18n";
 
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
@@ -273,10 +273,12 @@ function Marketplace() {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-sky px-3 py-1 text-body font-semibold text-ink">
-                        <MapPin className="h-5 w-5 shrink-0" aria-hidden="true" />
-                        {REGION_LABEL[idea.region]}
-                      </span>
+                      {regionLabel(idea.region) && (
+                        <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-sky px-3 py-1 text-body font-semibold text-ink">
+                          <MapPin className="h-5 w-5 shrink-0" aria-hidden="true" />
+                          {regionLabel(idea.region)}
+                        </span>
+                      )}
                       {idea.issues.map((i) => (
                         <IssueBlock key={i} issue={i} />
                       ))}

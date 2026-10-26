@@ -34,7 +34,7 @@ import { Avatar, PowerIcon } from "@/components/power-bits";
 import { BLOCK_TAG } from "@/lib/issue-colors";
 import { useStore, useUserMap } from "@/lib/store";
 import { ISSUES, POWERS, REGIONS, type ConnectionStatus, type User } from "@/lib/types";
-import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
+import { issueTh, powerTh, REGION_LABEL, regionLabel } from "@/lib/i18n";
 import { makeJoinCode } from "@/lib/session";
 import {
   loadPresets,
@@ -184,7 +184,7 @@ function Dashboard() {
   const describeFilters = (f: DashboardFilters) =>
     [
       f.q.trim() ? `"${f.q.trim()}"` : null,
-      f.region !== "all" ? REGION_LABEL[f.region as keyof typeof REGION_LABEL] : null,
+      f.region !== "all" ? regionLabel(f.region) || null : null,
       f.issue !== "all" ? issueTh(f.issue) : null,
       f.power !== "all" ? powerTh(f.power) : null,
     ]
@@ -512,7 +512,7 @@ function Dashboard() {
                   <Bar
                     key={r.region}
                     size="lg"
-                    label={REGION_LABEL[r.region]}
+                    label={regionLabel(r.region)}
                     value={r.count}
                     max={maxRegion}
                     tone="electric"
@@ -887,9 +887,11 @@ function Dashboard() {
                         <span className="line-clamp-2 block text-body font-semibold break-words text-ink">
                           {r.user.name}
                         </span>
-                        <span className="block text-body text-ink-soft">
-                          {REGION_LABEL[r.user.region]}
-                        </span>
+                        {regionLabel(r.user.region) && (
+                          <span className="block text-body text-ink-soft">
+                            {regionLabel(r.user.region)}
+                          </span>
+                        )}
                         <span className="block text-body font-semibold text-primary">
                           ความเกี่ยวข้อง {r.relevance}%
                           {r.match != null ? ` · แมตช์ ${r.match}%` : ""}
@@ -1017,7 +1019,7 @@ function Dashboard() {
                 {byRegion.map((r) => (
                   <Bar
                     key={r.region}
-                    label={REGION_LABEL[r.region]}
+                    label={regionLabel(r.region)}
                     value={r.count}
                     max={maxRegion}
                     tone="electric"

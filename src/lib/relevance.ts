@@ -1,5 +1,5 @@
 import type { User } from "./types";
-import { issueTh, powerTh, REGION_LABEL } from "./i18n";
+import { issueTh, powerTh, regionLabel } from "./i18n";
 import { scoreMatch } from "./matching";
 import type { DashboardFilters } from "./filter-presets";
 
@@ -51,9 +51,10 @@ export function relevanceOf(u: User, f: DashboardFilters, me: User | null): Scor
 
   if (f.region !== "all") {
     weight += 20;
-    if (u.region === f.region) {
+    const label = regionLabel(u.region);
+    if (u.region === f.region && label) {
       points += 20;
-      reasons.push(`อยู่${REGION_LABEL[u.region]}`);
+      reasons.push(`อยู่${label}`);
     } else if (u.region === "Nationwide") {
       points += 12;
       reasons.push("ทำงานทั่วประเทศ");
@@ -103,11 +104,13 @@ export function sortScored(list: Scored[], sort: SortKey): Scored[] {
     case "name":
       return arr.sort((a, b) => a.user.name.localeCompare(b.user.name, "th"));
     case "region":
-      return arr.sort(
-        (a, b) =>
-          REGION_LABEL[a.user.region].localeCompare(REGION_LABEL[b.user.region], "th") ||
-          b.relevance - a.relevance,
-      );
+      // ภาคที่ไม่รู้จัก (ข้อมูลเสีย/ค่าว่าง) ไปไว้ท้ายสุด — ห้ามโยน error กลางจอสดในงาน
+      return arr.sort((a, b) => {
+        const la = regionLabel(a.user.region);
+        const lb = regionLabel(b.user.region);
+        if (!la !== !lb) return la ? -1 : 1;
+        return la.localeCompare(lb, "th") || b.relevance - a.relevance;
+      });
     case "recent":
       return arr.sort(
         (a, b) =>

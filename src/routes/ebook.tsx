@@ -7,7 +7,7 @@ import { IssueBlock } from "@/components/power-bits";
 import { BLOCK_TAG } from "@/lib/issue-colors";
 import { useStore } from "@/lib/store";
 import { REGIONS, type Region, type Submission } from "@/lib/types";
-import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
+import { issueTh, provinceTh, REGION_LABEL, regionLabel } from "@/lib/i18n";
 
 export const Route = createFileRoute("/ebook")({
   head: () => ({
@@ -138,7 +138,13 @@ function Ebook() {
                           {s.name}
                         </h3>
                         <p className="mt-1 text-body break-words text-ink-soft">
-                          {s.course} {s.batch} · {provinceTh(s.province)} · {REGION_LABEL[s.region]}
+                          {[
+                            `${s.course} ${s.batch}`.trim(),
+                            provinceTh(s.province),
+                            regionLabel(s.region),
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </p>
                       </div>
                       <button

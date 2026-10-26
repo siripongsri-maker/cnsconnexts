@@ -1,4 +1,4 @@
-import { issueTh, powerTh, REGION_LABEL } from "./i18n";
+import { issueTh, powerTh, regionLabel } from "./i18n";
 import type { MatchResult } from "./matching";
 import type { User } from "./types";
 
@@ -212,9 +212,7 @@ export async function renderShareCard(
   ctx.fillText(nameLines[0] ?? me.name, px + 148, y + 2);
   ctx.font = `400 30px ${FONT}`;
   ctx.fillStyle = "#6b6480";
-  const meta = [me.organization, me.province || REGION_LABEL[me.region]]
-    .filter(Boolean)
-    .join(" · ");
+  const meta = [me.organization, me.province || regionLabel(me.region)].filter(Boolean).join(" · ");
   ctx.fillText(wrap(ctx, meta, W - px - 200 - 112, 1)[0] ?? "", px + 148, y + 48);
 
   y += 130;
