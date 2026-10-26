@@ -18,6 +18,7 @@ import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
 import { MeetupCardHost } from "@/components/meetup-card-host";
+import { FindMode } from "@/components/find-mode";
 import { CommitmentReminders } from "@/components/commitment-reminders";
 import { FilterAlerts } from "@/components/filter-alerts";
 import { LoadingScreen } from "@/components/loading-screen";
@@ -144,6 +145,8 @@ function RootComponent() {
             <NotificationHost />
             {/* การ์ดคำชวนเจอ: ไม่เรนเดอร์นอกธีมทุ่ง (ตัดสินในตัวมันเอง) */}
             <MeetupCardHost />
+            {/* โหมดหากัน: เต็มจอเมื่อมี findSession เฉพาะธีมทุ่ง (ตัดสินในตัวมันเอง) */}
+            <FindMode />
             <CommitmentReminders />
             <FilterAlerts />
             <GuidedTour />
