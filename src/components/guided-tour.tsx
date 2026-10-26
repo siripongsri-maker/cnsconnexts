@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 
 import { useStore } from "@/lib/store";
-import { MissionVisual } from "@/components/mission-ui";
 
 export const TOUR_EVENT = "connexts:start-tour";
 const HIDDEN_PREFIXES = ["/admin", "/print", "/journey", "/qr", "/brand-preview"];
@@ -67,7 +66,7 @@ const STEPS: Step[] = [
     icon: Sparkles,
     title: "พร้อมไปต่อด้วยกัน",
     body: "ติดตามคู่เชื่อม นัดหมาย และความคืบหน้าของทั้งงานแบบสด ๆ",
-    tip: "เปิดคำแนะนำนี้อีกครั้งได้จากเมนู",
+    tip: "เปิดทัวร์นี้อีกครั้งได้จากแท็บ ฉัน",
     to: "/dashboard",
     cta: "ดูภาพรวมสด",
   },
@@ -162,19 +161,25 @@ export function GuidedTour() {
       aria-modal="true"
       aria-labelledby="tour-title"
       aria-describedby="tour-body"
-      className="guided-tour-dialog"
+      className="fixed inset-0 z-60 grid place-items-center bg-sky-soft/90 p-4 backdrop-blur-sm"
     >
-      <div ref={cardRef} tabIndex={-1} className="guided-tour-card">
-        <div className="guided-tour-heading">
-          <span className="guided-tour-icon">
-            <Icon className="h-5 w-5" strokeWidth={2.2} aria-hidden="true" />
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        className="relative max-h-[calc(100svh-32px)] w-full max-w-[540px] overflow-y-auto rounded-3xl border border-[#E6E3F2] bg-white p-6 text-ink shadow-[0_8px_24px_-12px_rgba(43,40,120,0.25)] outline-none"
+      >
+        <div className="flex items-start gap-3">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink">
+            <Icon className="h-6 w-6" strokeWidth={2.2} aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1" aria-live="polite">
-            <p className="mission-kicker">
-              QUICK GUIDE / {String(idx + 1).padStart(2, "0")} —{" "}
-              {String(steps.length).padStart(2, "0")}
+            <p className="text-body font-semibold text-ink-soft">
+              ขั้นที่ {idx + 1} จาก {steps.length}
             </p>
-            <h2 id="tour-title" className="guided-tour-title">
+            <h2
+              id="tour-title"
+              className="font-heading text-title font-bold text-ink [overflow-wrap:anywhere]"
+            >
               {step.title}
             </h2>
           </div>
@@ -182,55 +187,64 @@ export function GuidedTour() {
             type="button"
             onClick={() => close()}
             aria-label="ปิดทัวร์แนะนำ"
-            className="tap guided-tour-close"
+            className="tap -mr-2 -mt-1 grid h-12 w-12 shrink-0 place-items-center rounded-full text-ink hover:bg-sky-soft"
           >
-            <X className="h-4 w-4" aria-hidden="true" />
+            <X className="h-6 w-6" aria-hidden="true" />
           </button>
         </div>
 
-        <MissionVisual variant="signal" className="guided-tour-visual" />
-        <p id="tour-body" className="guided-tour-body">
+        <p id="tour-body" className="mt-4 text-body text-ink">
           {step.body}
         </p>
-        <p className="guided-tour-tip">{step.tip}</p>
+        <p className="mt-3 rounded-2xl bg-sky-soft p-4 text-body text-ink-soft">{step.tip}</p>
 
         <Link
           to={step.to}
           onClick={() => close({ restore: false })}
-          className="tap guided-tour-destination"
+          className="tap mt-5 flex min-h-14 items-center justify-center rounded-[18px] border-2 border-primary px-5 py-2 text-center text-body font-semibold text-primary"
         >
           {step.cta}
         </Link>
 
-        <div className="guided-tour-controls">
-          <div className="guided-tour-progress" aria-hidden="true">
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex items-center gap-1.5" aria-hidden="true">
             {steps.map((s, n) => (
               <span
                 key={s.title}
-                className={`h-1.5 rounded-full transition-all ${
-                  n === idx ? "w-5 bg-primary" : "w-1.5 bg-border"
+                className={`h-2 rounded-full transition-all ${
+                  n === idx ? "w-6 bg-primary" : "w-2 bg-[#C9C6E0]"
                 }`}
               />
             ))}
           </div>
-          {idx > 0 && (
-            <button type="button" onClick={goBack} className="tap guided-tour-previous">
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> ก่อนหน้า
+          <div className="ml-auto flex items-center gap-2">
+            {idx > 0 && (
+              <button
+                type="button"
+                onClick={goBack}
+                className="tap inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] border border-[#C9C6E0] px-4 text-body font-semibold text-ink"
+              >
+                <ArrowLeft className="h-5 w-5" aria-hidden="true" /> ก่อนหน้า
+              </button>
+            )}
+            <button
+              ref={nextRef}
+              type="button"
+              onClick={() => (last ? close() : setI(idx + 1))}
+              className="tap inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] bg-primary px-5 text-body font-semibold text-white"
+            >
+              {last ? "เริ่มใช้งาน" : "ถัดไป"}
+              {!last && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
             </button>
-          )}
-          <button
-            ref={nextRef}
-            type="button"
-            onClick={() => (last ? close() : setI(idx + 1))}
-            className="tap guided-tour-next"
-          >
-            {last ? "เริ่มใช้งาน" : "ถัดไป"}
-            {!last && <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />}
-          </button>
+          </div>
         </div>
 
         {!last && (
-          <button type="button" onClick={() => close()} className="tap guided-tour-skip">
+          <button
+            type="button"
+            onClick={() => close()}
+            className="tap mt-2 block min-h-12 w-full text-center text-body font-semibold text-ink-soft underline underline-offset-4"
+          >
             ข้ามทัวร์นี้
           </button>
         )}

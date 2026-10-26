@@ -143,19 +143,22 @@ export function ProfileForm({
   const countHint = (base: string, n: number) => (n ? `${base} · เลือกแล้ว ${n}` : base);
 
   return (
-    <div className="profile-form">
-      <div className="profile-form-overview">
-        <div>
-          <p className="mission-kicker">YOUR PROFILE / ข้อมูลของคุณ</p>
-          <h2>{initial ? "ปรับพลังให้เป็นปัจจุบัน" : "บอกตัวตน สร้างการเชื่อมต่อ"}</h2>
-        </div>
-        <span className={`profile-completion-badge ${valid ? "is-complete" : ""}`}>
-          <CheckCircle2 className="h-4 w-4" aria-hidden />
+    <div className="profile-form space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-heading text-title font-bold text-ink">
+          {initial ? "ปรับพลังให้เป็นปัจจุบัน" : "บอกตัวตน สร้างการเชื่อมต่อ"}
+        </h2>
+        <span
+          className={`inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-body font-semibold ${
+            valid ? "bg-[#3D7A1C] text-white" : "bg-sky text-ink"
+          }`}
+        >
+          <CheckCircle2 className="h-5 w-5" aria-hidden />
           {answered}/3 ข้อสำคัญ
         </span>
       </div>
       <Block id="pf-step-1" step={1} title="ตัวตนของคุณ" hint="ชื่อที่อยากให้คนในงานเรียก" required>
-        <label htmlFor="pf-name" className="block text-[13px] font-bold">
+        <label htmlFor="pf-name" className="block text-body font-semibold text-ink">
           ชื่อที่ใช้ในงาน <span className="text-primary">*</span>
         </label>
         <input
@@ -166,9 +169,9 @@ export function ProfileForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="เช่น ต้น, มายด์"
-          className="h-13 w-full rounded-2xl border border-border bg-card px-4 py-3 text-base font-semibold outline-none focus:ring-2 focus:ring-ring"
+          className="h-14 w-full rounded-2xl border border-[#C9C6E0] bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft/70 focus:ring-2 focus:ring-ring font-semibold"
         />
-        <p id="pf-name-hint" className="text-[12px] text-muted-foreground">
+        <p id="pf-name-hint" className="text-body text-ink-soft">
           ใช้ชื่อเล่นหรือนามแฝงได้
         </p>
 
@@ -176,15 +179,15 @@ export function ProfileForm({
           open={Boolean(
             initial?.photo || (initial?.organization && initial.organization !== "อิสระ"),
           )}
-          className="profile-optional-fields rounded-2xl border border-border bg-card/60 p-3"
+          className="rounded-2xl border border-[#E6E3F2] bg-sky-soft p-3"
         >
-          <summary className="min-h-11 cursor-pointer py-2.5 text-[13px] font-bold">
+          <summary className="min-h-12 cursor-pointer py-2.5 text-body font-semibold text-ink">
             เพิ่มรูป กลุ่ม และช่วงวัย (ไม่บังคับ)
           </summary>
           <div className="mt-3 space-y-3">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-3xl bg-accent text-3xl">
+                <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-3xl bg-sky text-3xl">
                   {photo ? (
                     <img
                       src={photo}
@@ -200,17 +203,17 @@ export function ProfileForm({
                     type="button"
                     onClick={() => setPhoto(undefined)}
                     aria-label="ลบรูป"
-                    className="tap absolute -right-2 -top-2 grid h-9 w-9 place-items-center rounded-full bg-foreground text-background after:absolute after:-inset-1 after:content-['']"
+                    className="tap absolute -right-3 -top-3 grid h-12 w-12 place-items-center rounded-full bg-ink text-white"
                   >
-                    <X className="h-3.5 w-3.5" aria-hidden />
+                    <X className="h-5 w-5" aria-hidden />
                   </button>
                 )}
               </div>
               <label
                 aria-busy={photoState === "busy"}
-                className="tap inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-2xl border border-border px-4 py-2.5 text-[13px] font-bold focus-within:ring-2 focus-within:ring-ring"
+                className="tap inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl border border-[#C9C6E0] bg-white px-4 py-2.5 text-body font-semibold text-ink focus-within:ring-2 focus-within:ring-ring"
               >
-                <Camera className="h-4 w-4" aria-hidden />
+                <Camera className="h-5 w-5" aria-hidden />
                 {photoState === "busy"
                   ? "กำลังเตรียมรูป…"
                   : photo
@@ -225,7 +228,7 @@ export function ProfileForm({
                 />
               </label>
             </div>
-            <p role="status" aria-live="polite" className="text-[12px] text-muted-foreground">
+            <p role="status" aria-live="polite" className="text-body text-ink-soft">
               {photoState === "error" ? <>เปิดรูปไม่ได้ ลองเลือก JPG หรือ PNG</> : ""}
             </p>
 
@@ -238,8 +241,8 @@ export function ProfileForm({
                     aria-label={`ไอคอนแทนตัวแบบที่ ${idx + 1}`}
                     aria-pressed={avatar === a}
                     onClick={() => setAvatar(a)}
-                    className={`tap grid h-11 w-11 place-items-center rounded-2xl border-2 text-xl ${
-                      avatar === a ? "border-primary bg-primary/10" : "border-border bg-card"
+                    className={`tap grid h-12 w-12 place-items-center rounded-2xl border-2 text-xl ${
+                      avatar === a ? "border-primary bg-sky" : "border-[#E6E3F2] bg-white"
                     }`}
                   >
                     {a}
@@ -248,8 +251,8 @@ export function ProfileForm({
               </div>
             )}
 
-            <label htmlFor="pf-org" className="block text-[13px] font-bold">
-              กลุ่ม / องค์กร <span className="font-medium text-muted-foreground">(ไม่บังคับ)</span>
+            <label htmlFor="pf-org" className="block text-body font-semibold text-ink">
+              กลุ่ม / องค์กร <span className="font-normal text-ink-soft">(ไม่บังคับ)</span>
             </label>
             <input
               id="pf-org"
@@ -257,10 +260,10 @@ export function ProfileForm({
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
               placeholder="เช่น เครือข่ายเยาวชนภาคใต้"
-              className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+              className="h-14 w-full rounded-2xl border border-[#C9C6E0] bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft/70 focus:ring-2 focus:ring-ring"
             />
 
-            <p id="pf-gen" className="block text-[13px] font-bold">
+            <p id="pf-gen" className="block text-body font-semibold text-ink">
               ช่วงวัยของคุณ
             </p>
             <div className="flex flex-wrap gap-2" role="group" aria-labelledby="pf-gen">
@@ -296,14 +299,14 @@ export function ProfileForm({
         </div>
         {showProvince && (
           <>
-            <label htmlFor="pf-province" className="block text-[13px] font-bold">
-              จังหวัด <span className="font-medium text-muted-foreground">(ไม่บังคับ)</span>
+            <label htmlFor="pf-province" className="block text-body font-semibold text-ink">
+              จังหวัด <span className="font-normal text-ink-soft">(ไม่บังคับ)</span>
             </label>
             <select
               id="pf-province"
               value={province}
               onChange={(e) => setProvince(e.target.value)}
-              className="h-12 w-full rounded-2xl border border-border bg-card px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring"
+              className="h-14 w-full rounded-2xl border border-[#C9C6E0] bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft/70 focus:ring-2 focus:ring-ring font-semibold"
             >
               <option value="">เลือกจังหวัด</option>
               {provinces.map((p) => (
@@ -382,58 +385,53 @@ export function ProfileForm({
           maxLength={BIO_MAX}
           aria-describedby="pf-bio-count"
           placeholder="เช่น กำลังสร้างเครือข่ายดูแลใจวัยรุ่นที่เชียงใหม่"
-          className="w-full rounded-2xl border border-border bg-card p-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+          className="min-h-28 w-full rounded-2xl border border-[#C9C6E0] bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft/70 focus:ring-2 focus:ring-ring py-3"
         />
-        <p id="pf-bio-count" className="text-right text-[12px] text-muted-foreground font-tech">
+        <p id="pf-bio-count" className="text-right text-body text-ink-soft">
           {bio.length}/{BIO_MAX}
         </p>
       </Block>
 
-      <div className="profile-save-bar">
-        <div className="profile-save-inner">
-          <div className="profile-save-progress">
-            <div className="profile-save-label">
-              <span>PROFILE READINESS</span>
-              <span>{answered} / 3</span>
-            </div>
-            <div
-              role="progressbar"
-              aria-label="ความคืบหน้าข้อที่ต้องตอบ"
-              aria-valuemin={0}
-              aria-valuemax={3}
-              aria-valuenow={answered}
-              className="profile-progress-track"
-            >
-              <div style={{ width: `${(answered / 3) * 100}%` }} />
-            </div>
-            <p id="pf-hint" aria-live="polite">
-              {valid ? "ครบแล้ว พร้อมไปต่อ" : `ยังขาด: ${missing.map((m) => m.label).join(" · ")}`}
-            </p>
-          </div>
-          <div className="profile-save-action">
-            {valid && (sameIssue > 0 || canHelp > 0) && (
-              <p aria-live="polite" className="profile-peer-hint">
-                {[
-                  sameIssue > 0 && `${sameIssue} คนใส่ใจเรื่องเดียวกัน`,
-                  canHelp > 0 && `${canHelp} คนมีพลังที่คุณหา`,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-            )}
-            <button
-              type="button"
-              disabled={sending}
-              aria-disabled={!valid || undefined}
-              aria-describedby="pf-hint"
-              onClick={submit}
-              className="tap focused-primary-action profile-save-button"
-            >
-              <span>{sending ? "กำลังบันทึก…" : submitLabel}</span>
-              <ArrowRight className="h-5 w-5" aria-hidden />
-            </button>
-          </div>
+      <div className="sticky bottom-[calc(var(--bottom-nav-height,77px)+var(--pdpa-height,0px)+0.5rem)] z-20 rounded-3xl border border-[#E6E3F2] bg-white p-4 shadow-[0_8px_24px_-12px_rgba(43,40,120,0.35)]">
+        <div
+          role="progressbar"
+          aria-label="ความคืบหน้าข้อที่ต้องตอบ"
+          aria-valuemin={0}
+          aria-valuemax={3}
+          aria-valuenow={answered}
+          className="h-2 overflow-hidden rounded-full bg-sky"
+        >
+          <div
+            className="h-full rounded-full bg-primary transition-[width]"
+            style={{ width: `${(answered / 3) * 100}%` }}
+          />
         </div>
+        <p id="pf-hint" aria-live="polite" className="mt-2 text-body text-ink-soft">
+          {valid ? "ครบแล้ว พร้อมไปต่อ" : `ยังขาด: ${missing.map((m) => m.label).join(" · ")}`}
+        </p>
+        {valid && (sameIssue > 0 || canHelp > 0) && (
+          <p aria-live="polite" className="mt-1 text-body font-semibold text-primary">
+            {[
+              sameIssue > 0 && `${sameIssue} คนใส่ใจเรื่องเดียวกัน`,
+              canHelp > 0 && `${canHelp} คนมีพลังที่คุณหา`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        )}
+        <button
+          type="button"
+          disabled={sending}
+          aria-disabled={!valid || undefined}
+          aria-describedby="pf-hint"
+          onClick={submit}
+          className={`tap mt-3 flex min-h-16 w-full items-center justify-center gap-2 rounded-[18px] px-6 text-body font-semibold ${
+            valid ? "bg-primary text-white" : "bg-sky text-ink"
+          }`}
+        >
+          <span>{sending ? "กำลังบันทึก…" : submitLabel}</span>
+          <ArrowRight className="h-6 w-6" aria-hidden />
+        </button>
       </div>
     </div>
   );
@@ -459,21 +457,31 @@ function Block({
       id={id}
       tabIndex={-1}
       aria-labelledby={`${id}-title`}
-      className="profile-form-section mission-panel scroll-mt-24 outline-none"
+      className="scroll-mt-24 rounded-3xl border border-[#E6E3F2] bg-white p-5 shadow-[0_8px_24px_-12px_rgba(43,40,120,0.25)] outline-none"
     >
-      <div className="profile-section-heading">
-        <span className="profile-section-number" aria-hidden>
-          {String(step).padStart(2, "0")}
+      <div className="mb-4 flex items-start gap-3">
+        <span
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky font-heading text-body font-bold text-ink"
+          aria-hidden
+        >
+          {step}
         </span>
-        <div>
-          <h2 id={`${id}-title`} className="profile-section-title">
+        <div className="min-w-0">
+          <h2
+            id={`${id}-title`}
+            className="flex flex-wrap items-center gap-2 font-heading text-title font-bold text-ink"
+          >
             {title}
-            {required && <span className="profile-required-label">จำเป็น</span>}
+            {required && (
+              <span className="rounded-lg bg-primary px-2 py-0.5 text-body font-semibold text-white">
+                จำเป็น
+              </span>
+            )}
           </h2>
-          <p className="text-[12px] text-muted-foreground">{hint}</p>
+          <p className="text-body text-ink-soft">{hint}</p>
         </div>
       </div>
-      <div className="profile-section-body space-y-3">{children}</div>
+      <div className="space-y-3">{children}</div>
     </section>
   );
 }
@@ -492,11 +500,11 @@ function Pill({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`tap profile-option-pill inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-bold ${
-        active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card"
+      className={`tap inline-flex min-h-12 items-center gap-2 rounded-full border-2 px-4 py-2 text-body font-semibold ${
+        active ? "border-primary bg-primary text-white" : "border-[#C9C6E0] bg-white text-ink"
       }`}
     >
-      {active && <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />}
+      {active && <Check className="h-5 w-5 shrink-0" aria-hidden />}
       {children}
     </button>
   );
@@ -514,7 +522,7 @@ function PowerGrid({
   tone: "lime" | "coral";
 }) {
   return (
-    <div className="profile-power-grid grid grid-cols-2 gap-2" role="group" aria-label={label}>
+    <div className="grid grid-cols-2 gap-2" role="group" aria-label={label}>
       {POWERS.map((p) => {
         const active = selected.includes(p.key);
         return (
@@ -523,26 +531,28 @@ function PowerGrid({
             type="button"
             aria-pressed={active}
             onClick={() => onToggle(p.key)}
-            className={`tap profile-power-card profile-power-${tone} relative rounded-2xl border-2 p-3 pr-8 text-left ${
+            className={`tap relative min-h-24 rounded-2xl border-2 p-3 pr-10 text-left ${
               active
                 ? tone === "lime"
-                  ? "border-lime-foreground/70 bg-lime/30"
-                  : "border-coral bg-coral/15"
-                : "border-border bg-card"
+                  ? "border-[#3D7A1C] bg-[#EAF4E2]"
+                  : "border-[#B8520F] bg-[#FDEBDD]"
+                : "border-[#E6E3F2] bg-white"
             }`}
           >
             {active && (
               <span
-                className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-foreground text-background"
+                className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-ink text-white"
                 aria-hidden
               >
-                <Check className="h-3 w-3" />
+                <Check className="h-4 w-4" />
               </span>
             )}
             <span className="text-xl" aria-hidden>
               {p.emoji}
             </span>
-            <span className="mt-1 block text-[13px] font-extrabold leading-tight">{p.th}</span>
+            <span className="mt-1 block text-body font-semibold leading-tight text-ink">
+              {p.th}
+            </span>
           </button>
         );
       })}

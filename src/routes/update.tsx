@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, LogOut, QrCode } from "lucide-react";
+import { Bell, BookOpen, Check, LogOut, PlayCircle, Radio } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
-import { MissionEmpty } from "@/components/mission-ui";
+import { TOUR_EVENT } from "@/components/guided-tour";
+import { Avatar, IssueBlock } from "@/components/power-bits";
 import { ProfileForm } from "@/components/profile-form";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
@@ -14,7 +15,7 @@ import { getSession } from "@/lib/session";
 export const Route = createFileRoute("/update")({
   head: () => ({
     meta: [
-      { title: "อัปเดตข้อมูลของฉัน — คนส. Connexts" },
+      { title: "ฉัน — คนส. Connexts" },
       {
         name: "description",
         content:
@@ -54,11 +55,42 @@ function SignOutButton() {
       onClick={() => {
         if (window.confirm("ออกจากระบบตอนนี้ใช่ไหม?")) void signOut();
       }}
-      className="tap mx-auto mt-6 flex min-h-11 items-center gap-2 px-4 text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline"
+      className="tap mx-auto mt-6 flex min-h-12 items-center gap-2 px-4 text-body font-semibold text-ink-soft underline-offset-4 hover:underline"
     >
-      <LogOut className="h-4 w-4" aria-hidden />
+      <LogOut className="h-5 w-5" aria-hidden />
       ออกจากระบบ
     </button>
+  );
+}
+
+const QUICK_LINK_CLASS =
+  "tap flex min-h-14 items-center gap-3 rounded-[18px] border border-[#E6E3F2] bg-white px-4 text-body font-semibold text-ink shadow-[0_8px_24px_-12px_rgba(43,40,120,0.25)]";
+
+/** ทางลัดไปหน้าที่อยู่ในแท็บ "ฉัน" + ปุ่มเปิดทัวร์แนะนำ (ทางเข้าเดียวของทัวร์) */
+function QuickLinks() {
+  return (
+    <div className="grid gap-3">
+      <Link to="/notifications" className={QUICK_LINK_CLASS}>
+        <Bell className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+        การแจ้งเตือน
+      </Link>
+      <Link to="/dashboard" className={QUICK_LINK_CLASS}>
+        <Radio className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+        สดในงาน
+      </Link>
+      <Link to="/guide" className={QUICK_LINK_CLASS}>
+        <BookOpen className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+        คู่มือ
+      </Link>
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new Event(TOUR_EVENT))}
+        className={`${QUICK_LINK_CLASS} text-left`}
+      >
+        <PlayCircle className="h-6 w-6 shrink-0 text-primary" aria-hidden />
+        ดูทัวร์แนะนำ
+      </button>
+    </div>
   );
 }
 
@@ -101,20 +133,21 @@ function UpdateMe() {
 
   if (hydrated && !me) {
     return (
-      <AppShell title="อัปเดตข้อมูลของฉัน" subtitle="ยังไม่พบโปรไฟล์ในเครื่องนี้">
-        <div className="px-5 py-8">
-          <MissionEmpty
-            title="เริ่มต้นจากพลังของคุณ"
-            description="สร้างโปรไฟล์ครั้งเดียว แล้วกลับมาแก้ไขได้ตลอดงาน"
-            variant="profile"
-          >
+      <AppShell title="ฉัน" subtitle="ยังไม่พบโปรไฟล์ในเครื่องนี้">
+        <div className="space-y-5">
+          <section className="rounded-3xl border border-[#E6E3F2] bg-white p-6 text-center shadow-[0_8px_24px_-12px_rgba(43,40,120,0.25)]">
+            <h2 className="font-heading text-title font-bold text-ink">เริ่มต้นจากพลังของคุณ</h2>
+            <p className="mt-2 text-body text-ink-soft">
+              สร้างโปรไฟล์ครั้งเดียว แล้วกลับมาแก้ไขได้ตลอดงาน
+            </p>
             <Link
               to="/onboarding"
-              className="tap mt-5 inline-flex items-center justify-center rounded-3xl gradient-power px-6 py-3 text-sm font-extrabold text-primary-foreground"
+              className="tap mt-5 flex min-h-16 items-center justify-center rounded-[18px] bg-primary px-6 text-body font-semibold text-white"
             >
               สร้างโปรไฟล์ของฉัน
             </Link>
-          </MissionEmpty>
+          </section>
+          <QuickLinks />
           <SignOutButton />
         </div>
       </AppShell>
@@ -122,44 +155,66 @@ function UpdateMe() {
   }
 
   return (
-    <AppShell title="โปรไฟล์ของฉัน" subtitle="แก้ไขได้ตลอดงาน แล้วกดบันทึก">
-      <div className="profile-update-page space-y-5 px-5 py-5">
-        <div className="profile-sync-status card-soft rounded-3xl bg-card p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                สถานะข้อมูล
-              </p>
-              <p className="mt-1 text-sm font-extrabold">
-                {saved
-                  ? "บันทึกเรียบร้อย ✨"
-                  : lastUpdate
-                    ? `อัปเดตล่าสุด ${timeAgo(lastUpdate)}`
-                    : "ยังไม่เคยอัปเดต"}
-              </p>
-              {lastUpdate && (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {new Date(lastUpdate).toLocaleString("th-TH", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </p>
-              )}
+    <AppShell title="ฉัน" subtitle="แก้ไขได้ตลอดงาน แล้วกดบันทึก">
+      <div className="profile-update-page space-y-5">
+        {me && (
+          <section className="rounded-3xl border border-[#E6E3F2] bg-white p-5 shadow-[0_8px_24px_-12px_rgba(43,40,120,0.25)]">
+            <div className="flex items-center gap-4">
+              <Avatar user={me} size={72} />
+              <div className="min-w-0 flex-1">
+                <h2 className="line-clamp-2 font-heading text-title font-bold text-ink [overflow-wrap:anywhere]">
+                  {me.name}
+                </h2>
+                {me.organization && (
+                  <p className="line-clamp-2 text-body text-ink-soft [overflow-wrap:anywhere]">
+                    {me.organization}
+                  </p>
+                )}
+              </div>
             </div>
-            <span
-              className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${
-                saved ? "gradient-power text-primary-foreground" : "bg-accent text-primary"
-              }`}
-            >
-              <Check className="h-5 w-5" strokeWidth={2.6} />
-            </span>
-          </div>
-        </div>
+            {me.interests.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {me.interests.slice(0, 3).map((issue) => (
+                  <IssueBlock key={issue} issue={issue} />
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#E6E3F2] pt-4">
+              <div className="min-w-0">
+                <p className="text-body font-semibold text-ink">
+                  {saved
+                    ? "บันทึกเรียบร้อย"
+                    : lastUpdate
+                      ? `อัปเดตล่าสุด ${timeAgo(lastUpdate)}`
+                      : "ยังไม่เคยอัปเดต"}
+                </p>
+                {lastUpdate && (
+                  <p className="text-body text-ink-soft">
+                    {new Date(lastUpdate).toLocaleString("th-TH", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </p>
+                )}
+              </div>
+              <span
+                aria-hidden
+                className={`grid h-12 w-12 shrink-0 place-items-center rounded-full ${
+                  saved ? "bg-primary text-white" : "bg-sky text-ink"
+                }`}
+              >
+                <Check className="h-6 w-6" strokeWidth={2.6} />
+              </span>
+            </div>
+          </section>
+        )}
+
+        <QuickLinks />
 
         {hydrated && me && !formReady && (
           <p
             role="status"
-            className="card-soft rounded-3xl p-5 text-center text-sm font-semibold text-muted-foreground"
+            className="rounded-3xl border border-[#E6E3F2] bg-white p-5 text-center text-body font-semibold text-ink-soft"
           >
             กำลังโหลดรูปโปรไฟล์ของคุณ…
           </p>
@@ -188,13 +243,13 @@ function UpdateMe() {
           />
         )}
 
-        <div className="profile-qr-card card-soft flex items-center gap-5 rounded-3xl bg-card p-6">
+        <div className="profile-qr-card flex items-center gap-5 rounded-3xl border border-[#E6E3F2] bg-white p-5 shadow-[0_8px_24px_-12px_rgba(43,40,120,0.25)]">
           <div className="shrink-0 bg-white p-3">
-            <QRCodeSVG value={qrUrl} size={84} bgColor="#ffffff" fgColor="#07101b" />
+            <QRCodeSVG value={qrUrl} size={84} bgColor="#ffffff" fgColor="#2B2878" />
           </div>
           <div className="min-w-0">
-            <p className="text-[13px] font-extrabold">QR ของฉัน</p>
-            <p className="mt-1 text-[12px] text-muted-foreground">
+            <p className="text-body font-semibold text-ink">QR ของฉัน</p>
+            <p className="mt-1 text-body text-ink-soft">
               สแกนจากมือถือเครื่องไหนก็เข้ามาแก้ไขข้อมูลนี้ได้ทันที
             </p>
           </div>

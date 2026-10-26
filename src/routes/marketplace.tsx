@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Bookmark, BookmarkCheck, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { ExploreTabs } from "@/components/explore-tabs";
 import { MissionVisual } from "@/components/mission-ui";
 import { IdeaForm } from "@/components/idea-form";
 import { Avatar, Chip } from "@/components/power-bits";
@@ -125,8 +126,7 @@ function Marketplace() {
 
   return (
     <AppShell
-      title="ตลาดพลัง"
-      titleEn="Marketplace"
+      title="สำรวจ"
       subtitle="จับคู่ไอเดียกับพลัง"
       action={
         <button
@@ -138,6 +138,7 @@ function Marketplace() {
         </button>
       }
     >
+      <ExploreTabs current="ideas" />
       <div className="core-page core-marketplace">
         <section className="core-filter-panel space-y-2 px-5 py-3" aria-label="ตัวกรองไอเดีย">
           <div className="core-section-head">

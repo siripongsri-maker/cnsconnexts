@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { ArrowUpRight, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
+import { ExploreTabs } from "@/components/explore-tabs";
 import { MissionVisual } from "@/components/mission-ui";
 import { Avatar, Chip, PowerChip } from "@/components/power-bits";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
@@ -156,8 +157,7 @@ function PowerMap() {
 
   return (
     <AppShell
-      title="แผนที่พลัง"
-      titleEn="Power map"
+      title="สำรวจ"
       subtitle={`${filtered.length} คน · ${ideas.length} ไอเดีย · ${provinceNotes.length} เรื่องเล่า`}
       action={
         <div
@@ -191,6 +191,7 @@ function PowerMap() {
         </div>
       }
     >
+      <ExploreTabs current="map" />
       <div className="core-page core-map">
         <a
           href="/#collective-power"

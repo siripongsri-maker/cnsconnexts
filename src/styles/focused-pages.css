@@ -197,245 +197,6 @@
   color: #68beff;
 }
 
-/* Reusable profile form. The same component is used when editing a saved profile. */
-.profile-form {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  padding-bottom: 156px;
-}
-.profile-form-overview {
-  display: flex;
-  grid-column: 1 / -1;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 5px 0 8px;
-}
-.profile-form-overview .mission-kicker {
-  color: #738397;
-  font-size: 9px;
-  letter-spacing: 0.13em;
-}
-.profile-form-overview h2 {
-  margin-top: 8px;
-  font-size: 19px;
-  line-height: 1.5;
-  font-weight: 500;
-}
-.profile-completion-badge {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 11px;
-  border: 1px solid #ffffff1c;
-  color: #8c9bae;
-  font-size: 11px;
-}
-.profile-completion-badge.is-complete {
-  border-color: #139bff55;
-  color: #69c1ff;
-  background: #139bff0d;
-}
-.profile-form .profile-form-section {
-  grid-column: 1 / -1;
-  padding: 25px;
-  border: 1px solid #ffffff20;
-  border-radius: 2px;
-  background: #0a0e15;
-}
-.profile-form #pf-step-4,
-.profile-form #pf-step-5 {
-  grid-column: auto;
-}
-.profile-section-heading {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding-bottom: 19px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ffffff13;
-}
-.profile-section-number {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid #139bff4d;
-  color: #139bff;
-  font: 11px monospace;
-}
-.profile-section-title {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 21px;
-  line-height: 1.45;
-  font-weight: 500;
-}
-.profile-section-heading p {
-  margin-top: 5px;
-  color: #8493a5;
-  font-size: 11px;
-  line-height: 1.7;
-}
-.profile-required-label {
-  display: inline-block;
-  padding: 1px 6px;
-  border: 1px solid #139bff33;
-  color: #139bff;
-  font-size: 9px;
-  line-height: 1.7;
-  font-weight: 500;
-}
-.profile-form .profile-section-body :is(input:not([type="file"]), select, textarea) {
-  border: 1px solid #ffffff28;
-  border-radius: 2px;
-  background: #060a10;
-  color: #ecf3f9;
-}
-.profile-form .profile-section-body :is(input, textarea)::placeholder {
-  color: #69798b;
-  font-size: 13px;
-}
-.profile-form .profile-section-body label {
-  font-weight: 500;
-}
-.profile-form .profile-optional-fields {
-  border: 1px solid #ffffff1c;
-  border-radius: 2px;
-  background: #ffffff02;
-}
-.profile-optional-fields summary {
-  color: #a1b0c2;
-  font-size: 12px;
-}
-.profile-optional-fields[open] summary {
-  color: #d5e5f5;
-}
-.profile-form .profile-option-pill {
-  border-radius: 2px;
-  border-color: #ffffff20;
-  background: #ffffff03;
-  color: #9caabc;
-  font-size: 12px;
-  font-weight: 500;
-}
-.profile-form .profile-option-pill:hover {
-  border-color: #139bff77;
-  color: #e1efff;
-}
-.profile-form .profile-option-pill[aria-pressed="true"] {
-  border-color: #139bff;
-  background: #139bff17;
-  color: #80cbff;
-}
-.profile-form .profile-power-grid {
-  gap: 8px;
-}
-.profile-form .profile-power-card {
-  min-height: 89px;
-  border-width: 1px;
-  border-color: #ffffff1f;
-  border-radius: 2px;
-  background: #ffffff03;
-  color: #a8b5c4;
-  transition:
-    border-color 0.2s,
-    background-color 0.2s;
-}
-.profile-form .profile-power-card > span:last-child {
-  font-size: 12px;
-  line-height: 1.6;
-  font-weight: 500;
-}
-.profile-form .profile-power-card:hover {
-  border-color: #139bff77;
-}
-.profile-form .profile-power-card[aria-pressed="true"] {
-  border-color: #139bff;
-  background: #139bff13;
-  color: #d9efff;
-  box-shadow: inset 2px 0 #139bff;
-}
-.profile-form .profile-power-card[aria-pressed="true"] > span:first-child {
-  border-radius: 1px;
-  background: #139bff;
-  color: #030508;
-}
-.profile-save-bar {
-  position: fixed;
-  z-index: 35;
-  inset: auto 0 0;
-  border-top: 1px solid #ffffff2b;
-  background: #05090ff5;
-  padding: 15px 48px max(15px, env(safe-area-inset-bottom));
-  backdrop-filter: blur(20px);
-}
-.profile-save-inner {
-  display: flex;
-  width: 100%;
-  max-width: 1400px;
-  margin-inline: auto;
-  align-items: center;
-  justify-content: space-between;
-  gap: 42px;
-}
-.profile-save-progress {
-  width: min(100%, 480px);
-}
-.profile-save-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  font: 9px monospace;
-  letter-spacing: 0.13em;
-  color: #9aa9bb;
-}
-.profile-save-label > span:last-child {
-  color: #139bff;
-}
-.profile-progress-track {
-  height: 2px;
-  overflow: hidden;
-  background: #ffffff16;
-  margin-top: 10px;
-}
-.profile-progress-track > div {
-  height: 100%;
-  background: #139bff;
-  transition: width 0.3s;
-}
-.profile-save-progress p {
-  margin-top: 9px;
-  color: #7e8b9a;
-  font-size: 11px;
-  line-height: 1.6;
-}
-.profile-save-action {
-  min-width: 260px;
-}
-.profile-save-button {
-  min-height: 48px;
-  font-size: 14px;
-}
-.profile-save-button[aria-disabled="true"] {
-  border-color: #25384b;
-  background: #152535;
-  color: #92aac0;
-}
-.profile-peer-hint {
-  margin-bottom: 7px;
-  color: #80caff;
-  font-size: 10px;
-  text-align: right;
-}
-
 /* Intro guide: a compact briefing with genuine progress controls. */
 .intro-guide {
   position: relative;
@@ -1282,13 +1043,6 @@
     gap: 28px;
     grid-template-columns: minmax(220px, 0.8fr) minmax(0, 2fr);
   }
-  .profile-form #pf-step-4,
-  .profile-form #pf-step-5 {
-    grid-column: 1 / -1;
-  }
-  .profile-power-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
   .focused-page .auth-layout {
     gap: 6%;
     grid-template-columns: minmax(0, 1fr) minmax(340px, 1fr);
@@ -1377,79 +1131,6 @@
   }
   .profile-section-nav a > span {
     font-size: 8px;
-  }
-  .profile-form {
-    gap: 14px;
-    padding-bottom: 155px;
-  }
-  .profile-form-overview {
-    align-items: flex-start;
-    padding-top: 4px;
-  }
-  .profile-form-overview h2 {
-    font-size: 16px;
-  }
-  .profile-form-overview .mission-kicker {
-    font-size: 8px;
-  }
-  .profile-completion-badge {
-    font-size: 9px;
-    gap: 5px;
-    padding: 6px 7px;
-  }
-  .profile-completion-badge svg {
-    width: 12px;
-    height: 12px;
-  }
-  .profile-form .profile-form-section {
-    padding: 21px 18px;
-  }
-  .profile-section-heading {
-    gap: 11px;
-  }
-  .profile-section-title {
-    font-size: 19px;
-  }
-  .profile-section-heading p {
-    font-size: 10px;
-  }
-  .profile-form .profile-option-pill {
-    padding-inline: 11px;
-    font-size: 11px;
-  }
-  .profile-form .profile-power-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .profile-save-bar {
-    padding: 12px 20px max(12px, env(safe-area-inset-bottom));
-  }
-  .profile-save-inner {
-    display: grid;
-    gap: 10px;
-  }
-  .profile-save-progress {
-    width: 100%;
-    max-width: none;
-  }
-  .profile-save-label {
-    display: none;
-  }
-  .profile-progress-track {
-    margin-top: 0;
-  }
-  .profile-save-progress p {
-    margin-top: 7px;
-    font-size: 10px;
-  }
-  .profile-save-action {
-    min-width: 0;
-  }
-  .profile-save-button {
-    min-height: 48px;
-  }
-  .profile-peer-hint {
-    text-align: center;
-    font-size: 9px;
   }
   .intro-guide {
     padding: 20px 18px;
@@ -1664,23 +1345,12 @@
     font-size: 7px;
     letter-spacing: 0;
   }
-  .profile-form .profile-power-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .profile-form-overview {
-    flex-wrap: wrap;
-    gap: 9px;
-  }
-  .profile-section-title {
-    font-size: 18px;
-  }
   .intro-guide-progress {
     max-width: 75px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .focused-page *,
-  .profile-form * {
+  .focused-page * {
     transition: none !important;
     scroll-behavior: auto !important;
   }
@@ -1837,13 +1507,6 @@
 }
 @media (max-width: 1023px) {
   /* Editing a profile uses AppShell's bottom navigation; onboarding has none. */
-  .app-content .profile-save-bar {
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-    padding-bottom: 13px;
-  }
-  .app-content .profile-form {
-    padding-bottom: 210px;
-  }
 }
 @media (max-width: 760px) {
   .connexts-loading-screen {
@@ -1908,157 +1571,6 @@
   }
 }
 
-/* Shared overlays also appear outside the routed site wrapper. */
-.guided-tour-dialog {
-  position: fixed;
-  z-index: 60;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: #01050bd9;
-  backdrop-filter: blur(8px);
-}
-.guided-tour-card {
-  position: relative;
-  isolation: isolate;
-  width: 100%;
-  max-width: 540px;
-  max-height: calc(100svh - 48px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 30px;
-  border: 1px solid #245174;
-  border-top: 2px solid #139bff;
-  background: linear-gradient(135deg, #0e2032, #070f19 75%);
-  color: #eaf4fc;
-  outline: none;
-}
-.guided-tour-heading {
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
-}
-.guided-tour-icon {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  flex-shrink: 0;
-  border: 1px solid #139bff55;
-  background: #139bff0d;
-  color: #139bff;
-}
-.guided-tour-heading .mission-kicker {
-  margin: 0;
-  color: #7fa9ca;
-  font: 9px monospace;
-  letter-spacing: 0.1em;
-  line-height: 1.7;
-}
-.guided-tour-title {
-  margin-top: 8px;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-.guided-tour-close {
-  display: grid;
-  width: 44px;
-  min-height: 44px;
-  flex-shrink: 0;
-  place-items: center;
-  margin: -10px -11px 0 auto;
-  color: #7898b2;
-}
-.guided-tour-close:hover {
-  color: #d4ecff;
-  background: #139bff0d;
-}
-.guided-tour-visual {
-  position: absolute;
-  z-index: -1;
-  top: 65px;
-  right: -25px;
-  width: 280px;
-  opacity: 0.18;
-}
-.guided-tour-body {
-  margin-top: 27px;
-  font-size: 15px;
-  line-height: 1.9;
-  color: #c4d7e7;
-}
-.guided-tour-tip {
-  margin-top: 15px;
-  padding: 12px 15px;
-  border-left: 1px solid #139bff77;
-  background: #139bff08;
-  color: #7c9bb6;
-  font-size: 12px;
-  line-height: 1.9;
-}
-.guided-tour-destination {
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 24px;
-  padding: 12px 18px;
-  border: 1px solid #139bff;
-  background: #139bff;
-  color: #030508;
-  font-size: 13px;
-  font-weight: 600;
-}
-.guided-tour-controls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
-}
-.guided-tour-progress {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: 5px;
-  min-width: 60px;
-  max-width: 110px;
-  margin-right: auto;
-}
-.guided-tour-progress > span {
-  height: 2px;
-  min-width: 9px;
-  border-radius: 0;
-}
-.guided-tour-previous,
-.guided-tour-next {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 44px;
-  padding: 10px 13px;
-  border: 1px solid #294359;
-  color: #9db9d1;
-  font-size: 12px;
-}
-.guided-tour-next {
-  border-color: #139bff55;
-  background: #139bff0d;
-  color: #8ed1ff;
-}
-.guided-tour-skip {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  margin-top: 7px;
-  color: #64839d;
-  font-size: 11px;
-  text-align: center;
-}
 .pending-profile-wrap {
   width: 88%;
   max-width: 1280px;
@@ -2135,45 +1647,7 @@
 .pending-profile-dismiss:hover {
   color: #cbe8ff;
 }
-[data-lowspec] .guided-tour-dialog {
-  backdrop-filter: none;
-}
 @media (max-width: 760px) {
-  .guided-tour-dialog {
-    padding: 16px;
-  }
-  .guided-tour-card {
-    max-height: calc(100svh - 32px);
-    padding: 24px 21px;
-  }
-  .guided-tour-heading {
-    gap: 12px;
-  }
-  .guided-tour-heading .mission-kicker {
-    font-size: 7px;
-  }
-  .guided-tour-title {
-    font-size: 20px;
-    margin-top: 7px;
-  }
-  .guided-tour-body {
-    font-size: 13px;
-    margin-top: 22px;
-  }
-  .guided-tour-tip {
-    font-size: 11px;
-  }
-  .guided-tour-close {
-    margin-right: -9px;
-  }
-  .guided-tour-destination {
-    font-size: 12px;
-  }
-  .guided-tour-previous,
-  .guided-tour-next {
-    font-size: 11px;
-    padding-inline: 11px;
-  }
   .pending-profile-wrap {
     width: calc(100% - 32px);
     padding-top: 18px;
@@ -2216,22 +1690,7 @@
     margin-top: -8px;
   }
 }
-@media (max-width: 400px) {
-  .guided-tour-progress {
-    flex-basis: 100%;
-    max-width: none;
-    margin-bottom: 5px;
-  }
-  .guided-tour-previous,
-  .guided-tour-next {
-    margin-left: auto;
-  }
-  .guided-tour-previous + .guided-tour-next {
-    margin-left: 0;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .guided-tour-dialog *,
   .pending-profile-banner * {
     transition: none !important;
   }
