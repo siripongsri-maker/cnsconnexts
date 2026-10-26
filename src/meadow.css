@@ -234,3 +234,80 @@ html.meadow
 html[data-lowspec] .meadow-rotor {
   animation: none;
 }
+
+/*
+ * จอฉลองตอนเชื่อมกันสำเร็จ <MatchCelebration> (src/components/match-celebration.tsx)
+ * สไตล์ปกติของทุกชิ้นคือภาพสุดท้าย keyframes มีแค่ from จึงหยุดเป็นภาพสุดท้ายทันทีเมื่อปิดแอนิเมชัน
+ * ลำดับ: Avatar ลอยเข้า (0–600ms) → เส้นประลากเชื่อม → หัวใจเด้ง → ข้อความ → ปุ่ม
+ */
+@keyframes meadow-celebrate-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-40vw) translateY(16px) rotate(-8deg);
+  }
+}
+@keyframes meadow-celebrate-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(40vw) translateY(16px) rotate(8deg);
+  }
+}
+@keyframes meadow-celebrate-draw {
+  from {
+    transform: scaleX(0); /* ใช้ transform แยกจาก translate ของ Tailwind ที่จัดกึ่งกลางเส้น */
+  }
+}
+@keyframes meadow-celebrate-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+@keyframes meadow-celebrate-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes meadow-celebrate-burst {
+  from {
+    opacity: 0;
+    transform: translate(var(--meadow-confetti-x, 0), var(--meadow-confetti-y, 0)) scale(0.2);
+  }
+}
+
+.meadow-celebrate-left {
+  animation: meadow-celebrate-from-left 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.meadow-celebrate-right {
+  animation: meadow-celebrate-from-right 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.meadow-celebrate-line {
+  transform-origin: center;
+  animation: meadow-celebrate-draw 360ms ease-out 360ms both;
+}
+.meadow-celebrate-knot {
+  animation: meadow-celebrate-pop 420ms ease-out 560ms both;
+}
+.meadow-celebrate-confetti {
+  animation: meadow-celebrate-burst 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.meadow-celebrate-text {
+  animation: meadow-celebrate-rise 420ms ease-out 620ms both;
+}
+.meadow-celebrate-actions {
+  animation: meadow-celebrate-rise 420ms ease-out 760ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .meadow-celebrate [class*="meadow-celebrate-"] {
+    animation: none;
+  }
+}
+html[data-lowspec] .meadow-celebrate [class*="meadow-celebrate-"] {
+  animation: none;
+}
