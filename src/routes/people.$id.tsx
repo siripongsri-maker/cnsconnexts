@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { MatchCelebration } from "@/components/match-celebration";
 import { MeadowState, STATE_PRIMARY } from "@/components/meadow-state";
@@ -38,6 +38,18 @@ function Person() {
   const [celebration, setCelebration] = useState<{ connectionId: string; reason: string } | null>(
     null,
   );
+  // ปุ่มกด "ขอเชื่อมต่อ" ถูกแทนที่ด้วยลิงก์ตอนเชื่อมสำเร็จ — เก็บ ref ของปุ่มล่างสุดไว้คืนโฟกัสหลังปิดจอฉลอง
+  const actionRef = useRef<HTMLElement | null>(null);
+  const focusActionAfterCelebration = useRef(false);
+  useEffect(() => {
+    if (celebration || !focusActionAfterCelebration.current) return;
+    focusActionAfterCelebration.current = false;
+    // รอหลัง Radix คืนโฟกัส (setTimeout 0 ตอนถอด overlay) เหมือนหน้าแรก
+    const t = setTimeout(() => {
+      if (actionRef.current?.isConnected) actionRef.current.focus();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [celebration]);
   const user = users.find((u) => u.id === id);
   if (!hydrated && !user) {
     return <MeadowState loading title="กำลังเปิดโปรไฟล์…" />;
@@ -148,7 +160,10 @@ function Person() {
           other={user}
           reason={celebration.reason}
           connectionId={celebration.connectionId}
-          onClose={() => setCelebration(null)}
+          onClose={() => {
+            focusActionAfterCelebration.current = true;
+            setCelebration(null);
+          }}
         />
       )}
 
@@ -158,17 +173,29 @@ function Person() {
             <Link
               to="/connection/$id"
               params={{ id: existing.id }}
+              ref={(el) => {
+                actionRef.current = el;
+              }}
               className="meadow-btn-primary tap w-full text-center"
             >
               เชื่อมกันแล้ว · ทำอะไรต่อ
             </Link>
           ) : !me ? (
-            <Link to="/onboarding" className="meadow-btn-primary tap w-full text-center">
+            <Link
+              to="/onboarding"
+              ref={(el) => {
+                actionRef.current = el;
+              }}
+              className="meadow-btn-primary tap w-full text-center"
+            >
               สร้างโปรไฟล์เพื่อเชื่อมต่อ
             </Link>
           ) : (
             <button
               type="button"
+              ref={(el) => {
+                actionRef.current = el;
+              }}
               onClick={() => {
                 if (!match) return;
                 const c = connect(user.id, match.score, match.reason);

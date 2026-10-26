@@ -217,12 +217,12 @@ export function GuidedTour() {
               />
             ))}
           </div>
-          <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
+          <div className="flex min-w-0 flex-1 basis-64 flex-wrap items-center justify-end gap-2">
             {idx > 0 && (
               <button
                 type="button"
                 onClick={goBack}
-                className="tap inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] border border-[#C9C6E0] px-4 text-body font-semibold text-ink"
+                className="tap inline-flex min-h-14 grow items-center justify-center gap-2 whitespace-nowrap rounded-[18px] border border-[#C9C6E0] px-4 text-body font-semibold text-ink"
               >
                 <ArrowLeft className="h-5 w-5" aria-hidden="true" /> ก่อนหน้า
               </button>
@@ -231,7 +231,7 @@ export function GuidedTour() {
               ref={nextRef}
               type="button"
               onClick={() => (last ? close() : setI(idx + 1))}
-              className="tap inline-flex min-h-14 items-center justify-center gap-2 rounded-[18px] bg-primary px-5 text-body font-semibold text-white"
+              className="tap inline-flex min-h-14 grow items-center justify-center gap-2 whitespace-nowrap rounded-[18px] bg-primary px-5 text-body font-semibold text-white"
             >
               {last ? "เริ่มใช้งาน" : "ถัดไป"}
               {!last && <ArrowRight className="h-5 w-5" aria-hidden="true" />}
