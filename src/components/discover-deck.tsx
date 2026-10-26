@@ -12,8 +12,11 @@ import {
   tryAcquireLock,
   unseenEntries,
 } from "@/lib/deck-rules";
+import { connectionWith } from "@/lib/connect-rules";
 import { useMotionSettings } from "@/lib/motion";
 import { useStore } from "@/lib/store";
+import { ProfileSyncFailed } from "@/components/profile-sync-failed";
+import { useRetryProfileSync } from "@/lib/use-retry-profile-sync";
 import type { Connection, User } from "@/lib/types";
 import { BOTTOM_NAV_HEIGHT_VAR } from "./bottom-nav";
 import { MatchCard } from "./match-card";
@@ -62,7 +65,9 @@ export function DiscoverDeck({
     networkAvailable,
     hydrated,
     refresh,
+    pendingProfile,
   } = useStore();
+  const { retrying: syncing, retry: retryProfileSync } = useRetryProfileSync();
   const navigate = useNavigate();
   const { reducedMotion } = useMotionSettings();
 
@@ -73,6 +78,8 @@ export function DiscoverDeck({
   const [retrying, setRetrying] = useState(false);
   /** คนที่เพิ่งกดเชื่อมต่อในรอบนี้ — เลื่อนไปการ์ดถัดไป (ไม่เก็บลงรายการที่เก็บไว้) */
   const [passed, setPassed] = useState<string[]>([]);
+  /** กำลังรอฐานข้อมูลยืนยันการเชื่อมต่อกับคนนี้ — ล็อกปุ่ม จอฉลองขึ้นเมื่อสำเร็จเท่านั้น */
+  const [connecting, setConnecting] = useState<string | null>(null);
   const startX = useRef<number | null>(null);
   const moved = useRef(false);
   /** ล็อกปุ่มถึงเวลานี้ (ms) — กันแตะซ้ำแล้วไปโดนการ์ดใบถัดไป */
@@ -187,13 +194,16 @@ export function DiscoverDeck({
   }
 
   const user = top.user;
-  const existing = connections.find(
-    (c) =>
-      (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
-  );
-  const action = deckPrimaryAction({ hasProfile: me !== null, connected: !!existing });
+  const existing = connectionWith(connections, user.id);
+  const isConnecting = connecting === user.id;
+  const action = deckPrimaryAction({
+    hasProfile: me !== null,
+    // ระหว่างรอยืนยัน คอนเนกชันชั่วคราวอยู่ในรายการแล้ว — ยังไม่นับว่าเชื่อมกันจนกว่าจะสำเร็จ
+    connected: !!existing && !isConnecting,
+    pendingProfile: pendingProfile !== null,
+  });
   const saved = likedUsers.includes(user.id);
-  const locked = busy || leaving !== null;
+  const locked = busy || leaving !== null || connecting !== null || syncing;
 
   /**
    * ขอสิทธิ์ทำงานหนึ่งครั้ง — ล็อกปุ่มไว้ ACTION_LOCK_MS ให้การ์ดเลื่อนและฉากถัดไปขึ้นก่อน
@@ -261,12 +271,27 @@ export function DiscoverDeck({
       if (existing) navigate({ to: "/connection/$id", params: { id: existing.id } });
       return;
     }
-    // action === "connect": เรียกครั้งเดียว ล็อกจาก acquire() ยังค้างอยู่ตอนการ์ดเลื่อนไปใบถัดไป
+    if (action === "retry-profile-sync") {
+      // โปรไฟล์ยังไม่ขึ้นระบบ — เชื่อมต่อไปก็จะหายเอง ให้ส่งโปรไฟล์ก่อน (แจ้งผลด้วย toast)
+      void retryProfileSync();
+      return;
+    }
+    // action === "connect": เรียกครั้งเดียว ล็อกปุ่มจนฐานข้อมูลตอบ แล้วค่อยเลื่อนการ์ดและฉลอง
     if (!me) return;
-    const m = top.match ?? scoreMatch(me, user);
-    const c = connect(user.id, m.score, m.reason);
-    setPassed((p) => [...p, user.id]);
-    onConnected(c, top);
+    const entry = top;
+    const m = entry.match ?? scoreMatch(me, user);
+    setConnecting(user.id);
+    void connect(user.id, m.score, m.reason).then((result) => {
+      setConnecting(null);
+      // ไม่สำเร็จ: store ถอนคอนเนกชันและแจ้ง toast แล้ว การ์ดเดิมยังอยู่ให้ลองใหม่ ไม่มีจอฉลอง
+      if (!result.ok) return;
+      if (result.existed) {
+        navigate({ to: "/connection/$id", params: { id: result.connection.id } });
+        return;
+      }
+      setPassed((p) => [...p, user.id]);
+      onConnected(result.connection, entry);
+    });
   };
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
@@ -339,44 +364,63 @@ export function DiscoverDeck({
         className="sticky z-20 mx-auto mt-4 w-full max-w-xl px-4"
         style={{ bottom: ACTION_BAR_BOTTOM }}
       >
-        <div className="flex items-center gap-3 rounded-3xl bg-paper/95 p-2 backdrop-blur">
-          <button
-            type="button"
-            aria-label={`ข้าม ${user.name}`}
-            onClick={doSkip}
-            aria-disabled={locked}
-            className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-ink-soft aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
-          >
-            <X className="h-7 w-7" strokeWidth={2.6} aria-hidden />
-          </button>
+        <div className="rounded-3xl bg-paper/95 p-2 backdrop-blur">
+          {action === "retry-profile-sync" && (
+            <p role="status" className="px-2 pb-2 text-center text-body font-semibold text-ink">
+              <ProfileSyncFailed />
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label={`ข้าม ${user.name}`}
+              onClick={doSkip}
+              aria-disabled={locked}
+              className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-ink-soft aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
+            >
+              <X className="h-7 w-7" strokeWidth={2.6} aria-hidden />
+            </button>
 
-          <button
-            type="button"
-            onClick={doPrimary}
-            data-deck-primary
-            aria-disabled={locked}
-            className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
-          >
-            {action === "open-connection" ? "เชื่อมกันแล้ว · คุยต่อ" : "ขอเชื่อมต่อ"}
-          </button>
+            <button
+              type="button"
+              onClick={doPrimary}
+              data-deck-primary
+              aria-disabled={locked}
+              className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
+            >
+              {primaryLabel(action, isConnecting, syncing)}
+            </button>
 
-          <button
-            type="button"
-            aria-label={`เก็บ ${user.name} ไว้`}
-            aria-pressed={saved}
-            onClick={doSave}
-            aria-disabled={locked}
-            className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
-          >
-            <Bookmark
-              className="h-7 w-7"
-              strokeWidth={2.4}
-              fill={saved ? "currentColor" : "none"}
-              aria-hidden
-            />
-          </button>
+            <button
+              type="button"
+              aria-label={`เก็บ ${user.name} ไว้`}
+              aria-pressed={saved}
+              onClick={doSave}
+              aria-disabled={locked}
+              className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
+            >
+              <Bookmark
+                className="h-7 w-7"
+                strokeWidth={2.4}
+                fill={saved ? "currentColor" : "none"}
+                aria-hidden
+              />
+            </button>
+          </div>
         </div>
       </div>
     </section>
   );
+}
+
+/** ข้อความบนปุ่มหลักตามสถานะ */
+function primaryLabel(
+  action: ReturnType<typeof deckPrimaryAction>,
+  connecting: boolean,
+  syncing: boolean,
+): string {
+  if (connecting) return "กำลังเชื่อมต่อ…";
+  if (action === "open-connection") return "เชื่อมกันแล้ว · คุยต่อ";
+  if (action === "retry-profile-sync") return syncing ? "กำลังส่ง…" : "ส่งโปรไฟล์";
+  return "ขอเชื่อมต่อ";
 }

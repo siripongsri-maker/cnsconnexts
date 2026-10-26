@@ -4,8 +4,17 @@ import { ArrowLeft, ChevronRight } from "lucide-react";
 import { MatchCelebration } from "@/components/match-celebration";
 import { MeadowState, STATE_PRIMARY } from "@/components/meadow-state";
 import { Avatar, IssueBlock, PowerPill, ScoreRing } from "@/components/power-bits";
+import { QuickProfileSheet } from "@/components/quick-profile-sheet";
+import { connectionWith } from "@/lib/connect-rules";
+import { deckPrimaryAction } from "@/lib/deck-rules";
+import { isDevPreview } from "@/lib/dev-preview";
+import { hasLocalParticipantId, homeVisitor } from "@/lib/guest";
 import { scoreMatch } from "@/lib/matching";
+import { EMPTY_QUICK_DRAFT, type QuickDraft, type QuickStep } from "@/lib/quick-profile";
 import { useStore } from "@/lib/store";
+import type { User } from "@/lib/types";
+import { ProfileSyncFailed } from "@/components/profile-sync-failed";
+import { useRetryProfileSync } from "@/lib/use-retry-profile-sync";
 import { provinceTh, regionLabel, GENERATION_TH } from "@/lib/i18n";
 
 export const Route = createFileRoute("/people/$id")({
@@ -32,12 +41,44 @@ export const Route = createFileRoute("/people/$id")({
   ),
 });
 
+/** รหัสคอนเนกชันปลอมของโหมดทดสอบ ?dryrun — ไม่มีแถวนี้ในฐานข้อมูล */
+const DRYRUN_CONNECTION_ID = "dryrun";
+
+/**
+ * โปรไฟล์เต็มของอีกคน + ปุ่มขอเชื่อมต่อด้านล่าง
+ * ผู้เยี่ยมชม: กดแล้วเปิดแผ่นถาม 3 ข้อบนหน้านี้ (ไม่พาออกไป /onboarding ที่ทำให้หลงคนนี้)
+ * บันทึกเสร็จแล้วเชื่อมกับคนนี้ต่อทันที แล้วแสดงจอฉลอง — กติกาเดียวกับหน้าแรก (src/routes/index.tsx)
+ */
 function Person() {
   const { id } = Route.useParams();
-  const { users, me, connect, connections, ideas, hydrated } = useStore();
-  const [celebration, setCelebration] = useState<{ connectionId: string; reason: string } | null>(
-    null,
-  );
+  const { users, me, connect, connections, ideas, hydrated, pendingProfile } = useStore();
+  const { retrying: syncing, retry: retryProfileSync } = useRetryProfileSync();
+  const [celebration, setCelebration] = useState<{
+    me: User;
+    connectionId: string;
+    reason: string;
+  } | null>(null);
+  /** กำลังรอฐานข้อมูลยืนยันการเชื่อมต่อ — ล็อกปุ่ม จอฉลองขึ้นเมื่อสำเร็จเท่านั้น */
+  const [connecting, setConnecting] = useState(false);
+
+  // รู้ว่าเป็นใครได้หลัง mount เท่านั้น (localStorage) — คนเดิมที่ store ยังโหลดไม่เสร็จห้ามเห็นปุ่มทำโปรไฟล์
+  const [mounted, setMounted] = useState(false);
+  const [hasLocalId, setHasLocalId] = useState(false);
+  useEffect(() => {
+    setHasLocalId(hasLocalParticipantId());
+    setMounted(true);
+  }, []);
+  const visitor = homeVisitor({ mounted, me, hasLocalId, hydrated });
+  const waitingForMe = visitor === "unknown" || visitor === "returning-loading";
+
+  // แผ่นถาม 3 ข้อ — ถือสถานะเปิด/ปิดและคำตอบเอง (คำตอบไม่หายเมื่อปิดแล้วเปิดใหม่)
+  // ระหว่างบันทึกปิดแผ่นไม่ได้ ถ้าบันทึกไม่สำเร็จแผ่นค้างไว้พร้อมข้อความ (จัดการใน QuickProfileSheet)
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [draft, setDraft] = useState<QuickDraft>(EMPTY_QUICK_DRAFT);
+  const [step, setStep] = useState<QuickStep>(1);
+  /** มีจอฉลองค้างอยู่ — อ่านตอนแผ่นถามปิดสนิท (อาจเกิดในรอบเรนเดอร์เดียวกับที่เปิดจอฉลอง) */
+  const celebratingRef = useRef(false);
+
   // ปุ่มกด "ขอเชื่อมต่อ" ถูกแทนที่ด้วยลิงก์ตอนเชื่อมสำเร็จ — เก็บ ref ของปุ่มล่างสุดไว้คืนโฟกัสหลังปิดจอฉลอง
   const actionRef = useRef<HTMLElement | null>(null);
   const focusActionAfterCelebration = useRef(false);
@@ -57,10 +98,60 @@ function Person() {
   if (!user) throw notFound();
 
   const match = me ? scoreMatch(me, user) : null;
-  const existing = connections.find(
-    (c) =>
-      (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
-  );
+  const existing = connectionWith(connections, user.id);
+  const action = deckPrimaryAction({
+    hasProfile: me !== null,
+    // ระหว่างรอยืนยัน คอนเนกชันชั่วคราวอยู่ในรายการแล้ว — ยังไม่นับว่าเชื่อมกันจนกว่าจะสำเร็จ
+    connected: !!existing && !connecting,
+    pendingProfile: pendingProfile !== null,
+  });
+
+  const celebrate = (who: User, connectionId: string, reason: string) => {
+    celebratingRef.current = true;
+    setCelebration({ me: who, connectionId, reason });
+  };
+
+  /** ขอเชื่อมต่อจริง — ฉลองเมื่อฐานข้อมูลยืนยันเท่านั้น (ไม่สำเร็จ store ถอนออกและแจ้ง toast แล้ว) */
+  const connectWith = (who: User, score: number, reason: string) => {
+    setConnecting(true);
+    void connect(user.id, score, reason).then((result) => {
+      setConnecting(false);
+      if (result.ok && !result.existed) celebrate(who, result.connection.id, reason);
+    });
+  };
+
+  const onSaved = (newMe: User) => {
+    setSheetOpen(false);
+    setDraft(EMPTY_QUICK_DRAFT);
+    setStep(1);
+    const m = scoreMatch(newMe, user);
+    // โหมดทดสอบ ?dryrun: newMe เป็นผู้ใช้ปลอม ห้ามเรียก connect (เขียนฐานข้อมูลจริง)
+    if (isDevPreview("dryrun")) {
+      celebrate(newMe, DRYRUN_CONNECTION_ID, m.reason);
+      return;
+    }
+    connectWith(newMe, m.score, m.reason);
+  };
+
+  const onSheetClosed = (event: Event) => {
+    // Radix คืนโฟกัสให้ Dialog.Trigger ซึ่งแผ่นนี้ไม่มี — คืนไปที่ปุ่มล่างเอง (จอฉลองถือโฟกัสอยู่ก็ปล่อยไว้)
+    event.preventDefault();
+    if (celebratingRef.current) return;
+    if (actionRef.current?.isConnected) actionRef.current.focus();
+  };
+
+  const onPrimary = () => {
+    if (connecting || syncing) return;
+    if (action === "open-profile-sheet") {
+      if (!waitingForMe) setSheetOpen(true);
+      return;
+    }
+    if (action === "retry-profile-sync") {
+      void retryProfileSync();
+      return;
+    }
+    if (action === "connect" && me && match) connectWith(me, match.score, match.reason);
+  };
   const theirIdeas = ideas.filter((i) => i.owner_id === user.id);
   const place = [provinceTh(user.province), regionLabel(user.region)].filter(Boolean).join(" · ");
   const work = [user.organization, GENERATION_TH[user.generation]].filter(Boolean).join(" · ");
@@ -154,13 +245,25 @@ function Person() {
         )}
       </main>
 
-      {celebration && me && (
+      <QuickProfileSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onCloseAutoFocus={onSheetClosed}
+        onSaved={onSaved}
+        draft={draft}
+        onDraftChange={setDraft}
+        step={step}
+        onStepChange={setStep}
+      />
+
+      {celebration && (
         <MatchCelebration
-          me={me}
+          me={celebration.me}
           other={user}
           reason={celebration.reason}
           connectionId={celebration.connectionId}
           onClose={() => {
+            celebratingRef.current = false;
             focusActionAfterCelebration.current = true;
             setCelebration(null);
           }}
@@ -169,7 +272,12 @@ function Person() {
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E6E3F2] bg-paper px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
         <div className="mx-auto w-full max-w-xl lg:max-w-3xl">
-          {existing ? (
+          {action === "retry-profile-sync" && (
+            <p role="status" className="pb-2 text-center text-body font-semibold text-ink">
+              <ProfileSyncFailed />
+            </p>
+          )}
+          {action === "open-connection" && existing ? (
             <Link
               to="/connection/$id"
               params={{ id: existing.id }}
@@ -180,30 +288,28 @@ function Person() {
             >
               เชื่อมกันแล้ว · ทำอะไรต่อ
             </Link>
-          ) : !me ? (
-            <Link
-              to="/onboarding"
-              ref={(el) => {
-                actionRef.current = el;
-              }}
-              className="meadow-btn-primary tap w-full text-center"
-            >
-              สร้างโปรไฟล์เพื่อเชื่อมต่อ
-            </Link>
           ) : (
             <button
               type="button"
               ref={(el) => {
                 actionRef.current = el;
               }}
-              onClick={() => {
-                if (!match) return;
-                const c = connect(user.id, match.score, match.reason);
-                setCelebration({ connectionId: c.id, reason: match.reason });
-              }}
-              className="meadow-btn-primary tap w-full py-2 text-center [overflow-wrap:anywhere]"
+              onClick={onPrimary}
+              aria-disabled={
+                connecting || syncing || (action === "open-profile-sheet" && waitingForMe)
+              }
+              aria-busy={connecting || syncing}
+              className="meadow-btn-primary tap w-full py-2 text-center [overflow-wrap:anywhere] aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
             >
-              ขอเชื่อมต่อกับ {user.name}
+              {connecting
+                ? "กำลังเชื่อมต่อ…"
+                : action === "retry-profile-sync"
+                  ? syncing
+                    ? "กำลังส่ง…"
+                    : "ส่งโปรไฟล์"
+                  : action === "open-profile-sheet"
+                    ? "สร้างโปรไฟล์เพื่อเชื่อมต่อ"
+                    : `ขอเชื่อมต่อกับ ${user.name}`}
             </button>
           )}
         </div>

@@ -1,7 +1,9 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "./db";
 import { runProfileWrite } from "./profile-write";
+import { connectionWith, rollbackConnect } from "./connect-rules";
 import { emitLive } from "./live";
 import { adminDeleteRow, adminUpdateRow, type AdminTable } from "./admin.functions";
 import { ADMIN_PASSWORD } from "./admin-auth";
@@ -79,6 +81,9 @@ export type PendingProfile = {
 };
 
 
+/** ผลการขอเชื่อมต่อ — ok:false = เขียนฐานข้อมูลไม่สำเร็จและถอนออกแล้ว (แจ้ง toast แล้ว) */
+export type ConnectResult = { ok: true; connection: Connection; existed: boolean } | { ok: false };
+
 type Store = State & {
   /** โหลดข้อมูลรอบแรกจากฐานข้อมูลเสร็จแล้ว (หรือโหลดไม่สำเร็จ) */
   hydrated: boolean;
@@ -94,7 +99,12 @@ type Store = State & {
   /** ส่งโปรไฟล์ที่ค้างขึ้นฐานข้อมูลกลาง */
   syncPendingProfile: () => Promise<void>;
   dismissPendingProfile: () => void;
-  connect: (otherId: string, score: number, reason: string) => Connection;
+  /**
+   * ขอเชื่อมต่อ — ใส่คอนเนกชันในหน้าจอทันที (optimistic) แล้วรอเขียนฐานข้อมูล
+   * เชื่อมกันอยู่แล้ว: คืนคอนเนกชันเดิม (existed) ไม่เขียนซ้ำ
+   * เขียนไม่สำเร็จ: ถอนคอนเนกชันออก แจ้ง toast แล้วคืน { ok: false } — ผู้เรียกห้ามแสดงจอฉลอง
+   */
+  connect: (otherId: string, score: number, reason: string) => Promise<ConnectResult>;
   addCommitment: (c: Omit<Commitment, "id" | "created_at">) => Commitment;
   setConnectionStatus: (id: string, status: ConnectionStatus) => void;
   updateCommitment: (
@@ -284,6 +294,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
   const [pendingProfile, setPendingProfile] = useState<PendingProfile | null>(null);
   const myIdRef = useRef<string | null>(null);
+  /** สถานะล่าสุด ให้ action อ่านได้ทันทีโดยไม่ต้องรอรอบเรนเดอร์ (เช่น เช็กว่าเชื่อมกันแล้วหรือยัง) */
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  /** คำขอเชื่อมต่อที่กำลังส่ง แยกตามอีกฝ่าย — กดซ้ำระหว่างรอได้ผลเดียวกัน ไม่ insert ซ้ำ */
+  const connectingRef = useRef(new Map<string, Promise<ConnectResult>>());
   const localRef = useRef<LocalState>({
     savedIdeas: [],
     likedUsers: [],
@@ -757,7 +772,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const connect: Store["connect"] = useCallback(
     (otherId, score, reason) => {
+      const existing = connectionWith(stateRef.current.connections, otherId);
+      if (existing) return Promise.resolve({ ok: true, connection: existing, existed: true });
+      const inFlight = connectingRef.current.get(otherId);
+      if (inFlight) return inFlight;
+
       const myId = myIdRef.current;
+      const now = new Date().toISOString();
       const conn: Connection = {
         id: uuid(),
         user_a: "me",
@@ -765,46 +786,65 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         match_score: score,
         match_reason: reason,
         status: "Connected",
-        created_at: new Date().toISOString(),
+        created_at: now,
         pending: true,
       };
+      const name = stateRef.current.users.find((u) => u.id === otherId)?.name ?? "เพื่อนใหม่";
+      const sent: AppNotification = {
+        id: uuid(),
+        kind: "connect_sent",
+        title: "ส่งคำขอเชื่อมแล้ว",
+        body: `กำลังส่งสัญญาณถึง ${name}…`,
+        from_id: otherId,
+        from_name: name,
+        connection_id: conn.id,
+        read: false,
+        created_at: now,
+      };
 
-      setState((s) => {
-        const existing = s.connections.find(
-          (c) =>
-            (c.user_a === "me" && c.user_b === otherId) || (c.user_b === "me" && c.user_a === otherId),
-        );
-        if (existing) return s;
-        const name = s.users.find((u) => u.id === otherId)?.name ?? "เพื่อนใหม่";
-        const sent: AppNotification = {
-          id: uuid(),
-          kind: "connect_sent",
-          title: "ส่งคำขอเชื่อมแล้ว",
-          body: `กำลังส่งสัญญาณถึง ${name}…`,
-          from_id: otherId,
-          from_name: name,
-          connection_id: conn.id,
-          read: false,
-          created_at: new Date().toISOString(),
-        };
+      // แสดงคอนเนกชันทันที (optimistic) — ถ้าเขียนไม่สำเร็จจะถอนออกด้านล่าง
+      // แจ้งเตือน "ส่งคำขอเชื่อมแล้ว" (ขึ้นเป็น toast) รอจนเขียนสำเร็จ ไม่ให้เห็นทั้งสำเร็จและไม่สำเร็จ
+      setState((s) =>
+        connectionWith(s.connections, otherId)
+          ? s
+          : { ...s, connections: [conn, ...s.connections] },
+      );
+
+      const run = (async (): Promise<ConnectResult> => {
+        let failed = !myId; // ไม่มีรหัสผู้เข้าร่วม = ยังไม่มีแถวในฐานข้อมูล เชื่อมต่อไม่ได้
+        if (myId) {
+          try {
+            const { error } = await db.from("connections").insert({
+              id: conn.id,
+              user_a: myId,
+              user_b: otherId,
+              match_score: score,
+              match_reason: reason,
+              status: "Connected",
+            });
+            if (error) {
+              console.error("[connexts] เชื่อมต่อไม่สำเร็จ", error);
+              failed = true;
+            }
+          } catch (err) {
+            console.error("[connexts] เชื่อมต่อไม่สำเร็จ", err);
+            failed = true;
+          }
+        }
+        if (failed) {
+          setState((s) => rollbackConnect(s, conn.id));
+          toast.error("ยังเชื่อมต่อไม่สำเร็จ ลองอีกครั้งนะ", { id: "connect-failed" });
+          return { ok: false };
+        }
+        setState((s) => ({ ...s, notifications: [sent, ...s.notifications] }));
         emitLive("connect", "เชื่อมต่อใหม่", `คุณ ↔ ${name} · แมตช์ ${score}%`);
-        return { ...s, connections: [conn, ...s.connections], notifications: [sent, ...s.notifications] };
-      });
+        void refresh();
+        return { ok: true, connection: conn, existed: false };
+      })();
 
-      if (myId) {
-        void (async () => {
-          await db.from("connections").insert({
-            id: conn.id,
-            user_a: myId,
-            user_b: otherId,
-            match_score: score,
-            match_reason: reason,
-            status: "Connected",
-          });
-          await refresh();
-        })();
-      }
-      return conn;
+      connectingRef.current.set(otherId, run);
+      void run.finally(() => connectingRef.current.delete(otherId));
+      return run;
     },
     [refresh],
   );

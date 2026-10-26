@@ -35,14 +35,29 @@ describe("swipeRotation", () => {
 });
 
 describe("deckPrimaryAction", () => {
+  const base = { hasProfile: true, connected: false, pendingProfile: false };
   it("asks for a profile first when the viewer has none", () => {
-    expect(deckPrimaryAction({ hasProfile: false, connected: false })).toBe("open-profile-sheet");
+    expect(deckPrimaryAction({ ...base, hasProfile: false })).toBe("open-profile-sheet");
   });
   it("opens the existing connection instead of connecting twice (Review Focus 3)", () => {
-    expect(deckPrimaryAction({ hasProfile: true, connected: true })).toBe("open-connection");
+    expect(deckPrimaryAction({ ...base, connected: true })).toBe("open-connection");
   });
   it("connects when the viewer has a profile and is not yet connected", () => {
-    expect(deckPrimaryAction({ hasProfile: true, connected: false })).toBe("connect");
+    expect(deckPrimaryAction(base)).toBe("connect");
+  });
+  it("retries the profile upload instead of connecting while the profile is still pending", () => {
+    // saveProfile ใส่ me ก่อนเขียนฐานข้อมูล — ถ้าส่งไม่สำเร็จ ห้ามเชื่อมต่อ (ไม่มีแถวผู้เข้าร่วม)
+    expect(deckPrimaryAction({ ...base, pendingProfile: true })).toBe("retry-profile-sync");
+  });
+  it("still opens an existing connection while a profile edit is pending (no write)", () => {
+    expect(deckPrimaryAction({ ...base, pendingProfile: true, connected: true })).toBe(
+      "open-connection",
+    );
+  });
+  it("asks for a profile when there is none, even with a stale pending flag", () => {
+    expect(deckPrimaryAction({ ...base, hasProfile: false, pendingProfile: true })).toBe(
+      "open-profile-sheet",
+    );
   });
 });
 

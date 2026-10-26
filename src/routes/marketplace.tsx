@@ -357,15 +357,21 @@ function Marketplace() {
                               return;
                             }
                             const m = scoreMatch(me, owner);
-                            const conn = connect(
+                            void connect(
                               owner.id,
                               m.score,
                               `อยากร่วมไอเดีย “${idea.title}” · ${m.reason}`,
-                            );
-                            toast.success("ส่งคำขอเชื่อมแล้ว!", {
-                              description: `มาคิดกันว่าจะทำ “${idea.title}” กับ ${owner.name} ยังไงดี`,
+                            ).then((result) => {
+                              // ไม่สำเร็จ: store ถอนคอนเนกชันและแจ้ง toast ให้ลองอีกครั้งแล้ว
+                              if (!result.ok) return;
+                              toast.success("ส่งคำขอเชื่อมแล้ว!", {
+                                description: `มาคิดกันว่าจะทำ “${idea.title}” กับ ${owner.name} ยังไงดี`,
+                              });
+                              navigate({
+                                to: "/connection/$id",
+                                params: { id: result.connection.id },
+                              });
                             });
-                            navigate({ to: "/connection/$id", params: { id: conn.id } });
                           }}
                           className="meadow-btn-primary tap w-full"
                         >

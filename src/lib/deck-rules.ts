@@ -6,7 +6,8 @@ export const SWIPE_THRESHOLD = 90;
 export const MAX_TILT = 12;
 
 export type SwipeOutcome = "skip" | "save" | "snap";
-export type DeckPrimaryAction = "open-profile-sheet" | "connect" | "open-connection";
+export type DeckPrimaryAction =
+  "open-profile-sheet" | "connect" | "open-connection" | "retry-profile-sync";
 export type DeckState = "loading" | "error" | "empty" | "ready";
 
 /** ปัดซ้าย = ข้าม · ปัดขวา = เก็บไว้ · ไม่ถึงเกณฑ์ = เด้งกลับ */
@@ -23,17 +24,23 @@ export function swipeRotation(dx: number): number {
 
 /**
  * ปุ่มหลักใต้การ์ดทำอะไร — ยังไม่มีโปรไฟล์ให้กรอกก่อน
- * เชื่อมกันแล้วเปิดคอนเนกชันเดิม (ห้ามสร้างซ้ำ) นอกนั้นขอเชื่อมต่อ
+ * เชื่อมกันแล้วเปิดคอนเนกชันเดิม (ห้ามสร้างซ้ำ)
+ * โปรไฟล์ยังค้างส่ง (pendingProfile) ให้ลองส่งโปรไฟล์อีกครั้งแทนการเชื่อมต่อ —
+ * saveProfile ใส่ me ไว้ก่อนเขียนฐานข้อมูล ถ้าส่งไม่สำเร็จจะยังไม่มีแถวผู้เข้าร่วม การเชื่อมต่อจะหายไปเอง
+ * นอกนั้นขอเชื่อมต่อ
  */
 export function deckPrimaryAction({
   hasProfile,
   connected,
+  pendingProfile,
 }: {
   hasProfile: boolean;
   connected: boolean;
+  pendingProfile: boolean;
 }): DeckPrimaryAction {
   if (!hasProfile) return "open-profile-sheet";
   if (connected) return "open-connection";
+  if (pendingProfile) return "retry-profile-sync";
   return "connect";
 }
 

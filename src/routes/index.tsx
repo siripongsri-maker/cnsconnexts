@@ -7,6 +7,7 @@ import { DiscoverDeck } from "@/components/discover-deck";
 import { MatchCelebration } from "@/components/match-celebration";
 import { MeadowScene } from "@/components/meadow-scene";
 import { PdpaConsent } from "@/components/pdpa-consent";
+import { PendingSyncBanner } from "@/components/pending-sync-banner";
 import { QuickProfileSheet } from "@/components/quick-profile-sheet";
 import { SponsorFooter } from "@/components/sponsor-footer";
 import { Wordmark } from "@/components/wordmark";
@@ -137,10 +138,25 @@ function Home() {
     if (!target) return;
     const m = scoreMatch(newMe, target);
     // โหมดทดสอบ ?dryrun: newMe เป็นผู้ใช้ปลอม ห้ามเรียก connect (เขียนฐานข้อมูลจริง)
-    const connectionId = isDevPreview("dryrun")
-      ? DRYRUN_CONNECTION_ID
-      : connect(target.id, m.score, m.reason).id;
-    showCelebration({ me: newMe, other: target, reason: m.reason, connectionId });
+    if (isDevPreview("dryrun")) {
+      showCelebration({
+        me: newMe,
+        other: target,
+        reason: m.reason,
+        connectionId: DRYRUN_CONNECTION_ID,
+      });
+      return;
+    }
+    void connect(target.id, m.score, m.reason).then((result) => {
+      // ไม่สำเร็จ: store ถอนคอนเนกชันและแจ้ง toast แล้ว — ไม่ฉลอง การ์ดเดิมยังอยู่ให้ลองใหม่
+      if (!result.ok) return;
+      showCelebration({
+        me: newMe,
+        other: target,
+        reason: m.reason,
+        connectionId: result.connection.id,
+      });
+    });
   };
 
   const onSheetClosed = (event: Event) => {
@@ -218,6 +234,8 @@ function Home() {
       </header>
 
       <main id="main-content">
+        {/* โปรไฟล์ที่บันทึกไม่สำเร็จ — อยู่ในเนื้อหาใต้แถบหัว ไม่ลอยทับแถบปุ่มของสำรับ */}
+        <PendingSyncBanner />
         <div className="mx-auto w-full max-w-xl px-4 pt-5">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4">
             <h1
