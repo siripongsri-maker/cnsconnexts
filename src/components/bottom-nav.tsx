@@ -42,7 +42,7 @@ export function BottomNav() {
               <Link
                 to={to}
                 aria-current={active ? "page" : undefined}
-                className={`tap relative flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-body font-semibold leading-tight ${
+                className={`tap relative flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-body font-semibold${
                   active ? "text-primary" : "text-ink-soft"
                 }`}
               >
@@ -57,7 +57,7 @@ export function BottomNav() {
                   strokeWidth={active ? 2.5 : 2}
                   aria-hidden
                 />
-                <span className="max-w-full truncate max-[359px]:sr-only">{label}</span>
+                <span className="whitespace-nowrap max-[359px]:sr-only">{label}</span>
               </Link>
             </li>
           );
