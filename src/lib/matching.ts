@@ -74,3 +74,57 @@ export function rankMatches(me: User, pool: User[], limit = 12): MatchResult[] {
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 }
+
+export type DeckEntry = { user: User; match: MatchResult | null };
+
+/** FNV-1a 32-bit string hash. */
+function fnv1a(s: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
+
+const isComplete = (u: User) =>
+  u.interests.length > 0 && u.powers_have.length > 0 && u.organization.trim() !== "";
+
+/**
+ * Deck for visitors without a profile: complete profiles first, then a shuffle
+ * that is fixed for a given dayKey (no Math.random) and changes day to day.
+ */
+export function rankForGuest(pool: User[], dayKey: string, limit = 30): DeckEntry[] {
+  return pool
+    .filter((u) => u.name.trim() !== "")
+    .map((user) => ({ user, complete: isComplete(user), h: fnv1a(dayKey + user.id) }))
+    .sort((a, b) => Number(b.complete) - Number(a.complete) || a.h - b.h)
+    .slice(0, limit)
+    .map(({ user }) => ({ user, match: null }));
+}
+
+export function buildDeck(me: User | null, pool: User[], dayKey: string): DeckEntry[] {
+  return me
+    ? rankMatches(me, pool, 30).map((m) => ({ user: m.user, match: m }))
+    : rankForGuest(pool, dayKey);
+}
+
+/** One-line teaser for a card shown to a guest, e.g. "ทำเรื่องเยาวชน · มีไอเดีย". */
+export function guestBlurb(u: User): string {
+  const issue = u.interests[0];
+  const power = u.powers_have[0];
+  const parts: string[] = [];
+  if (issue) parts.push(`ทำเรื่อง${issueTh(issue)}`);
+  if (power) parts.push(`มี${powerTh(power)}`);
+  return parts.join(" · ");
+}
+
+/** Calendar day (YYYY-MM-DD) in Asia/Bangkok, independent of the machine's timezone. */
+export function dayKey(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Bangkok",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
