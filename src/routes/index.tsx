@@ -182,7 +182,12 @@ function Home() {
   }, [shown, focusDeck]);
 
   return (
-    <div className="min-h-dvh pb-[calc(6rem+env(safe-area-inset-bottom))]">
+    <div
+      className="min-h-dvh"
+      style={{
+        paddingBottom: "calc(6rem + env(safe-area-inset-bottom) + var(--pdpa-height, 0px))",
+      }}
+    >
       <header className="bg-sky">
         <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 px-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
           <Link
@@ -211,9 +216,6 @@ function Home() {
         {/* ฉากเต็มความกว้าง: ทุ่งกับฟ้าวาดเผื่อด้านข้างไว้ จอกว้างจึงเห็นขอบฟ้ายาวต่อเนื่อง ภูเขาอยู่กลาง */}
         <MeadowScene variant="header" className="pointer-events-none" />
       </header>
-
-      {/* ตามลำดับหน้า (ไม่ลอย) เพื่อไม่บังแถบปุ่มของสำรับที่ลอยเหนือเมนูล่าง */}
-      <PdpaConsent />
 
       <main id="main-content">
         <div className="mx-auto w-full max-w-xl px-4 pt-5">
@@ -249,7 +251,9 @@ function Home() {
 
         {/* หัวข้อของส่วนสำรับ ให้ชื่อบนการ์ด (h3) ไม่ข้ามระดับ */}
         <h2 className="sr-only">การ์ดคนที่ควรเจอ</h2>
-        <div ref={deckRef} className="mt-4">
+        {/* contents: แถบปุ่ม sticky ของสำรับใช้ <main> เป็นกรอบ (ดู discover-deck) */}
+        <div className="h-4" aria-hidden />
+        <div ref={deckRef} className="contents">
           <DiscoverDeck
             entries={entries}
             me={me}
@@ -292,6 +296,7 @@ function Home() {
         />
       )}
 
+      <PdpaConsent />
       <BottomNav />
     </div>
   );

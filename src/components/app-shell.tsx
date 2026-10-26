@@ -17,7 +17,7 @@ const COLUMN = "mx-auto w-full max-w-xl px-4 lg:max-w-3xl";
  * เว้นท้ายหน้าเท่าความสูงจริงของเมนูล่าง (ค่าที่ BottomNav วัดแล้ว รวม safe area) + ที่หายใจ
  * ค่าสำรองก่อนวัดเสร็จ = เมนู 77px + safe area (ค่าเดียวกับแถบปุ่มของสำรับ)
  */
-const CONTENT_BOTTOM_PADDING = `calc(var(${BOTTOM_NAV_HEIGHT_VAR}, calc(77px + env(safe-area-inset-bottom))) + 1.5rem)`;
+const CONTENT_BOTTOM_PADDING = `calc(var(${BOTTOM_NAV_HEIGHT_VAR}, calc(77px + env(safe-area-inset-bottom))) + 1.5rem + var(--pdpa-height, 0px))`;
 
 /**
  * โครงหน้าผู้เข้าร่วมทุกหน้า (ยกเว้นหน้าแรกที่เรนเดอร์หัวเอง) — แถบหัวสีฟ้าอ่อน: โลโก้ซ้าย กระดิ่ง + โปรไฟล์ขวา

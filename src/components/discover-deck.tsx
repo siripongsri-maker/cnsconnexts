@@ -18,12 +18,13 @@ import type { Connection, User } from "@/lib/types";
 import { BOTTOM_NAV_HEIGHT_VAR } from "./bottom-nav";
 import { MatchCard } from "./match-card";
 import { MeadowScene } from "./meadow-scene";
+import { PDPA_HEIGHT_VAR } from "./pdpa-consent";
 
 /**
  * แถบปุ่มลอยชิดขอบบนของเมนูล่างพอดี (BottomNav วัดความสูงจริงใส่ตัวแปร CSS)
- * ค่าสำรองก่อนวัดเสร็จ = เมนู 77px + safe area
+ * ค่าสำรองก่อนวัดเสร็จ = เมนู 77px + safe area; ถ้าแถบ PDPA ลอยอยู่ให้ยกขึ้นเหนือมัน
  */
-const ACTION_BAR_BOTTOM = `var(${BOTTOM_NAV_HEIGHT_VAR}, calc(77px + env(safe-area-inset-bottom)))`;
+const ACTION_BAR_BOTTOM = `calc(var(${BOTTOM_NAV_HEIGHT_VAR}, calc(77px + env(safe-area-inset-bottom))) + var(${PDPA_HEIGHT_VAR}, 0px))`;
 /** ระยะลากที่เริ่มนับว่าเป็นการปัด (กันแตะลิงก์ในการ์ดแล้วการ์ดขยับ) */
 const DRAG_START = 8;
 /** เวลาให้การ์ดลอยออกก่อนเปลี่ยนใบ */
@@ -304,10 +305,12 @@ export function DiscoverDeck({
     : `translateX(${drag}px) rotate(${swipeRotation(drag)}deg)`;
 
   return (
-    <section className="mx-auto w-full max-w-xl px-4">
+    // display: contents — ให้แถบปุ่ม sticky ใช้ <main> เป็นกรอบแทนส่วนนี้ จึงลอยขึ้นเหนือเมนู/แถบ PDPA ได้
+    // แม้สำรับเริ่มต่ำกว่าเส้นนั้นบนจอเตี้ย (sticky ขึ้นไปสูงกว่าขอบบนของกรอบตัวเองไม่ได้)
+    <section className="contents">
       <div
         key={user.id}
-        className="relative touch-pan-y select-none"
+        className="relative mx-auto w-full max-w-xl touch-pan-y select-none px-4"
         style={{
           transform,
           transition: dragging ? undefined : `transform ${LEAVE_MS}ms cubic-bezier(0.22,1,0.36,1)`,
@@ -328,47 +331,49 @@ export function DiscoverDeck({
         <MatchCard entry={top} me={me} />
       </div>
 
-      {undoButton && <div className="flex">{undoButton}</div>}
+      {undoButton && <div className="mx-auto flex w-full max-w-xl px-4">{undoButton}</div>}
 
       <div
-        className="sticky z-20 mt-4 flex items-center gap-3 rounded-3xl bg-paper/95 p-2 backdrop-blur"
+        className="sticky z-20 mx-auto mt-4 w-full max-w-xl px-4"
         style={{ bottom: ACTION_BAR_BOTTOM }}
       >
-        <button
-          type="button"
-          aria-label={`ข้าม ${user.name}`}
-          onClick={doSkip}
-          aria-disabled={locked}
-          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-ink-soft aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
-        >
-          <X className="h-7 w-7" strokeWidth={2.6} aria-hidden />
-        </button>
+        <div className="flex items-center gap-3 rounded-3xl bg-paper/95 p-2 backdrop-blur">
+          <button
+            type="button"
+            aria-label={`ข้าม ${user.name}`}
+            onClick={doSkip}
+            aria-disabled={locked}
+            className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-ink-soft aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
+          >
+            <X className="h-7 w-7" strokeWidth={2.6} aria-hidden />
+          </button>
 
-        <button
-          type="button"
-          onClick={doPrimary}
-          data-deck-primary
-          aria-disabled={locked}
-          className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
-        >
-          {action === "open-connection" ? "เชื่อมกันแล้ว · คุยต่อ" : "ขอเชื่อมต่อ"}
-        </button>
+          <button
+            type="button"
+            onClick={doPrimary}
+            data-deck-primary
+            aria-disabled={locked}
+            className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
+          >
+            {action === "open-connection" ? "เชื่อมกันแล้ว · คุยต่อ" : "ขอเชื่อมต่อ"}
+          </button>
 
-        <button
-          type="button"
-          aria-label={`เก็บ ${user.name} ไว้`}
-          aria-pressed={saved}
-          onClick={doSave}
-          aria-disabled={locked}
-          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
-        >
-          <Bookmark
-            className="h-7 w-7"
-            strokeWidth={2.4}
-            fill={saved ? "currentColor" : "none"}
-            aria-hidden
-          />
-        </button>
+          <button
+            type="button"
+            aria-label={`เก็บ ${user.name} ไว้`}
+            aria-pressed={saved}
+            onClick={doSave}
+            aria-disabled={locked}
+            className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-primary aria-disabled:cursor-not-allowed aria-disabled:opacity-55"
+          >
+            <Bookmark
+              className="h-7 w-7"
+              strokeWidth={2.4}
+              fill={saved ? "currentColor" : "none"}
+              aria-hidden
+            />
+          </button>
+        </div>
       </div>
     </section>
   );
