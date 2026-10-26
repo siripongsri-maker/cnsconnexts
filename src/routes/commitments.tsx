@@ -1,10 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { FollowUpTabs } from "@/components/follow-up-tabs";
+import { useEffect } from "react";
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { CalendarDays, Check, MessageCircle } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { MissionVisual } from "@/components/mission-ui";
-import { LiveProgress } from "@/components/live-progress";
+import { MeadowScene } from "@/components/meadow-scene";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
@@ -13,12 +12,12 @@ import { STATUS_TH } from "@/lib/i18n";
 export const Route = createFileRoute("/commitments")({
   head: () => ({
     meta: [
-      { title: "จะทำอะไรต่อดี? — คนส. Connexts" },
+      { title: "คู่ของฉัน — คนส. Connexts" },
       {
         name: "description",
-        content: "รวมคอนเนกชันและคำมั่นสัญญาที่คุณสร้างไว้ ตั้งแต่วางแผนจนถึงทำสำเร็จ",
+        content: "คนที่เชื่อมกันแล้ว คนที่เก็บไว้ และสิ่งที่ตกลงจะทำด้วยกัน อยู่ในที่เดียว",
       },
-      { property: "og:title", content: "จะทำอะไรต่อดี? — คนส. Connexts" },
+      { property: "og:title", content: "คู่ของฉัน — คนส. Connexts" },
       { property: "og:description", content: "รู้จักกันแล้ว แล้วเราจะทำอะไรต่อ?" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -27,23 +26,27 @@ export const Route = createFileRoute("/commitments")({
   component: Commitments,
 });
 
-const DOT: Record<ConnectionStatus, string> = {
-  Connected: "⚪️",
-  Planning: "🟡",
-  "In Progress": "🔵",
-  Completed: "🟢",
-};
-
 const STATUSES: ConnectionStatus[] = ["Connected", "Planning", "In Progress", "Completed"];
 
+/** ลิงก์ปุ่มรองในแถวการ์ด — สูง ≥ 48px ตัวอักษร 20px */
+const ROW_BUTTON = "meadow-btn-secondary tap min-h-12 flex-1 px-3 text-center";
+
 function Commitments() {
-  const { connections, commitments, users, me, updateCommitment } = useStore();
+  const { connections, commitments, users, me, likedUsers, hydrated, updateCommitment } =
+    useStore();
+  const hash = useRouterState({ select: (s) => s.location.hash });
+
+  // ลิงก์ /commitments#saved จากสำรับที่ดูครบแล้ว — ส่วนนี้เรนเดอร์หลังโหลดข้อมูล จึงเลื่อนซ้ำเมื่อพร้อม
+  useEffect(() => {
+    if (hash !== "saved" || !hydrated) return;
+    document.getElementById("saved")?.scrollIntoView({ block: "start" });
+  }, [hash, hydrated]);
 
   const mine = connections.filter((c) => c.user_a === "me" || c.user_b === "me");
   const myCommitments = commitments.filter((m) => mine.some((c) => c.id === m.connection_id));
-  const shown = myCommitments;
-  const shownConnections = mine;
-  const ready = mine.filter((c) => !commitments.some((m) => m.connection_id === c.id));
+  const saved = likedUsers
+    .map((id) => users.find((u) => u.id === id))
+    .filter((u): u is NonNullable<typeof u> => !!u && u.id !== me?.id);
 
   const partnerOf = (connId: string) => {
     const c = connections.find((x) => x.id === connId);
@@ -53,201 +56,198 @@ function Commitments() {
     return {
       other: users.find((u) => u.id === otherId) ?? null,
       first: isMine ? me : (users.find((u) => u.id === c.user_a) ?? me),
-      conn: c,
+      isMine,
     };
   };
 
   return (
-    <AppShell title="ก้าวต่อไปของเรา" titleEn="Next steps">
-      <div className="core-page core-commitments">
-        <FollowUpTabs />
-        <div className="core-progress-overview">
-          <div className="core-progress-main px-5 pt-3">
-            <LiveProgress />
-          </div>
-
-          <div className="core-commitment-stats grid grid-cols-2 gap-3 px-5 py-4">
-            <div className="card-soft p-4">
-              <p className="font-tech text-3xl font-extrabold text-gradient">
-                {shownConnections.length}
-              </p>
-              <p className="text-xs font-bold text-muted-foreground">คอนเนกชันของฉัน</p>
+    <AppShell title="คู่ของฉัน">
+      <div className="flex flex-col gap-10">
+        <section aria-labelledby="connected-heading">
+          <h2 id="connected-heading" className="font-heading text-title font-semibold text-ink">
+            คนที่เชื่อมแล้ว
+          </h2>
+          {mine.length === 0 ? (
+            <div className="meadow-card mt-4 overflow-hidden text-center">
+              <MeadowScene variant="empty" className="pointer-events-none" />
+              <div className="flex flex-col items-center gap-3 p-6">
+                <p className="text-lead text-ink">ยังไม่มีคนที่เชื่อมกัน เริ่มจากการจับคู่ได้เลย</p>
+                <Link to="/" className="meadow-btn-primary tap w-full max-w-sm text-center">
+                  ไปจับคู่
+                </Link>
+              </div>
             </div>
-            <div className="card-soft p-4">
-              <p className="font-tech text-3xl font-extrabold text-gradient">{shown.length}</p>
-              <p className="text-xs font-bold text-muted-foreground">คำมั่นสัญญาของฉัน</p>
-            </div>
-          </div>
-        </div>
-
-        {ready.length > 0 && (
-          <section className="core-ready-section px-5 pb-4" aria-labelledby="ready-heading">
-            <h2 id="ready-heading" className="text-base font-extrabold">
-              ชวนกันตั้งก้าวแรก
-            </h2>
-            <ul className="core-ready-grid mt-3">
-              {ready.map((c) => {
-                const partner = partnerOf(c.id)?.other;
+          ) : (
+            <ul className="mt-4 flex flex-col gap-4">
+              {mine.map((c) => {
+                const other = partnerOf(c.id)?.other ?? null;
                 return (
-                  <li key={c.id} className="card-soft flex items-center gap-3 p-3">
-                    {partner && <Avatar user={partner} size={34} />}
-                    <p className="min-w-0 flex-1 truncate text-sm font-bold">
-                      {partner?.name ?? "คอนเนกชันใหม่"}
-                    </p>
-                    <Link
-                      to="/connection/$id"
-                      params={{ id: c.id }}
-                      aria-label={`วางแผนก้าวแรกกับ ${partner?.name ?? "คอนเนกชันนี้"}`}
-                      className="tap inline-flex min-h-11 shrink-0 items-center rounded-xl bg-primary px-3 text-xs font-extrabold text-primary-foreground"
-                    >
-                      วางแผน →
-                    </Link>
+                  <li key={c.id} className="meadow-card p-4">
+                    <div className="flex items-center gap-4">
+                      {other ? (
+                        <Avatar user={other} size={56} />
+                      ) : (
+                        <span
+                          aria-hidden
+                          className="block h-14 w-14 shrink-0 rounded-2xl bg-sky-soft"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-2 break-words text-lead font-semibold text-ink">
+                          {other?.name ?? "คนที่เชื่อมกัน"}
+                        </p>
+                        <p className="text-body text-ink-soft">{STATUS_TH[c.status]}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex gap-3">
+                      <Link to="/chat/$id" params={{ id: c.id }} className={ROW_BUTTON}>
+                        คุย
+                      </Link>
+                      <Link to="/connection/$id" params={{ id: c.id }} className={ROW_BUTTON}>
+                        ทำอะไรต่อ
+                      </Link>
+                    </div>
                   </li>
                 );
               })}
             </ul>
-          </section>
-        )}
-
-        <div className="core-section-head core-commitment-title">
-          <div>
-            <p className="mission-kicker">FROM CONNECTION TO ACTION</p>
-            <h2>แผนที่เราจะทำร่วมกัน</h2>
-          </div>
-          <span className="core-data-count">
-            {shown.length}
-            <span>แผนของฉัน</span>
-          </span>
-        </div>
-        <div id="my-commitments" className="core-commitment-grid scroll-mt-20 px-5 pb-6">
-          {mine.length === 0 ? (
-            <div className="core-empty mission-empty">
-              <MissionVisual variant="action" className="core-empty-visual" />
-              <p className="mission-kicker">YOUR NEXT MOVE</p>
-              <h2 className="text-lg font-extrabold">ยังไม่มีคอนเนกชัน</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                หาคนที่พลังเสริมกัน แล้ววางแผนร่วมทำ
-              </p>
-              <Link
-                to="/matches"
-                className="tap mt-4 inline-flex min-h-11 items-center justify-center rounded-2xl bg-primary px-5 text-sm font-extrabold text-primary-foreground"
-              >
-                ไปหาคนที่น่าเจอ
-              </Link>
-            </div>
-          ) : shown.length === 0 ? (
-            <Link
-              to="/calendar"
-              className="tap card-soft flex min-h-11 items-center justify-between gap-2 p-4 text-sm font-bold"
-            >
-              <span>เชื่อมต่อแล้ว ชวนกันนัดก้าวแรก</span>
-              <span aria-hidden className="text-primary">
-                →
-              </span>
-            </Link>
-          ) : null}
-
-          {shown.map((m, idx) => {
-            const info = partnerOf(m.connection_id);
-            const other = info?.other;
-            const first = info?.first;
-            const isMine = !!info && (info.conn.user_a === "me" || info.conn.user_b === "me");
-            return (
-              <article
-                key={m.id}
-                className="core-commitment-card card-soft animate-rise p-4"
-                style={{ animationDelay: `${idx * 50}ms` }}
-              >
-                <div className="core-card-index">
-                  <span>ACTION / {String(idx + 1).padStart(2, "0")}</span>
-                  <span>{STATUS_TH[m.status]}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {first && <Avatar user={first} size={34} />}
-                  {other && <Avatar user={other} size={34} />}
-                  <p className="min-w-0 flex-1 truncate text-sm font-extrabold uppercase">
-                    {first?.name ?? "คุณ"} + {other?.name ?? "พาร์ตเนอร์"}
-                  </p>
-                </div>
-                <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-extrabold text-primary">
-                  <span aria-hidden>{DOT[m.status]}</span> สถานะ: {STATUS_TH[m.status]}
-                </p>
-                <p className="mt-2 text-[15px] font-semibold leading-snug">"{m.description}"</p>
-                <p className="mt-1 text-xs font-bold text-muted-foreground">{m.action_type}</p>
-                {m.follow_up_date ? (
-                  <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-                    <CalendarDays className="h-4 w-4" aria-hidden /> นัดไว้{" "}
-                    {new Date(m.follow_up_date).toLocaleString("th-TH", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}{" "}
-                    น.
-                  </p>
-                ) : null}
-                {isMine && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {!m.follow_up_date && m.status !== "Completed" && (
-                      <Link
-                        to="/calendar"
-                        className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-3 text-xs font-bold"
-                      >
-                        <CalendarDays className="h-4 w-4" aria-hidden /> นัดวันลงมือ
-                      </Link>
-                    )}
-                    <Link
-                      to="/chat/$id"
-                      params={{ id: m.connection_id }}
-                      className="tap inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-xs font-bold text-primary"
-                    >
-                      <MessageCircle className="h-4 w-4" aria-hidden /> คุยต่อ
-                    </Link>
-                  </div>
-                )}
-                <div
-                  role="group"
-                  aria-label="เปลี่ยนสถานะ"
-                  className="core-status-grid mt-3 grid grid-cols-2 gap-2"
-                >
-                  {STATUSES.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      aria-pressed={m.status === s}
-                      onClick={() => {
-                        if (m.status === s) return;
-                        updateCommitment(m.id, { status: s });
-                        toast.success(`อัปเดตเป็น “${STATUS_TH[s]}” แล้ว`, {
-                          description: other?.name,
-                        });
-                      }}
-                      className={`tap inline-flex min-h-11 items-center justify-center gap-1 rounded-full border px-3 text-xs font-bold ${
-                        m.status === s
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-card text-muted-foreground"
-                      }`}
-                    >
-                      {m.status === s ? (
-                        <Check className="h-3.5 w-3.5" aria-hidden />
-                      ) : (
-                        <span aria-hidden>{DOT[s]}</span>
-                      )}
-                      {STATUS_TH[s]}
-                    </button>
-                  ))}
-                </div>
-              </article>
-            );
-          })}
-
-          {mine.length > 0 && (
-            <Link
-              to="/matches"
-              className="tap flex h-14 items-center justify-center rounded-2xl border border-dashed border-primary/50 text-sm font-extrabold text-primary"
-            >
-              + เพิ่มคอนเนกชัน
-            </Link>
           )}
-        </div>
+        </section>
+
+        <section id="saved" aria-labelledby="saved-heading" className="scroll-mt-4">
+          <h2 id="saved-heading" className="font-heading text-title font-semibold text-ink">
+            คนที่เก็บไว้
+          </h2>
+          {saved.length === 0 ? (
+            <p className="meadow-card mt-4 p-5 text-body text-ink-soft">
+              ยังไม่มีคนที่เก็บไว้ กด "เก็บไว้" ที่การ์ดของใครก็ได้ แล้วเขาจะมาอยู่ตรงนี้
+            </p>
+          ) : (
+            <ul className="mt-4 flex flex-col gap-4">
+              {saved.map((u) => (
+                <li key={u.id} className="meadow-card p-4">
+                  <div className="flex items-center gap-4">
+                    <Avatar user={u} size={56} />
+                    <p className="line-clamp-2 min-w-0 flex-1 break-words text-lead font-semibold text-ink">
+                      {u.name}
+                    </p>
+                  </div>
+                  <Link
+                    to="/people/$id"
+                    params={{ id: u.id }}
+                    className="meadow-btn-secondary tap mt-4 w-full text-center"
+                  >
+                    ดูโปรไฟล์
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section id="my-commitments" aria-labelledby="agreed-heading" className="scroll-mt-4">
+          <h2 id="agreed-heading" className="font-heading text-title font-semibold text-ink">
+            สิ่งที่ตกลงจะทำ
+          </h2>
+          {myCommitments.length === 0 ? (
+            mine.length > 0 ? (
+              <Link
+                to="/calendar"
+                className="meadow-card tap mt-4 flex min-h-12 items-center justify-between gap-3 p-5 text-body font-semibold text-ink"
+              >
+                <span>ยังไม่มีสิ่งที่ตกลงกัน ชวนกันนัดก้าวแรก</span>
+                <span aria-hidden className="text-primary">
+                  →
+                </span>
+              </Link>
+            ) : (
+              <p className="meadow-card mt-4 p-5 text-body text-ink-soft">
+                เมื่อเชื่อมกับใครแล้ว สิ่งที่ตกลงจะทำด้วยกันจะมารวมอยู่ตรงนี้
+              </p>
+            )
+          ) : (
+            <ul className="mt-4 flex flex-col gap-4">
+              {myCommitments.map((m) => {
+                const info = partnerOf(m.connection_id);
+                const other = info?.other;
+                const first = info?.first;
+                return (
+                  <li key={m.id} className="meadow-card p-4">
+                    <div className="flex items-center gap-3">
+                      {first && <Avatar user={first} size={48} />}
+                      {other && <Avatar user={other} size={48} />}
+                      <p className="line-clamp-2 min-w-0 flex-1 break-words text-lead font-semibold text-ink">
+                        {first?.name ?? "คุณ"} + {other?.name ?? "คนที่เชื่อมกัน"}
+                      </p>
+                    </div>
+                    <p className="mt-3 inline-flex rounded-full bg-sky-soft px-4 py-1 text-body font-semibold text-ink">
+                      {STATUS_TH[m.status]}
+                    </p>
+                    <p className="mt-3 break-words text-body text-ink">“{m.description}”</p>
+                    <p className="mt-1 break-words text-body text-ink-soft">{m.action_type}</p>
+                    {m.follow_up_date ? (
+                      <p className="mt-3 flex items-start gap-2 text-body font-semibold text-primary">
+                        <CalendarDays className="mt-1 h-6 w-6 shrink-0" aria-hidden />
+                        <span>
+                          นัดไว้{" "}
+                          {new Date(m.follow_up_date).toLocaleString("th-TH", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}{" "}
+                          น.
+                        </span>
+                      </p>
+                    ) : null}
+                    {info?.isMine && (
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {!m.follow_up_date && m.status !== "Completed" && (
+                          <Link to="/calendar" className={ROW_BUTTON}>
+                            <CalendarDays className="h-6 w-6" aria-hidden /> นัดวันลงมือ
+                          </Link>
+                        )}
+                        <Link
+                          to="/chat/$id"
+                          params={{ id: m.connection_id }}
+                          className={ROW_BUTTON}
+                        >
+                          <MessageCircle className="h-6 w-6" aria-hidden /> คุยต่อ
+                        </Link>
+                      </div>
+                    )}
+                    <div
+                      role="group"
+                      aria-label="เปลี่ยนสถานะ"
+                      className="mt-4 grid grid-cols-2 gap-3"
+                    >
+                      {STATUSES.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          aria-pressed={m.status === s}
+                          onClick={() => {
+                            if (m.status === s) return;
+                            updateCommitment(m.id, { status: s });
+                            toast.success(`อัปเดตเป็น “${STATUS_TH[s]}” แล้ว`, {
+                              description: other?.name,
+                            });
+                          }}
+                          className={`tap inline-flex min-h-12 items-center justify-center gap-1 rounded-2xl border-2 px-2 text-body font-semibold ${
+                            m.status === s
+                              ? "border-primary bg-primary text-white"
+                              : "border-[#E6E3F2] bg-white text-ink"
+                          }`}
+                        >
+                          {m.status === s && <Check className="h-5 w-5 shrink-0" aria-hidden />}
+                          {STATUS_TH[s]}
+                        </button>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
     </AppShell>
   );
