@@ -17,6 +17,7 @@ import { MeetupProvider } from "@/lib/meetup-context";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
+import { MeetupCardHost } from "@/components/meetup-card-host";
 import { CommitmentReminders } from "@/components/commitment-reminders";
 import { FilterAlerts } from "@/components/filter-alerts";
 import { LoadingScreen } from "@/components/loading-screen";
@@ -141,6 +142,8 @@ function RootComponent() {
               </div>
             </HydrationGate>
             <NotificationHost />
+            {/* การ์ดคำชวนเจอ: ไม่เรนเดอร์นอกธีมทุ่ง (ตัดสินในตัวมันเอง) */}
+            <MeetupCardHost />
             <CommitmentReminders />
             <FilterAlerts />
             <GuidedTour />
