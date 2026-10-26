@@ -1,7 +1,7 @@
 /*
  * ธีม "ทุ่งจับคู่" (Meadow Match)
  * โทนสว่างตามธีมสมัชชาสุขภาพแห่งชาติ ครั้งที่ 19 — มีผลเฉพาะเมื่อ <html class="meadow">
- * (ทุกหน้าของผู้เข้าร่วม ยกเว้น /admin ดู src/lib/theme.ts)
+ * (ทุกหน้าของผู้เข้าร่วม ยกเว้น /admin /print /journey /brand-preview ดู src/lib/theme.ts)
  * หลังบ้านยังใช้ธีมอวกาศเดิมใน styles.css — ห้ามแก้กฎเดิม ให้ทับเฉพาะใต้ html.meadow
  */
 

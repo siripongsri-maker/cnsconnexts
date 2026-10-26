@@ -20,6 +20,8 @@ export const Route = createFileRoute("/print")({
       },
       { property: "og:title", content: "ชุดไฟล์พิมพ์สำหรับหน้างาน" },
       { property: "og:description", content: "บอร์ด A0 · การ์ด A4 · ป้าย QR" },
+      // ไม่ใช้ธีมทุ่งจับคู่ (src/lib/theme.ts) — คงสีแถบเบราว์เซอร์เดิมก่อนรีดีไซน์
+      { name: "theme-color", content: "#05070b" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

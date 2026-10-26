@@ -19,6 +19,8 @@ export const Route = createFileRoute("/journey")({
         content: "เอกสารฉบับเดียวสำหรับ สช. ผู้ทดลองใช้ และทีมพัฒนา พร้อมภาพหน้าจอทุกหน้า",
       },
       { property: "og:type", content: "article" },
+      // ไม่ใช้ธีมทุ่งจับคู่ (src/lib/theme.ts) — คงสีแถบเบราว์เซอร์เดิมก่อนรีดีไซน์
+      { name: "theme-color", content: "#05070b" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
