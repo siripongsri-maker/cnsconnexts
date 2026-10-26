@@ -40,6 +40,9 @@ export function MatchCelebration({
       }}
     >
       <DialogPrimitive.Portal>
+        {/* ต้องมี Overlay: Radix ล็อกการเลื่อนหน้าข้างหลัง (RemoveScroll) ไว้ที่ Overlay เท่านั้น
+            ส่วน Content ถูกลงทะเบียนเป็น shard จึงยังเลื่อนได้บนจอเตี้ย */}
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[80] bg-sky-soft" />
         <DialogPrimitive.Content
           aria-modal="true"
           className="meadow-celebrate fixed inset-0 z-[80] overflow-y-auto overflow-x-hidden overscroll-contain bg-sky-soft text-ink focus:outline-none"
