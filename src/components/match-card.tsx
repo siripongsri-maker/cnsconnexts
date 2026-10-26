@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { guestBlurb, type DeckEntry } from "@/lib/matching";
-import { pickTags } from "@/lib/card-tags";
+import { orderPowers, pickTags } from "@/lib/card-tags";
 import { provinceTh } from "@/lib/i18n";
 import type { User } from "@/lib/types";
 import { Avatar, IssueBlock, MoreBlock, PowerLine, ScoreRing } from "./power-bits";
@@ -39,8 +39,15 @@ export function MatchCard({ entry, me }: { entry: DeckEntry; me: User | null }) 
       )}
 
       <div className="mt-3 flex flex-col gap-2">
-        <PowerLine label="เขามีให้" powers={match?.theyBring ?? user.powers_have} />
-        <PowerLine label="เขากำลังหา" powers={match?.theyNeed ?? user.powers_need} />
+        {/* อันที่เกี่ยวกับเรามากที่สุดขึ้นก่อน แต่ "+N" นับจากพลังทั้งหมดของเขา (theyBring/theyNeed มีแค่ 2) */}
+        <PowerLine
+          label="เขามีให้"
+          powers={orderPowers(user.powers_have, match?.theyBring ?? [])}
+        />
+        <PowerLine
+          label="เขากำลังหา"
+          powers={orderPowers(user.powers_need, match?.theyNeed ?? [])}
+        />
       </div>
 
       <Link
