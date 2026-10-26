@@ -214,3 +214,23 @@ html.meadow
   font-size: 20px;
   min-height: 56px;
 }
+
+/* ใบพัดกังหันลมใน <MeadowScene> (src/components/meadow-scene.tsx) — คลาสนี้ใช้เฉพาะฉากทุ่งหญ้า */
+@keyframes meadow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.meadow-rotor {
+  animation: meadow-spin 12s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .meadow-rotor {
+    animation: none;
+  }
+}
+html[data-lowspec] .meadow-rotor {
+  animation: none;
+}
