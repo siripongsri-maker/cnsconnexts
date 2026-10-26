@@ -42,7 +42,7 @@ export function BottomNav() {
               <Link
                 to={to}
                 aria-current={active ? "page" : undefined}
-                className={`tap relative flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-body font-semibold${
+                className={`tap relative flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-body font-semibold ${
                   active ? "text-primary" : "text-ink-soft"
                 }`}
               >
