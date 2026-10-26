@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
-import { POWER_EMOJI, type User } from "@/lib/types";
-import { powerTh } from "@/lib/i18n";
+import { Sparkles } from "lucide-react";
+import { POWER_EMOJI, type Power, type User } from "@/lib/types";
+import { issueTh, powerTh } from "@/lib/i18n";
+import { BLOCK_TAG, POWER_ICON, blockFor } from "@/lib/issue-colors";
 
 export function Chip({
   children,
@@ -81,35 +83,68 @@ export function Avatar({
   );
 }
 
-export function ScoreRing({ score }: { score: number }) {
-  const pct = Math.max(0, Math.min(100, score));
+/** แท็กประเด็นสีทึบ — ข้อความตัดบรรทัดได้ ไม่ตัดด้วย … */
+export function IssueBlock({ issue }: { issue: string }) {
+  const tag = BLOCK_TAG[blockFor(issue)];
   return (
-    <div className="flex shrink-0 flex-col items-center gap-1">
-      <div
-        role="img"
-        aria-label={`แมตช์พลัง ${pct}%, Power Match`}
-        className="core-score-ring relative grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full"
-        style={{
-          background: `conic-gradient(from -90deg, var(--primary), var(--coral) ${pct}%, var(--muted) ${pct}% 100%)`,
-          boxShadow: "var(--shadow-glow)",
-        }}
-      >
-        <div className="flex h-[56px] w-[56px] flex-col items-center justify-center rounded-full bg-card text-center">
-          <span aria-hidden className="font-tech text-lg font-bold leading-none text-gradient">
-            {pct}%
-          </span>
-          <span aria-hidden className="text-xs font-bold text-muted-foreground">
-            แมตช์
-          </span>
-        </div>
-      </div>
-      <span
-        aria-hidden
-        lang="en"
-        className="whitespace-nowrap font-tech text-xs font-bold text-primary"
-      >
-        POWER MATCH
+    <span
+      className="inline-flex min-h-10 items-center rounded-xl px-3 py-1 text-body font-bold"
+      style={{ backgroundColor: tag.bg, color: tag.fg }}
+    >
+      {issueTh(issue)}
+    </span>
+  );
+}
+
+/** ก้อนเทา "+N" สำหรับประเด็นที่ไม่ได้แสดง */
+export function MoreBlock({ count }: { count: number }) {
+  return (
+    <span className="inline-flex min-h-10 items-center rounded-xl bg-muted px-3 py-1 text-body font-bold text-ink-soft">
+      +{count}
+    </span>
+  );
+}
+
+/** บรรทัดเดียว: ไอคอนพลังแรก + ชื่อพลัง + " +N" เมื่อมีมากกว่าหนึ่ง */
+export function PowerLine({ label, powers }: { label: string; powers: string[] }) {
+  const first = powers[0];
+  if (first === undefined) return null;
+  const Icon = POWER_ICON[first as Power] ?? Sparkles;
+  const extra = powers.length - 1;
+  return (
+    <p className="flex items-center gap-2 text-body text-ink">
+      <Icon aria-hidden className="h-6 w-6 shrink-0 text-primary" />
+      <span>
+        <span className="text-ink-soft">{label} </span>
+        <span className="font-semibold">{powerTh(first)}</span>
+        {extra > 0 && <span className="text-ink-soft"> +{extra}</span>}
       </span>
+    </p>
+  );
+}
+
+export function ScoreRing({ score, size = 84 }: { score: number; size?: number }) {
+  const pct = Math.max(0, Math.min(100, score));
+  const inner = size - 16;
+  return (
+    <div
+      role="img"
+      aria-label={`แมตช์ ${pct}%`}
+      className="core-score-ring relative grid shrink-0 place-items-center rounded-full"
+      style={{
+        width: size,
+        height: size,
+        background: `conic-gradient(from -90deg, var(--primary) ${pct}%, #E6E3F2 ${pct}% 100%)`,
+      }}
+    >
+      <div
+        aria-hidden
+        className="flex flex-col items-center justify-center rounded-full bg-card text-center"
+        style={{ width: inner, height: inner }}
+      >
+        <span className="font-heading text-score font-bold text-primary">{pct}%</span>
+        <span className="text-body leading-none text-ink-soft">แมตช์</span>
+      </div>
     </div>
   );
 }
