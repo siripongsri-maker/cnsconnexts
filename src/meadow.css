@@ -236,6 +236,15 @@ html.meadow
   border-color: var(--primary);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 35%, transparent);
 }
+html.meadow
+  .site-experience
+  :is(
+    input:not([type="checkbox"], [type="radio"], [type="range"], [type="hidden"], [type="file"]),
+    textarea,
+    select
+  )[aria-invalid="true"] {
+  border-color: #b3261e;
+}
 
 /* แผ่นล่าง/กล่องโต้ตอบแบบทุ่ง (เช่นฟอร์มลงไอเดีย) — กฎ .site-experience [role="dialog"] เดิมทำพื้นมืดและมุมเหลี่ยม */
 html.meadow .site-experience [role="dialog"].meadow-sheet {

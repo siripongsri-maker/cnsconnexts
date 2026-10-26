@@ -621,10 +621,10 @@ function PowerMap() {
           </ul>
         )}
 
-        <a href="/#collective-power" className="meadow-btn-secondary tap w-full">
-          ดูเครือข่ายการเชื่อมต่อ
+        <Link to="/dashboard" className="meadow-btn-secondary tap w-full">
+          ดูภาพรวมเครือข่ายสด
           <ArrowUpRight className="h-6 w-6 shrink-0" aria-hidden="true" />
-        </a>
+        </Link>
 
         {openProvince && (
           <ProvinceSheet
