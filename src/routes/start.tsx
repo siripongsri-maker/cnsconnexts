@@ -44,7 +44,7 @@ const STEPS = [
 function StartPage() {
   const navigate = useNavigate();
   const { enterGuest, mode } = useAuth();
-  const { me, hydrated } = useStore();
+  const { me } = useStore();
   const [session, setSession] = useState<ParticipantSession | null>(null);
 
   const entrySource = sourceFromSearch(
@@ -55,14 +55,15 @@ function StartPage() {
     setSession(getSession() ?? createSession(entrySource, null));
   }, [entrySource]);
 
-  // รวมขั้นตอน: เข้าห้องแล้วพาไปกรอกโปรไฟล์ทันที ไม่ต้องกดอีกหน้า
+  // สแกน QR แล้วเห็นการ์ดคนแรกทันที (สเปก §1/§8): บันทึกช่องทางเข้า (source เช่น "qr") แล้วพาไปหน้าจับคู่เลย
+  // ไม่ต้องรอ store โหลด — หน้าแรกจัดการทั้งผู้เยี่ยมชม (แผ่นถาม 3 ข้อ) และคนเดิมเอง
   const autoRan = useRef(false);
   useEffect(() => {
-    if (!hydrated || autoRan.current) return;
+    if (autoRan.current) return;
     autoRan.current = true;
     begin();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
+  }, []);
 
   const begin = () => {
     if (mode !== "user") enterGuest();
@@ -75,7 +76,7 @@ function StartPage() {
         /* ignore */
       }
     }
-    void navigate({ to: hydrated && me ? "/update" : "/onboarding", replace: true });
+    void navigate({ to: "/", replace: true });
   };
 
   return (
@@ -121,7 +122,7 @@ function StartPage() {
             ))}
           </ol>
           <button type="button" onClick={begin} className="meadow-btn-primary tap mt-5 w-full">
-            {hydrated && me ? "แก้ไขโปรไฟล์ของฉัน" : "เริ่มสร้างโปรไฟล์"}
+            เริ่มจับคู่
             <ArrowRight className="h-6 w-6" aria-hidden />
           </button>
           <p className="mt-3 text-center text-body text-ink-soft" role="status">
