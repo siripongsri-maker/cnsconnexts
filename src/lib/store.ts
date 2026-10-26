@@ -64,7 +64,7 @@ const initial: State = {
   notifications: [],
 };
 
-type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
+export type ProfileInput = Omit<User, "id" | "created_at" | "avatar" | "source"> & {
   avatar?: string;
   source?: UserSource | undefined;
 };
@@ -666,10 +666,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       writeMeCache(id, saved);
 
+      // ถ้ารอบก่อนส่ง insert ไม่สำเร็จ แถวยังไม่อยู่ในฐานข้อมูล ลองใหม่ต้อง insert ไม่ใช่ update
+      const leftoverInsert = readLocal<PendingProfile>(PENDING_KEY);
+      const isUpdate =
+        !!existingId && !(leftoverInsert?.mode === "insert" && leftoverInsert.id === existingId);
+
       const sync = (async () => {
         try {
           // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
-          if (existingId) {
+          if (existingId && isUpdate) {
             const { id: _omit, ...patch } = payload;
             const { error } = await db.from("participants").update(patch).eq("id", existingId);
             if (error) throw error;
@@ -684,7 +689,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             name: payload.name,
             savedAt: now,
             payload,
-            mode: existingId ? "update" : "insert",
+            mode: isUpdate ? "update" : "insert",
           };
           writePending(pending);
           setPendingProfile(pending);
