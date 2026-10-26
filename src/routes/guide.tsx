@@ -39,7 +39,7 @@ const STEPS = [
   {
     icon: UserCircle2,
     title: "1. บอกพลังของคุณ",
-    body: "ใส่ชื่อ จังหวัด ประเด็นที่สนใจ สิ่งที่มีและต้องการ ใช้ไม่ถึง 2 นาที เริ่มได้โดยไม่ต้องล็อกอิน",
+    body: "ตอบ 3 ข้อ: ชื่อกับภาค ประเด็นที่สนใจ และพลังที่มี/อยากได้ ใช้ไม่ถึง 2 นาที เริ่มได้โดยไม่ต้องล็อกอิน",
     to: "/onboarding" as const,
     cta: "เริ่มสร้างโปรไฟล์",
     tag: BLOCK_TAG.purple,
@@ -48,8 +48,8 @@ const STEPS = [
     icon: Sparkles,
     title: "2. เลือกคนที่อยากคุย",
     body: "ดูคนที่เหมาะกับคุณพร้อมเหตุผล แล้วกด “ขอเชื่อมต่อ”",
-    to: "/matches" as const,
-    cta: "ดูคู่เชื่อมของฉัน",
+    to: "/" as const,
+    cta: "ไปแท็บ จับคู่",
     tag: BLOCK_TAG.blue,
   },
   {
@@ -57,20 +57,28 @@ const STEPS = [
     title: "3. นัดก้าวต่อไป",
     body: "ตกลงสิ่งที่จะทำและนัดวันไว้ ระบบจะเตือนทั้งสองฝ่ายให้ร่วมทำหลังจบงาน",
     to: "/commitments" as const,
-    cta: "ดูก้าวต่อไป",
+    cta: "ไปแท็บ คู่ของฉัน",
     tag: BLOCK_TAG.green,
   },
 ];
 
 const EXPLORE = [
-  { icon: MapPin, to: "/map" as const, label: "แผนที่พลัง", hint: "ดูคนและงานในแต่ละจังหวัด" },
+  { icon: MapPin, to: "/map" as const, label: "แผนที่", hint: "ดูคนและงานในแต่ละจังหวัด" },
   {
     icon: MessageCircle,
     to: "/marketplace" as const,
-    label: "ตลาดพลัง",
+    label: "ไอเดีย",
     hint: "ลงไอเดีย หาเพื่อนร่วมทำ",
   },
   { icon: QrCode, to: "/scan" as const, label: "สแกน QR", hint: "ชวนคนข้าง ๆ เข้าร่วม" },
+];
+
+/** เมนูล่าง 4 อย่าง (ชื่อเดียวกับ src/components/bottom-nav.tsx) */
+const TABS = [
+  { label: "จับคู่", hint: "การ์ดคนที่ควรเจอวันนี้" },
+  { label: "คู่ของฉัน", hint: "คนที่เชื่อมแล้ว คนที่เก็บไว้ และก้าวต่อไป" },
+  { label: "สำรวจ", hint: "แผนที่ | ไอเดีย" },
+  { label: "ฉัน", hint: "โปรไฟล์ การแจ้งเตือน สดในงาน และทัวร์แนะนำ" },
 ];
 
 const FAQ = [
@@ -130,16 +138,27 @@ function GuidePage() {
             <p className="flex items-start gap-3 rounded-2xl bg-sky-soft p-4">
               <ArrowLeftRight className="mt-1 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
               <span>
-                <b>ปัดขวา</b> = เก็บในรายการถูกใจ · <b>ปัดซ้าย</b> = ข้าม
+                <b>ปัดขวา</b> = เก็บไว้ · <b>ปัดซ้าย</b> = ข้าม
               </span>
             </p>
             <p className="rounded-2xl bg-sky-soft p-4">
-              ใช้ปุ่มใต้การ์ดแทนได้: <b>ข้าม</b> · <b>ขอเชื่อมต่อ</b> · <b>สนใจ</b>
+              ใช้ปุ่มใต้การ์ดแทนได้: <b>ข้าม</b> · <b>ขอเชื่อมต่อ</b> · <b>เก็บไว้</b>
             </p>
             <p className="rounded-2xl bg-sky-soft p-4">
-              ดูเป็นรายชื่อได้ที่ปุ่ม <b>รายการ</b> ด้านบน
+              ดูคนที่เก็บไว้ได้ที่แท็บ <b>คู่ของฉัน</b>
             </p>
           </div>
+        </section>
+
+        <section className="meadow-card p-5">
+          <h2 className="font-heading text-title font-semibold! text-ink">เมนูด้านล่าง</h2>
+          <ul className="mt-4 space-y-3 text-body text-ink">
+            {TABS.map(({ label, hint }) => (
+              <li key={label} className="rounded-2xl bg-sky-soft p-4">
+                <b>{label}</b> — {hint}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="meadow-card p-5">

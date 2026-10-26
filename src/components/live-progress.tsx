@@ -62,7 +62,7 @@ export function LiveProgress() {
       ? {
           title: "เริ่มจากคนที่พลังเสริมกัน",
           detail: "ค้นหาคนที่ใช่ แล้วกดขอเชื่อมต่อ",
-          to: "/matches" as const,
+          to: "/" as const,
           cta: "หาคนที่น่าเจอ",
         }
       : myCommitments.length === 0

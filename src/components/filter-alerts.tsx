@@ -62,7 +62,7 @@ export function FilterAlerts() {
         duration: 6000,
         action: {
           label: "ดูแมตช์",
-          onClick: () => void router.navigate({ to: "/matches" }),
+          onClick: () => void router.navigate({ to: "/" }),
         },
       });
       emitLive("match", "แมตช์ใหม่ตรงตัวกรอง", `${u.name} · ชุด “${hit.name}”`, true);

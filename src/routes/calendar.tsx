@@ -313,7 +313,7 @@ function NoConnectionsCard() {
       </span>
       <h2 className="mt-4 font-heading text-title font-semibold! text-ink">ยังไม่มีคอนเนกชันเลย</h2>
       <p className="mt-2 text-body text-ink-soft">เจอคนที่พลังเสริมกัน แล้วชวนวางแผนร่วมทำ</p>
-      <Link to="/matches" className="meadow-btn-primary mt-5 w-full">
+      <Link to="/" className="meadow-btn-primary mt-5 w-full">
         ไปหาคนที่น่าเจอ
       </Link>
     </section>

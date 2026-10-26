@@ -970,7 +970,7 @@ function Dashboard() {
                     connections={fConnections}
                     className="h-full"
                     emptyAction={
-                      <Link to="/matches" className="meadow-btn-primary">
+                      <Link to="/" className="meadow-btn-primary">
                         หาคนที่ใช่
                       </Link>
                     }
@@ -1088,7 +1088,7 @@ function Dashboard() {
                       </Link>
                     );
                   })}
-                  <Link to="/matches" className="meadow-btn-secondary mt-1 w-full">
+                  <Link to="/" className="meadow-btn-secondary mt-1 w-full">
                     <Activity className="h-6 w-6 shrink-0" aria-hidden="true" /> หาคู่เชื่อมเพิ่ม
                   </Link>
                 </Panel>
