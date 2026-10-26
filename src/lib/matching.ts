@@ -111,10 +111,15 @@ export function rankForGuest(pool: User[], dayKey: string, limit = 30): DeckEntr
     .map(({ user }) => ({ user, match: null }));
 }
 
+/**
+ * สำรับการ์ดของหน้าแรก — ตัดคนที่ไม่มีชื่อออกก่อนจัดอันดับ (ทั้งคนมีโปรไฟล์และผู้เยี่ยมชม)
+ * การ์ดและตัวนับ "เหลือ N คน" จึงนับจากรายการเดียวกัน และคนไม่มีชื่อไม่กินที่ 30 อันดับ
+ */
 export function buildDeck(me: User | null, pool: User[], dayKey: string): DeckEntry[] {
+  const named = pool.filter((u) => u.name.trim() !== "");
   return me
-    ? rankMatches(me, pool, 30).map((m) => ({ user: m.user, match: m }))
-    : rankForGuest(pool, dayKey);
+    ? rankMatches(me, named, 30).map((m) => ({ user: m.user, match: m }))
+    : rankForGuest(named, dayKey);
 }
 
 /** One-line teaser for a card shown to a guest, e.g. "ทำเรื่องเยาวชน · มีไอเดีย". */

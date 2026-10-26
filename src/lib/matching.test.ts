@@ -86,6 +86,33 @@ describe("buildDeck", () => {
     expect(deck).toHaveLength(9);
     expect(deck.every((e) => e.match !== null && e.match.user === e.user)).toBe(true);
   });
+
+  it("drops nameless people for a participant so the counter matches the cards", () => {
+    const me = tenComplete[0]!;
+    const pool = [...tenComplete, mk("blank", { name: "" }), mk("spaces", { name: "   " })];
+    const ids = buildDeck(me, pool, "2026-10-26").map((e) => e.user.id);
+    expect(ids).not.toContain("blank");
+    expect(ids).not.toContain("spaces");
+    expect(ids).toHaveLength(9);
+  });
+
+  it("drops nameless people for a guest", () => {
+    const pool = [...tenComplete, mk("blank", { name: "" }), mk("spaces", { name: " \n " })];
+    const ids = buildDeck(null, pool, "2026-10-26").map((e) => e.user.id);
+    expect(ids).not.toContain("blank");
+    expect(ids).not.toContain("spaces");
+    expect(ids).toHaveLength(10);
+  });
+
+  it("does not let nameless people use up the participant deck's 30 slots", () => {
+    const me = mk("me");
+    // คนไม่มีชื่อได้คะแนนสูงกว่า (ตรงกับฉันทุกอย่าง) แต่ต้องไม่กินที่ของคนมีชื่อ
+    const blanks = Array.from({ length: 30 }, (_, i) => mk(`blank${i}`, { name: "" }));
+    const named = Array.from({ length: 5 }, (_, i) =>
+      mk(`n${i}`, { interests: ["Policy"], powers_have: ["Knowledge"], region: "South" }),
+    );
+    expect(buildDeck(me, [...blanks, ...named], "2026-10-26")).toHaveLength(5);
+  });
 });
 
 describe("guestBlurb", () => {

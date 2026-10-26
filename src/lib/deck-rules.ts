@@ -75,12 +75,13 @@ export function tryAcquireLock(
 }
 
 /**
- * การ์ดที่ยังรอให้ดู ตามลำดับเดิม — ตัดคนที่ไม่มีชื่อ และคนที่ดูไปแล้ว (ข้าม/เก็บไว้/เพิ่งเชื่อมต่อ)
+ * การ์ดที่ยังรอให้ดู ตามลำดับเดิม — ตัดคนที่ดูไปแล้ว (ข้าม/เก็บไว้/เพิ่งเชื่อมต่อ)
  * ใช้ร่วมกันทั้งสำรับและตัวนับ "เหลือ N คน" บนหน้าแรก เพื่อให้ตัวเลขตรงกับการ์ดเสมอ
+ * (คนที่ไม่มีชื่อถูกตัดตั้งแต่ buildDeck แล้ว)
  */
-export function unseenEntries<T extends { user: { id: string; name: string } }>(
+export function unseenEntries<T extends { user: { id: string } }>(
   entries: readonly T[],
   seen: readonly string[],
 ): T[] {
-  return entries.filter((e) => e.user.name.trim() !== "" && !seen.includes(e.user.id));
+  return entries.filter((e) => !seen.includes(e.user.id));
 }

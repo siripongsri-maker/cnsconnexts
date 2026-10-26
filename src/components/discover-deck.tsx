@@ -88,15 +88,14 @@ export function DiscoverDeck({
     [],
   );
 
-  // ข้ามคนที่ไม่มีชื่อ (buildDeck ฝั่งมีโปรไฟล์ไม่ได้กรองให้)
-  const named = entries.filter((e) => e.user.name.trim() !== "");
-  const remaining = unseenEntries(named, [...skippedUsers, ...likedUsers, ...passed]);
+  // คนที่ไม่มีชื่อถูกตัดตั้งแต่ buildDeck — ตัวนับบนหน้าแรกจึงตรงกับการ์ด
+  const remaining = unseenEntries(entries, [...skippedUsers, ...likedUsers, ...passed]);
   const state = loading
     ? "loading"
     : deckState({
         hydrated,
         networkAvailable,
-        total: named.length,
+        total: entries.length,
         remaining: remaining.length,
       });
   const top = state === "ready" ? remaining[0] : undefined;

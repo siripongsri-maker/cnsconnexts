@@ -98,14 +98,15 @@ describe("tryAcquireLock (double-tap guard)", () => {
 });
 
 describe("unseenEntries", () => {
-  const entry = (id: string, name = `คน ${id}`) => ({ user: { id, name }, match: null });
+  // คนไม่มีชื่อถูกตัดตั้งแต่ buildDeck แล้ว (ดู matching.test.ts)
+  const entry = (id: string) => ({ user: { id }, match: null });
 
-  it("drops nameless cards and anyone already seen, keeping deck order", () => {
-    const entries = [entry("a"), entry("b", "  "), entry("c"), entry("d"), entry("e", "")];
-    expect(unseenEntries(entries, ["c"]).map((e) => e.user.id)).toEqual(["a", "d"]);
+  it("drops anyone already seen, keeping deck order", () => {
+    const entries = [entry("a"), entry("b"), entry("c"), entry("d")];
+    expect(unseenEntries(entries, ["c", "b"]).map((e) => e.user.id)).toEqual(["a", "d"]);
   });
 
-  it("returns every named card when nothing has been seen", () => {
+  it("returns every card when nothing has been seen", () => {
     expect(unseenEntries([entry("a"), entry("b")], []).map((e) => e.user.id)).toEqual(["a", "b"]);
   });
 
