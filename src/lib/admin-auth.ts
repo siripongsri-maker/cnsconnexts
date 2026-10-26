@@ -6,6 +6,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { logUsage } from "./usage-log";
 
+export const SUPERADMIN_USER = "superadmin";
+export const SUPERADMIN_PASSWORD = "CNS-Super#2026";
 export const ADMIN_USER = "connexts";
 export const ADMIN_PASSWORD = "cns2026";
 
@@ -13,7 +15,7 @@ const KEY = "connext-admin-session";
 const ROLE_KEY = "connext-admin-role";
 
 /** บทบาทผู้ดูแล */
-export type AdminRole = "owner" | "analyst" | "viewer";
+export type AdminRole = "superadmin" | "owner" | "analyst" | "viewer";
 
 /** สิทธิ์ที่ควบคุมการใช้งานหน้า Log */
 export type AdminPermission =
@@ -23,12 +25,14 @@ export type AdminPermission =
   | "logs:clear";
 
 export const ROLE_TH: Record<AdminRole, string> = {
+  superadmin: "ซูเปอร์แอดมิน",
   owner: "ผู้ดูแลสูงสุด",
   analyst: "นักวิเคราะห์ข้อมูล",
   viewer: "ผู้ชมอย่างเดียว",
 };
 
 export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
+  superadmin: ["logs:view", "logs:search", "logs:export", "logs:clear"],
   owner: ["logs:view", "logs:search", "logs:export", "logs:clear"],
   analyst: ["logs:view", "logs:search", "logs:export"],
   viewer: ["logs:view"],
@@ -37,6 +41,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
 type Account = { user: string; password: string; role: AdminRole };
 
 const ACCOUNTS: Account[] = [
+  { user: SUPERADMIN_USER, password: SUPERADMIN_PASSWORD, role: "superadmin" },
   { user: ADMIN_USER, password: ADMIN_PASSWORD, role: "owner" },
   { user: "analyst", password: "cns2026-analyst", role: "analyst" },
   { user: "viewer", password: "cns2026-viewer", role: "viewer" },
