@@ -32,6 +32,8 @@ export function MeetupEntry({
   /** ชวนแล้วปุ่มจะหาย — จำกล่องที่ครอบไว้ให้ย้ายโฟกัสไปที่นั่นเมื่อไม่มีข้อความรอให้โฟกัส */
   const fallbackRef = useRef<HTMLElement | null>(null);
   const refocusRef = useRef(false);
+  /** ปุ่มที่กดชวน — ย้ายโฟกัสเฉพาะเมื่อโฟกัสยังอยู่ที่ปุ่มนี้หรือหลุดไป BODY (ไม่แย่งจากที่ผู้ใช้ไปแล้ว) */
+  const invokerRef = useRef<HTMLButtonElement | null>(null);
 
   const state = entryState(meetups, connectionId, meId, Date.now());
 
@@ -39,6 +41,10 @@ export function MeetupEntry({
   useEffect(() => {
     if (!refocusRef.current || state.kind === "invite") return;
     refocusRef.current = false;
+    const active = document.activeElement;
+    const keeps = !active || active === document.body || active === invokerRef.current;
+    invokerRef.current = null;
+    if (!keeps) return;
     if (state.kind === "waiting") {
       noteRef.current?.focus({ preventScroll: true });
       return;
@@ -85,6 +91,7 @@ export function MeetupEntry({
     setPending(true);
     fallbackRef.current = buttonRef.current?.closest<HTMLElement>("li, section, main") ?? null;
     refocusRef.current = true;
+    invokerRef.current = buttonRef.current;
     let result: InviteResult;
     try {
       result = await invite(connectionId);
@@ -95,9 +102,15 @@ export function MeetupEntry({
     setPending(false);
     if (result === "failed") {
       refocusRef.current = false;
+      invokerRef.current = null;
       toast.error(INVITE_RESULT_TOAST.failed, { id: "meetup-invite-failed" });
       return;
     }
+    // ผลไม่ทำให้สถานะเปลี่ยน (เช่น แถวเดิมที่ยังเห็นว่า invite) → เลิกรอ ไม่ให้การเปลี่ยนรอบหลัง (เช่น ดึงทุก 20 วินาที) มาแย่งโฟกัส
+    window.setTimeout(() => {
+      refocusRef.current = false;
+      invokerRef.current = null;
+    }, 1000);
     toast.success(INVITE_RESULT_TOAST[result], { id: "meetup-invite-result" });
   };
 
@@ -105,7 +118,7 @@ export function MeetupEntry({
     <button
       ref={buttonRef}
       type="button"
-      aria-label={`ชวน ${partnerName} เจอกันตอนนี้`}
+      aria-label={`ชวนเจอกันตอนนี้กับ ${partnerName}`}
       aria-busy={pending}
       aria-disabled={pending}
       className={`${BUTTON} ${pending ? "opacity-60" : ""} ${className}`}
