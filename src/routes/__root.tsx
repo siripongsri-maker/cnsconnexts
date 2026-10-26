@@ -13,6 +13,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider, useStore } from "@/lib/store";
+import { MeetupProvider } from "@/lib/meetup-context";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
@@ -131,22 +132,25 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <StoreProvider>
-          <HydrationGate>
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <div className="site-experience">
-              <Outlet />
-            </div>
-          </HydrationGate>
-          <NotificationHost />
-          <CommitmentReminders />
-          <FilterAlerts />
-          <GuidedTour />
-          <UsageTracker />
-          <CacheRefresher />
-          <LowSpecFlag />
-          <MotionRuntime />
+          {/* คำชวนเจอ: ไม่ทำงานเครือข่ายในหน้าหลังบ้าน/หน้าพิมพ์ (ตัดสินใน provider) */}
+          <MeetupProvider>
+            <HydrationGate>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <div className="site-experience">
+                <Outlet />
+              </div>
+            </HydrationGate>
+            <NotificationHost />
+            <CommitmentReminders />
+            <FilterAlerts />
+            <GuidedTour />
+            <UsageTracker />
+            <CacheRefresher />
+            <LowSpecFlag />
+            <MotionRuntime />
 
-          <Toaster position="top-center" />
+            <Toaster position="top-center" />
+          </MeetupProvider>
         </StoreProvider>
       </AuthProvider>
     </QueryClientProvider>

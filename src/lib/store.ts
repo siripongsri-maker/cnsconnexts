@@ -93,6 +93,8 @@ type Store = State & {
   booted: boolean;
   /** โหลดรูปโปรไฟล์/รูปผลงานเบื้องหลังเสร็จแล้ว */
   photosLoaded: boolean;
+  /** รหัสผู้เข้าร่วมจริงของเครื่องนี้ (ในข้อมูลอื่นใช้ "me") — null = ยังไม่มีโปรไฟล์ */
+  myParticipantId: string | null;
   saveProfile: (u: ProfileInput) => Promise<User>;
   /** โปรไฟล์ที่บันทึกไว้ในเครื่องแต่ยังไม่ถูกส่งขึ้นฐานข้อมูล */
   pendingProfile: PendingProfile | null;
@@ -294,6 +296,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
   const [pendingProfile, setPendingProfile] = useState<PendingProfile | null>(null);
   const myIdRef = useRef<string | null>(null);
+  // สำเนาของ myIdRef ที่ทำให้ React เรนเดอร์ใหม่ (ตั้งคู่กันทุกครั้ง)
+  const [myParticipantId, setMyParticipantId] = useState<string | null>(null);
   /** สถานะล่าสุด ให้ action อ่านได้ทันทีโดยไม่ต้องรอรอบเรนเดอร์ (เช่น เช็กว่าเชื่อมกันแล้วหรือยัง) */
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -510,6 +514,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       } catch {
         myIdRef.current = null;
       }
+      setMyParticipantId(myIdRef.current);
       // แสดงโปรไฟล์ของฉันจากสำเนาในเครื่องทันที เพื่อไม่ให้หน้าต่าง ๆ คิดว่ายังไม่มีโปรไฟล์
       const cachedMe = readMeCache(myIdRef.current);
       if (cachedMe) setState((s) => (s.me ? s : { ...s, me: cachedMe }));
@@ -541,6 +546,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             const { error } = await db.from("participants").insert(payload);
             if (!error) {
               myIdRef.current = id;
+              setMyParticipantId(id);
               localStorage.setItem(MY_ID_KEY, id);
             } else {
               // ส่งไม่สำเร็จ → เก็บไว้ให้ผู้ใช้กดซิงก์เองภายหลัง
@@ -629,6 +635,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const existingId = myIdRef.current;
       const id = existingId ?? uuid();
       myIdRef.current = id;
+      setMyParticipantId(id);
       try {
         localStorage.setItem(MY_ID_KEY, id);
       } catch {
@@ -734,6 +741,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
     if (!result.ok) throw result.error;
     myIdRef.current = pending.id;
+    setMyParticipantId(pending.id);
     try {
       localStorage.setItem(MY_ID_KEY, pending.id);
     } catch {
@@ -1335,6 +1343,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       networkAvailable,
       booted,
       photosLoaded,
+      myParticipantId,
       saveProfile,
       pendingProfile,
       syncPendingProfile,
@@ -1371,7 +1380,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, networkAvailable, booted, photosLoaded, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, refresh, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, networkAvailable, booted, photosLoaded, myParticipantId, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, refresh, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
