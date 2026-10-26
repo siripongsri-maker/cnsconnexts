@@ -1,6 +1,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "./db";
+import { runProfileWrite } from "./profile-write";
 import { emitLive } from "./live";
 import { adminDeleteRow, adminUpdateRow, type AdminTable } from "./admin.functions";
 import { ADMIN_PASSWORD } from "./admin-auth";
@@ -672,28 +673,26 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         !!existingId && !(leftoverInsert?.mode === "insert" && leftoverInsert.id === existingId);
 
       const sync = (async () => {
-        try {
-          // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
-          if (existingId && isUpdate) {
-            const { id: _omit, ...patch } = payload;
-            const { error } = await db.from("participants").update(patch).eq("id", existingId);
-            if (error) throw error;
-          } else {
-            const { error } = await db.from("participants").insert(payload);
-            if (error) throw error;
-          }
-        } catch (err) {
+        // ห้ามใช้ upsert: ON CONFLICT ต้องมีสิทธิ์ SELECT ทั้งตาราง ทำให้ถูกปฏิเสธ (401)
+        // update ขอ count แทน .select() เพื่อรู้ว่าโดนแถวจริงไหม (แถวหาย → insert ใหม่,
+        // insert ชน duplicate key → update แทน) ลองใหม่สูงสุดหนึ่งครั้ง
+        const { id: _omit, ...patch } = payload;
+        const result = await runProfileWrite(isUpdate ? "update" : "insert", {
+          insert: () => db.from("participants").insert(payload),
+          update: () => db.from("participants").update(patch, { count: "exact" }).eq("id", id),
+        });
+        if (!result.ok) {
           // ยังส่งขึ้นฐานข้อมูลไม่สำเร็จ → เก็บไว้ในเครื่องเพื่อให้กดซิงก์ภายหลัง
           const pending: PendingProfile = {
             id,
             name: payload.name,
             savedAt: now,
             payload,
-            mode: isUpdate ? "update" : "insert",
+            mode: result.mode,
           };
           writePending(pending);
           setPendingProfile(pending);
-          throw err;
+          throw result.error;
         }
         clearPending();
         setPendingProfile(null);
@@ -712,14 +711,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const pending = pendingProfile ?? readLocal<PendingProfile>(PENDING_KEY);
     if (!pending?.payload) return;
     const payload = { ...pending.payload, device_id: getDeviceId() } as Record<string, unknown>;
-    if (pending.mode === "update") {
-      const { id: _omit, ...patch } = payload;
-      const { error } = await db.from("participants").update(patch as never).eq("id", pending.id);
-      if (error) throw error;
-    } else {
-      const { error } = await db.from("participants").insert(payload as never);
-      if (error) throw error;
-    }
+    const { id: _omit, ...patch } = payload;
+    const result = await runProfileWrite(pending.mode === "update" ? "update" : "insert", {
+      insert: () => db.from("participants").insert(payload as never),
+      update: () =>
+        db.from("participants").update(patch as never, { count: "exact" }).eq("id", pending.id),
+    });
+    if (!result.ok) throw result.error;
     myIdRef.current = pending.id;
     try {
       localStorage.setItem(MY_ID_KEY, pending.id);
