@@ -1,310 +1,345 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Heart, RotateCcw, Sparkles, X } from "lucide-react";
-import type { MatchResult } from "@/lib/matching";
+import { Bookmark, Undo2, X } from "lucide-react";
+import { scoreMatch, type DeckEntry } from "@/lib/matching";
+import { deckPrimaryAction, deckState, swipeOutcome, swipeRotation } from "@/lib/deck-rules";
+import { useMotionSettings } from "@/lib/motion";
 import { useStore } from "@/lib/store";
-import { issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
-import { Avatar, Chip, ConnectBurst, PowerChip, ScoreRing } from "./power-bits";
-import { MissionVisual } from "@/components/mission-ui";
-import { SwipeCoach } from "./swipe-coach";
-import { Button } from "@/components/ui/button";
+import type { Connection, User } from "@/lib/types";
+import { MatchCard } from "./match-card";
+import { MeadowScene } from "./meadow-scene";
 
-/** สำรับ "ปัดเร็ว" — ข้าม / ถูกใจ / เชื่อมต่อ ได้ในแตะเดียว */
+/** เมนูล่างสูง ~76px (+ขอบ) — แถบปุ่มลอยอยู่เหนือมันพอดี */
+const ACTION_BAR_BOTTOM = "calc(84px + env(safe-area-inset-bottom))";
+/** ระยะลากที่เริ่มนับว่าเป็นการปัด (กันแตะลิงก์ในการ์ดแล้วการ์ดขยับ) */
+const DRAG_START = 8;
+/** เวลาให้การ์ดลอยออกก่อนเปลี่ยนใบ */
+const LEAVE_MS = 200;
+
+type Leave = "left" | "right";
+
+/**
+ * สำรับจับคู่ — การ์ดใหญ่ทีละใบ ปุ่มใหญ่ ข้าม / ขอเชื่อมต่อ / เก็บไว้
+ * ปัดซ้าย = ข้าม ปัดขวา = เก็บไว้ (ทางลัดเสริม ปุ่มใช้ได้เสมอ)
+ */
 export function DiscoverDeck({
-  matches,
-  onShowLiked,
+  entries,
+  me,
+  onNeedProfile,
+  onConnected,
 }: {
-  matches: MatchResult[];
-  onShowLiked?: () => void;
+  entries: DeckEntry[];
+  me: User | null;
+  onNeedProfile: (target: User) => void;
+  onConnected: (c: Connection, entry: DeckEntry) => void;
 }) {
-  const { connect, connections, toggleLikeUser, skipUser, undoSkip, skippedUsers } = useStore();
+  const {
+    connect,
+    connections,
+    toggleLikeUser,
+    likedUsers,
+    skipUser,
+    undoSkip,
+    skippedUsers,
+    networkAvailable,
+    hydrated,
+    refresh,
+  } = useStore();
   const navigate = useNavigate();
+  const { reducedMotion } = useMotionSettings();
+
   const [drag, setDrag] = useState(0);
-  const [fly, setFly] = useState<"left" | "right" | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [leaving, setLeaving] = useState<Leave | null>(null);
   const [busy, setBusy] = useState(false);
-  const [burst, setBurst] = useState(false);
-  const start = useRef<number | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  /** คนที่เพิ่งกดเชื่อมต่อในรอบนี้ — เลื่อนไปการ์ดถัดไป (ไม่เก็บลงรายการที่เก็บไว้) */
+  const [passed, setPassed] = useState<string[]>([]);
+  const startX = useRef<number | null>(null);
+  const moved = useRef(false);
+  /** กันแตะซ้ำแบบทันที (state ยังไม่ทันอัปเดต) */
+  const busyRef = useRef(false);
+  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const top = matches[0];
-  const next = matches[1];
+  useEffect(
+    () => () => {
+      if (leaveTimer.current) clearTimeout(leaveTimer.current);
+    },
+    [],
+  );
 
-  if (!top) {
+  // ข้ามคนที่ไม่มีชื่อ (buildDeck ฝั่งมีโปรไฟล์ไม่ได้กรองให้)
+  const named = entries.filter((e) => e.user.name.trim() !== "");
+  const remaining = named.filter(
+    (e) =>
+      !skippedUsers.includes(e.user.id) &&
+      !likedUsers.includes(e.user.id) &&
+      !passed.includes(e.user.id),
+  );
+  const state = deckState({
+    hydrated,
+    networkAvailable,
+    total: named.length,
+    remaining: remaining.length,
+  });
+  const top = state === "ready" ? remaining[0] : undefined;
+
+  const undoButton =
+    skippedUsers.length > 0 ? (
+      <button
+        type="button"
+        onClick={undoSkip}
+        className="tap mx-auto mt-3 inline-flex min-h-12 items-center gap-2 rounded-xl px-4 text-body font-semibold text-primary underline underline-offset-4"
+      >
+        <Undo2 className="h-6 w-6 shrink-0" aria-hidden />
+        ย้อนการ์ดที่ข้าม
+      </button>
+    ) : null;
+
+  if (state === "loading") {
     return (
-      <div className="core-empty mission-empty">
-        <MissionVisual variant="network" className="core-empty-visual" />
-        <p className="mission-kicker">MORE CONNECTIONS AHEAD</p>
-        <h2>พื้นที่นี้รอคนใหม่อยู่</h2>
-        <p className="text-[12px] text-muted-foreground">
-          เลือกประเด็นอื่น ดูคนที่ถูกใจ หรือชวนเพื่อนสแกน QR มาเชื่อมกัน
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {onShowLiked && (
-            <button
-              type="button"
-              onClick={onShowLiked}
-              className="tap inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground"
-            >
-              <Heart className="h-4 w-4" aria-hidden /> ดูคนที่ถูกใจไว้
-            </button>
-          )}
-          <Link
-            to="/qr"
-            className="tap inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm font-bold"
-          >
-            ชวนคนข้าง ๆ สแกน QR
-          </Link>
+      <section className="mx-auto w-full max-w-xl px-4">
+        <div role="status" className="meadow-card p-5">
+          <div aria-hidden className="motion-safe:animate-pulse">
+            <div className="flex items-center justify-between gap-3">
+              <div className="h-[72px] w-[72px] rounded-full bg-sky-soft" />
+              <div className="h-[84px] w-[84px] rounded-full bg-sky-soft" />
+            </div>
+            <div className="mt-4 h-8 w-2/3 rounded-lg bg-sky-soft" />
+            <div className="mt-3 h-24 rounded-2xl bg-sky-soft" />
+          </div>
+          <p className="mt-4 text-center text-body text-ink-soft">กำลังหาคนที่ควรเจอ…</p>
         </div>
-        {skippedUsers.length > 0 && (
-          <button
-            type="button"
-            onClick={undoSkip}
-            className="tap mt-1 inline-flex h-11 items-center gap-2 rounded-xl border border-border px-4 text-sm font-bold"
-          >
-            <RotateCcw className="h-4 w-4" aria-hidden /> ย้อนคนล่าสุด
-          </button>
-        )}
-      </div>
+      </section>
     );
   }
 
-  const u = top.user;
-  const existing = connections.find(
-    (c) => (c.user_a === "me" && c.user_b === u.id) || (c.user_b === "me" && c.user_a === u.id),
-  );
+  if (state === "error") {
+    const retry = async () => {
+      if (retrying) return;
+      setRetrying(true);
+      try {
+        await refresh();
+      } catch {
+        // ยังโหลดไม่ได้ — คงหน้าลองอีกครั้งไว้
+      } finally {
+        setRetrying(false);
+      }
+    };
+    return (
+      <section className="mx-auto w-full max-w-xl px-4">
+        <div className="meadow-card flex flex-col items-center gap-4 p-6 text-center">
+          <h2 className="font-heading text-title text-ink">ยังโหลดรายชื่อไม่ได้</h2>
+          <button
+            type="button"
+            onClick={retry}
+            disabled={retrying}
+            aria-busy={retrying}
+            className="meadow-btn-secondary tap"
+          >
+            ลองอีกครั้ง
+          </button>
+        </div>
+      </section>
+    );
+  }
 
-  const finish = (dir: "left" | "right", run: () => void) => {
-    setFly(dir);
-    setDrag(0);
-    setTimeout(() => {
+  if (state === "empty" || !top) {
+    return (
+      <section className="mx-auto flex w-full max-w-xl flex-col px-4">
+        <div className="meadow-card overflow-hidden text-center">
+          <MeadowScene variant="empty" className="pointer-events-none" />
+          <div className="flex flex-col items-center gap-3 p-6">
+            <h2 className="font-heading text-title text-ink">คุณดูครบทุกคนแล้ว</h2>
+            <Link
+              to="/commitments"
+              hash="saved"
+              className="meadow-btn-primary tap w-full max-w-sm text-center"
+            >
+              ดูคนที่เก็บไว้
+            </Link>
+            <Link to="/map" className="meadow-btn-secondary tap w-full max-w-sm text-center">
+              สำรวจแผนที่
+            </Link>
+          </div>
+        </div>
+        {undoButton}
+      </section>
+    );
+  }
+
+  const user = top.user;
+  const existing = connections.find(
+    (c) =>
+      (c.user_a === "me" && c.user_b === user.id) || (c.user_b === "me" && c.user_a === user.id),
+  );
+  const action = deckPrimaryAction({ hasProfile: me !== null, connected: !!existing });
+  const saved = likedUsers.includes(user.id);
+  const locked = busy || leaving !== null;
+
+  /** ให้การ์ดลอยออกก่อน แล้วค่อยเปลี่ยนใบ (ลดการเคลื่อนไหว = เปลี่ยนทันที) */
+  const leave = (dir: Leave, run: () => void) => {
+    startX.current = null;
+    setDragging(false);
+    if (reducedMotion) {
+      setDrag(0);
       run();
-      setFly(null);
-    }, 180);
+      return;
+    }
+    setLeaving(dir);
+    leaveTimer.current = setTimeout(() => {
+      leaveTimer.current = null;
+      run();
+      setLeaving(null);
+      setDrag(0);
+    }, LEAVE_MS);
   };
 
   const doSkip = () => {
-    if (busy) return;
-    finish("left", () => {
-      skipUser(u.id);
-      toast(`ข้าม ${u.name} แล้ว`, {
+    if (locked) return;
+    leave("left", () => {
+      skipUser(user.id);
+      toast(`ข้าม ${user.name} แล้ว`, {
         id: "deck-skip-undo",
         duration: 5000,
-        action: { label: "ย้อนกลับ", onClick: undoSkip },
+        action: { label: "ย้อน", onClick: undoSkip },
       });
     });
   };
-  const doLike = () => {
-    if (busy) return;
-    finish("right", () => {
-      toggleLikeUser(u.id);
-      toast.success("บันทึกไว้ในรายการถูกใจแล้ว ❤️", { description: u.name });
+
+  const doSave = () => {
+    if (locked) return;
+    leave("right", () => {
+      toggleLikeUser(user.id);
+      toast(`เก็บ ${user.name} ไว้แล้ว`, { id: "deck-save" });
     });
-  };
-  const doConnect = () => {
-    if (busy) return;
-    setBusy(true);
-    const c = connect(u.id, top.score, top.reason);
-    setBurst(true);
-    toast.success("เชื่อมกันแล้ว! ✨", {
-      description: `คุณกับ ${u.name} เป็นคอนเนกชันใหม่ · New connection created`,
-      action: {
-        label: "ก้าวต่อไป",
-        onClick: () => navigate({ to: "/connection/$id", params: { id: c.id } }),
-      },
-    });
-    setTimeout(
-      () =>
-        finish("right", () => {
-          toggleLikeUser(u.id);
-          setBurst(false);
-          setBusy(false);
-        }),
-      900,
-    );
   };
 
-  const resetDrag = () => {
-    start.current = null;
+  const doPrimary = () => {
+    if (action === "open-profile-sheet") {
+      onNeedProfile(user);
+      return;
+    }
+    if (action === "open-connection") {
+      if (existing) navigate({ to: "/connection/$id", params: { id: existing.id } });
+      return;
+    }
+    // action === "connect": เรียกครั้งเดียว กันแตะซ้ำด้วย busyRef
+    if (busyRef.current || leaving || !me) return;
+    busyRef.current = true;
+    setBusy(true);
+    try {
+      const m = top.match ?? scoreMatch(me, user);
+      const c = connect(user.id, m.score, m.reason);
+      setPassed((p) => [...p, user.id]);
+      onConnected(c, top);
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
+    }
+  };
+
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (locked || (e.pointerType === "mouse" && e.button !== 0)) return;
+    startX.current = e.clientX;
+    moved.current = false;
+  };
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (locked || startX.current === null) return;
+    const dx = e.clientX - startX.current;
+    if (!moved.current && Math.abs(dx) > DRAG_START) {
+      moved.current = true;
+      setDragging(true);
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    if (moved.current) setDrag(dx);
+  };
+  const onPointerUp = () => {
+    if (startX.current === null) return;
+    startX.current = null;
+    setDragging(false);
+    const outcome = swipeOutcome(drag);
+    if (outcome === "skip") doSkip();
+    else if (outcome === "save") doSave();
+    else setDrag(0);
+  };
+  const cancelDrag = () => {
+    startX.current = null;
+    setDragging(false);
     setDrag(0);
   };
 
-  const transform = fly
-    ? `translateX(${fly === "left" ? -420 : 420}px) rotate(${fly === "left" ? -14 : 14}deg)`
-    : `translateX(${drag}px) rotate(${drag / 22}deg)`;
-
-  const place = provinceTh(u.province) || REGION_LABEL[u.region];
-  const stampOpacity = Math.min(Math.abs(drag) / 90, 1);
+  const transform = leaving
+    ? `translateX(${leaving === "left" ? -120 : 120}%) rotate(${leaving === "left" ? -12 : 12}deg)`
+    : `translateX(${drag}px) rotate(${swipeRotation(drag)}deg)`;
 
   return (
-    <div className="mission-deck mx-auto max-w-2xl px-4">
-      <SwipeCoach />
-      <div className="core-deck-stage relative h-[calc(100dvh-300px)] min-h-[440px]">
-        {next && (
-          <div
-            className="absolute inset-x-3 top-3 bottom-0 scale-[0.96] rounded-lg bg-card opacity-70"
+    <section className="mx-auto w-full max-w-xl px-4">
+      <div
+        key={user.id}
+        className="relative touch-pan-y select-none"
+        style={{
+          transform,
+          transition: dragging ? undefined : `transform ${LEAVE_MS}ms cubic-bezier(0.22,1,0.36,1)`,
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={cancelDrag}
+        onClickCapture={(e) => {
+          // ลากการ์ดแล้วปล่อยบนลิงก์ ไม่นับเป็นการแตะลิงก์
+          if (moved.current) {
+            e.preventDefault();
+            e.stopPropagation();
+            moved.current = false;
+          }
+        }}
+      >
+        <MatchCard entry={top} me={me} />
+      </div>
+
+      {undoButton && <div className="flex">{undoButton}</div>}
+
+      <div
+        className="sticky z-20 mt-4 flex items-center gap-3 rounded-3xl bg-paper/95 p-2 backdrop-blur"
+        style={{ bottom: ACTION_BAR_BOTTOM }}
+      >
+        <button
+          type="button"
+          aria-label={`ข้าม ${user.name}`}
+          onClick={doSkip}
+          disabled={locked}
+          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-ink-soft disabled:opacity-55"
+        >
+          <X className="h-7 w-7" strokeWidth={2.6} aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          onClick={doPrimary}
+          disabled={busy}
+          className="meadow-btn-primary tap min-w-0 flex-1 px-4 text-center"
+        >
+          {action === "open-connection" ? "เชื่อมกันแล้ว · คุยต่อ" : "ขอเชื่อมต่อ"}
+        </button>
+
+        <button
+          type="button"
+          aria-label={`เก็บ ${user.name} ไว้`}
+          aria-pressed={saved}
+          onClick={doSave}
+          disabled={locked}
+          className="tap grid h-16 w-16 shrink-0 place-items-center rounded-full border-2 border-[#C9C6DA] bg-white text-primary disabled:opacity-55"
+        >
+          <Bookmark
+            className="h-7 w-7"
+            strokeWidth={2.4}
+            fill={saved ? "currentColor" : "none"}
             aria-hidden
           />
-        )}
-
-        <article
-          key={u.id}
-          className="core-deck-card absolute inset-0 flex touch-pan-y flex-col overflow-hidden rounded-lg bg-card ring-1 ring-border"
-          style={{
-            transform,
-            transition:
-              fly || drag === 0 ? "transform 220ms cubic-bezier(0.22,1,0.36,1)" : undefined,
-          }}
-          onPointerDown={(e) => {
-            if (busy) return;
-            start.current = e.clientX;
-          }}
-          onPointerMove={(e) => {
-            if (busy || start.current === null) return;
-            const dx = e.clientX - start.current;
-            if (Math.abs(dx) > 8 && !e.currentTarget.hasPointerCapture(e.pointerId)) {
-              e.currentTarget.setPointerCapture(e.pointerId);
-            }
-            setDrag(dx);
-          }}
-          onPointerUp={() => {
-            if (start.current === null) return;
-            const d = drag;
-            start.current = null;
-            if (d < -90) doSkip();
-            else if (d > 90) doLike();
-            else setDrag(0);
-          }}
-          onPointerCancel={resetDrag}
-          onPointerLeave={(e) => {
-            if (!e.currentTarget.hasPointerCapture(e.pointerId)) resetDrag();
-          }}
-        >
-          {/* ภาพเต็มการ์ดแบบแอปหาคู่ */}
-          <div className="core-deck-photo relative min-h-0 flex-[1.15] overflow-hidden bg-accent">
-            {u.photo ? (
-              <img
-                src={u.photo}
-                alt={u.name}
-                draggable={false}
-                className="absolute inset-0 h-full w-full select-none object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 grid place-items-center gradient-power" aria-hidden>
-                <span className="text-[96px] leading-none drop-shadow-sm">
-                  {u.avatar || u.name.slice(0, 1)}
-                </span>
-              </div>
-            )}
-            <div className="mission-profile-scrim absolute inset-x-0 bottom-0 h-2/3" aria-hidden />
-            <span className="absolute right-4 top-4 rounded-full bg-card/90 px-3 py-1.5 font-tech text-sm font-bold text-primary shadow-sm backdrop-blur">
-              {top.score}% <span className="text-xs text-muted-foreground">แมตช์</span>
-            </span>
-            <div className="absolute inset-x-0 bottom-0 p-5 text-foreground">
-              <h3 className="line-clamp-2 break-words text-[28px] font-bold leading-tight">
-                {u.name}
-              </h3>
-              <p className="mt-1 line-clamp-1 text-sm font-medium opacity-90">
-                {place}
-                {u.organization ? ` · ${u.organization}` : ""}
-              </p>
-            </div>
-
-            <span
-              className="pointer-events-none absolute left-5 top-6 -rotate-12 rounded-xl border-[3px] border-primary bg-card/80 px-3 py-1 text-xl font-extrabold text-primary"
-              style={{ opacity: drag > 0 ? stampOpacity : 0 }}
-              aria-hidden
-            >
-              สนใจ
-            </span>
-            <span
-              className="pointer-events-none absolute right-5 top-16 rotate-12 rounded-xl border-[3px] border-muted-foreground bg-card/80 px-3 py-1 text-xl font-extrabold text-muted-foreground"
-              style={{ opacity: drag < 0 ? stampOpacity : 0 }}
-              aria-hidden
-            >
-              ข้าม
-            </span>
-          </div>
-
-          <div className="core-deck-copy no-scrollbar min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
-            <p className="flex items-start gap-2 text-[15px] font-semibold leading-relaxed">
-              <Sparkles className="mt-1 h-4 w-4 shrink-0 text-primary" aria-hidden />
-              {top.reason}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {u.interests.slice(0, 2).map((i) => (
-                <Chip key={i} tone="primary">
-                  {issueTh(i)}
-                </Chip>
-              ))}
-              {top.theyBring.slice(0, 2).map((p) => (
-                <PowerChip key={p} name={p} tone="lime" />
-              ))}
-              {top.theyNeed.slice(0, 2).map((p) => (
-                <PowerChip key={p} name={p} tone="coral" canHelp={top.youCanGive.includes(p)} />
-              ))}
-            </div>
-            <Link
-              to="/people/$id"
-              params={{ id: u.id }}
-              className="tap inline-flex min-h-11 items-center text-sm font-bold text-primary"
-            >
-              ดูโปรไฟล์เต็ม →
-            </Link>
-          </div>
-
-          {burst && <ConnectBurst name={u.name} />}
-        </article>
+        </button>
       </div>
-
-      <div className="core-deck-actions mt-5 flex items-center justify-center gap-5">
-        <Button
-          type="button"
-          aria-label="ข้ามคนนี้"
-          variant="outline"
-          size="icon"
-          onClick={doSkip}
-          disabled={busy}
-          className="tap grid h-16 w-16 place-items-center rounded-full bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
-        >
-          <X className="h-7 w-7 text-muted-foreground" strokeWidth={2.6} aria-hidden />
-        </Button>
-
-        {existing ? (
-          <Link
-            to="/connection/$id"
-            params={{ id: existing.id }}
-            className="tap inline-flex h-16 items-center justify-center rounded-full bg-lime px-6 text-sm font-extrabold text-lime-foreground"
-          >
-            เชื่อมแล้ว · ดูต่อ
-          </Link>
-        ) : (
-          <Button
-            type="button"
-            onClick={doConnect}
-            variant="mission"
-            disabled={busy}
-            className="tap inline-flex h-16 items-center justify-center rounded-full cta-holo px-8 text-base font-extrabold text-primary-foreground"
-          >
-            ขอเชื่อมต่อ
-          </Button>
-        )}
-
-        <Button
-          type="button"
-          aria-label="สนใจ เก็บไว้ก่อน"
-          variant="outline"
-          size="icon"
-          onClick={doLike}
-          disabled={busy}
-          className="tap grid h-16 w-16 place-items-center rounded-full bg-card shadow-[var(--shadow-card)] ring-1 ring-border"
-        >
-          <Heart className="h-7 w-7 text-primary" fill="currentColor" aria-hidden />
-        </Button>
-      </div>
-
-      <p className="mt-3 text-center text-xs text-muted-foreground">
-        เหลืออีก {matches.length - 1} คน
-      </p>
-    </div>
+    </section>
   );
 }

@@ -105,6 +105,8 @@ type Store = State & {
   toggleLikeUser: (id: string) => boolean;
   skipUser: (id: string) => void;
   undoSkip: () => void;
+  /** โหลดข้อมูลจากฐานข้อมูลใหม่ (เช่น ปุ่ม "ลองอีกครั้ง" เมื่อโหลดรายชื่อไม่สำเร็จ) */
+  refresh: () => Promise<void>;
   addProvinceNote: (n: Omit<ProvinceNote, "id" | "created_at">) => ProvinceNote;
   addSubmission: (s: Omit<Submission, "id" | "created_at" | "showcase">) => Submission;
   toggleShowcase: (id: string) => void;
@@ -1303,6 +1305,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       toggleLikeUser,
       skipUser,
       undoSkip,
+      refresh,
       addProvinceNote,
       addSubmission,
       toggleShowcase,
@@ -1325,7 +1328,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, networkAvailable, booted, photosLoaded, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [state, hydrated, networkAvailable, booted, photosLoaded, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, refresh, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
   );
 
   return createElement(Ctx.Provider, { value }, children);
