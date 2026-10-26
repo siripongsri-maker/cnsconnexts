@@ -105,6 +105,18 @@ export function MoreBlock({ count }: { count: number }) {
   );
 }
 
+/** ไอคอนของพลัง (คีย์ภาษาอังกฤษ) — ใช้แทนอีโมจิ; คีย์ที่ไม่รู้จักได้ประกายดาว */
+export function PowerIcon({
+  name,
+  className = "h-6 w-6 shrink-0",
+}: {
+  name: string;
+  className?: string;
+}) {
+  const Icon = POWER_ICON[name as Power] ?? Sparkles;
+  return <Icon aria-hidden className={className} />;
+}
+
 /** บรรทัดเดียว: ไอคอนพลังแรก + ชื่อพลัง + " +N" เมื่อมีมากกว่าหนึ่ง */
 export function PowerLine({ label, powers }: { label: string; powers: string[] }) {
   const first = powers[0];

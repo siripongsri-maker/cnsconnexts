@@ -6,42 +6,6 @@
 .core-page > [class*="px-5"] {
   padding-inline: 0;
 }
-.core-section-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 1.8rem;
-}
-.core-section-head h2 {
-  max-width: 32rem;
-  margin-top: 0.6rem;
-  font-size: clamp(1.35rem, 2.6vw, 2rem);
-  font-weight: 500;
-  line-height: 1.4;
-}
-.core-section-head .mission-kicker {
-  margin: 0;
-}
-.core-data-count {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 0.45rem;
-  color: var(--primary);
-  font-family: var(--font-tech);
-  font-size: 2rem;
-  font-weight: 400;
-  line-height: 1;
-}
-.core-data-count > span {
-  color: var(--muted-foreground);
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 400;
-  white-space: nowrap;
-}
 .core-mode-tabs {
   max-width: 38rem;
   border: 1px solid var(--border);
@@ -64,63 +28,10 @@
   border-bottom: 1px solid var(--border);
   padding-block: 1rem 1.35rem;
 }
-.core-filter-strip button,
-.core-filter-row button {
+.core-filter-strip button {
   min-height: 42px;
   border-radius: 2px;
   font-weight: 400;
-}
-.core-filter-panel {
-  margin-block: 1rem 2rem;
-  border: 1px solid var(--border);
-  padding: 1.7rem !important;
-  background: color-mix(in srgb, var(--card) 84%, transparent);
-}
-.core-filter-panel .core-section-head {
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 1.7rem;
-}
-.core-filter-row {
-  align-items: center;
-  padding-bottom: 0.35rem;
-}
-.core-filter-label {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  align-self: stretch;
-  min-width: 7.5rem;
-  flex-shrink: 0;
-  margin-right: 0.2rem;
-  background: var(--card);
-  color: var(--muted-foreground);
-  font-size: 0.72rem;
-}
-.core-card-index {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.6rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border);
-  color: var(--muted-foreground);
-  font-family: var(--font-tech);
-  font-size: 0.65rem;
-  line-height: 1.6;
-  letter-spacing: 0.08em;
-}
-.core-card-index > span:first-child {
-  color: var(--primary);
-}
-.core-card-index > span:last-child {
-  text-align: right;
-}
-.core-card-index > span > span {
-  margin-left: 0.7rem;
-  font-size: 1rem;
 }
 .core-empty {
   position: relative;
@@ -354,295 +265,8 @@
 }
 
 /* Ideas use a consistent editorial card rather than isolated white boxes. */
-.core-idea-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-.core-idea-grid .mission-idea {
-  display: flex;
-  border-radius: 0;
-  border-top: 2px solid var(--primary);
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--primary) 5%, var(--card)),
-    var(--card) 60%
-  );
-}
-.core-idea-grid .mission-idea > .core-idea-body {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  padding: clamp(1.3rem, 2.5vw, 2rem);
-}
-.core-idea-grid .mission-idea h3 {
-  font-size: clamp(1.25rem, 2vw, 1.75rem);
-  font-weight: 400;
-  line-height: 1.45;
-}
-.core-idea-grid .mission-idea h3 + p {
-  min-height: 3.5rem;
-  margin-block: 0.8rem 1rem;
-  line-height: 1.8;
-}
-.core-resource-pair {
-  margin-bottom: 1rem;
-}
-.core-resource-pair > div {
-  border: 1px solid var(--border);
-  padding: 1rem;
-  background: color-mix(in srgb, var(--background) 55%, transparent);
-}
-.core-resource-pair > div:first-child {
-  border-top: 1px solid color-mix(in srgb, var(--electric) 70%, var(--border));
-}
-.core-resource-pair > div:last-child {
-  border-top: 1px solid color-mix(in srgb, var(--primary) 70%, var(--border));
-}
-.core-resource-pair p {
-  letter-spacing: 0.05em;
-  font-weight: 400;
-}
-.core-resource-pair li {
-  padding-block: 0.15rem;
-  font-weight: 400;
-}
-.core-idea-body > .core-idea-actions {
-  margin-top: auto;
-  padding-top: 0.5rem;
-}
-.core-idea-actions :is(button, p) {
-  border-radius: 0;
-}
-.core-idea-form {
-  border: 1px solid var(--border);
-  border-top: 2px solid var(--primary);
-  border-radius: 0 !important;
-  padding: 2rem;
-  background-image: radial-gradient(
-    ellipse at 100% 0,
-    color-mix(in srgb, var(--primary) 7%, transparent),
-    transparent 40%
-  );
-}
-.core-idea-form :is(input, textarea, select, button) {
-  border-radius: 2px;
-}
-.core-idea-form h2 {
-  font-size: 1.65rem;
-  font-weight: 400;
-}
 
 /* A framed map and the directory form one connected network view. */
-.core-map-filters {
-  margin-top: 0;
-}
-.core-filter-summary {
-  display: flex;
-  cursor: pointer;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  list-style: none;
-}
-.core-filter-summary::-webkit-details-marker {
-  display: none;
-}
-.core-filter-summary > span:first-child {
-  display: grid;
-  gap: 0.65rem;
-}
-.core-filter-summary strong {
-  font-size: 1.15rem;
-  font-weight: 400;
-}
-.core-filter-summary > span:last-child {
-  color: var(--muted-foreground);
-  font-size: 0.72rem;
-  white-space: nowrap;
-}
-.core-filter-summary > span:last-child > span {
-  display: inline-flex;
-  width: 28px;
-  height: 28px;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0.6rem;
-  border: 1px solid var(--border);
-  color: var(--primary);
-  font-size: 1.1rem;
-}
-.core-map-filters[open] .core-filter-summary {
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 1.5rem;
-}
-.core-map-filters[open] .core-filter-summary > span:last-child > span {
-  transform: rotate(45deg);
-}
-.core-map-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  align-items: start;
-  gap: 2.5rem;
-}
-.core-map-stage {
-  min-height: 640px;
-  border-radius: 0;
-  padding: 1.25rem;
-  background: radial-gradient(
-    ellipse at 46% 35%,
-    color-mix(in srgb, var(--primary) 9%, var(--background)),
-    var(--background)
-  ) !important;
-}
-.core-map-stage::before {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--primary) 7%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--primary) 7%, transparent) 1px, transparent 1px);
-  background-size: 44px 44px;
-  content: "";
-  pointer-events: none;
-}
-.core-map-stage > svg {
-  position: relative;
-  height: 670px;
-  width: 100%;
-  margin-top: 1.5rem;
-}
-.core-map-stage > p {
-  position: relative;
-  margin-top: 1rem;
-  border-top: 1px solid var(--border);
-  padding-block: 1rem 0.25rem;
-  font-size: 0.7rem;
-}
-.core-map-stage-label {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  font-family: var(--font-tech);
-  font-size: 0.65rem;
-}
-.core-map-stage-label > span:last-child {
-  color: var(--primary);
-}
-.core-map-aside {
-  min-width: 0;
-  padding-block: 0.75rem;
-}
-.core-map-aside .core-section-head {
-  margin-block: 2rem 1rem;
-}
-.core-map-aside .core-section-head h2 {
-  margin-top: 0.5rem;
-  font-size: 1.2rem;
-}
-.core-map-aside .core-data-count {
-  font-size: 1.8rem;
-}
-.core-province-list {
-  max-height: 240px;
-  overflow-y: auto;
-  padding-bottom: 1rem;
-}
-.core-province-list > button {
-  border-radius: 0;
-  font-size: 0.75rem;
-  font-weight: 400;
-}
-.core-clusters {
-  margin-top: 2rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-}
-.core-clusters > div > button {
-  min-height: 105px;
-  border-radius: 0;
-  padding: 1rem;
-  background: color-mix(in srgb, var(--primary) 4%, var(--card));
-}
-.core-clusters > div > button p {
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-.core-clusters > div > button[aria-pressed="true"] {
-  border-color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 12%, var(--card));
-  box-shadow: none;
-  --tw-ring-shadow: 0 0 #0000;
-}
-.core-map-legend {
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-}
-.core-map-legend .core-chip {
-  border-color: transparent;
-  background: transparent;
-  padding: 0.25rem 0.4rem;
-}
-.core-map-empty {
-  position: relative;
-  min-height: 210px;
-  padding: 1.5rem;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-.core-map-empty > .core-empty-visual {
-  position: absolute;
-  right: -10%;
-  bottom: -15%;
-  width: 55%;
-  opacity: 0.35;
-}
-.core-map-empty > p {
-  position: relative;
-  max-width: 60%;
-  margin-top: 0.7rem;
-  font-size: 0.85rem;
-}
-.core-people-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.core-person-card {
-  position: relative;
-  min-height: 230px;
-  border-radius: 0;
-  padding: 1.6rem;
-  background:
-    radial-gradient(
-      ellipse at 100% 0,
-      color-mix(in srgb, var(--primary) 9%, transparent),
-      transparent 65%
-    ),
-    var(--card);
-  transition: border-color 160ms ease;
-}
-.core-person-card::after {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  color: var(--primary);
-  font-size: 1.4rem;
-  content: "↗";
-}
-.core-person-card:hover {
-  border-color: var(--primary);
-}
-.core-person-card > .core-avatar {
-  width: 56px !important;
-  height: 56px !important;
-}
-.core-person-card > p:first-of-type {
-  margin-top: 1.1rem;
-  font-size: 1rem;
-  font-weight: 400;
-}
 
 /* Follow-through keeps the same restrained, instrument-panel language. */
 .core-follow-tabs {
@@ -1164,17 +788,6 @@
 }
 
 @media (max-width: 900px) {
-  .core-map-layout {
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-  }
-  .core-map-stage {
-    min-height: 500px;
-    padding: 1rem;
-  }
-  .core-map-stage > svg {
-    height: 540px;
-  }
   .core-progress-overview {
     grid-template-columns: minmax(0, 1fr) 170px;
   }
@@ -1183,9 +796,6 @@
   }
   .core-commitment-stats > div > p:first-child {
     font-size: 2.5rem;
-  }
-  .core-filter-panel {
-    padding: 1.25rem !important;
   }
   .core-deck-stage {
     height: 510px;
@@ -1198,44 +808,7 @@
   .core-page > [class*="px-5"] {
     padding-inline: 0;
   }
-  .core-section-head {
-    margin-bottom: 1.3rem;
-    gap: 1rem;
-  }
-  .core-section-head h2 {
-    font-size: 1.3rem;
-  }
-  .core-data-count {
-    font-size: 1.7rem;
-  }
-  .core-data-count > span {
-    font-size: 0.58rem;
-  }
-  .core-filter-panel {
-    margin-block: 0.5rem 1.5rem;
-    padding: 1rem !important;
-  }
-  .core-filter-panel .core-section-head {
-    align-items: flex-start;
-    padding-bottom: 1.3rem;
-  }
-  .core-filter-panel .core-section-head h2 {
-    max-width: 15rem;
-    font-size: 1.1rem;
-  }
-  .core-filter-row {
-    gap: 0.4rem;
-  }
-  .core-filter-row button {
-    padding-inline: 0.8rem;
-    font-size: 0.65rem;
-  }
-  .core-filter-label {
-    min-width: 5.6rem;
-    font-size: 0.62rem;
-  }
   .core-match-grid,
-  .core-idea-grid,
   .core-commitment-grid,
   .core-ready-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1315,52 +888,6 @@
   .core-deck-actions > :is(a, button):nth-child(2) {
     padding-inline: 1.35rem;
     font-size: 0.85rem;
-  }
-  .core-idea-grid .mission-idea > .core-idea-body {
-    padding: 1.25rem;
-  }
-  .core-idea-grid .mission-idea h3 {
-    font-size: 1.4rem;
-  }
-  .core-idea-grid .mission-idea h3 + p {
-    min-height: 0;
-  }
-  .core-idea-form {
-    padding: 1.5rem;
-  }
-  .core-map-layout {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  .core-map-stage {
-    min-height: 0;
-  }
-  .core-map-stage > svg {
-    height: 550px;
-  }
-  .core-map-aside {
-    padding: 0;
-  }
-  .core-map-stage-label {
-    font-size: 0.58rem;
-  }
-  .core-map-aside .core-section-head {
-    margin-top: 1.5rem;
-  }
-  .core-people-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.8rem;
-  }
-  .core-person-card {
-    min-height: 220px;
-    padding: 1.2rem;
-  }
-  .core-person-card::after {
-    top: 1rem;
-    right: 1rem;
-  }
-  .core-person-card > p:first-of-type {
-    font-size: 0.9rem;
   }
   .core-progress-overview {
     grid-template-columns: minmax(0, 1fr);
@@ -1496,8 +1023,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .core-page *,
-  .core-chat-room *,
-  .core-idea-form * {
+  .core-chat-room * {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

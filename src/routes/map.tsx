@@ -1,17 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ArrowUpRight, Plus, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, List, Map as MapIcon, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { ExploreTabs } from "@/components/explore-tabs";
-import { MissionVisual } from "@/components/mission-ui";
-import { Avatar, Chip, PowerChip } from "@/components/power-bits";
+import { ChoicePill } from "@/components/choice-pill";
+import { Avatar, IssueBlock, PowerIcon, PowerLine } from "@/components/power-bits";
 import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { useStore } from "@/lib/store";
 import { rankMatches } from "@/lib/matching";
 import { useMotionSettings } from "@/lib/motion";
 import { ISSUES, POWERS, REGIONS, type Generation, type Region } from "@/lib/types";
-import { GENERATION_TH, issueTh, powerTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
+import { GENERATION_TH, issueTh, provinceTh, REGION_LABEL } from "@/lib/i18n";
 import { MAP_VIEWBOX, PROVINCES, type ProvinceShape } from "@/lib/thailand-geo";
 
 export const Route = createFileRoute("/map")({
@@ -32,13 +32,14 @@ export const Route = createFileRoute("/map")({
   component: PowerMap,
 });
 
+/** สีพื้นจังหวัดตามภาค ใช้บล็อกสีของธีมทุ่ง (ความเข้มบอกจำนวนคน) */
 const REGION_FILL: Record<Region, string> = {
-  North: "var(--color-primary)",
-  Northeast: "var(--color-coral)",
-  Central: "var(--color-electric)",
+  North: "var(--color-block-purple)",
+  Northeast: "var(--color-block-orange)",
+  Central: "var(--color-block-blue)",
   Bangkok: "var(--color-ink)",
-  South: "var(--color-lime)",
-  Nationwide: "var(--color-primary)",
+  South: "var(--color-block-green)",
+  Nationwide: "var(--color-block-teal)",
 };
 
 const CLUSTERS = [
@@ -50,8 +51,12 @@ const CLUSTERS = [
   "Digital Innovation",
 ] as const;
 
-/** Bubble radius (viewBox units) — ~9–12px on a 375px phone. */
-const bubbleRadius = (count: number) => 24 + Math.min(count, 5) * 3;
+/**
+ * รัศมีวงกลมนับคน (หน่วย viewBox กว้าง 1000) — บนมือถือ 375px ราว 14–17px
+ * ตัวเลขในวงสูง ~20px (fontSize 60 × สเกลแผนที่ ~0.33) จึงต้องให้วงใหญ่พอ
+ */
+const bubbleRadius = (count: number) => 40 + Math.min(count, 5) * 3;
+const BUBBLE_FONT = 60;
 
 type Users = ReturnType<typeof useStore>["users"];
 
@@ -66,6 +71,7 @@ function PowerMap() {
   const [need, setNeed] = useState<string | null>(null);
   const [gen, setGen] = useState<Generation | null>(null);
   const [openProvince, setOpenProvince] = useState<ProvinceShape | null>(null);
+  const [allProvinces, setAllProvinces] = useState(false);
 
   const activeCount = [region, issue, have, need, gen].filter(Boolean).length;
   const filtersOn = activeCount > 0;
@@ -155,155 +161,134 @@ function PowerMap() {
 
   const maxCount = Math.max(1, ...countByProvince.values());
 
+  const shownProvinces = allProvinces ? listProvinces : listProvinces.slice(0, 8);
+
   return (
     <AppShell
       title="สำรวจ"
       subtitle={`${filtered.length} คน · ${ideas.length} ไอเดีย · ${provinceNotes.length} เรื่องเล่า`}
-      action={
-        <div
-          role="group"
-          aria-label="เลือกมุมมอง · Choose view"
-          className="flex shrink-0 rounded-full bg-muted p-1 text-sm font-bold"
-        >
-          {(
-            [
-              ["map", "แผนที่", "Map", "🗺"],
-              ["people", "ผู้คน", "People", "👥"],
-            ] as const
-          ).map(([v, th, en, emoji]) => (
-            <button
-              key={v}
-              type="button"
-              aria-pressed={view === v}
-              onClick={() => setView(v)}
-              className={`tap inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 ${
-                view === v ? "bg-card shadow-sm" : "text-muted-foreground"
-              }`}
-            >
-              <span aria-hidden="true">{emoji}</span>
-              {th}
-              <span lang="en" className="sr-only">
-                {" "}
-                · {en}
-              </span>
-            </button>
-          ))}
-        </div>
-      }
     >
       <ExploreTabs current="map" />
-      <div className="core-page core-map">
-        <a
-          href="/#collective-power"
-          className="tap mx-5 mb-5 flex min-h-14 items-center justify-between gap-4 border border-primary bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
-        >
-          ดูเครือข่ายการเชื่อมต่อ
-          <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />
-        </a>
-        <details className="core-map-filters core-filter-panel px-5 py-3" open>
-          <summary className="core-filter-summary">
-            <span>
-              <span className="mission-kicker">EXPLORE THE NETWORK</span>
-              <strong>เลือกพลังที่อยากเจอ</strong>
-            </span>
-            <span>
-              {activeCount > 0 ? `${activeCount} ตัวกรอง` : "ทุกพลัง"}{" "}
-              <span aria-hidden="true">+</span>
-            </span>
-          </summary>
-          <div className="space-y-2">
-            {activeCount > 0 && (
-              <button
-                type="button"
-                onClick={clearAll}
-                className="tap inline-flex min-h-11 items-center gap-1 rounded-full border border-border bg-card px-4 text-xs font-bold"
-              >
-                <X className="h-3.5 w-3.5" aria-hidden="true" />
-                ล้างตัวกรอง ({activeCount})
-              </button>
+      <div className="min-w-0 space-y-5 pb-4">
+        <section aria-label="มุมมองและตัวกรอง" className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setView(view === "map" ? "people" : "map")}
+            className="meadow-btn-secondary tap w-full"
+          >
+            {view === "map" ? (
+              <>
+                <List className="h-6 w-6 shrink-0" aria-hidden="true" />
+                ดูเป็นรายชื่อ
+              </>
+            ) : (
+              <>
+                <MapIcon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                ดูเป็นแผนที่
+              </>
             )}
-            <FilterRow label="ภาค">
-              <Pill active={!region} onClick={() => setRegion(null)}>
-                ทั้งหมด
-              </Pill>
-              {REGIONS.map((r) => (
-                <Pill key={r} active={region === r} onClick={() => setRegion(r)}>
-                  {REGION_LABEL[r]}
-                </Pill>
-              ))}
-            </FilterRow>
-            <FilterRow label="ประเด็น">
-              <Pill active={!issue} onClick={() => setIssue(null)}>
-                ทั้งหมด
-              </Pill>
-              {ISSUES.filter((i) => i !== "Other").map((i) => (
-                <Pill key={i} active={issue === i} onClick={() => setIssue(i)}>
-                  {issueTh(i)}
-                </Pill>
-              ))}
-            </FilterRow>
-            <FilterRow label="มีพลัง">
-              <Pill active={!have} onClick={() => setHave(null)}>
-                ทั้งหมด
-              </Pill>
-              {POWERS.map((p) => (
-                <Pill key={p.key} active={have === p.key} onClick={() => setHave(p.key)}>
-                  <span aria-hidden="true">{p.emoji}</span> {p.th}
-                </Pill>
-              ))}
-            </FilterRow>
-            <FilterRow label="ต้องการ">
-              <Pill active={!need} onClick={() => setNeed(null)}>
-                ทั้งหมด
-              </Pill>
-              {POWERS.map((p) => (
-                <Pill key={p.key} active={need === p.key} onClick={() => setNeed(p.key)}>
-                  <span aria-hidden="true">{p.emoji}</span> {p.th}
-                </Pill>
-              ))}
-            </FilterRow>
-            <FilterRow label="รุ่น">
-              <Pill active={!gen} onClick={() => setGen(null)}>
-                ทั้งหมด
-              </Pill>
-              {(Object.keys(GENERATION_TH) as Generation[]).map((g) => (
-                <Pill key={g} active={gen === g} onClick={() => setGen(g)}>
-                  {GENERATION_TH[g]}
-                </Pill>
-              ))}
-            </FilterRow>
+          </button>
+
+          <div className="meadow-card px-5 py-2">
+            <details className="group">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-body text-ink [&::-webkit-details-marker]:hidden">
+                <span className="font-semibold">เลือกพลังที่อยากเจอ</span>
+                <span className="flex shrink-0 items-center gap-2 text-ink-soft">
+                  {activeCount > 0 ? `${activeCount} ตัวกรอง` : "ทุกพลัง"}
+                  <ChevronDown
+                    className="h-6 w-6 transition-transform group-open:rotate-180"
+                    aria-hidden="true"
+                  />
+                </span>
+              </summary>
+              <div className="space-y-5 pb-4 pt-2">
+                <FilterRow label="ภาค">
+                  <ChoicePill active={!region} onClick={() => setRegion(null)}>
+                    ทั้งหมด
+                  </ChoicePill>
+                  {REGIONS.map((r) => (
+                    <ChoicePill key={r} active={region === r} onClick={() => setRegion(r)}>
+                      {REGION_LABEL[r]}
+                    </ChoicePill>
+                  ))}
+                </FilterRow>
+                <FilterRow label="ประเด็น">
+                  <ChoicePill active={!issue} onClick={() => setIssue(null)}>
+                    ทั้งหมด
+                  </ChoicePill>
+                  {ISSUES.filter((i) => i !== "Other").map((i) => (
+                    <ChoicePill key={i} active={issue === i} onClick={() => setIssue(i)}>
+                      {issueTh(i)}
+                    </ChoicePill>
+                  ))}
+                </FilterRow>
+                <FilterRow label="มีพลัง">
+                  <ChoicePill active={!have} onClick={() => setHave(null)}>
+                    ทั้งหมด
+                  </ChoicePill>
+                  {POWERS.map((p) => (
+                    <ChoicePill key={p.key} active={have === p.key} onClick={() => setHave(p.key)}>
+                      <PowerIcon name={p.key} className="h-5 w-5 shrink-0" /> {p.th}
+                    </ChoicePill>
+                  ))}
+                </FilterRow>
+                <FilterRow label="ต้องการ">
+                  <ChoicePill active={!need} onClick={() => setNeed(null)}>
+                    ทั้งหมด
+                  </ChoicePill>
+                  {POWERS.map((p) => (
+                    <ChoicePill key={p.key} active={need === p.key} onClick={() => setNeed(p.key)}>
+                      <PowerIcon name={p.key} className="h-5 w-5 shrink-0" /> {p.th}
+                    </ChoicePill>
+                  ))}
+                </FilterRow>
+                <FilterRow label="รุ่น">
+                  <ChoicePill active={!gen} onClick={() => setGen(null)}>
+                    ทั้งหมด
+                  </ChoicePill>
+                  {(Object.keys(GENERATION_TH) as Generation[]).map((g) => (
+                    <ChoicePill key={g} active={gen === g} onClick={() => setGen(g)}>
+                      {GENERATION_TH[g]}
+                    </ChoicePill>
+                  ))}
+                </FilterRow>
+              </div>
+            </details>
+            {activeCount > 0 && (
+              <div className="border-t border-[#E6E3F2] py-3">
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  className="tap inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-ink px-4 text-body font-semibold text-ink"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                  ล้างตัวกรอง ({activeCount})
+                </button>
+              </div>
+            )}
           </div>
-        </details>
+        </section>
 
         {filtered.length === 0 && (
-          <div
-            role="status"
-            className="core-map-no-results mission-empty mx-5 mb-3 p-4 text-center"
-          >
-            <p className="text-sm font-extrabold">ไม่พบคนที่ตรงตัวกรอง ลองเลือกให้กว้างขึ้น</p>
-            <button
-              type="button"
-              onClick={clearAll}
-              className="tap mt-3 inline-flex min-h-11 items-center justify-center rounded-full border border-border bg-card px-5 text-sm font-bold"
-            >
+          <div role="status" className="meadow-card space-y-3 p-5 text-center">
+            <p className="text-body font-semibold text-ink">
+              ไม่พบคนที่ตรงตัวกรอง ลองเลือกให้กว้างขึ้น
+            </p>
+            <button type="button" onClick={clearAll} className="meadow-btn-secondary tap w-full">
               ล้างตัวกรอง
             </button>
           </div>
         )}
 
         {view === "map" ? (
-          <div className="core-map-layout px-5 pb-6">
-            <div
-              className="core-map-stage relative overflow-hidden rounded-3xl border border-border p-2"
-              style={{ backgroundImage: "var(--gradient-soft)" }}
-            >
-              <div className="core-map-stage-label">
-                <span className="mission-kicker">THAILAND / POWER NETWORK</span>
-                <span>{filtered.length} คน</span>
-              </div>
+          <>
+            <section aria-labelledby="map-h" className="meadow-card bg-sky-soft! p-3">
+              <h2 id="map-h" className="px-2 pb-2 font-heading text-lead font-semibold! text-ink">
+                ผู้เข้าร่วม {filtered.length} คนทั่วประเทศ
+              </h2>
               <svg
                 viewBox={MAP_VIEWBOX}
-                className="h-auto w-full"
+                className="mx-auto h-auto w-full max-w-md"
                 role="group"
                 aria-label="แผนที่ประเทศไทยรายจังหวัด"
                 aria-describedby="province-list-hint"
@@ -349,9 +334,9 @@ function PowerMap() {
                         y1={network.home.cy}
                         x2={p.cx}
                         y2={p.cy}
-                        stroke="var(--color-coral)"
+                        stroke="var(--color-block-orange)"
                         strokeWidth={3}
-                        strokeOpacity={0.6}
+                        strokeOpacity={0.8}
                         strokeLinecap="round"
                         strokeDasharray="10 14"
                         className={shouldAnimate ? "animate-dash" : undefined}
@@ -361,7 +346,7 @@ function PowerMap() {
                     <circle
                       cx={network.home.cx}
                       cy={network.home.cy}
-                      r={44}
+                      r={60}
                       fill="none"
                       stroke="var(--color-primary)"
                       strokeWidth={4}
@@ -406,16 +391,16 @@ function PowerMap() {
                           cy={p.cy}
                           r={r}
                           fill="var(--color-primary)"
-                          stroke="var(--color-card)"
+                          stroke="#ffffff"
                           strokeWidth={4}
                         />
                         <text
                           x={p.cx}
-                          y={p.cy + 11}
+                          y={p.cy + BUBBLE_FONT * 0.35}
                           textAnchor="middle"
-                          fontSize={32}
-                          fontWeight={800}
-                          fill="var(--color-primary-foreground)"
+                          fontSize={BUBBLE_FONT}
+                          fontWeight={700}
+                          fill="#ffffff"
                           aria-hidden="true"
                         >
                           {c}
@@ -433,9 +418,9 @@ function PowerMap() {
                       key={`n-${p.en}`}
                       cx={p.cx + bubbleR * 0.7 + 10}
                       cy={p.cy - bubbleR * 0.7 - 10}
-                      r={12}
-                      fill="var(--color-coral)"
-                      stroke="var(--color-card)"
+                      r={14}
+                      fill="var(--color-block-orange)"
+                      stroke="#ffffff"
                       strokeWidth={3}
                       pointerEvents="none"
                       aria-hidden="true"
@@ -446,13 +431,13 @@ function PowerMap() {
                 {network && (
                   <text
                     x={network.home.cx}
-                    y={network.home.cy - 54}
+                    y={network.home.cy - 74}
                     textAnchor="middle"
-                    fontSize={34}
-                    fontWeight={800}
+                    fontSize={BUBBLE_FONT}
+                    fontWeight={700}
                     fill="var(--color-primary)"
-                    stroke="var(--color-background)"
-                    strokeWidth={8}
+                    stroke="var(--color-sky-soft)"
+                    strokeWidth={12}
                     paintOrder="stroke"
                     pointerEvents="none"
                     aria-hidden="true"
@@ -461,168 +446,185 @@ function PowerMap() {
                   </text>
                 )}
               </svg>
-              <p className="px-2 pb-1 pt-2 text-center text-xs text-muted-foreground">
+              <p className="px-2 pt-2 text-center text-body text-ink-soft">
                 แตะจังหวัดเพื่อดูคนและงานในพื้นที่
               </p>
-            </div>
+            </section>
 
-            <aside className="core-map-aside">
-              {me ? (
-                network && (
-                  <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <svg width="28" height="8" aria-hidden="true" className="shrink-0">
-                        <line
-                          x1="2"
-                          y1="4"
-                          x2="26"
-                          y2="4"
-                          stroke="var(--color-primary)"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span>เส้นทึบ = เชื่อมแล้ว</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <svg width="28" height="8" aria-hidden="true" className="shrink-0">
-                        <line
-                          x1="2"
-                          y1="4"
-                          x2="26"
-                          y2="4"
-                          stroke="var(--color-coral)"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeDasharray="5 5"
-                        />
-                      </svg>
-                      <span>เส้นประ = คู่พลังที่แนะนำ</span>
-                    </li>
-                  </ul>
-                )
-              ) : (
-                <Link
-                  to="/onboarding"
-                  className="tap mt-3 flex min-h-11 items-center justify-center rounded-2xl border border-dashed border-primary/60 px-4 py-2 text-center text-sm font-bold text-primary"
-                >
-                  <span>สร้างโปรไฟล์ เพื่อดูคู่พลังของคุณ</span>
-                </Link>
-              )}
+            {me ? (
+              network && (
+                <ul className="meadow-card space-y-2 p-4 text-body text-ink-soft">
+                  <li className="flex items-center gap-3">
+                    <svg width="32" height="8" aria-hidden="true" className="shrink-0">
+                      <line
+                        x1="2"
+                        y1="4"
+                        x2="30"
+                        y2="4"
+                        stroke="var(--color-primary)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span>เส้นทึบ = เชื่อมแล้ว</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <svg width="32" height="8" aria-hidden="true" className="shrink-0">
+                      <line
+                        x1="2"
+                        y1="4"
+                        x2="30"
+                        y2="4"
+                        stroke="var(--color-block-orange)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeDasharray="5 5"
+                      />
+                    </svg>
+                    <span>เส้นประ = คู่พลังที่แนะนำ</span>
+                  </li>
+                </ul>
+              )
+            ) : (
+              <Link to="/onboarding" className="meadow-btn-secondary tap w-full text-center">
+                สร้างโปรไฟล์ เพื่อดูคู่พลังของคุณ
+              </Link>
+            )}
 
-              <div className="core-section-head">
-                <div>
-                  <p className="mission-kicker">ON THE MAP</p>
-                  <h2 className="mt-4 text-sm font-extrabold">จังหวัดที่มีผู้เข้าร่วม</h2>
-                </div>
-                <span className="core-data-count">
-                  {listProvinces.length}
-                  <span>จังหวัด</span>
+            <section aria-labelledby="provinces-h" className="space-y-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 id="provinces-h" className="font-heading text-lead font-semibold! text-ink">
+                  จังหวัดที่มีผู้เข้าร่วม
+                </h2>
+                <span className="shrink-0 text-body text-ink-soft">
+                  {listProvinces.length} จังหวัด
                 </span>
               </div>
               <p id="province-list-hint" className="sr-only">
                 เลือกจังหวัดจากรายการด้านล่างเพื่อดูว่าใครอยู่ที่นั่น
               </p>
               {listProvinces.length > 0 ? (
-                <div className="core-province-list mt-2 flex flex-wrap gap-2">
-                  {listProvinces.map((p) => (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    {shownProvinces.map((p) => (
+                      <button
+                        key={p.en}
+                        type="button"
+                        onClick={() => setOpenProvince(p)}
+                        className="tap min-h-12 rounded-full border-2 border-[#C9C6E0] bg-white px-4 py-1 text-body font-semibold text-ink"
+                      >
+                        {p.th} · {countByProvince.get(p.en) ?? 0}
+                      </button>
+                    ))}
+                  </div>
+                  {listProvinces.length > 8 && (
                     <button
-                      key={p.en}
                       type="button"
-                      onClick={() => setOpenProvince(p)}
-                      className="tap min-h-11 rounded-full border border-border bg-card px-4 text-sm font-bold"
+                      aria-expanded={allProvinces}
+                      onClick={() => setAllProvinces((v) => !v)}
+                      className="meadow-btn-secondary tap w-full"
                     >
-                      {p.th} · {countByProvince.get(p.en) ?? 0}
+                      {allProvinces ? "แสดงน้อยลง" : `ดูทุกจังหวัด (${listProvinces.length})`}
                     </button>
-                  ))}
-                </div>
+                  )}
+                </>
               ) : (
-                <div className="core-map-empty">
-                  <MissionVisual variant="network" className="core-empty-visual" />
-                  <p>ยังไม่มีคนในตัวกรองนี้</p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="meadow-card space-y-1 p-5">
+                  <p className="text-body font-semibold text-ink">ยังไม่มีคนในตัวกรองนี้</p>
+                  <p className="text-body text-ink-soft">
                     เปลี่ยนตัวกรองเพื่อค้นหาพลังในพื้นที่อื่น
                   </p>
                 </div>
               )}
+            </section>
 
-              <section aria-labelledby="clusters-h" className="core-clusters mt-4">
-                <h2 id="clusters-h" className="mb-2 text-sm font-extrabold">
-                  กลุ่มที่กำลังรวมพลัง
-                </h2>
-                <div className="grid grid-cols-2 gap-2">
-                  {CLUSTERS.map((c) => {
-                    const members = baseForClusters.filter((u) => u.interests.includes(c));
-                    const active = issue === c;
-                    return (
-                      <button
-                        key={c}
-                        type="button"
-                        aria-pressed={active}
-                        aria-label={`${issueTh(c)} ${members.length} คน`}
-                        onClick={() => setIssue(active ? null : c)}
-                        className={`card-soft tap min-h-11 rounded-2xl p-3 text-left ${
-                          active ? "ring-2 ring-primary" : ""
-                        }`}
-                      >
-                        <p className="text-sm font-extrabold">{issueTh(c)}</p>
-                        <div className="mt-1 flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">{members.length} คน</span>
-                          <span aria-hidden="true" className="flex -space-x-2">
-                            {members.slice(0, 3).map((u) => (
-                              <Avatar key={u.id} user={u} size={24} />
-                            ))}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-
-              <div className="core-map-legend mt-4 flex flex-wrap gap-1.5">
-                {REGIONS.filter((r) => r !== "Nationwide").map((r) => (
-                  <Chip key={r} tone="muted">
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ background: REGION_FILL[r] }}
-                      aria-hidden
-                    />
-                    {REGION_LABEL[r]} · {filtered.filter((u) => u.region === r).length}
-                  </Chip>
-                ))}
-                <Chip tone="muted">
-                  ทั่วประเทศ · {filtered.filter((u) => u.region === "Nationwide").length}
-                </Chip>
+            <section aria-labelledby="clusters-h" className="space-y-3">
+              <h2 id="clusters-h" className="font-heading text-lead font-semibold! text-ink">
+                กลุ่มที่กำลังรวมพลัง
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {CLUSTERS.map((c) => {
+                  const members = baseForClusters.filter((u) => u.interests.includes(c));
+                  const active = issue === c;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      aria-pressed={active}
+                      aria-label={`${issueTh(c)} ${members.length} คน`}
+                      onClick={() => setIssue(active ? null : c)}
+                      className={`tap flex min-h-16 items-center justify-between gap-3 rounded-2xl border-2 p-4 text-left text-body ${
+                        active ? "border-primary bg-sky-soft" : "border-[#E6E3F2] bg-white"
+                      }`}
+                    >
+                      <span className="font-semibold text-ink">{issueTh(c)}</span>
+                      <span className="shrink-0 text-ink-soft">{members.length} คน</span>
+                    </button>
+                  );
+                })}
               </div>
-            </aside>
-          </div>
+            </section>
+
+            <ul aria-label="สีของแต่ละภาค" className="flex flex-wrap gap-2">
+              {REGIONS.filter((r) => r !== "Nationwide").map((r) => (
+                <li
+                  key={r}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-3 py-1 text-body text-ink ring-1 ring-[#E6E3F2]"
+                >
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-full"
+                    style={{ background: REGION_FILL[r] }}
+                    aria-hidden="true"
+                  />
+                  {REGION_LABEL[r]} · {filtered.filter((u) => u.region === r).length}
+                </li>
+              ))}
+              <li className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-3 py-1 text-body text-ink ring-1 ring-[#E6E3F2]">
+                <span
+                  className="h-4 w-4 shrink-0 rounded-full"
+                  style={{ background: REGION_FILL.Nationwide }}
+                  aria-hidden="true"
+                />
+                ทั่วประเทศ · {filtered.filter((u) => u.region === "Nationwide").length}
+              </li>
+            </ul>
+          </>
         ) : (
-          <div className="core-people-grid grid grid-cols-2 gap-3 px-5 pb-6">
+          <ul aria-label="รายชื่อผู้เข้าร่วม" className="grid gap-3 sm:grid-cols-2">
             {filtered.map((u) => (
-              <Link
-                key={u.id}
-                to="/people/$id"
-                params={{ id: u.id }}
-                className="core-person-card card-soft tap p-3"
-              >
-                <Avatar user={u} size={44} />
-                <p className="mt-2 truncate text-sm font-extrabold">{u.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {provinceTh(u.province)}
-                  {GENERATION_TH[u.generation] ? ` · ${GENERATION_TH[u.generation]}` : ""}
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {u.interests.slice(0, 2).map((i) => (
-                    <Chip key={i} tone="primary">
-                      {issueTh(i)}
-                    </Chip>
-                  ))}
-                </div>
-              </Link>
+              <li key={u.id}>
+                <Link
+                  to="/people/$id"
+                  params={{ id: u.id }}
+                  className="meadow-card tap flex h-full flex-col gap-3 p-4 text-ink"
+                >
+                  <span className="flex items-center gap-3">
+                    <Avatar user={u} size={48} />
+                    <span className="min-w-0 flex-1">
+                      <span className="line-clamp-2 break-words text-body font-semibold">
+                        {u.name}
+                      </span>
+                      <span className="line-clamp-2 break-words text-body text-ink-soft">
+                        {provinceTh(u.province)}
+                        {GENERATION_TH[u.generation] ? ` · ${GENERATION_TH[u.generation]}` : ""}
+                      </span>
+                    </span>
+                  </span>
+                  <span className="flex flex-wrap gap-2">
+                    {u.interests.slice(0, 2).map((i) => (
+                      <IssueBlock key={i} issue={i} />
+                    ))}
+                  </span>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
+
+        <a href="/#collective-power" className="meadow-btn-secondary tap w-full">
+          ดูเครือข่ายการเชื่อมต่อ
+          <ArrowUpRight className="h-6 w-6 shrink-0" aria-hidden="true" />
+        </a>
 
         {openProvince && (
           <ProvinceSheet
@@ -641,7 +643,7 @@ function PowerMap() {
                 detail,
                 issues,
               });
-              toast.success("แชร์เรื่องเล่าแล้ว ✨", {
+              toast.success("แชร์เรื่องเล่าแล้ว", {
                 description: `${openProvince.th} · ขอบคุณที่ช่วยเติมพลังให้แผนที่`,
               });
             }}
@@ -681,7 +683,7 @@ function ProvinceSheet({
     <button
       type="button"
       onClick={() => setShowAll(true)}
-      className="tap mt-2 min-h-11 w-full rounded-2xl text-sm font-bold text-primary"
+      className="meadow-btn-secondary tap mt-3 w-full"
     >
       ดูทุกคนในจังหวัด ({allPeople.length})
     </button>
@@ -697,15 +699,15 @@ function ProvinceSheet({
     >
       <DrawerContent
         aria-describedby={undefined}
-        className="max-h-[85vh] rounded-t-3xl border-0 bg-card"
+        className="mx-auto max-h-[85vh] max-w-xl rounded-t-3xl border-0 bg-paper text-ink"
       >
-        <div className="overflow-y-auto p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <div className="overflow-y-auto p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-body">
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <DrawerTitle className="text-xl font-extrabold leading-tight tracking-normal">
+            <div className="min-w-0">
+              <DrawerTitle className="font-heading text-title leading-tight font-bold tracking-normal text-ink">
                 {province.th}
               </DrawerTitle>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-body text-ink-soft">
                 {REGION_LABEL[province.region]} · {list.length} คน
                 {filtersOn && !showAll ? " ที่ตรงตัวกรอง" : ""} · {notes.length} เรื่องเล่า
               </p>
@@ -714,33 +716,35 @@ function ProvinceSheet({
               type="button"
               aria-label="ปิด"
               onClick={onClose}
-              className="tap grid h-11 w-11 shrink-0 place-items-center rounded-full bg-muted"
+              className="tap grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink"
             >
-              <X className="h-4 w-4" aria-hidden="true" />
+              <X className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
 
           {list.length > 0 && (
-            <div className="mt-4">
-              <p className="mb-2 text-xs font-extrabold text-muted-foreground">คนในจังหวัดนี้</p>
-              <div className="space-y-2">
+            <div className="mt-5">
+              <p className="mb-2 text-body font-semibold text-ink">คนในจังหวัดนี้</p>
+              <div className="space-y-3">
                 {list.map((u) => (
                   <Link
                     key={u.id}
                     to="/people/$id"
                     params={{ id: u.id }}
-                    className="tap flex items-center gap-3 rounded-2xl border border-border p-3"
+                    className="tap block space-y-2 rounded-2xl border border-[#E6E3F2] bg-white p-3 text-ink"
                   >
-                    <Avatar user={u} size={40} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-extrabold">{u.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">{u.organization}</p>
-                    </div>
-                    <div className="flex shrink-0 gap-1">
-                      {u.powers_have.slice(0, 1).map((p) => (
-                        <PowerChip key={p} name={p} tone="lime" />
-                      ))}
-                    </div>
+                    <span className="flex items-center gap-3">
+                      <Avatar user={u} size={48} />
+                      <span className="min-w-0 flex-1">
+                        <span className="line-clamp-2 break-words text-body font-semibold">
+                          {u.name}
+                        </span>
+                        <span className="line-clamp-2 break-words text-body text-ink-soft">
+                          {u.organization}
+                        </span>
+                      </span>
+                    </span>
+                    <PowerLine label="มีพลัง" powers={u.powers_have} />
                   </Link>
                 ))}
               </div>
@@ -749,37 +753,31 @@ function ProvinceSheet({
           )}
 
           {filtersOn && list.length === 0 && allPeople.length > 0 && (
-            <div className="mt-4">
-              <p className="rounded-2xl bg-muted p-3 text-[13px] text-muted-foreground">
+            <div className="mt-5">
+              <p className="rounded-2xl bg-sky-soft p-4 text-body text-ink">
                 ไม่พบคนที่ตรงตัวกรองในจังหวัดนี้
               </p>
               {showAllButton}
             </div>
           )}
 
-          <div className="mt-5">
-            <p className="mb-2 text-xs font-extrabold text-muted-foreground">
-              เรื่องเล่าจากพื้นที่
-            </p>
+          <div className="mt-6">
+            <p className="mb-2 text-body font-semibold text-ink">เรื่องเล่าจากพื้นที่</p>
             {notes.length === 0 && (
-              <p className="rounded-2xl bg-accent/60 p-3 text-[13px] text-muted-foreground">
+              <p className="rounded-2xl bg-sky-soft p-4 text-body text-ink">
                 ยังไม่มีเรื่องเล่าจาก{province.th} เริ่มเล่าได้เลย
               </p>
             )}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {notes.map((n) => (
-                <article key={n.id} className="rounded-2xl border border-border p-3">
-                  <p className="text-sm font-extrabold">{n.title}</p>
-                  <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-                    {n.detail}
-                  </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                <article key={n.id} className="rounded-2xl border border-[#E6E3F2] bg-white p-4">
+                  <p className="text-body font-semibold text-ink">{n.title}</p>
+                  <p className="mt-1 text-body text-ink-soft">{n.detail}</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     {n.issues.map((i) => (
-                      <Chip key={i} tone="primary">
-                        {issueTh(i)}
-                      </Chip>
+                      <IssueBlock key={i} issue={i} />
                     ))}
-                    <span className="text-xs text-muted-foreground">โดย {n.author_name}</span>
+                    <span className="text-body text-ink-soft">โดย {n.author_name}</span>
                   </div>
                 </article>
               ))}
@@ -787,8 +785,8 @@ function ProvinceSheet({
           </div>
 
           {form ? (
-            <div className="mt-4 space-y-2">
-              <label htmlFor="province-note-title" className="block text-xs font-bold">
+            <div className="mt-5 space-y-3">
+              <label htmlFor="province-note-title" className="block text-body font-semibold">
                 ตั้งชื่อเรื่อง
               </label>
               <input
@@ -797,9 +795,9 @@ function ProvinceSheet({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="เช่น กิจกรรมของกลุ่มเยาวชนอำเภอเมือง"
-                className="h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="h-14 w-full rounded-2xl border-2 border-[#8F8BB8] bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft focus:border-primary focus:ring-2 focus:ring-ring"
               />
-              <label htmlFor="province-note-detail" className="block text-xs font-bold">
+              <label htmlFor="province-note-detail" className="block text-body font-semibold">
                 เล่าให้ฟังหน่อย
               </label>
               <textarea
@@ -808,11 +806,18 @@ function ProvinceSheet({
                 value={detail}
                 onChange={(e) => setDetail(e.target.value)}
                 placeholder="ใครทำอะไรอยู่ที่นี่ และอยากได้พลังแบบไหนเพิ่ม"
-                className="w-full rounded-2xl border border-border bg-background p-4 text-sm outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-2xl border-2 border-[#8F8BB8] bg-white p-4 text-body text-ink outline-none placeholder:text-ink-soft focus:border-primary focus:ring-2 focus:ring-ring"
               />
-              <div className="no-scrollbar flex gap-2 overflow-x-auto">
+              <p id="province-note-issues" className="text-body font-semibold">
+                ประเด็นที่เกี่ยวข้อง
+              </p>
+              <div
+                role="group"
+                aria-labelledby="province-note-issues"
+                className="flex flex-wrap gap-2"
+              >
                 {ISSUES.filter((i) => i !== "Other").map((i) => (
-                  <Pill
+                  <ChoicePill
                     key={i}
                     active={issues.includes(i)}
                     onClick={() =>
@@ -820,7 +825,7 @@ function ProvinceSheet({
                     }
                   >
                     {issueTh(i)}
-                  </Pill>
+                  </ChoicePill>
                 ))}
               </div>
               <button
@@ -833,7 +838,7 @@ function ProvinceSheet({
                   setIssues([]);
                   setForm(false);
                 }}
-                className="tap flex h-13 w-full items-center justify-center rounded-2xl bg-primary py-4 text-sm font-extrabold text-primary-foreground disabled:opacity-40"
+                className="meadow-btn-primary tap w-full"
               >
                 แชร์เรื่องเล่า
               </button>
@@ -842,9 +847,9 @@ function ProvinceSheet({
             <button
               type="button"
               onClick={() => setForm(true)}
-              className="tap mt-4 flex h-13 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/60 py-4 text-sm font-extrabold text-primary"
+              className="meadow-btn-secondary tap mt-5 w-full"
             >
-              <Plus className="h-4 w-4" aria-hidden="true" />
+              <Plus className="h-6 w-6 shrink-0" aria-hidden="true" />
               เล่าเรื่องจาก{province.th}
             </button>
           )}
@@ -856,32 +861,9 @@ function ProvinceSheet({
 
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="w-14 shrink-0 text-xs font-extrabold text-muted-foreground">{label}</span>
-      <div className="no-scrollbar flex flex-1 gap-2 overflow-x-auto">{children}</div>
+    <div role="group" aria-label={label}>
+      <p className="mb-2 text-body font-semibold text-ink">{label}</p>
+      <div className="flex flex-wrap gap-2">{children}</div>
     </div>
-  );
-}
-
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`tap inline-flex min-h-11 shrink-0 items-center rounded-full border px-3.5 text-xs font-bold ${
-        active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

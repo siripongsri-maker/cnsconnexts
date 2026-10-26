@@ -1,12 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Bookmark, BookmarkCheck, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  ChevronDown,
+  Handshake,
+  MapPin,
+  Pencil,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { ExploreTabs } from "@/components/explore-tabs";
-import { MissionVisual } from "@/components/mission-ui";
 import { IdeaForm } from "@/components/idea-form";
-import { Avatar, Chip } from "@/components/power-bits";
+import { ChoicePill } from "@/components/choice-pill";
+import { Avatar, IssueBlock, PowerIcon } from "@/components/power-bits";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { scoreMatch } from "@/lib/matching";
 import { useStore } from "@/lib/store";
-import { ISSUES, POWER_EMOJI, POWERS, REGIONS, type Idea, type Region } from "@/lib/types";
+import { ISSUES, POWERS, REGIONS, type Idea, type Region } from "@/lib/types";
 import { issueTh, powerTh, REGION_LABEL } from "@/lib/i18n";
 
 export const Route = createFileRoute("/marketplace")({
@@ -124,81 +134,88 @@ function Marketplace() {
           ? "ยังไม่มีไอเดียที่ตรงพลัง ลองเพิ่มพลังในโปรไฟล์หรือดูทั้งหมด"
           : "ยังไม่มีไอเดียในหมวดนี้";
 
+  const extraFilters = [issue, region, need].filter(Boolean).length;
+
   return (
     <AppShell
       title="สำรวจ"
       subtitle="จับคู่ไอเดียกับพลัง"
       action={
-        <button
-          type="button"
-          onClick={openNewIdea}
-          className="tap inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 text-[13px] font-extrabold text-primary-foreground shadow-sm"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" /> ลงไอเดีย
+        <button type="button" onClick={openNewIdea} className="meadow-btn-primary tap">
+          <Plus className="h-6 w-6 shrink-0" aria-hidden="true" /> ลงไอเดีย
         </button>
       }
     >
       <ExploreTabs current="ideas" />
-      <div className="core-page core-marketplace">
-        <section className="core-filter-panel space-y-2 px-5 py-3" aria-label="ตัวกรองไอเดีย">
-          <div className="core-section-head">
-            <div>
-              <p className="mission-kicker">IDEAS IN MOTION</p>
-              <h2>พลังของคุณต่อยอดอะไรได้บ้าง</h2>
-            </div>
-            <span className="core-data-count">
-              {filtered.length}
-              <span>ไอเดีย</span>
-            </span>
-          </div>
-          <Row label="แสดงไอเดีย" fade={false}>
-            <Pill active={scope === "all"} onClick={() => setScope("all")}>
+      <div className="min-w-0 space-y-5 pb-4">
+        <section aria-label="ตัวกรองไอเดีย" className="meadow-card space-y-4 p-5">
+          <h2 className="font-heading text-lead font-semibold! text-ink">
+            พลังของคุณต่อยอดอะไรได้บ้าง
+          </h2>
+          <div role="group" aria-label="แสดงไอเดีย" className="flex flex-wrap gap-2">
+            <ChoicePill active={scope === "all"} onClick={() => setScope("all")}>
               ไอเดียทั้งหมด
-            </Pill>
+            </ChoicePill>
             {me && (
-              <Pill active={scope === "fit"} onClick={() => setScope("fit")}>
+              <ChoicePill active={scope === "fit"} onClick={() => setScope("fit")}>
                 เหมาะกับฉัน
-              </Pill>
+              </ChoicePill>
             )}
-            <Pill active={scope === "mine"} onClick={() => setScope("mine")}>
+            <ChoicePill active={scope === "mine"} onClick={() => setScope("mine")}>
               ของฉัน
-            </Pill>
-            <Pill active={scope === "saved"} onClick={() => setScope("saved")}>
+            </ChoicePill>
+            <ChoicePill active={scope === "saved"} onClick={() => setScope("saved")}>
               ที่บันทึกไว้ ({savedCount})
-            </Pill>
-          </Row>
-          <Row label="กรองตามประเด็น">
-            <Pill active={!issue} onClick={() => setIssue(null)}>
-              ทุกประเด็น
-            </Pill>
-            {ISSUES.filter((i) => i !== "Other").map((i) => (
-              <Pill key={i} active={issue === i} onClick={() => setIssue(i)}>
-                {issueTh(i)}
-              </Pill>
-            ))}
-          </Row>
-          <Row label="กรองตามภูมิภาค">
-            <Pill active={!region} onClick={() => setRegion(null)}>
-              ทุกภูมิภาค
-            </Pill>
-            {REGIONS.map((r) => (
-              <Pill key={r} active={region === r} onClick={() => setRegion(r)}>
-                {REGION_LABEL[r]}
-              </Pill>
-            ))}
-          </Row>
-          <Row label="กรองตามสิ่งที่เขาต้องการ">
-            <Pill active={!need} onClick={() => setNeed(null)}>
-              ทุกความต้องการ
-            </Pill>
-            {needOptions.map((n) => (
-              <Pill key={n} active={need === n} onClick={() => setNeed(n)}>
-                <span aria-hidden>{POWER_EMOJI[n] ?? "✨"}</span> ต้องการ{powerTh(n)}
-              </Pill>
-            ))}
-          </Row>
-          <div className="flex min-h-6 items-center justify-between">
-            <p aria-live="polite" className="text-xs font-semibold text-muted-foreground">
+            </ChoicePill>
+          </div>
+
+          <details className="group rounded-2xl bg-sky-soft px-4">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 text-body text-ink [&::-webkit-details-marker]:hidden">
+              <span className="font-semibold">ตัวกรองเพิ่มเติม</span>
+              <span className="flex shrink-0 items-center gap-2 text-ink-soft">
+                {extraFilters > 0 ? `${extraFilters} ตัวกรอง` : "ทั้งหมด"}
+                <ChevronDown
+                  className="h-6 w-6 transition-transform group-open:rotate-180"
+                  aria-hidden="true"
+                />
+              </span>
+            </summary>
+            <div className="space-y-5 pb-4 pt-2">
+              <FilterRow label="ประเด็น">
+                <ChoicePill active={!issue} onClick={() => setIssue(null)}>
+                  ทุกประเด็น
+                </ChoicePill>
+                {ISSUES.filter((i) => i !== "Other").map((i) => (
+                  <ChoicePill key={i} active={issue === i} onClick={() => setIssue(i)}>
+                    {issueTh(i)}
+                  </ChoicePill>
+                ))}
+              </FilterRow>
+              <FilterRow label="ภูมิภาค">
+                <ChoicePill active={!region} onClick={() => setRegion(null)}>
+                  ทุกภูมิภาค
+                </ChoicePill>
+                {REGIONS.map((r) => (
+                  <ChoicePill key={r} active={region === r} onClick={() => setRegion(r)}>
+                    {REGION_LABEL[r]}
+                  </ChoicePill>
+                ))}
+              </FilterRow>
+              <FilterRow label="พลังที่เขาต้องการ">
+                <ChoicePill active={!need} onClick={() => setNeed(null)}>
+                  ทุกความต้องการ
+                </ChoicePill>
+                {needOptions.map((n) => (
+                  <ChoicePill key={n} active={need === n} onClick={() => setNeed(n)}>
+                    <PowerIcon name={n} className="h-5 w-5 shrink-0" /> ต้องการ{powerTh(n)}
+                  </ChoicePill>
+                ))}
+              </FilterRow>
+            </div>
+          </details>
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p aria-live="polite" className="text-body text-ink-soft">
               {hasFilters
                 ? `ตรงกับตัวกรอง ${filtered.length} ไอเดีย`
                 : `ทั้งหมด ${ideas.length} ไอเดีย`}
@@ -207,7 +224,7 @@ function Marketplace() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="tap min-h-10 px-2 text-xs font-bold text-primary underline-offset-2 hover:underline"
+                className="tap min-h-12 rounded-full px-3 text-body font-semibold text-primary underline underline-offset-4"
               >
                 ล้างตัวกรอง
               </button>
@@ -216,252 +233,219 @@ function Marketplace() {
         </section>
 
         {!me && (
-          <Link
-            to="/onboarding"
-            className="tap mx-5 mb-2 flex min-h-11 items-center rounded-xl bg-primary/10 px-3 text-[13px] font-semibold text-primary"
-          >
-            สร้างโปรไฟล์ เพื่อดูไอเดียที่คุณช่วยได้ →
+          <Link to="/onboarding" className="meadow-btn-secondary tap w-full text-center">
+            สร้างโปรไฟล์ เพื่อดูไอเดียที่คุณช่วยได้
           </Link>
         )}
 
-        <div className="core-idea-grid px-5 pb-6">
-          {filtered.map((idea, idx) => {
-            const owner = users.find((u) => u.id === idea.owner_id);
-            const saved = savedIdeas.includes(idea.id);
-            const isMine = idea.owner_id === "me";
-            const f = fitOf(idea);
-            return (
-              <article
-                key={idea.id}
-                className="mission-idea card-soft animate-rise overflow-hidden"
-                style={{ animationDelay: `${idx * 50}ms` }}
-              >
-                <div className="core-idea-body p-4">
-                  <div className="core-card-index">
-                    <span>IDEA / {String(idx + 1).padStart(2, "0")}</span>
-                    <span>
-                      {REGION_LABEL[idea.region]} <span aria-hidden="true">↗</span>
-                    </span>
-                  </div>
-                  {(f.canHelp.length > 0 || f.theyHelp.length > 0) && (
-                    <div className="mb-2 flex flex-wrap gap-1.5">
-                      {f.canHelp.length > 0 && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-lime/30 px-2.5 py-1 text-[12px] font-bold text-lime-foreground">
-                          <span aria-hidden>✨</span> คุณช่วยได้: {powerTh(f.canHelp[0] ?? "")}
-                        </span>
-                      )}
-                      {f.theyHelp.length > 0 && (
-                        <Chip tone="primary" className="font-bold">
-                          <span aria-hidden>🤝</span> เขาเติมให้คุณได้:{" "}
-                          {powerTh(f.theyHelp[0] ?? "")}
-                        </Chip>
-                      )}
-                    </div>
-                  )}
-                  <h3 className="text-lg font-extrabold leading-tight">{idea.title}</h3>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
-                    {idea.description}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-electric/12 px-2.5 py-1 text-xs font-semibold text-electric-ink">
-                      <span aria-hidden>📍</span> {REGION_LABEL[idea.region]}
-                    </span>
-                    {idea.issues.map((i) => (
-                      <Chip key={i} tone="primary">
-                        {issueTh(i)}
-                      </Chip>
-                    ))}
-                  </div>
-
-                  {owner && (
-                    <div className="mt-3 flex items-center gap-2">
-                      <Avatar user={owner} size={32} />
-                      <p className="min-w-0 flex-1 line-clamp-2 break-words text-[12px] font-semibold leading-snug">
-                        {owner.name} ·{" "}
-                        <span className="text-muted-foreground">{owner.organization}</span>
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="core-resource-pair mt-3 grid grid-cols-2 gap-3">
-                    <div className="border-t border-border p-3">
-                      <p className="mb-1.5 text-xs font-medium text-lime-ink">มีให้</p>
-                      <ul className="space-y-0.5 text-[12px] font-semibold">
-                        {idea.resources_have.map((r) => (
-                          <li key={r}>
-                            <span aria-hidden>{POWER_EMOJI[r] ?? "✨"}</span> {powerTh(r)}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="border-t border-border p-3">
-                      <p className="mb-1.5 text-xs font-extrabold text-foreground">ต้องการ</p>
-                      <ul className="space-y-0.5 text-[12px] font-semibold">
-                        {idea.resources_need.map((r) => (
-                          <li key={r}>
-                            <span aria-hidden>{POWER_EMOJI[r] ?? "✨"}</span> {powerTh(r)}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {isMine && (
-                    <div className="mt-3 flex gap-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditing(idea);
-                          setFormOpen(true);
-                        }}
-                        className="tap inline-flex h-11 items-center gap-1 rounded-lg border border-border px-3 text-[12px] font-bold"
-                      >
-                        <Pencil className="h-3.5 w-3.5" aria-hidden="true" /> แก้ไข
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPendingDelete(idea)}
-                        className="tap inline-flex h-11 items-center gap-1 rounded-lg border border-destructive/40 px-3 text-[12px] font-bold text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> ลบ
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="core-idea-actions mt-4 flex gap-2">
-                    {isMine ? (
-                      <p className="flex h-12 flex-1 items-center rounded-xl bg-muted px-3 text-[13px] font-semibold text-muted-foreground">
-                        ไอเดียของคุณ · รอเพื่อนมาร่วมทำ
-                      </p>
-                    ) : me && !owner ? (
-                      <button
-                        type="button"
-                        disabled
-                        aria-disabled="true"
-                        className="h-12 flex-1 rounded-xl bg-muted text-sm font-bold text-muted-foreground"
-                      >
-                        ไม่พบเจ้าของไอเดีย
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!me) {
-                            navigate({ to: "/onboarding" });
-                            return;
-                          }
-                          if (!owner || owner.id === "me") return;
-                          const existing = connections.find(
-                            (c) =>
-                              (c.user_a === "me" && c.user_b === owner.id) ||
-                              (c.user_b === "me" && c.user_a === owner.id),
-                          );
-                          if (existing) {
-                            toast(
-                              `คุณกับ ${owner.name} เชื่อมกันอยู่แล้ว ไปคุยต่อเรื่องไอเดียนี้กัน`,
-                            );
-                            navigate({ to: "/connection/$id", params: { id: existing.id } });
-                            return;
-                          }
-                          const m = scoreMatch(me, owner);
-                          const conn = connect(
-                            owner.id,
-                            m.score,
-                            `อยากร่วมไอเดีย “${idea.title}” · ${m.reason}`,
-                          );
-                          toast.success("ส่งคำขอเชื่อมแล้ว! ✨", {
-                            description: `มาคิดกันว่าจะทำ “${idea.title}” กับ ${owner.name} ยังไงดี`,
-                          });
-                          navigate({ to: "/connection/$id", params: { id: conn.id } });
-                        }}
-                        className="tap h-12 flex-1 rounded-xl gradient-power text-sm font-extrabold text-primary-foreground"
-                      >
-                        ขอเชื่อมต่อ
-                      </button>
+        {filtered.length > 0 && (
+          <ul aria-label="รายการไอเดีย" className="grid gap-5">
+            {filtered.map((idea) => {
+              const owner = users.find((u) => u.id === idea.owner_id);
+              const saved = savedIdeas.includes(idea.id);
+              const isMine = idea.owner_id === "me";
+              const f = fitOf(idea);
+              return (
+                <li key={idea.id}>
+                  <article className="meadow-card space-y-4 p-5">
+                    {(f.canHelp.length > 0 || f.theyHelp.length > 0) && (
+                      <div className="flex flex-wrap gap-2">
+                        {f.canHelp.length > 0 && (
+                          <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[#3D7A1C] px-3 py-1 text-body font-semibold text-white">
+                            <Sparkles className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            คุณช่วยได้: {powerTh(f.canHelp[0] ?? "")}
+                          </span>
+                        )}
+                        {f.theyHelp.length > 0 && (
+                          <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-sky px-3 py-1 text-body font-semibold text-ink">
+                            <Handshake className="h-5 w-5 shrink-0" aria-hidden="true" />
+                            เขาเติมให้คุณได้: {powerTh(f.theyHelp[0] ?? "")}
+                          </span>
+                        )}
+                      </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toggleSaveIdea(idea.id);
-                        toast(
-                          saved
-                            ? "เอาออกจากที่บันทึกไว้แล้ว"
-                            : "บันทึกไว้แล้ว ดูได้ที่แท็บ “ที่บันทึกไว้”",
-                        );
-                      }}
-                      aria-pressed={saved}
-                      aria-label={
-                        saved ? "เอาไอเดียนี้ออกจากที่บันทึกไว้" : "บันทึกไอเดียนี้ไว้ดูทีหลัง"
-                      }
-                      className={`tap inline-flex h-12 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-[13px] font-bold ${
-                        saved
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-card"
-                      }`}
-                    >
-                      {saved ? (
-                        <BookmarkCheck className="h-5 w-5" aria-hidden="true" />
-                      ) : (
-                        <Bookmark className="h-5 w-5" aria-hidden="true" />
-                      )}
-                      <span>{saved ? "บันทึกแล้ว" : "บันทึก"}</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
 
-          {filtered.length === 0 && (
-            <div className="core-empty mission-empty">
-              <MissionVisual variant="signal" className="core-empty-visual" />
-              <p className="mission-kicker">ROOM FOR YOUR IDEA</p>
-              <h2>เริ่มจากไอเดียเดียว</h2>
-              {hasFilters && (scope === "all" || scope === "fit") ? (
-                <>
-                  <p className="text-sm text-muted-foreground">
-                    ไม่พบไอเดียที่ตรงตัวกรอง ลองล้างตัวกรอง
-                  </p>
+                    <div className="space-y-2">
+                      <h3 className="font-heading text-lead leading-snug font-semibold break-words text-ink">
+                        {idea.title}
+                      </h3>
+                      <p className="text-body break-words text-ink-soft">{idea.description}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-sky px-3 py-1 text-body font-semibold text-ink">
+                        <MapPin className="h-5 w-5 shrink-0" aria-hidden="true" />
+                        {REGION_LABEL[idea.region]}
+                      </span>
+                      {idea.issues.map((i) => (
+                        <IssueBlock key={i} issue={i} />
+                      ))}
+                    </div>
+
+                    {owner && (
+                      <div className="flex items-center gap-3">
+                        <Avatar user={owner} size={48} />
+                        <p className="line-clamp-2 min-w-0 flex-1 text-body leading-snug break-words text-ink">
+                          <span className="font-semibold">{owner.name}</span>
+                          <span className="text-ink-soft"> · {owner.organization}</span>
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <ResourceList title="มีให้" items={idea.resources_have} />
+                      <ResourceList title="ต้องการ" items={idea.resources_need} />
+                    </div>
+
+                    {isMine && (
+                      <div className="flex flex-wrap gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditing(idea);
+                            setFormOpen(true);
+                          }}
+                          className="meadow-btn-secondary tap min-h-14 flex-1"
+                        >
+                          <Pencil className="h-5 w-5 shrink-0" aria-hidden="true" /> แก้ไข
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingDelete(idea)}
+                          className="tap inline-flex min-h-14 flex-1 items-center justify-center gap-2 rounded-[18px] border-2 border-[#B3261E] bg-white px-5 text-body font-semibold text-[#B3261E]"
+                        >
+                          <Trash2 className="h-5 w-5 shrink-0" aria-hidden="true" /> ลบ
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-3">
+                      {isMine ? (
+                        <p className="flex min-h-14 items-center rounded-2xl bg-sky-soft px-4 py-2 text-body font-semibold text-ink">
+                          ไอเดียของคุณ · รอเพื่อนมาร่วมทำ
+                        </p>
+                      ) : me && !owner ? (
+                        <button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          className="meadow-btn-secondary w-full"
+                        >
+                          ไม่พบเจ้าของไอเดีย
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!me) {
+                              navigate({ to: "/onboarding" });
+                              return;
+                            }
+                            if (!owner || owner.id === "me") return;
+                            const existing = connections.find(
+                              (c) =>
+                                (c.user_a === "me" && c.user_b === owner.id) ||
+                                (c.user_b === "me" && c.user_a === owner.id),
+                            );
+                            if (existing) {
+                              toast(
+                                `คุณกับ ${owner.name} เชื่อมกันอยู่แล้ว ไปคุยต่อเรื่องไอเดียนี้กัน`,
+                              );
+                              navigate({ to: "/connection/$id", params: { id: existing.id } });
+                              return;
+                            }
+                            const m = scoreMatch(me, owner);
+                            const conn = connect(
+                              owner.id,
+                              m.score,
+                              `อยากร่วมไอเดีย “${idea.title}” · ${m.reason}`,
+                            );
+                            toast.success("ส่งคำขอเชื่อมแล้ว!", {
+                              description: `มาคิดกันว่าจะทำ “${idea.title}” กับ ${owner.name} ยังไงดี`,
+                            });
+                            navigate({ to: "/connection/$id", params: { id: conn.id } });
+                          }}
+                          className="meadow-btn-primary tap w-full"
+                        >
+                          ขอเชื่อมต่อ
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleSaveIdea(idea.id);
+                          toast(
+                            saved
+                              ? "เอาออกจากที่บันทึกไว้แล้ว"
+                              : "บันทึกไว้แล้ว ดูได้ที่แท็บ “ที่บันทึกไว้”",
+                          );
+                        }}
+                        aria-pressed={saved}
+                        aria-label={
+                          saved ? "เอาไอเดียนี้ออกจากที่บันทึกไว้" : "บันทึกไอเดียนี้ไว้ดูทีหลัง"
+                        }
+                        className={`meadow-btn-secondary tap w-full ${saved ? "bg-sky!" : ""}`}
+                      >
+                        {saved ? (
+                          <BookmarkCheck className="h-6 w-6 shrink-0" aria-hidden="true" />
+                        ) : (
+                          <Bookmark className="h-6 w-6 shrink-0" aria-hidden="true" />
+                        )}
+                        <span>{saved ? "บันทึกแล้ว" : "บันทึก"}</span>
+                      </button>
+                    </div>
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {filtered.length === 0 && (
+          <div className="meadow-card space-y-3 p-5">
+            <h2 className="font-heading text-title font-semibold! text-ink">เริ่มจากไอเดียเดียว</h2>
+            {hasFilters && (scope === "all" || scope === "fit") ? (
+              <>
+                <p className="text-body text-ink-soft">ไม่พบไอเดียที่ตรงตัวกรอง ลองล้างตัวกรอง</p>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="meadow-btn-primary tap w-full"
+                >
+                  ล้างตัวกรอง
+                </button>
+                <button
+                  type="button"
+                  onClick={openNewIdea}
+                  className="meadow-btn-secondary tap w-full"
+                >
+                  ลงไอเดีย
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-body text-ink-soft">{emptyText}</p>
+                {scope === "saved" || scope === "fit" ? (
                   <button
                     type="button"
-                    onClick={clearFilters}
-                    className="tap mt-3 h-11 w-full rounded-xl bg-primary text-sm font-extrabold text-primary-foreground"
+                    onClick={() => setScope("all")}
+                    className="meadow-btn-primary tap w-full"
                   >
-                    ล้างตัวกรอง
+                    ดูไอเดียทั้งหมด
                   </button>
+                ) : (
                   <button
                     type="button"
                     onClick={openNewIdea}
-                    className="tap mt-2 h-11 w-full rounded-xl border border-border bg-card text-sm font-bold"
+                    className="meadow-btn-primary tap w-full"
                   >
                     ลงไอเดีย
                   </button>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground">{emptyText}</p>
-                  {scope === "saved" || scope === "fit" ? (
-                    <button
-                      type="button"
-                      onClick={() => setScope("all")}
-                      className="tap mt-3 h-11 w-full rounded-xl bg-primary text-sm font-extrabold text-primary-foreground"
-                    >
-                      ดูไอเดียทั้งหมด
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={openNewIdea}
-                      className="tap mt-3 h-11 w-full rounded-xl bg-primary text-sm font-extrabold text-primary-foreground"
-                    >
-                      ลงไอเดีย
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {formOpen && (
           <IdeaForm
@@ -479,15 +463,21 @@ function Marketplace() {
             if (!open) setPendingDelete(null);
           }}
         >
-          <AlertDialogContent>
+          <AlertDialogContent className="rounded-3xl border-[#E6E3F2] bg-white p-6 text-ink">
             <AlertDialogHeader>
-              <AlertDialogTitle>ลบไอเดีย “{pendingDelete?.title}” ไหม?</AlertDialogTitle>
-              <AlertDialogDescription>ลบแล้วกู้คืนไม่ได้นะ</AlertDialogDescription>
+              <AlertDialogTitle className="font-heading text-title leading-snug font-semibold">
+                ลบไอเดีย “{pendingDelete?.title}” ไหม?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-body text-ink-soft">
+                ลบแล้วกู้คืนไม่ได้นะ
+              </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="min-h-11">ยังก่อน</AlertDialogCancel>
+            <AlertDialogFooter className="gap-3 sm:gap-3 sm:space-x-0">
+              <AlertDialogCancel className="meadow-btn-secondary mt-0 min-h-14">
+                ยังก่อน
+              </AlertDialogCancel>
               <AlertDialogAction
-                className="min-h-11 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className="min-h-14 rounded-[18px] bg-[#B3261E] px-5 text-body font-semibold text-white hover:bg-[#B3261E]/90"
                 onClick={() => {
                   if (!pendingDelete) return;
                   removeIdea(pendingDelete.id);
@@ -505,53 +495,31 @@ function Marketplace() {
   );
 }
 
-function Row({
-  label,
-  fade = true,
-  children,
-}: {
-  label: string;
-  fade?: boolean;
-  children: React.ReactNode;
-}) {
+function ResourceList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div
-      role="group"
-      aria-label={label}
-      className={`core-filter-row no-scrollbar flex gap-2 overflow-x-auto pr-6 ${
-        fade ? "[mask-image:linear-gradient(to_right,#000_85%,transparent)]" : ""
-      }`}
-    >
-      <span className="core-filter-label">
-        {label
-          .replace("กรองตาม", "")
-          .replace("แสดงไอเดีย", "มุมมอง")
-          .replace("สิ่งที่เขาต้องการ", "พลังที่ต้องการ")}
-      </span>
-      {children}
+    <div className="rounded-2xl bg-sky-soft p-4">
+      <p className="mb-2 text-body font-semibold text-ink">{title}</p>
+      {items.length === 0 ? (
+        <p className="text-body text-ink-soft">ยังไม่ระบุ</p>
+      ) : (
+        <ul className="space-y-1">
+          {items.map((r) => (
+            <li key={r} className="flex items-start gap-2 text-body text-ink">
+              <PowerIcon name={r} className="mt-1 h-5 w-5 shrink-0 text-primary" />
+              <span className="min-w-0 break-words">{powerTh(r)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
 
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`tap inline-flex min-h-10 shrink-0 items-center gap-1 rounded-full border px-3.5 text-xs font-bold ${
-        active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
-      }`}
-    >
-      {children}
-    </button>
+    <div role="group" aria-label={label}>
+      <p className="mb-2 text-body font-semibold text-ink">{label}</p>
+      <div className="flex flex-wrap gap-2">{children}</div>
+    </div>
   );
 }

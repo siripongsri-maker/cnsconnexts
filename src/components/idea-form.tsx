@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { ChoicePill } from "@/components/choice-pill";
+import { PowerIcon } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import { ISSUES, POWERS, REGIONS, type Idea, type Region } from "@/lib/types";
 import { issueTh, REGION_LABEL } from "@/lib/i18n";
@@ -81,17 +83,20 @@ export function IdeaForm({ idea, onClose }: Props) {
     };
     if (idea) {
       updateIdea(idea.id, payload);
-      toast.success("แก้ไขไอเดียแล้ว ✨");
+      toast.success("แก้ไขไอเดียแล้ว");
     } else {
       addIdea(payload);
-      toast.success("ลงไอเดียในตลาดพลังแล้ว 🎉", { description: "รอเพื่อน ๆ มาขอเชื่อมต่อได้เลย" });
+      toast.success("ลงไอเดียในตลาดพลังแล้ว", { description: "รอเพื่อน ๆ มาขอเชื่อมต่อได้เลย" });
     }
     onClose();
   };
 
+  const field =
+    "w-full rounded-2xl border-2 bg-white px-4 text-body text-ink outline-none placeholder:text-ink-soft focus:border-primary focus:ring-2 focus:ring-ring";
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-0 sm:items-center sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -102,24 +107,24 @@ export function IdeaForm({ idea, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="idea-form-title"
-        className="core-idea-form max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-card px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] outline-none sm:rounded-3xl"
+        className="meadow-sheet max-h-[92vh] w-full max-w-lg overflow-y-auto px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-body outline-none"
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="idea-form-title" className="text-lg font-extrabold">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 id="idea-form-title" className="font-heading text-title font-bold! text-ink">
             {idea ? "แก้ไขไอเดีย" : "ลงไอเดียใหม่"}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="ปิด"
-            className="tap grid h-11 w-11 place-items-center rounded-full bg-muted"
+            className="tap grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sky text-ink"
           >
-            <X className="h-4 w-4" aria-hidden="true" />
+            <X className="h-6 w-6" aria-hidden="true" />
           </button>
         </div>
 
-        <label htmlFor="idea-title" className="mb-1 block text-[12px] font-bold">
-          ชื่อไอเดีย <span className="font-normal text-muted-foreground">(จำเป็น)</span>
+        <label htmlFor="idea-title" className="mb-1 block text-body font-semibold text-ink">
+          ชื่อไอเดีย <span className="font-normal text-ink-soft">(จำเป็น)</span>
         </label>
         <input
           id="idea-title"
@@ -132,15 +137,13 @@ export function IdeaForm({ idea, onClose }: Props) {
           aria-required="true"
           aria-invalid={!!errors.title}
           aria-describedby={errors.title ? "idea-title-err" : undefined}
-          className={`h-12 w-full rounded-xl border bg-background px-3 text-sm ${
-            errors.title ? "border-destructive" : "border-border"
-          }`}
+          className={`h-14 ${field} ${errors.title ? "border-[#B3261E]" : "border-[#8F8BB8]"}`}
         />
         {errors.title ? (
           <p
             id="idea-title-err"
             role="alert"
-            className="mt-1 mb-3 text-[12px] font-semibold text-destructive"
+            className="mt-1 mb-3 text-body font-semibold text-[#B3261E]"
           >
             {errors.title}
           </p>
@@ -148,7 +151,7 @@ export function IdeaForm({ idea, onClose }: Props) {
           <div className="mb-3" />
         )}
 
-        <label htmlFor="idea-desc" className="mb-1 block text-[12px] font-bold">
+        <label htmlFor="idea-desc" className="mb-1 block text-body font-semibold text-ink">
           เล่าให้ฟังสั้น ๆ
         </label>
         <textarea
@@ -157,34 +160,38 @@ export function IdeaForm({ idea, onClose }: Props) {
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           placeholder="อยากทำอะไร กับใคร ที่ไหน"
-          className="mb-3 w-full rounded-xl border border-border bg-background p-3 text-sm"
+          className={`mb-4 border-[#8F8BB8] py-3 ${field}`}
         />
 
         <Section label="พื้นที่">
           {REGIONS.map((r) => (
-            <Pill key={r} active={region === r} onClick={() => setRegion(r)}>
+            <ChoicePill key={r} active={region === r} onClick={() => setRegion(r)}>
               {REGION_LABEL[r]}
-            </Pill>
+            </ChoicePill>
           ))}
         </Section>
 
         <Section label="ประเด็นที่เกี่ยวข้อง">
           {ISSUES.filter((i) => i !== "Other").map((i) => (
-            <Pill key={i} active={issues.includes(i)} onClick={() => toggle(issues, setIssues, i)}>
+            <ChoicePill
+              key={i}
+              active={issues.includes(i)}
+              onClick={() => toggle(issues, setIssues, i)}
+            >
               {issueTh(i)}
-            </Pill>
+            </ChoicePill>
           ))}
         </Section>
 
         <Section label="พลังที่เรามีให้">
           {POWERS.map((p) => (
-            <Pill
+            <ChoicePill
               key={p.key}
               active={have.includes(p.key)}
               onClick={() => toggle(have, setHave, p.key)}
             >
-              {p.emoji} {p.th}
-            </Pill>
+              <PowerIcon name={p.key} className="h-5 w-5 shrink-0" /> {p.th}
+            </ChoicePill>
           ))}
         </Section>
 
@@ -195,7 +202,7 @@ export function IdeaForm({ idea, onClose }: Props) {
           groupRef={needGroupRef}
         >
           {POWERS.map((p) => (
-            <Pill
+            <ChoicePill
               key={p.key}
               active={need.includes(p.key)}
               onClick={() => {
@@ -205,8 +212,8 @@ export function IdeaForm({ idea, onClose }: Props) {
                 toggle(need, setNeed, p.key);
               }}
             >
-              {p.emoji} {p.th}
-            </Pill>
+              <PowerIcon name={p.key} className="h-5 w-5 shrink-0" /> {p.th}
+            </ChoicePill>
           ))}
         </Section>
 
@@ -214,7 +221,7 @@ export function IdeaForm({ idea, onClose }: Props) {
           type="button"
           onClick={submit}
           disabled={sending}
-          className="tap mt-5 h-12 w-full rounded-xl gradient-power text-sm font-extrabold text-primary-foreground disabled:opacity-60"
+          className="meadow-btn-primary tap mt-5 w-full"
         >
           {idea ? "บันทึกการแก้ไข" : "ลงไอเดีย"}
         </button>
@@ -244,41 +251,18 @@ function Section({
       role="group"
       aria-labelledby={id}
       aria-describedby={error ? errorId : undefined}
-      className="mb-3"
+      className="mb-4"
     >
-      <p id={id} className="mb-1.5 text-[12px] font-bold">
+      <p id={id} className="mb-2 text-body font-semibold text-ink">
         {label}
-        {hint && <span className="font-normal text-muted-foreground"> {hint}</span>}
+        {hint && <span className="font-normal text-ink-soft"> {hint}</span>}
       </p>
       <div className="flex flex-wrap gap-2">{children}</div>
       {error && (
-        <p id={errorId} role="alert" className="mt-1 text-[12px] font-semibold text-destructive">
+        <p id={errorId} role="alert" className="mt-2 text-body font-semibold text-[#B3261E]">
           {error}
         </p>
       )}
     </div>
-  );
-}
-
-function Pill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`tap inline-flex min-h-10 items-center rounded-full border px-3 text-xs font-bold ${
-        active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
