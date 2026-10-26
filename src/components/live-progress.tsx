@@ -97,7 +97,7 @@ export function LiveProgress() {
 
   return (
     <section
-      className={`meadow-card p-5 transition-shadow ${pulse ? "ring-2 ring-primary/40" : ""}`}
+      className={`meadow-card p-5 transition-shadow motion-reduce:transition-none ${pulse ? "ring-2 ring-primary/40" : ""}`}
     >
       <div className="flex items-center gap-3">
         <span

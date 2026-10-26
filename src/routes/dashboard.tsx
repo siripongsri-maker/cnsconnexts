@@ -447,7 +447,7 @@ function Dashboard() {
         </header>
 
         <div className="mt-[2vh] rounded-3xl bg-primary px-[2vw] py-[2vh] text-white">
-          <RotatingPrompt size="lg" />
+          <RotatingPrompt size="lg" touch />
         </div>
 
         <div className="mt-[2vh] grid grid-cols-2 gap-[2vw] lg:grid-cols-4">
@@ -576,7 +576,7 @@ function Dashboard() {
       </div>
       <div className="mb-3 h-3 overflow-hidden rounded-full bg-sky-soft">
         <div
-          className="h-full rounded-full bg-block-green transition-all duration-700"
+          className="h-full rounded-full bg-block-green transition-all duration-700 motion-reduce:transition-none"
           style={{ width: `${completion}%` }}
         />
       </div>
@@ -651,7 +651,7 @@ function Dashboard() {
                 </span>
               )}
               <ChevronDown
-                className="h-6 w-6 shrink-0 transition-transform group-open:rotate-180"
+                className="h-6 w-6 shrink-0 transition-transform motion-reduce:transition-none group-open:rotate-180"
                 aria-hidden="true"
               />
             </span>
@@ -933,7 +933,7 @@ function Dashboard() {
             ข้อมูลสด
           </p>
           <div className="py-3 text-ink">
-            <RotatingPrompt tone="card" />
+            <RotatingPrompt tone="card" touch />
           </div>
           <div className="grid grid-cols-2 gap-3">
             {view === "organizer" ? (
@@ -1218,7 +1218,7 @@ function Bar({
       </div>
       <div className={`mt-1 overflow-hidden rounded-full bg-sky-soft ${lg ? "h-4" : "h-3"}`}>
         <div
-          className={`h-full rounded-full ${bg[tone]} transition-all duration-700`}
+          className={`h-full rounded-full ${bg[tone]} transition-all duration-700 motion-reduce:transition-none`}
           style={{ width: `${(value / max) * 100}%` }}
         />
       </div>

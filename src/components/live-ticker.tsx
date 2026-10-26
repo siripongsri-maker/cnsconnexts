@@ -168,8 +168,11 @@ const PROMPT_LINES = [
 export function RotatingPrompt({
   size = "md",
   tone = "brand",
+  touch = false,
 }: {
   size?: "md" | "lg";
+  /** ปุ่มหยุดขนาด 48px สำหรับหน้าผู้เข้าร่วม — ค่าเริ่มต้นคงขนาดเดิม (44px) ให้หน้า /admin/live */
+  touch?: boolean;
   /** brand = บนพื้นสีแบรนด์ (ตัวอักษรขาว), card = บนการ์ดสีอ่อน */
   tone?: "brand" | "card";
 }) {
@@ -223,14 +226,14 @@ export function RotatingPrompt({
           onClick={() => setPaused((p) => !p)}
           aria-pressed={paused}
           aria-label={paused ? "เล่นข้อความต่อ / Resume messages" : "หยุดข้อความ / Pause messages"}
-          className={`tap grid h-12 w-12 shrink-0 place-items-center rounded-full ${
+          className={`tap grid ${touch ? "h-12 w-12" : "h-11 w-11"} shrink-0 place-items-center rounded-full ${
             tone === "brand" ? "bg-white/15" : "bg-muted text-foreground"
           }`}
         >
           {paused ? (
-            <Play className="h-5 w-5" aria-hidden="true" />
+            <Play className={touch ? "h-5 w-5" : "h-4 w-4"} aria-hidden="true" />
           ) : (
-            <Pause className="h-5 w-5" aria-hidden="true" />
+            <Pause className={touch ? "h-5 w-5" : "h-4 w-4"} aria-hidden="true" />
           )}
         </button>
       )}
