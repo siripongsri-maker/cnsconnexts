@@ -12,7 +12,7 @@ import { SponsorFooter } from "@/components/sponsor-footer";
 import { Wordmark } from "@/components/wordmark";
 import { unseenEntries } from "@/lib/deck-rules";
 import { isDevPreview } from "@/lib/dev-preview";
-import { hasLocalParticipantId, isGuest } from "@/lib/guest";
+import { hasLocalParticipantId, homeVisitor } from "@/lib/guest";
 import { buildDeck, dayKey, scoreMatch, type DeckEntry } from "@/lib/matching";
 import { EMPTY_QUICK_DRAFT, type QuickDraft, type QuickStep } from "@/lib/quick-profile";
 import { useStore } from "@/lib/store";
@@ -52,6 +52,7 @@ const PREVIEW_CONNECTION_ID = "celebrate-preview";
  * ผู้เยี่ยมชม (ไม่มีโปรไฟล์ ไม่มีรหัสในเครื่อง): การ์ดเรียงแบบผู้เยี่ยมชม + แถบชวนทำโปรไฟล์
  * กด "ขอเชื่อมต่อ"/"เริ่มเลย" → แผ่นถาม 3 ข้อ แล้วเชื่อมกับคนบนการ์ดต่อทันที
  * คนเดิมที่มีรหัสในเครื่องแต่โปรไฟล์ยังไม่มา: การ์ดโครงกำลังโหลด ไม่มีแถบ ไม่เปิดแผ่นถาม
+ * จนกว่า store จะโหลดเสร็จ (กติกาทั้งหมดอยู่ใน homeVisitor — src/lib/guest.ts)
  */
 function Home() {
   const { me, users, notifications, hydrated, skippedUsers, likedUsers, connect } = useStore();
@@ -67,8 +68,11 @@ function Home() {
     setMounted(true);
   }, []);
 
-  const guest = mounted && isGuest({ me, hasLocalId, hydrated });
-  const waitingForMe = !mounted || (!me && hasLocalId);
+  const visitor = homeVisitor({ mounted, me, hasLocalId, hydrated });
+  const guest = visitor === "guest";
+  // ยังไม่รู้ว่าเป็นใคร หรือคนเดิมที่ store ยังโหลดไม่เสร็จ → การ์ดโครง; โหลดเสร็จแล้วยังไม่ได้โปรไฟล์
+  // (returning-no-profile) ให้สำรับใช้สถานะของตัวเอง เช่น "ลองอีกครั้ง" ไม่ค้างโหลดตลอดไป
+  const waitingForMe = visitor === "unknown" || visitor === "returning-loading";
 
   // แผ่นถาม 3 ข้อ — หน้านี้ถือสถานะเปิด/ปิดเอง (ห้ามคิดจาก !me: saveProfile ใส่ me ก่อนเขียนฐานข้อมูล
   // ถ้าบันทึกไม่สำเร็จแผ่นต้องค้างไว้พร้อมข้อความแจ้ง) และเก็บคำตอบไว้แม้ปิดแผ่น
@@ -103,7 +107,8 @@ function Home() {
   }, []);
 
   const openSheet = (target: User | null) => {
-    // คนเดิมที่โปรไฟล์ยังไม่มา ห้ามถามซ้ำ (ปกติไม่มีปุ่มให้กดอยู่แล้วเพราะสำรับยังโหลด)
+    // เปิดได้เฉพาะผู้เยี่ยมชม และคนเดิมที่โหลดเสร็จแล้วแต่ไม่พบโปรไฟล์ (ทางออกของเขา)
+    // ระหว่างโหลดห้ามถามซ้ำ (ปกติไม่มีปุ่มให้กดอยู่แล้วเพราะสำรับยังโหลด)
     if (waitingForMe || me) return;
     const active = document.activeElement;
     sheetOpenerRef.current =

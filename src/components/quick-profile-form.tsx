@@ -95,6 +95,8 @@ export type QuickProfileFormProps = {
   /** ขั้นปัจจุบันแบบผู้เรียกถือเอง (ไม่ส่ง = เริ่มขั้นที่ 1 และฟอร์มเก็บเอง) */
   step?: QuickStep;
   onStepChange?: (step: QuickStep) => void;
+  /** แจ้งเมื่อเริ่ม/จบการบันทึก — แผ่นล่างใช้ล็อกไม่ให้ปิดระหว่างบันทึก */
+  onSavingChange?: (saving: boolean) => void;
 };
 
 /**
@@ -107,6 +109,7 @@ export function QuickProfileForm({
   onDraftChange,
   step: stepProp,
   onStepChange,
+  onSavingChange,
 }: QuickProfileFormProps) {
   const { saveProfile } = useStore();
   const [ownStep, setOwnStep] = useState<QuickStep>(1);
@@ -147,6 +150,7 @@ export function QuickProfileForm({
     if (savingRef.current) return;
     savingRef.current = true;
     setSaving(true);
+    onSavingChange?.(true);
     setFailed(false);
     try {
       const input = toProfileInput(draft);
@@ -161,6 +165,7 @@ export function QuickProfileForm({
     } finally {
       savingRef.current = false;
       setSaving(false);
+      onSavingChange?.(false);
     }
   };
 

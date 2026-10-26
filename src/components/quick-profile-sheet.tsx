@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Drawer,
   DrawerContent,
@@ -11,6 +11,9 @@ import { QuickProfileForm, type QuickProfileFormProps } from "@/components/quick
 /**
  * แผ่นล่างถามสั้น ๆ 3 ข้อ — เปิดเมื่อผู้เยี่ยมชมกด "ขอเชื่อมต่อ" หรือ "เริ่มเลย"
  * ส่ง draft/step (+ onChange) มาด้วยเพื่อให้คำตอบไม่หายเมื่อปิดแผ่นแล้วเปิดใหม่
+ *
+ * ระหว่างบันทึกปิดแผ่นไม่ได้ (Esc / แตะพื้นหลัง / ลากลง) — ถ้าบันทึกไม่สำเร็จ ข้อความแจ้งพร้อมคำตอบเดิม
+ * ต้องยังอยู่ให้เห็น (สเปก §7) และผลลัพธ์ที่มาทีหลังจะไม่ไปเชื่อมต่อ/ฉลองหลังผู้ใช้ปิดแผ่นไปแล้ว
  */
 export function QuickProfileSheet({
   open,
@@ -24,9 +27,17 @@ export function QuickProfileSheet({
   onCloseAutoFocus?: (event: Event) => void;
 } & QuickProfileFormProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer
+      open={open}
+      dismissible={!saving}
+      onOpenChange={(next) => {
+        if (!next && saving) return;
+        onOpenChange(next);
+      }}
+    >
       <DrawerContent
         ref={contentRef}
         className="meadow-sheet mx-auto max-h-[92dvh] max-w-xl rounded-t-3xl border-border bg-white outline-none"
@@ -50,7 +61,13 @@ export function QuickProfileSheet({
           className="overflow-y-auto overscroll-contain px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4"
           data-vaul-no-drag
         >
-          <QuickProfileForm {...form} />
+          <QuickProfileForm
+            {...form}
+            onSavingChange={(next) => {
+              setSaving(next);
+              form.onSavingChange?.(next);
+            }}
+          />
         </div>
       </DrawerContent>
     </Drawer>

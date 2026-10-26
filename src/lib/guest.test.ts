@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PARTICIPANT_ID_KEY, hasLocalParticipantId, isGuest } from "./guest";
+import { PARTICIPANT_ID_KEY, hasLocalParticipantId, homeVisitor, isGuest } from "./guest";
 import type { User } from "./types";
 
 const me: User = {
@@ -62,5 +62,42 @@ describe("hasLocalParticipantId", () => {
       },
     };
     expect(hasLocalParticipantId(blocked)).toBe(false);
+  });
+});
+
+describe("homeVisitor", () => {
+  it("is unknown before mount, whatever the store says (SSR and first client render agree)", () => {
+    expect(homeVisitor({ mounted: false, me: null, hasLocalId: false, hydrated: false })).toBe(
+      "unknown",
+    );
+    expect(homeVisitor({ mounted: false, me, hasLocalId: true, hydrated: true })).toBe("unknown");
+  });
+
+  it("is a member once the profile is loaded", () => {
+    expect(homeVisitor({ mounted: true, me, hasLocalId: true, hydrated: true })).toBe("member");
+    expect(homeVisitor({ mounted: true, me, hasLocalId: true, hydrated: false })).toBe("member");
+  });
+
+  it("is a guest with no profile and no local id, before or after hydration", () => {
+    expect(homeVisitor({ mounted: true, me: null, hasLocalId: false, hydrated: false })).toBe(
+      "guest",
+    );
+    expect(homeVisitor({ mounted: true, me: null, hasLocalId: false, hydrated: true })).toBe(
+      "guest",
+    );
+  });
+
+  it("returning participant mid-hydration waits on the loading deck (Review Focus 2)", () => {
+    expect(homeVisitor({ mounted: true, me: null, hasLocalId: true, hydrated: false })).toBe(
+      "returning-loading",
+    );
+  });
+
+  it("returning participant whose profile never arrived is not stuck loading after hydration (Review Focus 4)", () => {
+    const v = homeVisitor({ mounted: true, me: null, hasLocalId: true, hydrated: true });
+    expect(v).toBe("returning-no-profile");
+    expect(v).not.toBe("returning-loading");
+    // ...and is still not treated as a guest (no banner)
+    expect(v).not.toBe("guest");
   });
 });

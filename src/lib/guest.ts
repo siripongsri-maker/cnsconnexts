@@ -29,3 +29,33 @@ export function hasLocalParticipantId(storage?: Pick<Storage, "getItem">): boole
     return false;
   }
 }
+
+/**
+ * หน้าแรกควรปฏิบัติกับผู้มาเยือนแบบไหน
+ * - unknown: ยังไม่ mount (อ่าน localStorage ไม่ได้) → การ์ดโครง ไม่มีแถบ ไม่เปิดแผ่นถาม
+ * - guest: ไม่มีโปรไฟล์ ไม่มีรหัสในเครื่อง → การ์ดแบบผู้เยี่ยมชม + แถบชวน + เปิดแผ่นถามได้
+ * - returning-loading: มีรหัสในเครื่อง store ยังโหลดไม่เสร็จ → การ์ดโครง ไม่มีแถบ ไม่เปิดแผ่นถาม
+ * - returning-no-profile: มีรหัสแต่โหลดเสร็จแล้วก็ยังไม่ได้โปรไฟล์ (แถวถูกลบ/อ่านไม่สำเร็จ)
+ *   → สำรับใช้สถานะของตัวเอง (ลองอีกครั้ง/การ์ดแบบผู้เยี่ยมชม) ไม่ค้างโหลดตลอดไป
+ *   ไม่มีแถบชวน แต่กด "ขอเชื่อมต่อ" แล้วเปิดแผ่นถามได้เป็นทางออก
+ * - member: มีโปรไฟล์แล้ว
+ */
+export type HomeVisitor =
+  "unknown" | "guest" | "returning-loading" | "returning-no-profile" | "member";
+
+export function homeVisitor({
+  mounted,
+  me,
+  hasLocalId,
+  hydrated,
+}: {
+  mounted: boolean;
+  me: User | null;
+  hasLocalId: boolean;
+  hydrated: boolean;
+}): HomeVisitor {
+  if (!mounted) return "unknown";
+  if (me) return "member";
+  if (isGuest({ me, hasLocalId, hydrated })) return "guest";
+  return hydrated ? "returning-no-profile" : "returning-loading";
+}
