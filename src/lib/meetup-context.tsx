@@ -21,11 +21,12 @@ import {
 import { toast } from "sonner";
 
 import { isDevPreview } from "./dev-preview";
-import { canInvite, isActive, POLL_MS, type Meetup, type MeetupStatus } from "./meetup-rules";
+import { canInvite, isActive, POLL_MS, type Meetup } from "./meetup-rules";
 import {
   KNOCK_GAP_MS,
   SEEN_ACCEPTED_KEY,
   connectAndInvite,
+  createMeetupActions,
   createReloadRunner,
   initialMeetupState,
   meetupReducer,
@@ -37,8 +38,9 @@ import {
   selectFindSession,
   selectIncoming,
   type InviteResult,
+  type RespondResult,
 } from "./meetup-state";
-import { getMeetupTransport, type MeetupTransport } from "./meetup-transport";
+import { getMeetupTransport, setMeetsimActor, type MeetupTransport } from "./meetup-transport";
 import { meetsimPairFromSearch } from "./meetup-transport-local";
 import { themeClassFor } from "./theme";
 import { useStore, type ConnectResult } from "./store";
@@ -53,9 +55,11 @@ export type MeetupsApi = {
   findSession: Meetup | null;
   invite(connectionId: string): Promise<InviteResult>;
   accept(id: string): Promise<"ok" | "expired" | "failed">;
-  decline(id: string): Promise<void>;
-  finish(id: string): Promise<void>;
-  cancel(id: string): Promise<void>;
+  /** "failed" → การ์ดแสดง "ตอบไม่สำเร็จ ลองอีกครั้ง" */
+  decline(id: string): Promise<RespondResult>;
+  /** ปิดโหมดหากันเฉพาะเมื่อสำเร็จ — "failed" โหมดยังเปิดอยู่ให้ UI แจ้ง */
+  finish(id: string): Promise<RespondResult>;
+  cancel(id: string): Promise<RespondResult>;
   openFind(id: string): void;
   closeFind(): void;
   markAcceptedSeen(id: string): void;
@@ -129,6 +133,13 @@ export function MeetupProvider({ children }: { children: ReactNode }) {
     setNow(Date.now());
   }, []);
 
+  // dev ?meetsim: ตัวจำลองต้องรู้ว่าแท็บนี้เป็นใคร (ของจริงรู้จาก x-device-id)
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    setMeetsimActor(() => meIdRef.current);
+    return () => setMeetsimActor(null);
+  }, []);
+
   // เปลี่ยนตัวตน (เช่น เพิ่งสร้างโปรไฟล์) → ทิ้งคำชวนของตัวตนเดิม
   const lastMeRef = useRef<string | null>(null);
   useEffect(() => {
@@ -198,27 +209,19 @@ export function MeetupProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const inviteConnection = useCallback(
-    async (conn: Pick<Connection, "id" | "user_a" | "user_b">): Promise<InviteResult> => {
-      const me = meIdRef.current;
-      if (!me) return "failed";
-      const other = otherInConnection(conn, me);
-      if (!other) return "failed";
-      try {
-        const t = transport();
-        const res = await t.create({ connectionId: conn.id, inviter: me, invitee: other });
-        if (!res.ok) return "failed";
-        dispatch({ type: "upserted", meetup: res.meetup });
-        setNow(Date.now());
-        if (res.existing) return "existing";
-        void t.knock(other);
-        return "sent";
-      } catch {
-        return "failed";
-      }
-    },
+  // ปุ่มต่างๆ — ตรรกะอยู่ใน createMeetupActions (ทดสอบได้); อ่านตัวตน/โหมดหากันล่าสุดผ่าน ref
+  const actions = useMemo(
+    () =>
+      createMeetupActions({
+        transport,
+        meId: () => meIdRef.current,
+        findId: () => stateRef.current.findId,
+        dispatch,
+        onChange: () => setNow(Date.now()),
+      }),
     [],
   );
+  const { inviteConnection, accept, decline, finish, cancel } = actions;
 
   const invite = useCallback(
     (connectionId: string) => {
@@ -226,74 +229,6 @@ export function MeetupProvider({ children }: { children: ReactNode }) {
       return conn ? inviteConnection(conn) : Promise.resolve<InviteResult>("failed");
     },
     [findConnection, inviteConnection],
-  );
-
-  /**
-   * เปลี่ยนสถานะ — ดึงรายการก่อนเสมอ (ตัวจำลองรู้ว่าใครกดจาก meId ล่าสุดที่ส่งเข้า list
-   * และได้แถวล่าสุดมาเทียบ) แล้วเคาะกริ่งอีกฝ่ายเมื่อสำเร็จ
-   */
-  const changeStatus = useCallback(
-    async (
-      id: string,
-      to: MeetupStatus,
-    ): Promise<{ ok: true; meetup: Meetup } | { ok: false; reason: string }> => {
-      const me = meIdRef.current;
-      if (!me) return { ok: false, reason: "no-me" };
-      const t = transport();
-      try {
-        await load(me);
-      } catch {
-        /* ยังลองเขียนต่อ — setStatus ตอบเหตุผลเอง */
-      }
-      try {
-        const res = await t.setStatus(id, to);
-        if (!res.ok) return res;
-        dispatch({ type: "upserted", meetup: res.meetup });
-        setNow(Date.now());
-        const m = res.meetup;
-        void t.knock(m.inviter === me ? m.invitee : m.inviter);
-        return res;
-      } catch {
-        return { ok: false, reason: "network" };
-      }
-    },
-    [load],
-  );
-
-  const accept = useCallback(
-    async (id: string): Promise<"ok" | "expired" | "failed"> => {
-      const res = await changeStatus(id, "accepted");
-      if (res.ok) {
-        dispatch({ type: "openFind", id, now: Date.now() });
-        return "ok";
-      }
-      return res.reason === "expired" ? "expired" : "failed";
-    },
-    [changeStatus],
-  );
-
-  const decline = useCallback(
-    async (id: string) => {
-      await changeStatus(id, "declined");
-    },
-    [changeStatus],
-  );
-
-  const finish = useCallback(
-    async (id: string) => {
-      // "เจอกันแล้ว!" ปิดโหมดของเครื่องนี้เสมอ แม้เขียนไม่สำเร็จ (อีกเครื่องปิดเมื่อเห็น done)
-      if (stateRef.current.findId === id) dispatch({ type: "closeFind" });
-      await changeStatus(id, "done");
-    },
-    [changeStatus],
-  );
-
-  const cancel = useCallback(
-    async (id: string) => {
-      if (stateRef.current.findId === id) dispatch({ type: "closeFind" });
-      await changeStatus(id, "cancelled");
-    },
-    [changeStatus],
   );
 
   const openFind = useCallback((id: string) => {

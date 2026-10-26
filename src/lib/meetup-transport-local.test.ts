@@ -142,6 +142,27 @@ describe("local meetup transport — create / list", () => {
     const res = await tab.create({ connectionId: "c1", inviter: "alice", invitee: "bob" });
     expect(res.ok).toBe(true);
   });
+
+  it("an injected actor acts without any list call, and falls back to the last meId on null", async () => {
+    const { alice, storage, channelFactory, clock } = setup();
+    const created = await alice.create({ connectionId: "c1", inviter: "alice", invitee: "bob" });
+    if (!created.ok) throw new Error("create failed");
+    let who: string | null = "bob";
+    const bobTab = createLocalTransport({ now: clock, storage, channelFactory, actor: () => who });
+    expect((await bobTab.setStatus(created.meetup.id, "accepted")).ok).toBe(true);
+
+    who = null;
+    const later = await alice.create({ connectionId: "c2", inviter: "alice", invitee: "carol" });
+    if (!later.ok) throw new Error("create failed");
+    const carolTab = createLocalTransport({
+      now: clock,
+      storage,
+      channelFactory,
+      actor: () => who,
+    });
+    carolTab.onKnock("carol", () => {})();
+    expect((await carolTab.setStatus(later.meetup.id, "declined")).ok).toBe(true);
+  });
 });
 
 describe("local meetup transport — setStatus", () => {

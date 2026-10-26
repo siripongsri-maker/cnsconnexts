@@ -400,6 +400,15 @@ export function createSupabaseTransport(deps: {
 
 let supabaseTransport: MeetupTransport | null = null;
 let localTransport: MeetupTransport | null = null;
+let meetsimActor: (() => string | null) | null = null;
+
+/**
+ * dev `?meetsim`: บอกตัวจำลองว่าใครเป็นคนกดในแท็บนี้ (ตัวตนจาก `?as=`) — ของจริงใช้ x-device-id
+ * จึงไม่ต้องดึงรายการก่อนเปลี่ยนสถานะ; ใน production ไม่มีผลใดๆ
+ */
+export function setMeetsimActor(actor: (() => string | null) | null): void {
+  meetsimActor = actor;
+}
 
 /**
  * ตัวจำลองในเครื่องเฉพาะ dev + `?meetsim` เท่านั้น — `import.meta.env.DEV` เป็นค่าคงที่ตอน build
@@ -416,7 +425,7 @@ export function getMeetupTransport(): MeetupTransport {
     if (!localTransport) {
       const pair = meetsimPairFromSearch(window.location.search);
       if (pair) seedConnection(pair.connectionId, pair.a, pair.b);
-      localTransport = createLocalTransport();
+      localTransport = createLocalTransport({ actor: () => meetsimActor?.() ?? null });
     }
     return localTransport;
   }

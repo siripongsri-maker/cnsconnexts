@@ -9,6 +9,7 @@ import {
   type Meetup,
   type MeetupStatus,
 } from "./meetup-rules";
+import type { MeetupTransport } from "./meetup-transport";
 import type { ConnectResult } from "./store";
 import type { Connection } from "./types";
 
@@ -33,6 +34,8 @@ export const SEEN_ACCEPTED_KEY = "meetups:seen-accepted";
 export const SEEN_ACCEPTED_LIMIT = 200;
 /** กริ่ง (ช่อง inbox เป็นช่องสาธารณะ) ทำให้ดึงรายการได้ไม่เกิน 1 ครั้งต่อช่วงนี้ */
 export const KNOCK_GAP_MS = 1_500;
+/** การดึงที่ค้างนานเกินนี้ถือว่าจบแล้ว (เน็ตค้าง ไม่มี timeout) เพื่อให้รอบถัดไปดึงได้ */
+export const RUN_STALE_MS = 15_000;
 
 export function initialMeetupState(seenAccepted: string[] = []): MeetupState {
   return { meetups: [], findId: null, seenAccepted };
@@ -164,8 +167,12 @@ type Timers = {
  * - `knock()` จากกริ่ง: ดึงทันทีถ้าห่างจากครั้งก่อนเกิน `gapMs` ไม่อย่างนั้นรวมกริ่งทั้งหมดเป็น
  *   การดึงครั้งเดียวตอนครบช่วง (trailing) — ช่อง inbox เป็นสาธารณะ จึงกันคนกดกริ่งรัวๆ
  * - ไม่ดึงซ้อนกันเกิน 1 ครั้ง: ขอระหว่างกำลังดึง → ดึงต่ออีก 1 ครั้งหลังเสร็จ (ผ่านช่วงห่างเดียวกัน)
+ * - ตัวเฝ้า: รอบที่ค้างเกิน `staleMs` (ค่าเริ่ม RUN_STALE_MS) ถือว่าจบ คำขอถัดไปเริ่มรอบใหม่ได้
+ *   และผลของรอบเก่าที่ตอบช้าไม่ไปปลดสถานะของรอบใหม่
  */
-export function createReloadRunner(opts: { run: () => Promise<unknown>; gapMs: number } & Timers): {
+export function createReloadRunner(
+  opts: { run: () => Promise<unknown>; gapMs: number; staleMs?: number } & Timers,
+): {
   now(): void;
   knock(): void;
   dispose(): void;
@@ -174,15 +181,23 @@ export function createReloadRunner(opts: { run: () => Promise<unknown>; gapMs: n
   const setTimer = opts.setTimer ?? ((fn: () => void, ms: number) => setTimeout(fn, ms));
   const clearTimer =
     opts.clearTimer ?? ((h: unknown) => clearTimeout(h as ReturnType<typeof setTimeout>));
+  const staleMs = opts.staleMs ?? RUN_STALE_MS;
   let inFlight = false;
   let queued = false;
   let lastStart = Number.NEGATIVE_INFINITY;
   let timer: unknown = null;
   let disposed = false;
+  let generation = 0;
+
+  /** กำลังดึงอยู่จริง (ไม่นับรอบที่ค้างจนเกินตัวเฝ้า) */
+  const busy = () => {
+    if (inFlight && clock() - lastStart >= staleMs) inFlight = false;
+    return inFlight;
+  };
 
   const start = () => {
     if (disposed) return;
-    if (inFlight) {
+    if (busy()) {
       queued = true;
       return;
     }
@@ -191,7 +206,9 @@ export function createReloadRunner(opts: { run: () => Promise<unknown>; gapMs: n
       timer = null;
     }
     inFlight = true;
+    queued = false;
     lastStart = clock();
+    const mine = ++generation;
     let p: Promise<unknown>;
     try {
       p = Promise.resolve(opts.run());
@@ -203,6 +220,7 @@ export function createReloadRunner(opts: { run: () => Promise<unknown>; gapMs: n
         /* เน็ตล่ม: เก็บของเดิมไว้ รอรอบถัดไป */
       })
       .finally(() => {
+        if (mine !== generation) return; // รอบที่ถูกตัวเฝ้าข้ามไปแล้ว
         inFlight = false;
         if (queued) {
           queued = false;
@@ -213,7 +231,7 @@ export function createReloadRunner(opts: { run: () => Promise<unknown>; gapMs: n
 
   const throttled = () => {
     if (disposed) return;
-    if (inFlight) {
+    if (busy()) {
       queued = true;
       return;
     }
@@ -267,4 +285,87 @@ export function connectAndInvite(
     }
     return result;
   });
+}
+
+export type RespondResult = "ok" | "failed";
+
+/**
+ * ปุ่มของคำชวน — เขียนผ่าน transport แล้วเคาะกริ่งอีกฝ่ายเมื่อสำเร็จ (ไม่มีการดึงรายการก่อนเขียน)
+ * แยกจาก React เพื่อทดสอบด้วย transport ปลอม; provider ส่ง ref ของตัวตน/โหมดหากันเข้ามา
+ * - accept สำเร็จ → เปิดโหมดหากัน; หมดเวลา → "expired"
+ * - finish / cancel ปิดโหมดหากันเฉพาะเมื่อเขียนสำเร็จ — ไม่สำเร็จ โหมดยังเปิด ให้ UI บอก
+ *   "ตอบไม่สำเร็จ ลองอีกครั้ง" (ปิดเองทั้งที่แถวยัง accepted จะทำให้อีกฝ่ายค้าง)
+ */
+export function createMeetupActions(deps: {
+  transport: () => Pick<MeetupTransport, "create" | "setStatus" | "knock">;
+  meId: () => string | null;
+  findId: () => string | null;
+  dispatch: (action: MeetupAction) => void;
+  now?: () => number;
+  onChange?: () => void;
+}) {
+  const clock = deps.now ?? (() => Date.now());
+
+  async function change(
+    id: string,
+    to: MeetupStatus,
+  ): Promise<{ ok: true; meetup: Meetup } | { ok: false; reason: string }> {
+    const me = deps.meId();
+    if (!me) return { ok: false, reason: "no-me" };
+    try {
+      const t = deps.transport();
+      const res = await t.setStatus(id, to);
+      if (!res.ok) return res;
+      deps.dispatch({ type: "upserted", meetup: res.meetup });
+      deps.onChange?.();
+      const m = res.meetup;
+      void t.knock(m.inviter === me ? m.invitee : m.inviter);
+      return res;
+    } catch {
+      return { ok: false, reason: "network" };
+    }
+  }
+
+  async function endFind(id: string, to: "done" | "cancelled"): Promise<RespondResult> {
+    const res = await change(id, to);
+    if (!res.ok) return "failed";
+    if (deps.findId() === id) deps.dispatch({ type: "closeFind" });
+    return "ok";
+  }
+
+  return {
+    async inviteConnection(
+      conn: Pick<Connection, "id" | "user_a" | "user_b">,
+    ): Promise<InviteResult> {
+      const me = deps.meId();
+      if (!me) return "failed";
+      const other = otherInConnection(conn, me);
+      if (!other) return "failed";
+      try {
+        const t = deps.transport();
+        const res = await t.create({ connectionId: conn.id, inviter: me, invitee: other });
+        if (!res.ok) return "failed";
+        deps.dispatch({ type: "upserted", meetup: res.meetup });
+        deps.onChange?.();
+        if (res.existing) return "existing";
+        void t.knock(other);
+        return "sent";
+      } catch {
+        return "failed";
+      }
+    },
+    async accept(id: string): Promise<"ok" | "expired" | "failed"> {
+      const res = await change(id, "accepted");
+      if (res.ok) {
+        deps.dispatch({ type: "openFind", id, now: clock() });
+        return "ok";
+      }
+      return res.reason === "expired" ? "expired" : "failed";
+    },
+    async decline(id: string): Promise<RespondResult> {
+      return (await change(id, "declined")).ok ? "ok" : "failed";
+    },
+    finish: (id: string) => endFind(id, "done"),
+    cancel: (id: string) => endFind(id, "cancelled"),
+  };
 }

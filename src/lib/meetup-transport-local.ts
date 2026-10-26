@@ -24,7 +24,7 @@ export type LocalTransportOptions = {
   storage?: StorageLike;
   channelFactory?: (name: string) => ChannelLike;
   /**
-   * ใครเป็นคนกดในแท็บนี้ (แทน x-device-id ของของจริง) — ถ้าไม่ให้มา ใช้ meId ล่าสุด
+   * ใครเป็นคนกดในแท็บนี้ (แทน x-device-id ของของจริง) — ถ้าไม่ให้มาหรือคืน null ใช้ meId ล่าสุด
    * ที่ส่งเข้า list / onKnock / joinSignal
    */
   actor?: () => string | null;
@@ -96,7 +96,8 @@ export function createLocalTransport(opts: LocalTransportOptions = {}): MeetupTr
   const makeChannel =
     opts.channelFactory ?? ((name: string) => new BroadcastChannel(name) as ChannelLike);
   let lastMeId: string | null = null;
-  const actor = opts.actor ?? (() => lastMeId);
+  // actor ที่ส่งเข้ามาคืน null ได้ (เช่น ยังไม่รู้ตัวตน) → ใช้ meId ล่าสุดแทน
+  const actor = () => opts.actor?.() ?? lastMeId;
   const remember = (meId: string) => {
     lastMeId = meId;
   };

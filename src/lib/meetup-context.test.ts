@@ -4,7 +4,9 @@ import type { Meetup } from "./meetup-rules";
 import {
   KNOCK_GAP_MS,
   SEEN_ACCEPTED_LIMIT,
+  RUN_STALE_MS,
   connectAndInvite,
+  createMeetupActions,
   createReloadRunner,
   initialMeetupState,
   meetupReducer,
@@ -15,6 +17,7 @@ import {
   selectAcceptedForMe,
   selectFindSession,
   selectIncoming,
+  type MeetupAction,
   type MeetupState,
 } from "./meetup-state";
 import type { Connection } from "./types";
@@ -275,6 +278,39 @@ describe("createReloadRunner", () => {
     expect(run).toHaveBeenCalledTimes(2);
   });
 
+  it("a hung run is treated as settled after RUN_STALE_MS (watchdog)", async () => {
+    const run = vi.fn(() => new Promise<void>(() => {}));
+    const r = createReloadRunner({ run, gapMs: KNOCK_GAP_MS });
+    r.now();
+    await vi.advanceTimersByTimeAsync(RUN_STALE_MS - 1);
+    r.now();
+    r.knock();
+    expect(run).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    r.now();
+    expect(run).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(RUN_STALE_MS);
+    r.knock();
+    expect(run).toHaveBeenCalledTimes(3);
+  });
+
+  it("a late finish of a superseded run does not clear the newer in-flight run", async () => {
+    const resolvers: Array<() => void> = [];
+    const run = vi.fn(() => new Promise<void>((res) => resolvers.push(res)));
+    const r = createReloadRunner({ run, gapMs: KNOCK_GAP_MS });
+    r.now();
+    await vi.advanceTimersByTimeAsync(RUN_STALE_MS);
+    r.now(); // supersedes the hung first run
+    expect(run).toHaveBeenCalledTimes(2);
+    resolvers[0]?.(); // the old one finally returns
+    await vi.advanceTimersByTimeAsync(0);
+    r.now(); // second run is still in flight → queued, not started
+    expect(run).toHaveBeenCalledTimes(2);
+    resolvers[1]?.();
+    await vi.advanceTimersByTimeAsync(KNOCK_GAP_MS); // the queued follow-up goes through the gap
+    expect(run).toHaveBeenCalledTimes(3);
+  });
+
   it("dispose cancels the trailing run and ignores later calls", async () => {
     const { run, finish } = deferredRun();
     const r = createReloadRunner({ run, gapMs: KNOCK_GAP_MS });
@@ -369,5 +405,139 @@ describe("connectAndInvite", () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(onInviteFailed).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("createMeetupActions", () => {
+  const accepted = meetup({ id: "acc", status: "accepted" });
+
+  function setup(
+    over: {
+      setStatus?: () => Promise<unknown>;
+      create?: () => Promise<unknown>;
+      meId?: string | null;
+      findId?: string | null;
+    } = {},
+  ) {
+    const actions: MeetupAction[] = [];
+    const t = {
+      list: vi.fn(async () => [] as Meetup[]),
+      create: vi.fn(
+        over.create ??
+          (async () => ({
+            ok: true,
+            existing: false,
+            meetup: meetup({ id: "new", inviter: ME, invitee: OTHER }),
+          })),
+      ),
+      setStatus: vi.fn(over.setStatus ?? (async () => ({ ok: true, meetup: accepted }))),
+      knock: vi.fn(async () => {}),
+    };
+    const api = createMeetupActions({
+      transport: () => t as never,
+      meId: () => (over.meId === undefined ? ME : over.meId),
+      findId: () => (over.findId === undefined ? null : over.findId),
+      dispatch: (a) => actions.push(a),
+      now: () => NOW,
+    });
+    return { api, t, actions };
+  }
+
+  it("status changes never pre-fetch the list", async () => {
+    const { api, t } = setup();
+    await api.accept("acc");
+    await api.decline("acc");
+    await api.finish("acc");
+    await api.cancel("acc");
+    expect(t.list).not.toHaveBeenCalled();
+    expect(t.setStatus).toHaveBeenCalledTimes(4);
+  });
+
+  it("accept ok → upsert, knock the partner, open find mode", async () => {
+    const { api, t, actions } = setup();
+    expect(await api.accept("acc")).toBe("ok");
+    expect(t.setStatus).toHaveBeenCalledWith("acc", "accepted");
+    expect(t.knock).toHaveBeenCalledWith(OTHER);
+    expect(actions).toEqual([
+      { type: "upserted", meetup: accepted },
+      { type: "openFind", id: "acc", now: NOW },
+    ]);
+  });
+
+  it("accept expired → 'expired' and no find mode; other failures → 'failed'", async () => {
+    const expired = setup({ setStatus: async () => ({ ok: false, reason: "expired" }) });
+    expect(await expired.api.accept("acc")).toBe("expired");
+    expect(expired.actions).toEqual([]);
+    const denied = setup({ setStatus: async () => ({ ok: false, reason: "not-allowed" }) });
+    expect(await denied.api.accept("acc")).toBe("failed");
+    const thrown = setup({ setStatus: () => Promise.reject(new Error("offline")) });
+    expect(await thrown.api.accept("acc")).toBe("failed");
+    expect(thrown.t.knock).not.toHaveBeenCalled();
+  });
+
+  it("decline reports ok / failed", async () => {
+    const ok = setup({
+      setStatus: async () => ({ ok: true, meetup: meetup({ id: "acc", status: "declined" }) }),
+    });
+    expect(await ok.api.decline("acc")).toBe("ok");
+    expect(ok.t.setStatus).toHaveBeenCalledWith("acc", "declined");
+    const bad = setup({ setStatus: async () => ({ ok: false, reason: "network" }) });
+    expect(await bad.api.decline("acc")).toBe("failed");
+    expect(bad.t.knock).not.toHaveBeenCalled();
+  });
+
+  it("finish / cancel close find mode only on success", async () => {
+    const done = meetup({ id: "acc", status: "done" });
+    const ok = setup({ findId: "acc", setStatus: async () => ({ ok: true, meetup: done }) });
+    expect(await ok.api.finish("acc")).toBe("ok");
+    expect(ok.actions).toContainEqual({ type: "closeFind" });
+
+    const failedFinish = setup({
+      findId: "acc",
+      setStatus: async () => ({ ok: false, reason: "network" }),
+    });
+    expect(await failedFinish.api.finish("acc")).toBe("failed");
+    expect(failedFinish.actions).toEqual([]);
+
+    const failedCancel = setup({
+      findId: "acc",
+      setStatus: () => Promise.reject(new Error("offline")),
+    });
+    expect(await failedCancel.api.cancel("acc")).toBe("failed");
+    expect(failedCancel.actions).toEqual([]);
+  });
+
+  it("no identity → every action fails without touching the transport", async () => {
+    const { api, t } = setup({ meId: null });
+    expect(await api.accept("acc")).toBe("failed");
+    expect(await api.finish("acc")).toBe("failed");
+    expect(await api.inviteConnection({ id: "c1", user_a: "me", user_b: OTHER })).toBe("failed");
+    expect(t.setStatus).not.toHaveBeenCalled();
+    expect(t.create).not.toHaveBeenCalled();
+  });
+
+  it("invite: sent knocks, existing does not, failure and strangers fail", async () => {
+    const sent = setup();
+    expect(await sent.api.inviteConnection({ id: "c1", user_a: "me", user_b: OTHER })).toBe("sent");
+    expect(sent.t.create).toHaveBeenCalledWith({ connectionId: "c1", inviter: ME, invitee: OTHER });
+    expect(sent.t.knock).toHaveBeenCalledWith(OTHER);
+
+    const existing = setup({
+      create: async () => ({ ok: true, existing: true, meetup: meetup({ connectionId: "c1" }) }),
+    });
+    expect(await existing.api.inviteConnection({ id: "c1", user_a: OTHER, user_b: "me" })).toBe(
+      "existing",
+    );
+    expect(existing.t.knock).not.toHaveBeenCalled();
+
+    const failed = setup({ create: async () => ({ ok: false }) });
+    expect(await failed.api.inviteConnection({ id: "c1", user_a: "me", user_b: OTHER })).toBe(
+      "failed",
+    );
+    const stranger = setup();
+    expect(await stranger.api.inviteConnection({ id: "c1", user_a: "x", user_b: "y" })).toBe(
+      "failed",
+    );
+    expect(stranger.t.create).not.toHaveBeenCalled();
   });
 });
