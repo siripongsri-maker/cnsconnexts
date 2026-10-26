@@ -1,8 +1,6 @@
 /**
- * ทัวร์แนะนำการใช้งานสำหรับผู้ใช้ครั้งแรก
- * - แสดงอัตโนมัติครั้งเดียว เมื่อมาถึงหน้า /matches ครั้งแรกหลังมีโปรไฟล์แล้ว (จำสถานะไว้ใน localStorage)
- *   ไม่เด้งขึ้นบนหน้าแรก /scan /join /start /onboarding เพื่อไม่ซ้อนกับ PDPA และ IntroGuide
- * - เปิดซ้ำได้ด้วย window.dispatchEvent(new Event(TOUR_EVENT))
+ * ทัวร์แนะนำการใช้งาน — ไม่เปิดเอง (สเปก §2) เปิดได้ด้วยปุ่ม "ดูทัวร์แนะนำ" บนหน้า "ฉัน" (/update)
+ * หรือ window.dispatchEvent(new Event(TOUR_EVENT)) จากที่ไหนก็ได้
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -21,10 +19,7 @@ import { useStore } from "@/lib/store";
 import { MissionVisual } from "@/components/mission-ui";
 
 export const TOUR_EVENT = "connexts:start-tour";
-const KEY = "connext-tour-seen";
 const HIDDEN_PREFIXES = ["/admin", "/print", "/journey", "/qr", "/brand-preview"];
-/** หน้าเดียวที่ทัวร์เปิดเองได้ (ครั้งแรก หลังสร้างโปรไฟล์แล้ว) */
-const AUTO_OPEN_PATH = "/matches";
 
 type Step = {
   icon: typeof Sparkles;
@@ -80,7 +75,7 @@ const STEPS: Step[] = [
 
 export function GuidedTour() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { me, hydrated } = useStore();
+  const { me } = useStore();
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -90,19 +85,6 @@ export function GuidedTour() {
   const hidden = HIDDEN_PREFIXES.some((p) => pathname.startsWith(p));
   // มีโปรไฟล์แล้ว ไม่ต้องชวนสร้างโปรไฟล์อีก
   const steps = me ? STEPS.slice(1) : STEPS;
-
-  useEffect(() => {
-    if (hidden || !hydrated || !me || pathname !== AUTO_OPEN_PATH) return;
-    let seen = true;
-    try {
-      seen = window.localStorage.getItem(KEY) === "1";
-    } catch {
-      /* ignore */
-    }
-    if (seen) return;
-    const t = window.setTimeout(() => setOpen(true), 700);
-    return () => window.clearTimeout(t);
-  }, [hidden, hydrated, me, pathname]);
 
   useEffect(() => {
     const handler = () => {
@@ -117,11 +99,6 @@ export function GuidedTour() {
     const restore = opts?.restore ?? true;
     setOpen(false);
     setI(0);
-    try {
-      window.localStorage.setItem(KEY, "1");
-    } catch {
-      /* ignore */
-    }
     const el = prevFocus.current;
     prevFocus.current = null;
     if (restore && el && el.isConnected) el.focus?.();

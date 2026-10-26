@@ -212,6 +212,9 @@ function Home() {
         <MeadowScene variant="header" className="pointer-events-none" />
       </header>
 
+      {/* ตามลำดับหน้า (ไม่ลอย) เพื่อไม่บังแถบปุ่มของสำรับที่ลอยเหนือเมนูล่าง */}
+      <PdpaConsent />
+
       <main id="main-content">
         <div className="mx-auto w-full max-w-xl px-4 pt-5">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4">
@@ -289,7 +292,6 @@ function Home() {
         />
       )}
 
-      <PdpaConsent />
       <BottomNav />
     </div>
   );
