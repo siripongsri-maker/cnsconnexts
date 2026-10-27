@@ -13,6 +13,7 @@ import { Avatar, IssueBlock } from "@/components/power-bits";
 import { ChatRoom } from "@/components/chat-room";
 import { ChoicePill } from "@/components/choice-pill";
 import { MeadowState, STATE_PRIMARY } from "@/components/meadow-state";
+import { MeetupEntry } from "@/components/meetup-entry";
 import { RsvpButtons } from "@/components/rsvp-buttons";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
@@ -123,6 +124,11 @@ function ConnectionDetail() {
           {conn.match_reason && (
             <p className="mt-4 text-body text-ink [overflow-wrap:anywhere]">{conn.match_reason}</p>
           )}
+          <MeetupEntry
+            connectionId={conn.id}
+            partnerName={conn.user_b === "me" ? a.name : b.name}
+            className="mt-4"
+          />
         </section>
 
         {myCommitments.length > 0 && (

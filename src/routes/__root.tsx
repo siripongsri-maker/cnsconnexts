@@ -13,9 +13,12 @@ import { useEffect, useState, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { StoreProvider, useStore } from "@/lib/store";
+import { MeetupProvider } from "@/lib/meetup-context";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "../components/ui/sonner";
 import { NotificationHost } from "@/components/notification-host";
+import { MeetupCardHost } from "@/components/meetup-card-host";
+import { FindMode } from "@/components/find-mode";
 import { CommitmentReminders } from "@/components/commitment-reminders";
 import { FilterAlerts } from "@/components/filter-alerts";
 import { LoadingScreen } from "@/components/loading-screen";
@@ -131,22 +134,29 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <StoreProvider>
-          <HydrationGate>
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <div className="site-experience">
-              <Outlet />
-            </div>
-          </HydrationGate>
-          <NotificationHost />
-          <CommitmentReminders />
-          <FilterAlerts />
-          <GuidedTour />
-          <UsageTracker />
-          <CacheRefresher />
-          <LowSpecFlag />
-          <MotionRuntime />
+          {/* คำชวนเจอ: ไม่ทำงานเครือข่ายในหน้าหลังบ้าน/หน้าพิมพ์ (ตัดสินใน provider) */}
+          <MeetupProvider>
+            <HydrationGate>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <div className="site-experience">
+                <Outlet />
+              </div>
+            </HydrationGate>
+            <NotificationHost />
+            {/* การ์ดคำชวนเจอ: ไม่เรนเดอร์นอกธีมทุ่ง (ตัดสินในตัวมันเอง) */}
+            <MeetupCardHost />
+            {/* โหมดหากัน: เต็มจอเมื่อมี findSession เฉพาะธีมทุ่ง (ตัดสินในตัวมันเอง) */}
+            <FindMode />
+            <CommitmentReminders />
+            <FilterAlerts />
+            <GuidedTour />
+            <UsageTracker />
+            <CacheRefresher />
+            <LowSpecFlag />
+            <MotionRuntime />
 
-          <Toaster position="top-center" />
+            <Toaster position="top-center" />
+          </MeetupProvider>
         </StoreProvider>
       </AuthProvider>
     </QueryClientProvider>

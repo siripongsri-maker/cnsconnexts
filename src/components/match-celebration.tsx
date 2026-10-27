@@ -20,12 +20,15 @@ export function MatchCelebration({
   other,
   reason,
   connectionId,
+  inviteNote,
   onClose,
 }: {
   me: User;
   other: User;
   reason: string;
   connectionId: string;
+  /** เช่น "ส่งคำชวนเจอแล้ว รอ {ชื่อ} ตอบ" — แสดงใต้เหตุผล (เชื่อมใหม่แล้วส่งคำชวนเจอให้อัตโนมัติ) */
+  inviteNote?: string | undefined;
   onClose: () => void;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -101,6 +104,11 @@ export function MatchCelebration({
                     {reason && (
                       <p className="mx-auto mt-2 line-clamp-2 max-w-md break-words text-body text-ink-soft [overflow-wrap:anywhere]">
                         {reason}
+                      </p>
+                    )}
+                    {inviteNote && (
+                      <p className="mx-auto mt-2 max-w-md break-words text-body font-semibold text-ink [overflow-wrap:anywhere]">
+                        {inviteNote}
                       </p>
                     )}
                   </div>

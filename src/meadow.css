@@ -381,6 +381,53 @@ html[data-lowspec] .meadow-celebrate [class*="meadow-celebrate-"] {
   animation: none;
 }
 
+/*
+ * โหมดหากัน <FindMode> (src/components/find-mode.tsx) — เต้นเฉพาะชั้นพื้นสี ตัวอักษรอยู่อีกชั้นไม่ขยับ
+ * ทิศทางการเต้นมาจาก --find-pulse-peak / --find-strong-peak (มืดลงใต้ตัวอักษรขาว สว่างขึ้นใต้ตัวอักษรเข้ม)
+ * จังหวะ (ดู src/lib/find-mode-state.ts): เต้นช้า 1 ครั้ง/วินาที; เต้นแรง 2 × 350ms ≈ 2.86 ครั้ง/วินาที (≤ 3)
+ */
+@keyframes meadow-find-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(var(--find-pulse-peak, 0.82));
+  }
+}
+@keyframes meadow-find-strong {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(var(--find-strong-peak, 0.55));
+  }
+}
+html.meadow .meadow-find-pulse {
+  animation: meadow-find-pulse 1s ease-in-out infinite;
+}
+html.meadow .meadow-find-strong {
+  animation: meadow-find-strong 350ms ease-in-out 2;
+}
+/* ลดการเคลื่อนไหว/เครื่องสเปกต่ำ: สีนิ่ง ส่ง/รับสัญญาณแล้วขึ้นกรอบหนา 4px ชั่วครู่ (600ms ตั้งเวลาจาก JS) */
+@media (prefers-reduced-motion: reduce) {
+  html.meadow :is(.meadow-find-pulse, .meadow-find-strong) {
+    animation: none;
+  }
+  html.meadow .meadow-find-flash {
+    outline: 4px solid var(--find-flash, #ffffff);
+    outline-offset: -12px;
+  }
+}
+html.meadow[data-lowspec] :is(.meadow-find-pulse, .meadow-find-strong) {
+  animation: none;
+}
+html.meadow[data-lowspec] .meadow-find-flash {
+  outline: 4px solid var(--find-flash, #ffffff);
+  outline-offset: -12px;
+}
+
 /* ฉากหลังเบลอของทัวร์แนะนำ — เครื่องสเปกต่ำปิดเบลอ เหลือแค่พื้นสีฟ้าอ่อนโปร่ง */
 html[data-lowspec] .meadow-tour-overlay {
   -webkit-backdrop-filter: none;

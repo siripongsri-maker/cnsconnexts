@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { CalendarDays, Check, MessageCircle } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { MeadowScene } from "@/components/meadow-scene";
+import { MeetupEntry } from "@/components/meetup-entry";
 import { Avatar } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import type { ConnectionStatus } from "@/lib/types";
@@ -118,6 +119,7 @@ function Commitments() {
                         ทำอะไรต่อ
                       </Link>
                     </div>
+                    <MeetupEntry connectionId={c.id} partnerName={who} className="mt-3" />
                   </li>
                 );
               })}
