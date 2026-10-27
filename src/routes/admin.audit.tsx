@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
@@ -42,11 +42,24 @@ const OPS = [
 ];
 
 const OP_TH: Record<string, string> = { INSERT: "เพิ่มใหม่", UPDATE: "แก้ไข", DELETE: "ลบ" };
-const OP_COLOR: Record<string, string> = {
-  INSERT: "bg-primary/15 text-primary",
-  UPDATE: "bg-accent/20 text-accent-foreground",
-  DELETE: "bg-destructive/15 text-destructive",
+/** Operation chips: block colour pair plus a lucide icon; the Thai word always sits in the chip. */
+const OP_TAG: Record<string, { icon: typeof Plus; cls: string }> = {
+  INSERT: { icon: Plus, cls: "bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]" },
+  UPDATE: { icon: Pencil, cls: "bg-[var(--tag-blue-bg)] text-[var(--tag-blue-fg)]" },
+  DELETE: { icon: Trash2, cls: "bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]" },
 };
+function OpChip({ op }: { op: string }) {
+  const tag = OP_TAG[op];
+  const Icon = tag?.icon;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-body font-bold ${tag?.cls ?? "bg-muted text-foreground"}`}
+    >
+      {Icon ? <Icon className="size-4" aria-hidden="true" /> : null}
+      {OP_TH[op] ?? op}
+    </span>
+  );
+}
 const SRC_TH: Record<string, string> = {
   account: "บัญชีอีเมล",
   guest: "ผู้ใช้ทั่วไป (อุปกรณ์)",
@@ -115,22 +128,23 @@ function AdminAudit() {
       <header className="admin-section-meta flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="admin-section-label">บันทึกการเปลี่ยนแปลง</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             สำรองล่าสุด {lastBackupAt ? new Date(lastBackupAt).toLocaleString("th-TH") : "—"}
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => void load()}
-            className="inline-flex items-center gap-1 rounded-xl border px-3 py-2 text-sm"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold"
           >
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> รีเฟรช
+            <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />{" "}
+            รีเฟรช
           </button>
           <button
             onClick={onExport}
-            className="inline-flex items-center gap-1 rounded-xl border px-3 py-2 text-sm"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold"
           >
-            <Download className="h-4 w-4" /> ดาวน์โหลด CSV
+            <Download className="size-4" aria-hidden="true" /> ดาวน์โหลด CSV
           </button>
         </div>
       </header>
@@ -139,7 +153,7 @@ function AdminAudit() {
         <select
           value={table}
           onChange={(e) => setTable(e.target.value)}
-          className="rounded-xl border bg-background px-3 py-2 text-sm"
+          className="rounded-xl border border-border bg-background px-3 py-2 text-body"
         >
           {TABLES.map((t) => (
             <option key={t.value} value={t.value}>
@@ -150,7 +164,7 @@ function AdminAudit() {
         <select
           value={operation}
           onChange={(e) => setOperation(e.target.value)}
-          className="rounded-xl border bg-background px-3 py-2 text-sm"
+          className="rounded-xl border border-border bg-background px-3 py-2 text-body"
         >
           {OPS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -161,7 +175,7 @@ function AdminAudit() {
         <select
           value={actor}
           onChange={(e) => setActor(e.target.value)}
-          className="rounded-xl border bg-background px-3 py-2 text-sm"
+          className="rounded-xl border border-border bg-background px-3 py-2 text-body"
         >
           <option value="">ทุกคน</option>
           {actors.map((a) => (
@@ -170,7 +184,7 @@ function AdminAudit() {
             </option>
           ))}
         </select>
-        <span className="self-center text-sm text-muted-foreground">{rows.length} รายการ</span>
+        <span className="self-center text-body text-muted-foreground">{rows.length} รายการ</span>
       </div>
 
       <div
@@ -180,9 +194,9 @@ function AdminAudit() {
         tabIndex={0}
         data-lenis-prevent
       >
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-left text-body">
           <caption className="sr-only">ประวัติการเปลี่ยนแปลงข้อมูล</caption>
-          <thead className="bg-muted/50 text-xs">
+          <thead className="bg-muted/50 text-body">
             <tr>
               <th scope="col" className="p-3">
                 เวลา
@@ -207,27 +221,23 @@ function AdminAudit() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="border-t">
-                <td className="whitespace-nowrap p-3 text-xs text-muted-foreground">
+                <td className="whitespace-nowrap p-3 text-body text-muted-foreground">
                   {new Date(r.created_at).toLocaleString("th-TH")}
                 </td>
                 <td className="p-3">{r.actor ?? "-"}</td>
-                <td className="p-3 text-xs text-muted-foreground">
+                <td className="p-3 text-body text-muted-foreground">
                   {SRC_TH[r.actor_source ?? ""] ?? r.actor_source ?? "-"}
                 </td>
                 <td className="p-3">{TABLE_TH[r.table_name] ?? r.table_name}</td>
                 <td className="p-3">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs ${OP_COLOR[r.operation] ?? "bg-muted"}`}
-                  >
-                    {OP_TH[r.operation] ?? r.operation}
-                  </span>
+                  <OpChip op={r.operation} />
                 </td>
                 <td className="p-3">{r.label}</td>
               </tr>
             ))}
             {!rows.length && !loading && (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-sm text-muted-foreground">
+                <td colSpan={6} className="p-6 text-center text-body text-muted-foreground">
                   ยังไม่มีประวัติการเปลี่ยนแปลง
                 </td>
               </tr>
@@ -236,7 +246,7 @@ function AdminAudit() {
         </table>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-body text-muted-foreground">
         หมายเหตุ: รายการก่อนเปิดใช้งานระบบบันทึกผู้ทำรายการจะไม่มีชื่อผู้ใช้กำกับ
       </p>
     </div>

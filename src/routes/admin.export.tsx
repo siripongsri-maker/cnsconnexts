@@ -113,16 +113,16 @@ function AdminExport() {
             key={s.key}
             className="card-soft flex flex-wrap items-center gap-2 rounded-2xl bg-card p-4"
           >
-            <p className="min-w-0 flex-1 text-sm font-extrabold">{s.label}</p>
+            <p className="min-w-0 flex-1 text-body font-extrabold">{s.label}</p>
             <button
               type="button"
               onClick={() => {
                 downloadCSV(`connexts-${s.key}`, s.rows);
                 toast.success("ดาวน์โหลด CSV แล้ว");
               }}
-              className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-[12px] font-bold"
+              className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold"
             >
-              <Download className="h-3.5 w-3.5" /> CSV
+              <Download className="size-4" aria-hidden="true" /> CSV
             </button>
             <button
               type="button"
@@ -130,9 +130,9 @@ function AdminExport() {
                 downloadJSON(`connexts-${s.key}`, s.data);
                 toast.success("ดาวน์โหลด JSON แล้ว");
               }}
-              className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-[12px] font-bold"
+              className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold"
             >
-              <FileJson className="h-3.5 w-3.5" /> JSON
+              <FileJson className="size-4" aria-hidden="true" /> JSON
             </button>
           </li>
         ))}
@@ -151,7 +151,7 @@ function AdminExport() {
           });
           toast.success("สำรองข้อมูลทั้งระบบแล้ว");
         }}
-        className="tap w-full rounded-2xl bg-primary px-4 py-3 text-sm font-extrabold text-primary-foreground"
+        className="tap w-full rounded-2xl bg-primary px-4 py-3 text-body font-extrabold text-primary-foreground"
       >
         สำรองข้อมูลทั้งระบบเป็นไฟล์เดียว (JSON)
       </button>

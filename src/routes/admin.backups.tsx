@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, FileJson, RefreshCw, RotateCcw } from "lucide-react";
+import { Download, FileJson, Pencil, Plus, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
@@ -43,6 +43,30 @@ const OP_TH: Record<string, string> = {
   UPDATE: "แก้ไข",
   DELETE: "ลบ",
 };
+
+/** Operation chips: block colour pair plus a lucide icon, and the Thai word always sits in the chip. */
+const OP_TAG: Record<string, { icon: typeof Plus; cls: string }> = {
+  INSERT: { icon: Plus, cls: "bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]" },
+  UPDATE: { icon: Pencil, cls: "bg-[var(--tag-blue-bg)] text-[var(--tag-blue-fg)]" },
+  DELETE: { icon: Trash2, cls: "bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]" },
+};
+
+const TABLE_TH: Record<string, string> = Object.fromEntries(
+  TABLES.filter((t) => t.value).map((t) => [t.value, t.label]),
+);
+
+function OpChip({ op }: { op: string }) {
+  const tag = OP_TAG[op];
+  const Icon = tag?.icon;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 ${tag?.cls ?? "bg-muted text-foreground"}`}
+    >
+      {Icon ? <Icon className="size-4" aria-hidden="true" /> : null}
+      {OP_TH[op] ?? op}
+    </span>
+  );
+}
 
 function label(row: BackupRow) {
   const snap = (row.new_data ?? row.old_data ?? {}) as Record<string, unknown>;
@@ -132,7 +156,7 @@ function AdminBackups() {
       <header className="admin-section-meta flex items-start justify-between gap-3">
         <div>
           <p className="admin-section-label">สแนปช็อตข้อมูล</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             {total} รายการ · บันทึกทุกครั้งที่ข้อมูลเปลี่ยน
           </p>
         </div>
@@ -140,16 +164,16 @@ function AdminBackups() {
           type="button"
           onClick={() => void load()}
           aria-label="รีเฟรชรายการสำรอง"
-          className="rounded-xl border border-border px-3 py-2 text-[12px] font-bold"
+          className="inline-flex min-w-11 items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-body font-bold"
         >
-          <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`size-5 ${loading ? "animate-spin" : ""}`} aria-hidden="true" />
         </button>
       </header>
 
       <select
         value={table}
         onChange={(e) => setTable(e.target.value)}
-        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
       >
         {TABLES.map((t) => (
           <option key={t.value} value={t.value}>
@@ -163,22 +187,22 @@ function AdminBackups() {
           type="button"
           disabled={exporting}
           onClick={() => void onExport("json")}
-          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-[12px] font-bold disabled:opacity-60"
+          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold disabled:opacity-60"
         >
-          <FileJson className="size-4" /> ดาวน์โหลด JSON
+          <FileJson className="size-4" aria-hidden="true" /> ดาวน์โหลด JSON
         </button>
         <button
           type="button"
           disabled={exporting}
           onClick={() => void onExport("csv")}
-          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-[12px] font-bold disabled:opacity-60"
+          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold disabled:opacity-60"
         >
-          <Download className="size-4" /> ดาวน์โหลด CSV
+          <Download className="size-4" aria-hidden="true" /> ดาวน์โหลด CSV
         </button>
       </div>
 
       {rows.length === 0 && !loading ? (
-        <p className="rounded-2xl bg-muted p-4 text-[12px] text-muted-foreground">
+        <p className="rounded-2xl bg-muted p-4 text-body text-foreground">
           ยังไม่มีรายการสำรองข้อมูล
         </p>
       ) : null}
@@ -194,26 +218,29 @@ function AdminBackups() {
                 aria-controls={`backup-snapshot-${row.id}`}
                 onClick={() => setOpenId(openId === row.id ? null : row.id)}
               >
-                <p className="truncate text-sm font-extrabold">{label(row)}</p>
-                <p className="text-xs font-bold text-muted-foreground">
-                  {OP_TH[row.operation] ?? row.operation} · {row.table_name} ·{" "}
-                  {new Date(row.created_at).toLocaleString("th-TH")}
+                <p className="break-words text-body font-extrabold">{label(row)}</p>
+                <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body font-bold text-muted-foreground">
+                  <OpChip op={row.operation} />
+                  <span>
+                    {TABLE_TH[row.table_name] ?? row.table_name} ·{" "}
+                    {new Date(row.created_at).toLocaleString("th-TH")}
+                  </span>
                 </p>
               </button>
               <button
                 type="button"
                 onClick={() => onExportOne(row)}
                 aria-label="ดาวน์โหลดสแนปช็อตนี้"
-                className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-xs font-bold"
+                className="flex min-w-11 shrink-0 items-center justify-center gap-1 rounded-xl border border-border bg-card px-3 py-2 text-body font-bold"
               >
-                <Download className="size-3.5" />
+                <Download className="size-5" aria-hidden="true" />
               </button>
               <button
                 type="button"
                 onClick={() => void onRestore(row)}
-                className="flex shrink-0 items-center gap-1 rounded-xl border border-border px-2.5 py-1.5 text-xs font-bold"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-body font-bold"
               >
-                <RotateCcw className="size-3.5" /> กู้คืน
+                <RotateCcw className="size-4" aria-hidden="true" /> กู้คืน
               </button>
             </div>
             {openId === row.id ? (
@@ -222,7 +249,7 @@ function AdminBackups() {
                 tabIndex={0}
                 role="region"
                 aria-label="รายละเอียดสแนปช็อตสำรอง"
-                className="admin-backup-detail mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-2 text-xs leading-relaxed"
+                className="admin-backup-detail mt-2 max-h-56 overflow-auto rounded-xl bg-muted p-3 text-body leading-relaxed"
                 data-lenis-prevent
               >
                 {JSON.stringify(row.old_data ?? row.new_data, null, 2)}

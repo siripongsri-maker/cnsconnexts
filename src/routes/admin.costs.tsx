@@ -164,9 +164,9 @@ function AdminCosts() {
             {files.map((f, i) => (
               <li
                 key={f.name + i}
-                className="flex items-center justify-between gap-3 border-b border-border pb-2 text-sm"
+                className="flex items-center justify-between gap-3 border-b border-border pb-2 text-body"
               >
-                <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                <span className="min-w-0 flex-1 break-words">{f.name}</span>
                 <button
                   type="button"
                   aria-label={`เอา ${f.name} ออก`}
@@ -180,9 +180,9 @@ function AdminCosts() {
           </ul>
         )}
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm">
+          <label className="block text-body">
             อัตราแลกเปลี่ยน{" "}
-            <span className="text-xs text-muted-foreground">(บาท / 1 ดอลลาร์ · ไม่บังคับ)</span>
+            <span className="text-body text-muted-foreground">(บาท / 1 ดอลลาร์ · ไม่บังคับ)</span>
             <input
               inputMode="decimal"
               value={rate}
@@ -191,8 +191,8 @@ function AdminCosts() {
               className="mt-1 h-11 w-full border border-input bg-background px-3"
             />
           </label>
-          <label className="block text-sm">
-            หมายเหตุ <span className="text-xs text-muted-foreground">(ไม่บังคับ)</span>
+          <label className="block text-body">
+            หมายเหตุ <span className="text-body text-muted-foreground">(ไม่บังคับ)</span>
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -211,7 +211,7 @@ function AdminCosts() {
           {busy ? "กำลังสรุป…" : "สรุปค่าใช้จ่าย"}
         </Button>
         {error && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-body text-destructive">
             {error}
           </p>
         )}
@@ -234,7 +234,7 @@ function AdminCosts() {
               >
                 สรุปจากไฟล์
               </h2>
-              <p className="text-sm text-muted-foreground">{summary.period}</p>
+              <p className="text-body text-muted-foreground">{summary.period}</p>
               <p className="admin-cost-total">{thb(summary.total_thb)}</p>
             </div>
           </div>
@@ -245,7 +245,7 @@ function AdminCosts() {
             tabIndex={0}
             data-lenis-prevent
           >
-            <table className="w-full text-sm">
+            <table className="w-full text-body">
               <caption className="sr-only">รายการค่าใช้จ่ายจากไฟล์แนบ</caption>
               <thead className="text-left text-muted-foreground">
                 <tr>
@@ -282,15 +282,15 @@ function AdminCosts() {
           {summary.assumptions.length > 0 && (
             <div className="admin-cost-assumptions">
               <h3 className="font-medium">สมมติฐาน</h3>
-              <ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
+              <ul className="mt-2 list-disc pl-5 text-body text-muted-foreground">
                 {summary.assumptions.map((a, i) => (
                   <li key={i}>{a}</li>
                 ))}
               </ul>
             </div>
           )}
-          {summary.notes && <p className="text-sm text-muted-foreground">{summary.notes}</p>}
-          <p className="admin-cost-review text-xs text-muted-foreground">
+          {summary.notes && <p className="text-body text-muted-foreground">{summary.notes}</p>}
+          <p className="admin-cost-review text-body text-muted-foreground">
             AI สรุปจากไฟล์แนบ ควรตรวจกับใบแจ้งหนี้จริงอีกครั้ง
           </p>
         </section>

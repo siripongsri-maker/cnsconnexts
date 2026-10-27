@@ -79,7 +79,7 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
 
   return (
     <Dialog open={!!backupId} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
+      <DialogContent className="admin-restore-dialog max-h-[85vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {step === 1 ? "ตรวจสอบผลกระทบก่อนกู้คืน" : "ยืนยันการกู้คืน (ขั้นที่ 2)"}
@@ -88,22 +88,30 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
         </DialogHeader>
 
         {loading ? (
-          <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 py-8 text-body text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> กำลังตรวจสอบข้อมูลปัจจุบัน…
           </div>
         ) : !preview ? (
-          <p className="py-6 text-sm text-muted-foreground">ไม่พบข้อมูลสำหรับกู้คืน</p>
+          <p className="py-6 text-body text-muted-foreground">ไม่พบข้อมูลสำหรับกู้คืน</p>
         ) : step === 1 ? (
-          <div className="space-y-4 text-sm">
+          <div className="space-y-4 text-body">
             <div
               className={`flex items-start gap-2 rounded-lg border p-3 ${
-                overwrite ? "border-destructive/40 bg-destructive/10" : "border-primary/40 bg-primary/10"
+                overwrite
+                  ? "border-[var(--tag-orange-bg)] bg-card"
+                  : "border-[var(--tag-blue-bg)] bg-card"
               }`}
             >
               {overwrite ? (
-                <AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" />
+                <AlertTriangle
+                  className="mt-0.5 size-5 shrink-0 text-[var(--tag-orange-bg)]"
+                  aria-hidden="true"
+                />
               ) : (
-                <PlusCircle className="mt-0.5 h-4 w-4 text-primary" />
+                <PlusCircle
+                  className="mt-0.5 size-5 shrink-0 text-[var(--tag-blue-bg)]"
+                  aria-hidden="true"
+                />
               )}
               <div>
                 <p className="font-semibold">
@@ -117,14 +125,14 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
               </div>
             </div>
 
-            <div className="flex gap-4 text-xs text-muted-foreground">
+            <div className="flex gap-4 text-body text-muted-foreground">
               <span>ฟิลด์ที่เปลี่ยน: {preview.changes.length}</span>
               <span>ฟิลด์ที่เหมือนเดิม: {preview.unchanged}</span>
             </div>
 
             {preview.changes.length > 0 && (
               <div className="overflow-hidden rounded-lg border">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-body">
                   <thead className="bg-muted/50">
                     <tr>
                       <th className="p-2">ฟิลด์</th>
@@ -148,7 +156,7 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
             )}
           </div>
         ) : (
-          <div className="space-y-3 text-sm">
+          <div className="space-y-3 text-body">
             <p>
               พิมพ์คำว่า <span className="font-semibold">{CONFIRM_WORD}</span> เพื่อยืนยันการ
               {overwrite ? "ทับข้อมูลเดิม" : "เพิ่มข้อมูลกลับ"} จำนวน {preview.changes.length} ฟิลด์
@@ -163,10 +171,13 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
         )}
 
         {failure && (
-          <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
-            <XCircle className="mt-0.5 h-4 w-4 text-destructive" />
+          <div className="flex items-start gap-2 rounded-lg border border-[var(--tag-orange-bg)] bg-card p-3 text-body">
+            <XCircle
+              className="mt-0.5 size-5 shrink-0 text-[var(--tag-orange-bg)]"
+              aria-hidden="true"
+            />
             <div>
-              <p className="font-semibold text-destructive">กู้คืนไม่สำเร็จ</p>
+              <p className="font-semibold text-[var(--tag-orange-bg)]">กู้คืนไม่สำเร็จ</p>
               <p className="break-words text-muted-foreground">สาเหตุ: {failure}</p>
             </div>
           </div>

@@ -48,6 +48,9 @@ export const Route = createFileRoute("/admin/logs")({
   component: AdminLogs,
 });
 
+/** Chart colours: BLOCK_TAG pairs (--tag-*-bg in admin-pages.css). Every series is also named in text (axis, legend or tooltip). */
+const BAR_BLOCKS = ["purple", "blue", "teal", "green", "yellow", "orange"] as const;
+
 const TYPES: Array<UsageLog["type"] | "all"> = [
   "all",
   "page_view",
@@ -144,7 +147,7 @@ function AdminLogs() {
     { name: "ยินยอม", value: consentStats.accepted },
     { name: "ไม่ยินยอม", value: consentStats.declined },
   ];
-  const PIE_COLORS = ["var(--primary)", "var(--muted-foreground)"];
+  const PIE_COLORS = ["var(--tag-green-bg)", "var(--tag-orange-bg)"];
 
   /** วันหมดอายุของรายการเก่าสุด และจำนวนที่จะถูกลบใน 7 วัน */
   const oldest = logs.length ? logs[logs.length - 1] : null;
@@ -161,9 +164,9 @@ function AdminLogs() {
   if (!canView) {
     return (
       <div className="card-soft rounded-2xl bg-card p-6 text-center">
-        <Lock className="mx-auto h-6 w-6 text-muted-foreground" />
-        <h2 className="mt-2 text-[16px] font-extrabold">ไม่มีสิทธิ์เข้าถึงบันทึกการใช้งาน</h2>
-        <p className="mt-1 text-[12px] text-muted-foreground">
+        <Lock className="mx-auto size-6 text-muted-foreground" aria-hidden="true" />
+        <h2 className="mt-2 text-title font-extrabold">ไม่มีสิทธิ์เข้าถึงบันทึกการใช้งาน</h2>
+        <p className="mt-1 text-body text-muted-foreground">
           บทบาทของคุณ ({role ? ROLE_TH[role] : "-"}) ไม่ได้รับสิทธิ์ดู Log · ติดต่อผู้ดูแลสูงสุด
         </p>
       </div>
@@ -173,12 +176,12 @@ function AdminLogs() {
   return (
     <div className="admin-workspace admin-workspace-logs space-y-5">
       <section className="admin-log-access">
-        <p className="text-[12px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           บันทึกจะเก็บเฉพาะเมื่อผู้ใช้กดยินยอม PDPA บนหน้าแรก · เก็บในเครื่องผู้ใช้ สูงสุด 1,000
           รายการล่าสุด
         </p>
-        <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-extrabold text-primary">
-          <ShieldCheck className="h-3.5 w-3.5" />
+        <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-body font-extrabold text-primary">
+          <ShieldCheck className="size-4" aria-hidden="true" />
           {adminUser ?? "-"} · {role ? ROLE_TH[role] : "-"} · สิทธิ์: ดู
           {canSearch ? " · ค้นหา" : ""}
           {canExport ? " · ส่งออก" : ""}
@@ -193,98 +196,145 @@ function AdminLogs() {
           { l: "การเข้าหน้า", v: pageViews },
         ].map((s) => (
           <div key={s.l} className="card-soft rounded-2xl bg-card p-4">
-            <p className="text-2xl font-extrabold text-gradient">{s.v}</p>
-            <p className="text-xs font-bold text-muted-foreground">{s.l}</p>
+            <p className="text-2xl font-extrabold">{s.v}</p>
+            <p className="text-body font-bold text-muted-foreground">{s.l}</p>
           </div>
         ))}
       </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">การเข้าชมรายวัน (14 วันล่าสุด)</h2>
-        <div className="mt-3 h-44 w-full">
+        <h2 className="text-title font-extrabold">การเข้าชมรายวัน (14 วันล่าสุด)</h2>
+        <div className="mt-3 h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={daily} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+            <AreaChart data={daily} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="viewsFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.45} />
-                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="var(--tag-purple-bg)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--tag-purple-bg)" stopOpacity={0.03} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fontSize: 10 }}
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 16 }}
                 tickLine={false}
                 axisLine={false}
-                width={32}
+                minTickGap={16}
+                tickMargin={10}
+                height={40}
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fontSize: 16 }}
+                tickLine={false}
+                axisLine={false}
+                width={44}
               />
               <Tooltip
-                contentStyle={{ fontSize: 12, borderRadius: 12 }}
+                contentStyle={{ fontSize: 16, borderRadius: 12 }}
                 formatter={(v: number) => [`${v} ครั้ง`, "เข้าชม"]}
               />
               <Area
                 type="monotone"
                 dataKey="views"
-                stroke="var(--primary)"
-                strokeWidth={2}
+                stroke="var(--tag-purple-bg)"
+                strokeWidth={3}
                 fill="url(#viewsFill)"
                 isAnimationActive={false}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
+        <ul className="admin-chart-legend" aria-label="คำอธิบายกราฟ">
+          <li>
+            <span className="admin-chart-swatch admin-chart-swatch--line" aria-hidden="true" />
+            จำนวนครั้งที่เข้าชมหน้าในแต่ละวัน
+          </li>
+        </ul>
       </section>
 
       <div className="grid gap-3 md:grid-cols-2">
         <section className="card-soft rounded-2xl bg-card p-4">
-          <h2 className="text-[14px] font-extrabold">แหล่งที่มา</h2>
+          <h2 className="text-title font-extrabold">แหล่งที่มา</h2>
           {sources.length === 0 ? (
-            <p className="mt-2 text-[12px] text-muted-foreground">ยังไม่มีข้อมูล</p>
+            <p className="mt-2 text-body text-muted-foreground">ยังไม่มีข้อมูล</p>
           ) : (
-            <div className="mt-3 h-44 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={sources}
-                  layout="vertical"
-                  margin={{ top: 0, right: 12, bottom: 0, left: 8 }}
-                >
-                  <XAxis
-                    type="number"
-                    allowDecimals={false}
-                    tick={{ fontSize: 10 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={80}
-                    tick={{ fontSize: 10 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{ fontSize: 12, borderRadius: 12 }}
-                    formatter={(v: number) => [`${v} เหตุการณ์`, "จำนวน"]}
-                  />
-                  <Bar
-                    dataKey="value"
-                    fill="var(--primary)"
-                    radius={[0, 6, 6, 0]}
-                    isAnimationActive={false}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <>
+              <div className="mt-3 h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={sources}
+                    layout="vertical"
+                    margin={{ top: 0, right: 16, bottom: 0, left: 0 }}
+                  >
+                    <XAxis
+                      type="number"
+                      allowDecimals={false}
+                      tick={{ fontSize: 16 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      width={124}
+                      tick={{ fontSize: 16 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{ fontSize: 16, borderRadius: 12 }}
+                      formatter={(v: number) => [`${v} เหตุการณ์`, "จำนวน"]}
+                    />
+                    <Bar
+                      dataKey="value"
+                      fill="var(--tag-purple-bg)"
+                      radius={[0, 6, 6, 0]}
+                      isAnimationActive={false}
+                    >
+                      {sources.map((entry, i) => (
+                        <Cell
+                          key={entry.name}
+                          fill={`var(--tag-${BAR_BLOCKS[i % BAR_BLOCKS.length]}-bg)`}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <ul className="admin-chart-legend" aria-label="คำอธิบายกราฟ">
+                {sources.map((entry, i) => (
+                  <li key={entry.name}>
+                    <span
+                      className="admin-chart-swatch"
+                      style={{ background: `var(--tag-${BAR_BLOCKS[i % BAR_BLOCKS.length]}-bg)` }}
+                      aria-hidden="true"
+                    />
+                    {entry.name} · {entry.value} เหตุการณ์
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
         </section>
 
         <section className="card-soft rounded-2xl bg-card p-4">
-          <h2 className="text-[14px] font-extrabold">อัตราการยินยอม PDPA</h2>
-          <div className="mt-2 flex items-center gap-3">
-            <div className="h-36 w-36 shrink-0">
+          <h2 className="text-title font-extrabold">อัตราการยินยอม PDPA</h2>
+          <div className="mt-2 flex flex-wrap items-center gap-4">
+            <div className="h-40 w-40 shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
+                  <defs>
+                    <pattern
+                      id="declinedHatch"
+                      width="8"
+                      height="8"
+                      patternUnits="userSpaceOnUse"
+                      patternTransform="rotate(45)"
+                    >
+                      <rect width="8" height="8" fill="var(--tag-orange-bg)" />
+                      <rect width="3" height="8" fill="var(--card)" />
+                    </pattern>
+                  </defs>
                   <Pie
                     data={consentTotal ? consentPie : [{ name: "ยังไม่มีข้อมูล", value: 1 }]}
                     dataKey="value"
@@ -294,21 +344,44 @@ function AdminLogs() {
                     isAnimationActive={false}
                   >
                     {(consentTotal ? consentPie : [{ name: "-", value: 1 }]).map((entry, i) => (
-                      <Cell key={entry.name} fill={consentTotal ? PIE_COLORS[i] : "var(--muted)"} />
+                      <Cell
+                        key={entry.name}
+                        fill={
+                          consentTotal
+                            ? i === 1
+                              ? "url(#declinedHatch)"
+                              : PIE_COLORS[i]
+                            : "var(--muted)"
+                        }
+                      />
                     ))}
                   </Pie>
                   {consentTotal > 0 && (
-                    <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
+                    <Tooltip contentStyle={{ fontSize: 16, borderRadius: 12 }} />
                   )}
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="text-[12px]">
-              <p className="text-3xl font-extrabold text-gradient">{consentRate}%</p>
-              <p className="text-muted-foreground">
-                ยินยอม {consentStats.accepted} · ไม่ยินยอม {consentStats.declined}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">นับจากการตัดสินใจบนเครื่องนี้</p>
+            <div className="min-w-0 text-body">
+              <p className="text-3xl font-extrabold text-foreground">{consentRate}%</p>
+              <ul className="admin-chart-legend" aria-label="คำอธิบายกราฟ">
+                <li>
+                  <span
+                    className="admin-chart-swatch"
+                    style={{ background: PIE_COLORS[0] }}
+                    aria-hidden="true"
+                  />
+                  ยินยอม {consentStats.accepted}
+                </li>
+                <li>
+                  <span
+                    className="admin-chart-swatch admin-chart-swatch--hatch"
+                    aria-hidden="true"
+                  />
+                  ไม่ยินยอม {consentStats.declined}
+                </li>
+              </ul>
+              <p className="mt-1 text-body text-muted-foreground">นับจากการตัดสินใจบนเครื่องนี้</p>
             </div>
           </div>
         </section>
@@ -316,16 +389,16 @@ function AdminLogs() {
 
       <section className="card-soft rounded-2xl bg-card p-4">
         <div className="flex items-center gap-2">
-          <CalendarClock className="h-4 w-4 text-primary" />
-          <h2 className="text-[14px] font-extrabold">นโยบายการเก็บรักษาและลบข้อมูลอัตโนมัติ</h2>
+          <CalendarClock className="size-5 text-primary" aria-hidden="true" />
+          <h2 className="text-title font-extrabold">นโยบายการเก็บรักษาและลบข้อมูลอัตโนมัติ</h2>
         </div>
-        <p className="mt-1 text-[12px] text-muted-foreground">
+        <p className="mt-1 text-body text-muted-foreground">
           ระบบจะลบบันทึกที่เก่ากว่าระยะเวลาที่กำหนดโดยอัตโนมัติ
           (ตรวจสอบทุกนาทีและทุกครั้งที่เปิดหน้านี้)
         </p>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <label className="text-[12px] font-bold">เก็บบันทึกไว้</label>
+          <label className="text-body font-bold">เก็บบันทึกไว้</label>
           <select
             value={retentionDays}
             disabled={!canClear}
@@ -338,7 +411,7 @@ function AdminLogs() {
                 `${adminUser ?? "-"} · ${next === 0 ? "ไม่ลบอัตโนมัติ" : `${next} วัน`}`,
               );
             }}
-            className="rounded-xl border border-border bg-background px-3 py-2 text-[12px] disabled:opacity-50"
+            className="rounded-xl border border-border bg-background px-3 py-2 text-body disabled:opacity-50"
           >
             {RETENTION_OPTIONS.map((o) => (
               <option key={o.days} value={o.days}>
@@ -358,40 +431,40 @@ function AdminLogs() {
                 );
                 alert(removed ? `ลบบันทึกหมดอายุแล้ว ${removed} รายการ` : "ไม่มีบันทึกที่หมดอายุ");
               }}
-              className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-extrabold"
             >
-              <Trash2 className="h-3.5 w-3.5" /> ลบรายการหมดอายุตอนนี้
+              <Trash2 className="size-4" aria-hidden="true" /> ลบรายการหมดอายุตอนนี้
             </button>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-xl border border-dashed border-border px-3 py-2 text-[12px] font-bold text-muted-foreground">
-              <Lock className="h-3.5 w-3.5" /> เฉพาะผู้ดูแลสูงสุด
+            <span className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-2 text-body font-bold text-muted-foreground">
+              <Lock className="size-4" aria-hidden="true" /> เฉพาะผู้ดูแลสูงสุด
             </span>
           )}
         </div>
 
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <div className="rounded-xl bg-muted/50 p-3">
-            <p className="text-xs font-bold text-muted-foreground">เก็บย้อนหลังถึง</p>
-            <p className="text-[12px] font-extrabold">
+            <p className="text-body font-bold text-muted-foreground">เก็บย้อนหลังถึง</p>
+            <p className="text-body font-extrabold">
               {cutoff ? fmt(cutoff.toISOString()) : "ไม่จำกัด"}
             </p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3">
-            <p className="text-xs font-bold text-muted-foreground">รายการเก่าสุดจะหมดอายุ</p>
-            <p className="text-[12px] font-extrabold">
+            <p className="text-body font-bold text-muted-foreground">รายการเก่าสุดจะหมดอายุ</p>
+            <p className="text-body font-extrabold">
               {nextExpiry ? fmt(nextExpiry.toISOString()) : "ไม่มีกำหนด"}
             </p>
           </div>
           <div className="rounded-xl bg-muted/50 p-3">
-            <p className="text-xs font-bold text-muted-foreground">จะถูกลบใน 7 วันข้างหน้า</p>
-            <p className="text-[12px] font-extrabold">{expiringSoon} รายการ</p>
+            <p className="text-body font-bold text-muted-foreground">จะถูกลบใน 7 วันข้างหน้า</p>
+            <p className="text-body font-extrabold">{expiringSoon} รายการ</p>
           </div>
         </div>
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">สถานะความยินยอมของเครื่องนี้</h2>
-        <p className="mt-1 text-[12px] text-muted-foreground">
+        <h2 className="text-title font-extrabold">สถานะความยินยอมของเครื่องนี้</h2>
+        <p className="mt-1 text-body text-muted-foreground">
           {consent
             ? `${consent.value === "accepted" ? "ยินยอม" : "ไม่ยินยอม"} · เวอร์ชัน ${consent.version} · ${fmt(consent.decided_at)}`
             : "ยังไม่ได้ตัดสินใจ"}
@@ -400,10 +473,10 @@ function AdminLogs() {
 
       {topPages.length > 0 && (
         <section className="card-soft rounded-2xl bg-card p-4">
-          <h2 className="text-[14px] font-extrabold">หน้าที่ถูกเข้าบ่อย</h2>
+          <h2 className="text-title font-extrabold">หน้าที่ถูกเข้าบ่อย</h2>
           <ul className="mt-2 space-y-1">
             {topPages.map(([p, n]) => (
-              <li key={p} className="flex justify-between text-[12px]">
+              <li key={p} className="flex justify-between text-body">
                 <span className="truncate">{p}</span>
                 <span className="font-extrabold">{n}</span>
               </li>
@@ -418,13 +491,13 @@ function AdminLogs() {
           onChange={(e) => setQ(e.target.value)}
           disabled={!canSearch}
           placeholder={canSearch ? "ค้นหา หน้า/เหตุการณ์/รหัสผู้ใช้" : "บทบาทนี้ไม่มีสิทธิ์ค้นหา"}
-          className="min-w-[180px] flex-1 rounded-xl border border-border bg-background px-3 py-2 text-[12px] disabled:opacity-50"
+          className="min-w-[180px] flex-1 rounded-xl border border-border bg-background px-3 py-2 text-body disabled:opacity-50"
         />
         <select
           value={type}
           disabled={!canSearch}
           onChange={(e) => setType(e.target.value as UsageLog["type"] | "all")}
-          className="rounded-xl border border-border bg-background px-3 py-2 text-[12px] disabled:opacity-50"
+          className="rounded-xl border border-border bg-background px-3 py-2 text-body disabled:opacity-50"
         >
           {TYPES.map((t) => (
             <option key={t} value={t}>
@@ -458,9 +531,9 @@ function AdminLogs() {
                   `${adminUser ?? "-"} · ${filtered.length} รายการ`,
                 );
               }}
-              className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-extrabold"
             >
-              <Download className="h-3.5 w-3.5" /> CSV
+              <Download className="size-4" aria-hidden="true" /> CSV
             </button>
             <button
               type="button"
@@ -472,14 +545,14 @@ function AdminLogs() {
                   `${adminUser ?? "-"} · ${filtered.length} รายการ`,
                 );
               }}
-              className="inline-flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-[12px] font-extrabold"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-extrabold"
             >
-              <Download className="h-3.5 w-3.5" /> JSON
+              <Download className="size-4" aria-hidden="true" /> JSON
             </button>
           </>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-xl border border-dashed border-border px-3 py-2 text-[12px] font-bold text-muted-foreground">
-            <Lock className="h-3.5 w-3.5" /> ส่งออกต้องมีสิทธิ์
+          <span className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-2 text-body font-bold text-muted-foreground">
+            <Lock className="size-4" aria-hidden="true" /> ส่งออกต้องมีสิทธิ์
           </span>
         )}
         {canClear ? (
@@ -491,13 +564,13 @@ function AdminLogs() {
                 logUsage("admin", "ล้างบันทึกการใช้งานทั้งหมด", adminUser ?? "-");
               }
             }}
-            className="inline-flex items-center gap-1 rounded-xl border border-destructive/40 px-3 py-2 text-[12px] font-extrabold text-destructive"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 bg-card px-4 py-2 text-body font-extrabold text-destructive"
           >
-            <Trash2 className="h-3.5 w-3.5" /> ล้างบันทึก
+            <Trash2 className="size-4" aria-hidden="true" /> ล้างบันทึก
           </button>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-xl border border-dashed border-border px-3 py-2 text-[12px] font-bold text-muted-foreground">
-            <Lock className="h-3.5 w-3.5" /> ล้างบันทึกต้องมีสิทธิ์
+          <span className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-dashed border-border px-4 py-2 text-body font-bold text-muted-foreground">
+            <Lock className="size-4" aria-hidden="true" /> ล้างบันทึกต้องมีสิทธิ์
           </span>
         )}
       </div>
@@ -508,9 +581,9 @@ function AdminLogs() {
         tabIndex={0}
         data-lenis-prevent
       >
-        <table className="w-full text-left text-[12px]">
+        <table className="w-full text-left text-body">
           <caption className="sr-only">บันทึกการใช้งานล่าสุด</caption>
-          <thead className="bg-muted/40 text-xs font-extrabold">
+          <thead className="bg-muted/40 text-body font-extrabold">
             <tr>
               <th scope="col" className="px-3 py-2">
                 เวลา

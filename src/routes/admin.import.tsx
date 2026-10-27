@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { FileUp, CheckCircle2, AlertTriangle } from "lucide-react";
+import { FileUp, CheckCircle2, AlertTriangle, Check } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
 import { PROVINCE_BY_TH, PROVINCES } from "@/lib/thailand-geo";
@@ -125,8 +125,8 @@ function ImportPage() {
           <span>นำเข้ารายชื่อ</span>
           <span>สมาชิกปัจจุบัน {users.length} คน</span>
         </div>
-        <label className="admin-upload-zone tap flex h-32 cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-border bg-card text-sm font-bold text-muted-foreground">
-          <FileUp className="h-6 w-6 text-primary" />
+        <label className="admin-upload-zone tap flex cursor-pointer flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-border bg-card text-body font-bold text-muted-foreground">
+          <FileUp className="size-6 text-primary" aria-hidden="true" />
           <span className="admin-upload-title">{fileName || "เลือกไฟล์ CSV"}</span>
           <span className="admin-upload-hint">รายชื่อใหม่ พร้อมเชื่อมเข้าสู่เครือข่าย</span>
           <input
@@ -137,23 +137,26 @@ function ImportPage() {
           />
         </label>
 
-        <details className="rounded-2xl border border-border bg-card p-4 text-[13px]">
-          <summary className="cursor-pointer font-extrabold">รูปแบบไฟล์ที่รองรับ</summary>
+        <details className="rounded-2xl border border-border bg-card p-4 text-body">
+          <summary className="flex min-h-11 cursor-pointer items-center font-extrabold">
+            รูปแบบไฟล์ที่รองรับ
+          </summary>
           <p className="mt-2 text-muted-foreground">
             คอลัมน์: ชื่อ, จังหวัด, องค์กร, หลักสูตร, ประเด็น, สรุปงาน (จังหวัดเป็นภาษาไทยได้เลย)
           </p>
-          <pre className="mt-2 overflow-x-auto rounded-xl bg-muted p-3 text-xs">{TEMPLATE}</pre>
+          <pre className="mt-2 overflow-x-auto rounded-xl bg-muted p-3 text-body">{TEMPLATE}</pre>
         </details>
 
         {rows.length > 0 && (
           <>
-            <div className="flex items-center gap-2 text-[13px] font-bold">
-              <span className="rounded-full bg-lime/25 px-3 py-1 text-lime-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-body font-bold">
+              <span className="flex items-center gap-1.5 rounded-full bg-[var(--tag-green-bg)] px-3 py-1 text-[var(--tag-green-fg)]">
+                <Check className="size-4" aria-hidden="true" />
                 พร้อมนำเข้า {valid.length}
               </span>
               {rows.length - valid.length > 0 && (
-                <span className="flex items-center gap-1 rounded-full bg-coral/12 px-3 py-1 text-coral">
-                  <AlertTriangle className="h-3.5 w-3.5" />
+                <span className="flex items-center gap-1.5 rounded-full bg-[var(--tag-orange-bg)] px-3 py-1 text-[var(--tag-orange-fg)]">
+                  <AlertTriangle className="size-4" aria-hidden="true" />
                   ตรวจไม่ผ่าน {rows.length - valid.length}
                 </span>
               )}
@@ -163,8 +166,8 @@ function ImportPage() {
               {rows.map((r, i) => (
                 <div
                   key={i}
-                  className={`rounded-2xl border p-3 text-[13px] ${
-                    r.ok ? "border-border bg-card" : "border-coral/40 bg-coral/5"
+                  className={`rounded-2xl border p-3 text-body ${
+                    r.ok ? "border-border bg-card" : "border-[var(--tag-orange-bg)] bg-card"
                   }`}
                 >
                   <p className="font-extrabold">{r.user.name}</p>
@@ -172,7 +175,12 @@ function ImportPage() {
                     {provinceTh(r.user.province)} · {REGION_LABEL[r.user.region]} ·{" "}
                     {r.user.organization}
                   </p>
-                  {!r.ok && <p className="mt-1 text-coral">ไม่พบชื่อหรือจังหวัดที่ตรงกัน</p>}
+                  {!r.ok && (
+                    <p className="mt-1 flex items-center gap-1.5 font-bold text-[var(--tag-orange-bg)]">
+                      <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
+                      ไม่พบชื่อหรือจังหวัดที่ตรงกัน
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -184,7 +192,7 @@ function ImportPage() {
                 setRows([]);
               }}
               disabled={valid.length === 0}
-              className="tap flex h-14 w-full items-center justify-center rounded-3xl gradient-power text-sm font-extrabold text-primary-foreground disabled:opacity-40"
+              className="tap flex h-14 w-full items-center justify-center rounded-3xl bg-primary text-body font-extrabold text-primary-foreground disabled:opacity-40"
             >
               นำเข้า {valid.length} รายชื่อ
             </button>
@@ -192,12 +200,15 @@ function ImportPage() {
         )}
 
         {imported > 0 && (
-          <div className="rounded-3xl border border-lime/40 bg-lime/10 p-5 text-center">
-            <CheckCircle2 className="mx-auto h-10 w-10 text-lime" />
-            <p className="mt-2 text-sm font-extrabold">นำเข้าแล้ว {imported} รายชื่อ</p>
+          <div className="rounded-3xl border border-[var(--tag-green-bg)] bg-card p-5 text-center">
+            <CheckCircle2
+              className="mx-auto size-10 text-[var(--tag-green-bg)]"
+              aria-hidden="true"
+            />
+            <p className="mt-2 text-body font-extrabold">นำเข้าแล้ว {imported} รายชื่อ</p>
             <Link
               to="/map"
-              className="tap mt-3 inline-flex h-12 items-center justify-center rounded-2xl gradient-power px-6 text-sm font-extrabold text-primary-foreground"
+              className="tap mt-3 inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-6 text-body font-extrabold text-primary-foreground"
             >
               ดูหมุดบนแผนที่
             </Link>

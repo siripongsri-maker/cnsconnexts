@@ -769,6 +769,103 @@
   background: var(--sky-soft);
   padding: 14px;
 }
+/* Chart legends: a swatch plus the Thai name, so no series is told apart by colour alone. */
+.admin-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 12px;
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.admin-chart-legend > li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+.admin-chart-swatch {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: var(--tag-purple-bg);
+}
+.admin-chart-swatch--line {
+  height: 4px;
+  width: 28px;
+  border-radius: 2px;
+}
+.admin-chart-swatch--hatch {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--tag-orange-bg) 0 3px,
+    var(--card) 3px 6px
+  );
+  box-shadow: inset 0 0 0 2px var(--tag-orange-bg);
+}
+/* --destructive is 3.6:1 on white; darken red text and red buttons to 4.5:1 or better */
+.admin-content .text-destructive {
+  color: color-mix(in oklab, var(--destructive) 75%, black);
+}
+.admin-content .bg-destructive {
+  background-color: color-mix(in oklab, var(--destructive) 75%, black);
+}
+/* Restore dialog (Radix portal): `.site-experience [role="dialog"]` and `.site-experience th` paint it dark and square. */
+.mission-dialog.admin-restore-dialog[role="dialog"] {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--primary);
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+  padding: 28px;
+  color: var(--foreground);
+}
+.admin-restore-dialog h2 {
+  color: var(--foreground);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.admin-restore-dialog table {
+  min-width: 0;
+  background: var(--card);
+}
+.mission-dialog.admin-restore-dialog th {
+  height: 48px;
+  background: var(--sky-soft);
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 700;
+}
+.mission-dialog.admin-restore-dialog :is(th, td) {
+  border-color: var(--border);
+  padding: 12px;
+}
+.admin-restore-dialog :is(button, input) {
+  min-height: 44px;
+}
+.admin-restore-dialog :is(input):focus-visible,
+.admin-restore-dialog button:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+.admin-restore-dialog > button:last-child {
+  top: 10px;
+  right: 10px;
+  display: grid;
+  min-width: 44px;
+  place-items: center;
+  opacity: 1;
+}
+.admin-restore-dialog > button:last-child svg {
+  width: 20px;
+  height: 20px;
+}
+.admin-restore-dialog button.bg-destructive {
+  background-color: color-mix(in oklab, var(--destructive) 75%, black);
+}
 .admin-workspace-settings > section:last-child {
   border-color: color-mix(in srgb, var(--destructive) 45%, transparent);
 }

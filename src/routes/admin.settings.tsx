@@ -28,36 +28,36 @@ function AdminSettings() {
   return (
     <div className="admin-workspace admin-workspace-settings space-y-4">
       <section className="card-soft space-y-2 rounded-2xl bg-card p-4">
-        <h2 className="inline-flex items-center gap-1.5 text-[14px] font-extrabold">
-          <KeyRound className="h-4 w-4 text-primary" /> บัญชีผู้ดูแล
+        <h2 className="inline-flex items-center gap-2 text-title font-extrabold">
+          <KeyRound className="size-5 text-primary" aria-hidden="true" /> บัญชีผู้ดูแล
         </h2>
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           ซูเปอร์แอดมิน — ผู้ใช้:{" "}
           <span className="font-extrabold text-foreground">{SUPERADMIN_USER}</span> · รหัสผ่าน:{" "}
           <span className="font-extrabold text-foreground">{SUPERADMIN_PASSWORD}</span>
         </p>
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           ผู้ดูแลสูงสุด — ผู้ใช้: <span className="font-extrabold text-foreground">{ADMIN_USER}</span> · รหัสผ่าน:{" "}
           <span className="font-extrabold text-foreground">{ADMIN_PASSWORD}</span>
         </p>
-        <p className="text-[12px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           บัญชีนี้ใช้สำหรับเดโม่และป้องกันเฉพาะหน้าจอ
         </p>
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">สรุปข้อมูลปัจจุบัน</h2>
-        <p className="mt-1 text-[13px] text-muted-foreground">
+        <h2 className="text-title font-extrabold">สรุปข้อมูลปัจจุบัน</h2>
+        <p className="mt-1 text-body text-muted-foreground">
           สมาชิก {users.length} · ไอเดีย {ideas.length} · คู่เชื่อม {connections.length} ·
           คำมั่นสัญญา {commitments.length}
         </p>
       </section>
 
       <section className="card-soft space-y-3 rounded-2xl border border-destructive/30 bg-card p-4">
-        <h2 className="inline-flex items-center gap-1.5 text-[14px] font-extrabold text-destructive">
-          <AlertTriangle className="h-4 w-4" /> โซนอันตราย
+        <h2 className="inline-flex items-center gap-2 text-title font-extrabold text-destructive">
+          <AlertTriangle className="size-5" aria-hidden="true" /> โซนอันตราย
         </h2>
-        <p className="text-[12px] text-muted-foreground">
+        <p className="text-body text-muted-foreground">
           ล้างค่าที่เก็บในเครื่องนี้ (รายการถูกใจ ที่ข้าม และการแจ้งเตือน)
           ข้อมูลกลางบนฐานข้อมูลจะไม่ถูกลบ
         </p>
@@ -68,9 +68,9 @@ function AdminSettings() {
             reset();
             toast.success("ล้างค่าในเครื่องเรียบร้อย");
           }}
-          className="tap inline-flex items-center gap-1.5 rounded-xl bg-destructive px-4 py-2 text-sm font-extrabold text-destructive-foreground"
+          className="tap inline-flex items-center gap-1.5 rounded-xl bg-destructive px-4 py-2 text-body font-extrabold text-destructive-foreground"
         >
-          <RotateCcw className="h-4 w-4" /> ล้างค่าในเครื่องนี้
+          <RotateCcw className="size-4" aria-hidden="true" /> ล้างค่าในเครื่องนี้
         </button>
       </section>
     </div>

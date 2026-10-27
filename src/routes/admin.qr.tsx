@@ -36,11 +36,11 @@ function AdminQr() {
     <div className="admin-workspace admin-workspace-qr space-y-4">
       <section className="card-soft space-y-3 rounded-2xl bg-card p-4">
         <label className="block space-y-1">
-          <span className="text-xs font-bold text-muted-foreground">รหัสห้อง</span>
+          <span className="text-body font-bold text-muted-foreground">รหัสห้อง</span>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-extrabold tracking-widest outline-none"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body font-extrabold tracking-widest"
           />
         </label>
 
@@ -56,16 +56,16 @@ function AdminQr() {
             />
           </div>
           <div className="min-w-0 flex-1 space-y-2">
-            <p className="break-all rounded-xl bg-muted px-3 py-2 text-[12px]">{joinUrl}</p>
+            <p className="break-all rounded-xl bg-muted px-3 py-2 text-body">{joinUrl}</p>
             <button
               type="button"
               onClick={() => {
                 navigator.clipboard?.writeText(joinUrl);
                 toast.success("คัดลอกลิงก์แล้ว");
               }}
-              className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-[12px] font-bold"
+              className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold"
             >
-              <Copy className="h-3.5 w-3.5" /> คัดลอกลิงก์
+              <Copy className="size-4" aria-hidden="true" /> คัดลอกลิงก์
             </button>
           </div>
         </div>
@@ -74,15 +74,15 @@ function AdminQr() {
       <div className="flex flex-wrap gap-2">
         <Link
           to="/print"
-          className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground"
+          className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-body font-extrabold text-primary-foreground"
         >
-          <Printer className="h-4 w-4" /> ไปหน้าไฟล์พิมพ์บอร์ด/ป้าย
+          <Printer className="size-5" aria-hidden="true" /> ไปหน้าไฟล์พิมพ์บอร์ด/ป้าย
         </Link>
         <Link
           to="/qr"
-          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-sm font-bold"
+          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-body font-bold"
         >
-          <QrCode className="h-4 w-4" /> หน้า QR สำหรับผู้เข้าร่วม
+          <QrCode className="size-5" aria-hidden="true" /> หน้า QR สำหรับผู้เข้าร่วม
         </Link>
       </div>
     </div>

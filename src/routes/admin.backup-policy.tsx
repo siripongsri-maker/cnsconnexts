@@ -81,7 +81,7 @@ function AdminBackupPolicy() {
     <div className="admin-workspace admin-workspace-backup-policy space-y-4">
       <section className="card-soft space-y-4 rounded-2xl bg-card p-4">
         <label className="block space-y-1">
-          <span className="text-xs font-bold text-muted-foreground">
+          <span className="text-body font-bold text-foreground">
             จำนวนรายการสำรองสูงสุด (0 = ไม่จำกัด)
           </span>
           <input
@@ -91,12 +91,12 @@ function AdminBackupPolicy() {
             value={maxRows}
             disabled={loading}
             onChange={(e) => setMaxRows(Number(e.target.value))}
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
           />
         </label>
 
         <label className="block space-y-1">
-          <span className="text-xs font-bold text-muted-foreground">
+          <span className="text-body font-bold text-foreground">
             อายุสูงสุดของรายการสำรอง (วัน · 0 = ไม่จำกัด)
           </span>
           <input
@@ -106,23 +106,23 @@ function AdminBackupPolicy() {
             value={maxAgeDays}
             disabled={loading}
             onChange={(e) => setMaxAgeDays(Number(e.target.value))}
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
           />
         </label>
 
-        <label className="flex items-center gap-2">
+        <label className="flex min-h-11 items-center gap-3">
           <input
             type="checkbox"
             checked={autoPrune}
             disabled={loading}
             onChange={(e) => setAutoPrune(e.target.checked)}
-            className="size-4"
+            className="size-5"
           />
-          <span className="text-[13px] font-bold">ล้างรายการที่เกินนโยบายอัตโนมัติเมื่อบันทึก</span>
+          <span className="text-body font-bold">ล้างรายการที่เกินนโยบายอัตโนมัติเมื่อบันทึก</span>
         </label>
 
         {updatedAt ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             แก้ไขล่าสุด {new Date(updatedAt).toLocaleString("th-TH")}
           </p>
         ) : null}
@@ -132,21 +132,21 @@ function AdminBackupPolicy() {
             type="button"
             onClick={() => void onSave()}
             disabled={saving || loading}
-            className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground disabled:opacity-60"
+            className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-body font-extrabold text-primary-foreground disabled:opacity-60"
           >
-            <Save className="size-4" /> บันทึกนโยบาย
+            <Save className="size-4" aria-hidden="true" /> บันทึกนโยบาย
           </button>
           <button
             type="button"
             onClick={() => void onPrune()}
-            className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-sm font-bold"
+            className="tap inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-body font-bold"
           >
-            <Trash2 className="size-4" /> ล้างตอนนี้
+            <Trash2 className="size-4" aria-hidden="true" /> ล้างตอนนี้
           </button>
         </div>
       </section>
 
-      <p className="rounded-2xl bg-muted p-3 text-[12px] leading-relaxed text-muted-foreground">
+      <p className="rounded-2xl bg-muted p-4 text-body leading-relaxed text-foreground">
         ระบบจะเก็บรายการสำรองล่าสุดตามจำนวนที่กำหนด และลบรายการที่เก่ากว่าจำนวนวันที่ตั้งไว้
         รายการที่ถูกลบไม่สามารถกู้คืนได้ ควรส่งออกข้อมูลสำรองก่อนลดค่าลงมาก
       </p>
