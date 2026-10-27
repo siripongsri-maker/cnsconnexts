@@ -55,6 +55,27 @@ const STATUSES: readonly MeetupStatus[] = ["pending", "accepted", "declined", "d
 const COLUMNS =
   "id, connection_id, inviter, invitee, status, signal_key, created_at, responded_at, expires_at";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/**
+ * คำขอฐานข้อมูลที่ค้างนานกว่านี้ถูกยกเลิก (เน็ตงานอีเวนต์ค้างได้โดยไม่ล้ม) — postgrest-js คืน error
+ * รหัส "" ซึ่ง `classifyDbError` จัดเป็น network ปุ่มจึงบอก "ไม่สำเร็จ" แทนการหมุนค้าง
+ */
+export const DB_TIMEOUT_MS = 10_000;
+
+/**
+ * `AbortSignal.timeout(ms)` — iOS Safari < 16 ไม่มีฟังก์ชันนี้ (เรียกแล้วโยน error ทำให้ดึงรายการไม่ได้เลย)
+ * จึงถอยไปใช้ AbortController + setTimeout แทน
+ */
+export function timeoutSignal(
+  ms: number,
+  api: { timeout?: (ms: number) => AbortSignal } = AbortSignal,
+): AbortSignal {
+  if (typeof api.timeout === "function") return api.timeout(ms);
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
+const timeout = () => timeoutSignal(DB_TIMEOUT_MS);
 
 function isStatus(s: string): s is MeetupStatus {
   return (STATUSES as readonly string[]).includes(s);
@@ -284,7 +305,8 @@ export function createSupabaseTransport(deps: {
       .select(COLUMNS)
       .or(`inviter.eq.${meId},invitee.eq.${meId}`)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(100)
+      .abortSignal(timeout());
     if (error) throw new Error(`[meetups] list failed: ${error.message}`);
     return rowsToMeetups(data);
   }
@@ -298,6 +320,7 @@ export function createSupabaseTransport(deps: {
         .from("meetups")
         .insert({ connection_id: connectionId, inviter, invitee })
         .select(COLUMNS)
+        .abortSignal(timeout())
         .single();
       if (!error && data) {
         const meetup = rowToMeetup(data);
@@ -326,6 +349,7 @@ export function createSupabaseTransport(deps: {
         .update({ status: to })
         .eq("id", id)
         .select(COLUMNS)
+        .abortSignal(timeout())
         .maybeSingle();
       if (!error && data) {
         const meetup = rowToMeetup(data);
@@ -337,7 +361,12 @@ export function createSupabaseTransport(deps: {
       const reason = classified === "cooldown" ? "not-allowed" : classified;
       if (reason === "network") return { ok: false, reason };
       // trigger ปฏิเสธการเปลี่ยนเป็นสถานะเดิม (สองคนกด "เจอกันแล้ว" พร้อมกัน) → ถ้าแถวอยู่ที่สถานะนั้นแล้ว ถือว่าสำเร็จ
-      const reread = await client.from("meetups").select(COLUMNS).eq("id", id).maybeSingle();
+      const reread = await client
+        .from("meetups")
+        .select(COLUMNS)
+        .eq("id", id)
+        .abortSignal(timeout())
+        .maybeSingle();
       if (!reread.error && reread.data && reread.data.status === to) {
         const meetup = rowToMeetup(reread.data);
         if (meetup) return { ok: true, meetup };

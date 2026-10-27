@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   channelStateFromStatus,
+  DB_TIMEOUT_MS,
   classifyDbError,
   createSupabaseTransport,
   rowToMeetup,
+  timeoutSignal,
   type MeetupRow,
 } from "./meetup-transport";
 
@@ -101,6 +103,73 @@ describe("classifyDbError", () => {
 
   it("maps the insert cool-down token (own declined/cancelled invite < 30 min) to cooldown", () => {
     expect(classifyDbError({ code: "P0001", message: "meetup_cooldown" })).toBe("cooldown");
+  });
+
+  it("an aborted / timed-out request (postgrest-js: status 0, code '') is network", () => {
+    // รูปที่ postgrest-js 2.x คืนเมื่อ fetch ถูก abort (ดู PostgrestBuilder: catch fetchError → code "")
+    expect(
+      classifyDbError({ code: "", message: "AbortError: This operation was aborted" }),
+    ).toBe("network");
+    expect(
+      classifyDbError({
+        code: "",
+        message: "TimeoutError: The operation was aborted due to timeout",
+      }),
+    ).toBe("network");
+  });
+});
+
+describe("supabase transport — request timeout", () => {
+  it("is 10 seconds", () => {
+    expect(DB_TIMEOUT_MS).toBe(10_000);
+  });
+
+  it("attaches an abort signal to every PostgREST request (list, create, setStatus, reread)", async () => {
+    const input = { connectionId: "c1", inviter: ROW.inviter, invitee: ROW.invitee };
+    const listed = transport([{ data: [ROW], error: null }]);
+    await listed.t.list(ROW.inviter);
+    const created = transport([{ data: ROW, error: null }]);
+    await created.t.create(input);
+    const raced = transport([
+      { data: null, error: { code: "23505", message: "duplicate key value" } },
+      { data: [ROW], error: null },
+    ]);
+    await raced.t.create(input);
+    const updated = transport([
+      { data: null, error: { code: "42501", message: "meetup_transition_not_allowed" } },
+      { data: { ...ROW, status: "done" }, error: null },
+    ]);
+    await updated.t.setStatus("m1", "done");
+    const all = [...listed.calls, ...created.calls, ...raced.calls, ...updated.calls];
+    expect(all).toHaveLength(6);
+    for (const call of all) expect(call.some((c) => c.startsWith("abortSignal:"))).toBe(true);
+  });
+
+  it("timeoutSignal aborts after the delay, also where AbortSignal.timeout is missing (iOS < 16)", () => {
+    vi.useFakeTimers();
+    try {
+      const native = timeoutSignal(DB_TIMEOUT_MS);
+      expect(native).toBeInstanceOf(AbortSignal);
+      const fallback = timeoutSignal(DB_TIMEOUT_MS, {});
+      expect(fallback.aborted).toBe(false);
+      vi.advanceTimersByTime(DB_TIMEOUT_MS - 1);
+      expect(fallback.aborted).toBe(false);
+      vi.advanceTimersByTime(1);
+      expect(fallback.aborted).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("a timed-out write fails visibly instead of hanging", async () => {
+    const aborted = { code: "", message: "AbortError: This operation was aborted" };
+    const created = transport([{ data: null, error: aborted }]);
+    expect(
+      await created.t.create({ connectionId: "c1", inviter: ROW.inviter, invitee: ROW.invitee }),
+    ).toEqual({ ok: false });
+    const updated = transport([{ data: null, error: aborted }]);
+    expect(await updated.t.setStatus("m1", "accepted")).toEqual({ ok: false, reason: "network" });
+    expect(updated.calls).toHaveLength(1);
   });
 });
 
