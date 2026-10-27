@@ -1025,6 +1025,12 @@ html[data-lowspec] .admin-role-note-chevron {
   background: var(--sky-soft);
   padding: 14px;
 }
+/* Visitor ids ("v-6z1t…") wrap as one token, filling each line, instead of splitting after "v-". */
+.admin-log-visitor {
+  min-width: 9ch;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
 /* Chart legends: a swatch plus the Thai name, so no series is told apart by colour alone. */
 .admin-chart-legend {
   display: flex;

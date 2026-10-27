@@ -48,8 +48,7 @@ export const Route = createFileRoute("/admin/logs")({
   component: AdminLogs,
 });
 
-/** Chart colours: BLOCK_TAG pairs (--tag-*-bg in admin-pages.css). Every series is also named in text (axis, legend or tooltip). */
-const BAR_BLOCKS = ["purple", "blue", "teal", "green", "yellow", "orange"] as const;
+/** Chart colours: BLOCK_TAG pairs (--tag-*-bg in admin-pages.css); purple = people, as everywhere in admin. Every series is also named in text (axis, legend or tooltip). */
 
 const TYPES: Array<UsageLog["type"] | "all"> = [
   "all",
@@ -290,25 +289,13 @@ function AdminLogs() {
                       fill="var(--tag-purple-bg)"
                       radius={[0, 6, 6, 0]}
                       isAnimationActive={false}
-                    >
-                      {sources.map((entry, i) => (
-                        <Cell
-                          key={entry.name}
-                          fill={`var(--tag-${BAR_BLOCKS[i % BAR_BLOCKS.length]}-bg)`}
-                        />
-                      ))}
-                    </Bar>
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
               <ul className="admin-chart-legend" aria-label="คำอธิบายกราฟ">
-                {sources.map((entry, i) => (
+                {sources.map((entry) => (
                   <li key={entry.name}>
-                    <span
-                      className="admin-chart-swatch"
-                      style={{ background: `var(--tag-${BAR_BLOCKS[i % BAR_BLOCKS.length]}-bg)` }}
-                      aria-hidden="true"
-                    />
                     {entry.name} · {entry.value} เหตุการณ์
                   </li>
                 ))}
@@ -622,7 +609,7 @@ function AdminLogs() {
                     {l.detail ? <span className="text-muted-foreground"> · {l.detail}</span> : null}
                   </td>
                   <td className="px-3 py-2">{l.path}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{l.visitor}</td>
+                  <td className="admin-log-visitor px-3 py-2 text-muted-foreground">{l.visitor}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
                     {(() => {
                       const exp = logExpiresAt(l, retentionDays);
