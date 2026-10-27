@@ -319,12 +319,7 @@ function AdminLayout() {
           <span />
           <span />
         </div>
-        <nav
-          ref={navRef}
-          aria-label="เมนูผู้ดูแล"
-          className="admin-nav no-scrollbar"
-          data-lenis-prevent
-        >
+        <nav ref={navRef} aria-label="เมนูผู้ดูแล" className="admin-nav" data-lenis-prevent>
           {ADMIN_NAV_GROUPS.map((group, groupIndex) => (
             <div
               key={group.label}

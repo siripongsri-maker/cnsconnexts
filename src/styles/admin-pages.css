@@ -231,12 +231,36 @@
   min-height: 0;
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink-soft) 55%, transparent) transparent;
+}
+.admin-nav::-webkit-scrollbar {
+  width: 10px;
+}
+.admin-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-nav::-webkit-scrollbar-thumb {
+  border: 2px solid var(--card);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink-soft) 55%, var(--card));
+}
+/* Fade cue: sticks to the bottom of the scroll area while more items remain; it is 28px of real
+   space after the last item, so it never covers it once scrolled to the end. */
+.admin-nav::after {
+  position: sticky;
+  bottom: 0;
+  display: block;
+  height: 28px;
+  background: linear-gradient(to bottom, transparent, var(--card));
+  content: "";
+  pointer-events: none;
 }
 .admin-nav-group + .admin-nav-group {
-  margin-top: 14px;
+  margin-top: 6px;
 }
 .admin-nav-label {
-  margin: 0 0 4px 15px;
+  margin: 0 0 2px 15px;
   color: var(--ink-soft);
   font-size: 16px;
   font-weight: 700;
@@ -902,15 +926,31 @@
   .admin-brand-bar {
     margin: 10px 0 8px;
   }
-  .admin-nav-label,
   .admin-return {
     display: none;
+  }
+  /* Group headings stay in the accessibility tree (role="group" is labelled by them) but are not drawn in the strip */
+  .admin-nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    margin: 0;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .admin-nav {
     display: flex;
     gap: 4px;
     overflow-x: auto;
     padding-bottom: 10px;
+    scrollbar-width: none;
+  }
+  .admin-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-nav::after {
+    display: none;
   }
   .admin-nav-group {
     display: contents;
