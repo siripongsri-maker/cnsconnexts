@@ -4,6 +4,7 @@
  * this file are the BLOCK_TAG pairs below (src/lib/issue-colors.ts) and the QR keyword white.
  * Participant rules `html.meadow .site-experience ...` already reach this subtree; this file does not
  * fight them (radius, input borders and tab states are left to meadow.css).
+ * Imported unlayered on purpose (src/styles.css): its admin-scoped rules beat Tailwind utilities, which live in a layer.
  */
 :root {
   --tag-purple-bg: #6a2c91;
@@ -78,7 +79,7 @@
 }
 .admin-login-copy > p {
   margin-top: 16px;
-  text-wrap: pretty;
+  text-wrap: balance;
   color: var(--ink-soft);
   font-size: 19px;
   line-height: 1.7;
@@ -156,9 +157,6 @@
 }
 .admin-role-note[open] .admin-role-note-chevron {
   transform: rotate(180deg);
-}
-html[data-lowspec] .admin-role-note-chevron {
-  transition: none;
 }
 .admin-role-note p {
   margin-top: 12px;
@@ -441,7 +439,6 @@ html[data-lowspec] .admin-role-note-chevron {
   font-size: 16px;
 }
 .admin-content .admin-section-meta {
-  min-height: 54px;
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   background: var(--card);
@@ -460,12 +457,12 @@ html[data-lowspec] .admin-role-note-chevron {
   background-image: none;
   box-shadow: none;
 }
-.admin-content .admin-workspace > section,
-.admin-content .admin-records > li {
+.admin-content .admin-workspace > section {
   padding: clamp(18px, 2vw, 28px);
 }
 .admin-content .admin-records > li {
   position: relative;
+  padding: clamp(18px, 2vw, 28px);
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
@@ -493,7 +490,7 @@ html[data-lowspec] .admin-role-note-chevron {
   border: 0;
   background: none;
 }
-.admin-stat-grid > :is(a, div) {
+.admin-stat-grid > div {
   position: relative;
   min-width: 0;
   min-height: 140px;
@@ -503,7 +500,7 @@ html[data-lowspec] .admin-role-note-chevron {
   padding: 22px;
   text-align: left;
 }
-.admin-stat-grid :is(.text-2xl, .text-4xl) {
+.admin-stat-grid .text-2xl {
   margin-top: 12px;
   background: none;
   color: var(--foreground);
@@ -1428,29 +1425,18 @@ summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
   .admin-content .admin-records > li {
     padding: 20px;
   }
-  .admin-content :is(section, details) > h2,
-  .admin-content section > div:first-child h2 {
-    font-size: 22px;
-  }
-  .admin-stat-grid > :is(a, div) {
-    min-height: 130px;
-    padding: 17px;
-  }
-  .admin-stat-grid :is(.text-2xl, .text-4xl) {
-    font-size: 36px;
-  }
-  .admin-workspace-logs > .admin-stat-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .admin-content .admin-overview-side > section {
+    --card-pad: 20px;
   }
   .admin-workspace-logs > .admin-stat-grid > div {
     min-height: 120px;
     padding: 15px 12px;
   }
-  .admin-workspace-logs .admin-stat-grid :is(.text-2xl, .text-4xl) {
+  .admin-workspace-logs .admin-stat-grid .text-2xl {
     font-size: 30px;
   }
-  .admin-content .admin-empty {
-    min-height: 200px;
+  .admin-workspace-qr > section:first-child {
+    --card-pad: 20px;
   }
   .admin-workspace-qr > section:first-child > div {
     align-items: stretch;

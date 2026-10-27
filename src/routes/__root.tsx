@@ -112,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
-  // ธีมทุ่งจับคู่ทุกหน้า ยกเว้นหลังบ้าน — เรนเดอร์จากเซิร์ฟเวอร์ ไม่กะพริบ
+  // ธีมทุ่งทุกหน้า (หลังบ้านเพิ่มชั้นงาน meadow-work; หน้าพิมพ์ /journey /brand-preview ใช้ธีมเดิม) — เรนเดอร์จากเซิร์ฟเวอร์ ไม่กะพริบ
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <html lang="th" className={themeClassFor(pathname)}>
