@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { MonitorPlay } from "lucide-react";
+import { Fragment, useMemo } from "react";
+import { Handshake, MonitorPlay } from "lucide-react";
 
 import { useStore } from "@/lib/store";
 import { buildFeed, RotatingPrompt } from "@/components/live-ticker";
 import { MeadowScene } from "@/components/meadow-scene";
+import { RECORD_BLOCK, type AdminRecord } from "@/components/admin/record-colors";
 
 export const Route = createFileRoute("/admin/live")({
   head: () => ({
@@ -19,6 +20,35 @@ export const Route = createFileRoute("/admin/live")({
   }),
   component: AdminLive,
 });
+
+/** Feed time on the staff screen: time today, otherwise day + month + time. Display only. */
+function feedTime(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const time = d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === new Date().toDateString()) return `${time} น.`;
+  return `${d.toLocaleDateString("th-TH", { day: "numeric", month: "short" })} ${time} น.`;
+}
+
+/** buildFeed (shared with participant pages) joins the two regions with an emoji; here it becomes an icon. */
+function FeedTitle({ title }: { title: string }) {
+  const parts = title.split(/\s*🤝\s*/);
+  return (
+    <>
+      {parts.map((part, i) => (
+        <Fragment key={i}>
+          {i > 0 && (
+            <>
+              <span className="sr-only"> กับ </span>
+              <Handshake className="admin-live-feed-join" aria-hidden="true" />
+            </>
+          )}
+          {part}
+        </Fragment>
+      ))}
+    </>
+  );
+}
 
 function AdminLive() {
   const { users, connections, commitments } = useStore();
@@ -58,13 +88,21 @@ function AdminLive() {
       </div>
 
       <div className="admin-live-stats">
-        {[
-          ["คน", users.length],
-          ["คู่เชื่อม", connections.length],
-          ["นัดลงมือทำ", commitments.length],
-          ["ทำสำเร็จ", done],
-        ].map(([label, value]) => (
-          <div key={String(label)} className="admin-live-stat">
+        {(
+          [
+            ["คน", users.length, "member"],
+            ["คู่เชื่อม", connections.length, "connection"],
+            ["นัดลงมือทำ", commitments.length, "commitment"],
+            ["ทำสำเร็จ", done, "commitment"],
+          ] as [string, number, AdminRecord][]
+        ).map(([label, value, record]) => (
+          <div
+            key={label}
+            className="admin-live-stat"
+            style={
+              { "--stat-strip": `var(--tag-${RECORD_BLOCK[record]}-bg)` } as React.CSSProperties
+            }
+          >
             <p className="admin-live-stat-value font-tech">{value}</p>
             <p className="admin-live-stat-label">{label}</p>
           </div>
@@ -81,9 +119,18 @@ function AdminLive() {
         ) : (
           <ul className="admin-live-feed-list">
             {feed.slice(0, 5).map((e) => (
-              <li key={e.id} className="animate-rise" title={`${e.title} — ${e.detail}`}>
-                <p className="admin-live-feed-title">{e.title}</p>
-                <p className="admin-live-feed-detail">{e.detail}</p>
+              <li
+                key={e.id}
+                className="animate-rise"
+                title={`${e.title.replace(/\s*🤝\s*/g, " กับ ")} — ${e.detail}`}
+              >
+                <p className="admin-live-feed-title">
+                  <FeedTitle title={e.title} />
+                </p>
+                <p className="admin-live-feed-detail">
+                  {e.detail}
+                  {feedTime(e.created_at) ? ` · ${feedTime(e.created_at)}` : ""}
+                </p>
               </li>
             ))}
           </ul>
