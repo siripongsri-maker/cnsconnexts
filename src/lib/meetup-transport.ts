@@ -27,7 +27,11 @@ export interface MeetupTransport {
     connectionId: string;
     inviter: string;
     invitee: string;
-  }): Promise<{ ok: true; meetup: Meetup; existing: boolean } | { ok: false }>;
+  }): Promise<
+    | { ok: true; meetup: Meetup; existing: boolean }
+    /** `cooldown` = คำชวนของฉันบนคอนเนกชันนี้ถูกปฏิเสธ/ยกเลิกเมื่อไม่ถึง 30 นาที (trigger `meetup_cooldown`) */
+    | { ok: false; reason?: "cooldown" }
+  >;
   setStatus(
     id: string,
     to: MeetupStatus,
@@ -79,15 +83,18 @@ function rowsToMeetups(rows: readonly MeetupRow[] | null): Meetup[] {
 /**
  * error จาก PostgREST → เหตุผลที่ UI ใช้
  * - `meetup_expired` (trigger) → expired
+ * - `meetup_cooldown` (trigger ตอน insert: คำชวนของผู้ชวนคนเดิมถูกปฏิเสธ/ยกเลิกไม่ถึง 30 นาที) → cooldown
+ *   UI ผู้ชวนแสดงเหมือนมีคำชวนอยู่แล้ว ("มีคำชวนที่รออยู่แล้ว") — ไม่เปิดเผยว่าอีกฝ่ายปฏิเสธ
  * - error ที่มี SQLSTATE (trigger ปฏิเสธ / RLS 42501 / อื่นๆ จากฐานข้อมูล) → not-allowed
- * - ไม่มีรหัส (fetch ล้ม, หมดเวลา) → network
+ * - ไม่มีรหัส (fetch ล้ม, หมดเวลา/abort — postgrest-js คืน code "") → network
  */
 export function classifyDbError(error: {
   code?: string;
   message?: string;
-}): "expired" | "not-allowed" | "network" {
+}): "expired" | "cooldown" | "not-allowed" | "network" {
   const message = error.message ?? "";
   if (message.includes("meetup_expired")) return "expired";
+  if (message.includes("meetup_cooldown")) return "cooldown";
   if (
     message.includes("meetup_transition_not_allowed") ||
     message.includes("meetup_immutable_column")
@@ -296,6 +303,7 @@ export function createSupabaseTransport(deps: {
         const meetup = rowToMeetup(data);
         return meetup ? { ok: true, meetup, existing: false } : { ok: false };
       }
+      if (error && classifyDbError(error) === "cooldown") return { ok: false, reason: "cooldown" };
       // 23505 = มีคำชวนที่ active บนคอนเนกชันนี้อยู่แล้ว (เช่นทั้งคู่กดพร้อมกัน) → ส่งอันนั้นกลับไป
       if (error?.code === "23505") {
         try {
@@ -324,7 +332,9 @@ export function createSupabaseTransport(deps: {
         if (meetup) return { ok: true, meetup };
       }
       // ไม่มีแถวกลับมาเลย = RLS มองไม่เห็นแถวนี้
-      const reason = error ? classifyDbError(error) : "not-allowed";
+      // cooldown มาจาก trigger ตอน insert เท่านั้น — ถ้าเจอที่นี่ถือว่าไม่อนุญาต
+      const classified = error ? classifyDbError(error) : "not-allowed";
+      const reason = classified === "cooldown" ? "not-allowed" : classified;
       if (reason === "network") return { ok: false, reason };
       // trigger ปฏิเสธการเปลี่ยนเป็นสถานะเดิม (สองคนกด "เจอกันแล้ว" พร้อมกัน) → ถ้าแถวอยู่ที่สถานะนั้นแล้ว ถือว่าสำเร็จ
       const reread = await client.from("meetups").select(COLUMNS).eq("id", id).maybeSingle();

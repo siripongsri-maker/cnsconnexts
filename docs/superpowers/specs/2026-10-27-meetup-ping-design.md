@@ -57,8 +57,9 @@
 - Trigger `BEFORE INSERT` (ฟังก์ชัน `SECURITY DEFINER` ใน schema `private`):
   1. ยืนยันว่า `{inviter, invitee}` = `{user_a, user_b}` ของ connection (ไม่ตรง → raise exception)
   2. เปลี่ยนแถวของ connection เดียวกันที่ `status in ('pending','accepted') AND expires_at <= now()` เป็น `cancelled` ก่อน — คำชวนที่หมดอายุจึงไม่บล็อกคำชวนใหม่
+  3. ช่วงพัก: ถ้าผู้ชวนคนเดิมมีคำชวนบน connection นี้ที่ `declined`/`cancelled` และ `created_at > now() - interval '30 minutes'` → raise `meetup_cooldown` (อีกฝ่ายยังชวนได้; กันวนชวนซ้ำแล้วเสียงดังซ้ำหลัง "ไว้ทีหลัง")
 - CHECK `inviter <> invitee`
-- เพิ่มใน publication `supabase_realtime` เหมือนตารางอื่น (เผื่อใช้ได้) แต่**ไม่พึ่ง**การส่งสดของตารางนี้
+- **ไม่**เพิ่มตารางนี้ใน publication `supabase_realtime` โดยตั้งใจ เพราะแอปใช้แค่ Broadcast (กริ่ง/สัญญาณ) และเหตุการณ์ DELETE ของ postgres_changes ไม่ผ่านการกรองของ RLS จึงอาจหลุดรหัสแถวให้คนอื่นเห็น
 
 ### นโยบาย RLS (ใช้ `private.is_my_connection` / `private.is_my_participant` เดิม)
 - SELECT: `private.is_my_connection(connection_id)`

@@ -7,9 +7,12 @@
 --   accepted -> done | cancelled      either participant
 -- Nothing is allowed once now() >= expires_at (except the insert trigger's
 -- own cleanup of expired rows). No DELETE path for clients.
+-- Cool-down: an inviter whose invitation on a connection was declined or cancelled
+-- less than 30 minutes ago cannot invite again on that connection (the other
+-- participant still can). Stops a decline -> re-invite -> chime loop.
 -- Errors raised here carry a stable token in the message for the client:
 --   meetup_not_connection_pair · meetup_must_start_pending · meetup_immutable_column
---   meetup_expired · meetup_transition_not_allowed
+--   meetup_expired · meetup_transition_not_allowed · meetup_cooldown
 
 -- 1) table ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.meetups (
@@ -32,7 +35,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS meetups_one_active_per_connection
   ON public.meetups (connection_id)
   WHERE status IN ('pending', 'accepted');
 
--- 2) BEFORE INSERT: pair check, server-owned values, expire stale rows ---------
+-- 2) BEFORE INSERT: pair check, server-owned values, expire stale rows, cool-down
 CREATE OR REPLACE FUNCTION private.meetups_before_insert()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -75,6 +78,21 @@ BEGIN
   WHERE m.connection_id = NEW.connection_id
     AND m.status IN ('pending', 'accepted')
     AND m.expires_at <= now();
+
+  -- cool-down: the same inviter's declined/cancelled invitation on this connection
+  -- from the last 30 minutes blocks a new one. Runs after the cleanup above; rows
+  -- that cleanup cancels are already >= 30 minutes old, so they never match here.
+  IF EXISTS (
+    SELECT 1 FROM public.meetups m
+    WHERE m.connection_id = NEW.connection_id
+      AND m.inviter = NEW.inviter
+      AND m.status IN ('declined', 'cancelled')
+      AND m.created_at > now() - interval '30 minutes'
+  ) THEN
+    RAISE EXCEPTION 'meetup_cooldown'
+      USING ERRCODE = 'P0001',
+            DETAIL = 'this inviter''s last invitation on this connection was declined or cancelled less than 30 minutes ago';
+  END IF;
 
   RETURN NEW;
 END;
@@ -155,7 +173,9 @@ FOR EACH ROW EXECUTE FUNCTION private.meetups_before_update();
 -- 4) privileges + RLS (no DELETE) ---------------------------------------------
 -- Supabase default privileges grant ALL on new public tables; start from nothing.
 REVOKE ALL ON public.meetups FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.meetups TO anon, authenticated;
+GRANT SELECT, INSERT ON public.meetups TO anon, authenticated;
+-- clients only ever change status (responded_at is set by the trigger)
+GRANT UPDATE (status) ON public.meetups TO anon, authenticated;
 GRANT ALL ON public.meetups TO service_role;
 
 ALTER TABLE public.meetups ENABLE ROW LEVEL SECURITY;
@@ -174,14 +194,6 @@ CREATE POLICY "meetups member update" ON public.meetups FOR UPDATE TO anon, auth
 USING (private.is_my_connection(connection_id))
 WITH CHECK (private.is_my_connection(connection_id));
 
--- 5) realtime (added like the other tables; the app does not rely on it) -------
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_publication_tables
-    WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'meetups'
-  ) THEN
-    ALTER PUBLICATION supabase_realtime ADD TABLE public.meetups;
-  END IF;
-END;
-$$;
+-- 5) realtime: intentionally NOT added to the supabase_realtime publication.
+-- The app uses Broadcast only (knock / ping), and postgres_changes DELETE events
+-- are not filtered by RLS, so publishing this table would leak row ids.

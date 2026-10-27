@@ -31,7 +31,17 @@ function fakeDb(results: Result[]) {
       calls.push(call);
       const next = () => Promise.resolve(results.shift() ?? { data: null, error: null });
       const builder: Record<string, unknown> = {};
-      for (const name of ["select", "insert", "update", "eq", "or", "order", "limit", "in"]) {
+      for (const name of [
+        "select",
+        "insert",
+        "update",
+        "eq",
+        "or",
+        "order",
+        "limit",
+        "in",
+        "abortSignal",
+      ]) {
         builder[name] = (...args: unknown[]) => {
           call.push(`${name}:${JSON.stringify(args)}`);
           return builder;
@@ -88,6 +98,10 @@ describe("classifyDbError", () => {
     expect(classifyDbError({ code: "", message: "TypeError: Failed to fetch" })).toBe("network");
     expect(classifyDbError({ message: "fetch failed" })).toBe("network");
   });
+
+  it("maps the insert cool-down token (own declined/cancelled invite < 30 min) to cooldown", () => {
+    expect(classifyDbError({ code: "P0001", message: "meetup_cooldown" })).toBe("cooldown");
+  });
 });
 
 describe("channelStateFromStatus", () => {
@@ -123,6 +137,14 @@ describe("supabase transport — create", () => {
     ]);
     const res = await t.create(input);
     expect(res).toEqual({ ok: true, existing: true, meetup: rowToMeetup(active) });
+  });
+
+  it("the cool-down trigger error is reported as cooldown (UI: existing invite)", async () => {
+    const { t, calls } = transport([
+      { data: null, error: { code: "P0001", message: "meetup_cooldown" } },
+    ]);
+    expect(await t.create(input)).toEqual({ ok: false, reason: "cooldown" });
+    expect(calls).toHaveLength(1);
   });
 
   it("any other failure is ok: false", async () => {

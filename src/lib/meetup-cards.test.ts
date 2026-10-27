@@ -113,9 +113,21 @@ describe("entryState (หน้าคู่)", () => {
 
   it("no active meetup -> invite", () => {
     expect(entryState([], "c1", "a", now)).toEqual({ kind: "invite" });
-    expect(entryState([meetup("m", { status: "declined" })], "c1", "a", now)).toEqual({
+    expect(entryState([meetup("m", { status: "done" })], "c1", "a", now)).toEqual({
       kind: "invite",
     });
+  });
+
+  it("my own declined invite before expiry still reads as waiting (decline stays private)", () => {
+    const declined = meetup("m", { status: "declined", respondedAt: "2026-10-27T10:02:00Z" });
+    expect(entryState([declined], "c1", "a", now)).toEqual({ kind: "waiting" });
+    const late = Date.parse("2026-10-27T10:30:00Z");
+    expect(entryState([declined], "c1", "a", late)).toEqual({ kind: "invite" });
+  });
+
+  it("the partner's declined invite to me does not block me (invite allowed)", () => {
+    const declined = meetup("m", { status: "declined" });
+    expect(entryState([declined], "c1", "b", now)).toEqual({ kind: "invite" });
   });
 
   it("expired pending/accepted does not block inviting or starting", () => {

@@ -173,11 +173,16 @@ export function MeetupProvider({ children }: { children: ReactNode }) {
     };
   }, [enabled, meId, load]);
 
-  // เรนเดอร์ใหม่ตอนคำชวนที่ใกล้หมดอายุที่สุดหมดเวลา (การ์ดหายเอง)
+  // เรนเดอร์ใหม่ตอนคำชวนที่ใกล้หมดอายุที่สุดหมดเวลา (การ์ดหายเอง) — รวมคำชวนที่ถูกปฏิเสธ/ยกเลิก
+  // ที่ยังอยู่ในช่วงพัก เพื่อให้ "รอ… ตอบคำชวน" กลับเป็นปุ่มชวนตรงเวลา
   useEffect(() => {
     const t = Date.now();
     const next = state.meetups
-      .filter((m) => isActive(m, t))
+      .filter(
+        (m) =>
+          isActive(m, t) ||
+          ((m.status === "declined" || m.status === "cancelled") && t < Date.parse(m.expiresAt)),
+      )
       .reduce((min, m) => Math.min(min, Date.parse(m.expiresAt)), Number.POSITIVE_INFINITY);
     if (!Number.isFinite(next)) return;
     const h = window.setTimeout(() => setNow(Date.now()), Math.max(0, next - t) + 50);
@@ -264,7 +269,7 @@ export function MeetupProvider({ children }: { children: ReactNode }) {
       closeFind,
       markAcceptedSeen,
       canInviteFor: (connectionId: string) =>
-        meId !== null && canInvite(state.meetups, connectionId, Date.now()),
+        meId !== null && canInvite(state.meetups, connectionId, Date.now(), meId),
       meId,
       partnerOf,
       inviteConnection,

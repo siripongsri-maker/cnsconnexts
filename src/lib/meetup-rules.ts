@@ -51,9 +51,36 @@ export function canTransition(
   return allowed ? { ok: true } : { ok: false, reason: "not-allowed" };
 }
 
-/** ชวนได้เมื่อคอนเนกชันนั้นยังไม่มีคำชวนที่ active */
-export function canInvite(meetups: readonly Meetup[], connectionId: string, now: number): boolean {
-  return !meetups.some((m) => m.connectionId === connectionId && isActive(m, now));
+/**
+ * คำชวนของฉันที่ถูกปฏิเสธหรือยกเลิก และยังไม่ถึงเวลาหมดอายุเดิม — ช่วงพักก่อนชวนซ้ำ
+ * (กันวนชวนแล้วเสียงดังซ้ำหลัง "ไว้ทีหลัง"; trigger ในฐานข้อมูลตรวจแบบเดียวกัน: `meetup_cooldown`)
+ */
+export function inCooldown(
+  meetups: readonly Meetup[],
+  connectionId: string,
+  meId: string,
+  now: number,
+): boolean {
+  return meetups.some(
+    (m) =>
+      m.connectionId === connectionId &&
+      m.inviter === meId &&
+      (m.status === "declined" || m.status === "cancelled") &&
+      now < Date.parse(m.expiresAt),
+  );
+}
+
+/** ชวนได้เมื่อคอนเนกชันนั้นยังไม่มีคำชวนที่ active และคำชวนของฉันไม่ได้อยู่ในช่วงพัก */
+export function canInvite(
+  meetups: readonly Meetup[],
+  connectionId: string,
+  now: number,
+  meId: string,
+): boolean {
+  return (
+    !meetups.some((m) => m.connectionId === connectionId && isActive(m, now)) &&
+    !inCooldown(meetups, connectionId, meId, now)
+  );
 }
 
 /** คำชวนที่รอฉันตอบ เก่าสุดก่อน */

@@ -71,6 +71,8 @@ export type EntryState =
  * ปุ่มบนหน้าคู่ (/commitments, /connection/$id) ของคอนเนกชันนี้:
  * มีคำชวนที่รับแล้วและยังไม่หมดเวลา (ทั้งสองฝั่ง) → "เริ่มหากัน"; ไม่มีคำชวนที่ active → "ชวนเจอกันตอนนี้";
  * คำชวนของฉันยังรอตอบ → ข้อความ "รอ… ตอบคำชวน"; คำชวนที่รอฉันตอบ → ไม่แสดง (การ์ดด้านบนถามอยู่แล้ว)
+ * คำชวนของฉันที่อีกฝ่ายกด "ไว้ทีหลัง" และยังไม่ถึงเวลาหมดอายุ → ยังแสดง "รอ… ตอบคำชวน" เหมือนรอตอบ
+ * (การปฏิเสธเงียบต่อผู้ชวน และชวนซ้ำไม่ได้จนพ้นช่วงพัก — ดู `inCooldown`)
  */
 export function entryState(
   meetups: readonly Meetup[],
@@ -82,7 +84,16 @@ export function entryState(
   const active = meetups.filter((m) => m.connectionId === connectionId && isActive(m, now));
   const accepted = active.find((m) => m.status === "accepted");
   if (accepted) return { kind: "start", meetup: accepted };
-  if (active.length === 0) return { kind: "invite" };
+  if (active.length === 0) {
+    const myDeclined = meetups.some(
+      (m) =>
+        m.connectionId === connectionId &&
+        m.inviter === meId &&
+        m.status === "declined" &&
+        now < Date.parse(m.expiresAt),
+    );
+    return myDeclined ? { kind: "waiting" } : { kind: "invite" };
+  }
   return active.some((m) => m.status === "pending" && m.inviter === meId)
     ? { kind: "waiting" }
     : { kind: "none" };

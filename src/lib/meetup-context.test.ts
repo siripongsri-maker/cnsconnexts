@@ -481,6 +481,8 @@ describe("createMeetupActions", () => {
     });
     expect(await ok.api.decline("acc")).toBe("ok");
     expect(ok.t.setStatus).toHaveBeenCalledWith("acc", "declined");
+    // "ไว้ทีหลัง" เงียบต่อผู้ชวน: ไม่เคาะกริ่ง (ผู้ชวนเห็นจากการดึงรอบปกติเท่านั้น)
+    expect(ok.t.knock).not.toHaveBeenCalled();
     const bad = setup({ setStatus: async () => ({ ok: false, reason: "network" }) });
     expect(await bad.api.decline("acc")).toBe("failed");
     expect(bad.t.knock).not.toHaveBeenCalled();
@@ -491,6 +493,7 @@ describe("createMeetupActions", () => {
     const ok = setup({ findId: "acc", setStatus: async () => ({ ok: true, meetup: done }) });
     expect(await ok.api.finish("acc")).toBe("ok");
     expect(ok.actions).toContainEqual({ type: "closeFind" });
+    expect(ok.t.knock).toHaveBeenCalledTimes(1);
 
     const failedFinish = setup({
       findId: "acc",
@@ -529,6 +532,12 @@ describe("createMeetupActions", () => {
       "existing",
     );
     expect(existing.t.knock).not.toHaveBeenCalled();
+
+    const cooldown = setup({ create: async () => ({ ok: false, reason: "cooldown" }) });
+    expect(await cooldown.api.inviteConnection({ id: "c1", user_a: "me", user_b: OTHER })).toBe(
+      "existing",
+    );
+    expect(cooldown.t.knock).not.toHaveBeenCalled();
 
     const failed = setup({ create: async () => ({ ok: false }) });
     expect(await failed.api.inviteConnection({ id: "c1", user_a: "me", user_b: OTHER })).toBe(

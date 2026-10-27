@@ -319,7 +319,8 @@ export function createMeetupActions(deps: {
       deps.dispatch({ type: "upserted", meetup: res.meetup });
       deps.onChange?.();
       const m = res.meetup;
-      void t.knock(m.inviter === me ? m.invitee : m.inviter);
+      // "ไว้ทีหลัง" เงียบต่อผู้ชวน: ไม่เคาะกริ่ง ผู้ชวนเห็นแค่จากการดึงรอบปกติ (และยังเห็น "รอ… ตอบคำชวน")
+      if (to !== "declined") void t.knock(m.inviter === me ? m.invitee : m.inviter);
       return res;
     } catch {
       return { ok: false, reason: "network" };
@@ -344,7 +345,8 @@ export function createMeetupActions(deps: {
       try {
         const t = deps.transport();
         const res = await t.create({ connectionId: conn.id, inviter: me, invitee: other });
-        if (!res.ok) return "failed";
+        // ช่วงพักหลังคำชวนของฉันถูกปฏิเสธ/ยกเลิก → บอกเหมือนมีคำชวนรออยู่แล้ว (ไม่เปิดเผยการปฏิเสธ)
+        if (!res.ok) return res.reason === "cooldown" ? "existing" : "failed";
         deps.dispatch({ type: "upserted", meetup: res.meetup });
         deps.onChange?.();
         if (res.existing) return "existing";

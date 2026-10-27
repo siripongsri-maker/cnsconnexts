@@ -4,7 +4,8 @@
  * จึงทดสอบได้ครบทั้งเส้นทางด้วยสองแท็บ โดยไม่แตะฐานข้อมูลจริงเลย
  *
  * ใช้กติกาเดียวกับ trigger ในฐานข้อมูล: คู่ต้องตรงกับคอนเนกชัน, 1 คำชวนที่ active ต่อคอนเนกชัน,
- * คำชวนหมดอายุถูกยกเลิกก่อนสร้างใหม่, เปลี่ยนสถานะตาม `canTransition`
+ * คำชวนหมดอายุถูกยกเลิกก่อนสร้างใหม่, ช่วงพัก 30 นาทีหลังคำชวนของผู้ชวนคนเดิมถูกปฏิเสธ/ยกเลิก
+ * (`meetup_cooldown`), เปลี่ยนสถานะตาม `canTransition`
  */
 import { MEETUP_TTL_MS, canTransition, type Meetup, type MeetupStatus } from "./meetup-rules";
 import type { ChannelState, MeetupTransport } from "./meetup-transport";
@@ -147,6 +148,19 @@ export function createLocalTransport(opts: LocalTransportOptions = {}): MeetupTr
           ? { ...m, status: "cancelled" as const }
           : m,
       );
+      // trigger: `meetup_cooldown` — ผู้ชวนคนเดิมมีคำชวนที่ถูกปฏิเสธ/ยกเลิกเมื่อไม่ถึง 30 นาที
+      // (ตรวจใน trigger ก่อนถึง unique index ของจริง จึงมาก่อนการหาคำชวนที่ active)
+      const cooling = rows.some(
+        (m) =>
+          m.connectionId === connectionId &&
+          m.inviter === inviter &&
+          (m.status === "declined" || m.status === "cancelled") &&
+          t - Date.parse(m.createdAt) < MEETUP_TTL_MS,
+      );
+      if (cooling) {
+        save(rows);
+        return { ok: false, reason: "cooldown" };
+      }
       const live = rows.find(
         (m) =>
           m.connectionId === connectionId && (m.status === "pending" || m.status === "accepted"),

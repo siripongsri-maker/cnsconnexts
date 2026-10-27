@@ -135,6 +135,36 @@ describe("local meetup transport — create / list", () => {
     expect(rows.find((m) => first.ok && m.id === first.meetup.id)?.status).toBe("cancelled");
   });
 
+  it("cool-down: after my invite is declined I cannot re-invite for 30 minutes, the partner can", async () => {
+    const { alice, bob, advance } = setup();
+    const first = await alice.create({ connectionId: "c1", inviter: "alice", invitee: "bob" });
+    if (!first.ok) throw new Error("create failed");
+    await bob.setStatus(first.meetup.id, "declined");
+    advance(60_000);
+    expect(await alice.create({ connectionId: "c1", inviter: "alice", invitee: "bob" })).toEqual({
+      ok: false,
+      reason: "cooldown",
+    });
+    expect(await alice.list("alice")).toHaveLength(1);
+
+    advance(MEETUP_TTL_MS - 60_000);
+    const later = await alice.create({ connectionId: "c1", inviter: "alice", invitee: "bob" });
+    expect(later.ok && !later.existing).toBe(true);
+  });
+
+  it("cool-down also follows my cancelled invite, and never blocks the other participant", async () => {
+    const { alice, bob } = setup();
+    const first = await alice.create({ connectionId: "c1", inviter: "alice", invitee: "bob" });
+    if (!first.ok) throw new Error("create failed");
+    await alice.setStatus(first.meetup.id, "cancelled");
+    expect(await alice.create({ connectionId: "c1", inviter: "alice", invitee: "bob" })).toEqual({
+      ok: false,
+      reason: "cooldown",
+    });
+    const fromBob = await bob.create({ connectionId: "c1", inviter: "bob", invitee: "alice" });
+    expect(fromBob.ok && !fromBob.existing).toBe(true);
+  });
+
   it("learns the actor from list(meId) when no actor is injected", async () => {
     const { storage, channelFactory, clock } = setup();
     const tab = createLocalTransport({ now: clock, storage, channelFactory });

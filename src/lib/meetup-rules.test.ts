@@ -133,20 +133,33 @@ describe("canTransition", () => {
 
 describe("canInvite", () => {
   it("is false when an active meetup exists for the connection", () => {
-    expect(canInvite([meetup()], "c1", NOW)).toBe(false);
-    expect(canInvite([meetup({ status: "accepted" })], "c1", NOW)).toBe(false);
+    expect(canInvite([meetup()], "c1", NOW, "alice")).toBe(false);
+    expect(canInvite([meetup({ status: "accepted" })], "c1", NOW, "alice")).toBe(false);
+    expect(canInvite([meetup()], "c1", NOW, "bob")).toBe(false);
   });
-  it("is true with no meetups, or only expired/declined/done/cancelled ones", () => {
-    expect(canInvite([], "c1", NOW)).toBe(true);
+  it("is true with no meetups, or only expired/done ones, or the partner's declined/cancelled ones", () => {
+    expect(canInvite([], "c1", NOW, "alice")).toBe(true);
     const exp = T0 + MEETUP_TTL_MS;
-    expect(canInvite([meetup()], "c1", exp)).toBe(true);
-    expect(canInvite([meetup({ status: "declined" })], "c1", NOW)).toBe(true);
+    expect(canInvite([meetup()], "c1", exp, "alice")).toBe(true);
+    expect(canInvite([meetup({ status: "done" })], "c1", NOW, "alice")).toBe(true);
+    // alice เป็นผู้ชวนแถวที่ถูกปฏิเสธ/ยกเลิก → bob ยังชวนได้
     expect(
-      canInvite([meetup({ status: "done" }), meetup({ status: "cancelled" })], "c1", NOW),
+      canInvite([meetup({ status: "declined" }), meetup({ status: "cancelled" })], "c1", NOW, "bob"),
     ).toBe(true);
   });
+  it("cool-down: my own declined or cancelled invite blocks me until it would have expired", () => {
+    const exp = T0 + MEETUP_TTL_MS;
+    for (const status of ["declined", "cancelled"] as const) {
+      expect(canInvite([meetup({ status })], "c1", NOW, "alice")).toBe(false);
+      expect(canInvite([meetup({ status })], "c1", exp - 1, "alice")).toBe(false);
+      expect(canInvite([meetup({ status })], "c1", exp, "alice")).toBe(true);
+    }
+  });
   it("ignores active meetups on other connections", () => {
-    expect(canInvite([meetup({ connectionId: "c2" })], "c1", NOW)).toBe(true);
+    expect(canInvite([meetup({ connectionId: "c2" })], "c1", NOW, "alice")).toBe(true);
+    expect(canInvite([meetup({ connectionId: "c2", status: "declined" })], "c1", NOW, "alice")).toBe(
+      true,
+    );
   });
 });
 
