@@ -106,6 +106,7 @@ export function MeetupCardHost() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const [expiredId, setExpiredId] = useState<string | null>(null);
   useEffect(() => {
     setNotice(null);
@@ -113,6 +114,32 @@ export function MeetupCardHost() {
     busyRef.current = false;
     setExpiredId(null);
   }, [cardId]);
+
+  // โฟกัสอยู่ในการ์ดไหม — การ์ดหาย/ปุ่มถูกแทนที่แล้วโฟกัสต้องไม่ตกไป BODY (ผู้ใช้คีย์บอร์ดจะหลง)
+  const regionRef = useRef<HTMLDivElement>(null);
+  const focusInCardRef = useRef(false);
+  useEffect(() => {
+    const track = (e: FocusEvent) => {
+      focusInCardRef.current = regionRef.current?.contains(e.target as Node) ?? false;
+    };
+    document.addEventListener("focusin", track);
+    return () => document.removeEventListener("focusin", track);
+  }, []);
+  useEffect(() => {
+    if (!focusInCardRef.current) return;
+    const active = document.activeElement;
+    if (active && active !== document.body) return; // โฟกัสไปอยู่ที่อื่นแล้ว (เช่น โหมดหากันที่เพิ่งเปิด)
+    focusInCardRef.current = false;
+    // หมดเวลา → ปุ่ม "ปิด" มาแทนปุ่มตอบ; การ์ดหาย → เนื้อหาหลักของหน้า
+    let target: HTMLElement | null = closeRef.current;
+    if (!target) {
+      target = document.querySelector<HTMLElement>("main");
+      if (!target) return;
+      if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+      target.style.outline = "none";
+    }
+    target.focus({ preventScroll: true });
+  }, [cardId, expiredId]);
 
   if (!onMeadow) return null;
 
@@ -145,6 +172,7 @@ export function MeetupCardHost() {
 
   return (
     <div
+      ref={regionRef}
       role="region"
       aria-live="polite"
       aria-label="คำชวนเจอ"
@@ -182,6 +210,7 @@ export function MeetupCardHost() {
 
           {expired ? (
             <button
+              ref={closeRef}
               type="button"
               className="meadow-btn-secondary w-full"
               onClick={() => setDismissed((prev) => new Set(prev).add(card.meetup.id))}
@@ -190,18 +219,19 @@ export function MeetupCardHost() {
             </button>
           ) : card.kind === "invite" ? (
             <div className="flex flex-col gap-2">
+              {/* ระหว่างส่งใช้ aria-disabled ไม่ใช่ disabled — ปุ่มที่ถูก disable ทำให้โฟกัสหลุดไป BODY (กันกดซ้ำด้วย busyRef) */}
               <button
                 type="button"
-                className="meadow-btn-primary w-full"
-                disabled={busy}
+                className={`meadow-btn-primary w-full ${busy ? "opacity-[0.55]" : ""}`}
+                aria-disabled={busy || undefined}
                 onClick={() => void run(() => accept(card.meetup.id), card.meetup.id)}
               >
                 ตกลง เจอกันเลย
               </button>
               <button
                 type="button"
-                className="meadow-btn-secondary w-full"
-                disabled={busy}
+                className={`meadow-btn-secondary w-full ${busy ? "opacity-[0.55]" : ""}`}
+                aria-disabled={busy || undefined}
                 onClick={() => void run(() => decline(card.meetup.id), card.meetup.id)}
               >
                 ไว้ทีหลัง
