@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import {
   FIND_FLASH_MS,
   FIND_STRONG_TOTAL_MS,
+  acceptReceivedPing,
   channelBanner,
   findColors,
   planStrongPulse,
@@ -30,6 +31,28 @@ import { Avatar } from "./power-bits";
 
 const MSG_FAILED = "ตอบไม่สำเร็จ ลองอีกครั้ง";
 const MSG_EXPIRED = "หมดเวลาหากันแล้ว ชวนใหม่ได้จากหน้าคู่";
+
+/**
+ * หลังพาไปหน้าคู่ (เจอกันแล้ว) — ปุ่มที่เคยโฟกัสหายไปพร้อมหน้าเดิม โฟกัสจะตกไป BODY
+ * จึงย้ายไปที่เนื้อหาหลักของหน้าใหม่ (`#main-content` หรือ `main` แรก) แต่ไม่แย่งถ้าโฟกัสไปอยู่ที่อื่นแล้ว
+ */
+function focusMainAfter(navigation: Promise<unknown>): void {
+  void navigation.then(
+    () =>
+      window.requestAnimationFrame(() => {
+        const active = document.activeElement;
+        if (active && active !== document.body) return;
+        const main =
+          document.querySelector<HTMLElement>("#main-content") ??
+          document.querySelector<HTMLElement>("main");
+        if (!main) return;
+        if (!main.hasAttribute("tabindex")) main.tabIndex = -1;
+        main.style.outline = "none";
+        main.focus({ preventScroll: true });
+      }),
+    () => undefined,
+  );
+}
 
 export function FindMode() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -50,7 +73,7 @@ export function FindMode() {
     if (!last || !onMeadow || selfFinishedRef.current === last.id) return;
     const row = meetups.find((m) => m.id === last.id);
     if (row?.status === "done") {
-      void navigate({ to: "/connection/$id", params: { id: last.connectionId } });
+      focusMainAfter(navigate({ to: "/connection/$id", params: { id: last.connectionId } }));
     }
   }, [findSession, meetups, onMeadow, navigate]);
 
@@ -187,10 +210,15 @@ function FindModeDialog({
   pulseRef.current = pulse;
   useEffect(() => {
     if (!meId) return;
+    let lastReceivedAt: number | null = null;
     const handle = getMeetupTransport().joinSignal(
       session.signalKey,
       meId,
       () => {
+        // ฝั่งรับเว้น 2 วินาทีเหมือนฝั่งส่ง — สัญญาณที่มารัวกว่านั้นไม่เล่นเสียง/สั่น/เต้น
+        const now = Date.now();
+        if (!acceptReceivedPing(lastReceivedAt, now)) return;
+        lastReceivedAt = now;
         pulseRef.current();
         try {
           playConnext({ speak: false });
@@ -247,7 +275,7 @@ function FindModeDialog({
     busyRef.current = false;
     setBusy(false);
     if (result === "ok") {
-      void navigate({ to: "/connection/$id", params: { id: session.connectionId } });
+      focusMainAfter(navigate({ to: "/connection/$id", params: { id: session.connectionId } }));
     } else {
       onSelfFinished(null);
       setNotice(MSG_FAILED);

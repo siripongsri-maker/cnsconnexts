@@ -6,6 +6,7 @@
  */
 import type { ChannelState } from "./meetup-transport";
 import { contrastRatio } from "./issue-colors";
+import { PING_GAP_MS } from "./meetup-rules";
 
 /** เพดานความถี่การกะพริบ (WCAG 2.3.1) */
 export const MAX_FLASH_HZ = 3;
@@ -45,6 +46,16 @@ export function planStrongPulse(
   if (lastStartAt === null) return now;
   const endsAt = lastStartAt + FIND_STRONG_TOTAL_MS;
   return now >= endsAt ? now : endsAt;
+}
+
+/**
+ * ฝั่งรับ: สัญญาณที่มาถี่กว่า `PING_GAP_MS` จากครั้งล่าสุดที่รับไว้ ไม่เล่นเสียง/สั่น/เต้น
+ * (ฝั่งส่งเว้น 2 วินาทีอยู่แล้ว แต่ช่องเป็นสาธารณะสำหรับคนที่รู้ signal_key — กันการส่งรัว)
+ * นาฬิกาถอยหลัง (now < lastAt) ถือว่ารับได้ ไม่ล็อกสัญญาณค้าง
+ */
+export function acceptReceivedPing(lastAcceptedAt: number | null, now: number): boolean {
+  if (lastAcceptedAt === null || now < lastAcceptedAt) return true;
+  return now - lastAcceptedAt >= PING_GAP_MS;
 }
 
 /** คูณช่องสี sRGB ด้วย `factor` (แบบ CSS `brightness()`) แล้วตัดที่ 0–255 */

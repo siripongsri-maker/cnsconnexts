@@ -9,11 +9,13 @@ import {
   MAX_FLASH_HZ,
   channelBanner,
   findColors,
+  acceptReceivedPing,
   planStrongPulse,
   pulsesPerSecond,
   scaleHex,
 } from "./find-mode-state";
 import { contrastRatio } from "./issue-colors";
+import { PING_GAP_MS } from "./meetup-rules";
 import { PAIR_COLORS, pairBadge } from "./pair-badge";
 
 describe("channelBanner", () => {
@@ -21,6 +23,23 @@ describe("channelBanner", () => {
     expect(channelBanner("lost")).toBe("สัญญาณขาดหาย กำลังต่อใหม่…");
     expect(channelBanner("open")).toBeNull();
     expect(channelBanner("connecting")).toBeNull();
+  });
+});
+
+describe("acceptReceivedPing (receive-side throttle)", () => {
+  it("accepts the first ping and any ping at least PING_GAP_MS after the last accepted one", () => {
+    expect(acceptReceivedPing(null, 1_000)).toBe(true);
+    expect(acceptReceivedPing(1_000, 1_000 + PING_GAP_MS)).toBe(true);
+    expect(acceptReceivedPing(1_000, 1_000 + PING_GAP_MS + 500)).toBe(true);
+  });
+
+  it("ignores pings inside the gap (a flooding sender cannot drive sound, vibration or pulses)", () => {
+    expect(acceptReceivedPing(1_000, 1_000)).toBe(false);
+    expect(acceptReceivedPing(1_000, 1_000 + PING_GAP_MS - 1)).toBe(false);
+  });
+
+  it("a clock that jumps backwards does not lock pings out", () => {
+    expect(acceptReceivedPing(10_000, 5_000)).toBe(true);
   });
 });
 
