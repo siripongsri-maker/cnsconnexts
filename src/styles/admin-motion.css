@@ -102,38 +102,54 @@
     transform: translate3d(0, 0, 0);
   }
 }
-html[data-lowspec] :is(.admin-person-overlay, .admin-person-detail, .admin-backup-detail),
-html[data-lowspec] .admin-content .admin-records > li > .space-y-3,
-html[data-lowspec] .admin-cost-files > li,
-html[data-lowspec] .admin-experience .animate-spin {
+/* Reset every admin animation and transition. The `html` prefix and !important keep these ahead of the
+ * scoped (0,2,x) rules in admin-pages.css. */
+html[data-lowspec] :is(
+    .admin-person-overlay,
+    .admin-person-overlay > .admin-person-detail,
+    .admin-person-detail,
+    .admin-backup-detail,
+    .admin-content .admin-records > li > .space-y-3,
+    .admin-cost-files > li,
+    .admin-experience .animate-spin,
+    .admin-nav-link,
+    .admin-nav-link > svg,
+    .admin-content tbody tr,
+    .admin-content .admin-records > li,
+    .admin-workspace .admin-upload-zone,
+    .admin-upload-zone,
+    .admin-login *
+  ) {
   animation: none !important;
   transition: none !important;
 }
-html[data-lowspec] :is(.admin-nav-link, .admin-nav-link > svg, .admin-content tbody tr, .admin-records > li, .admin-upload-zone) {
-  transition: none;
-  transform: none;
+html[data-lowspec] .admin-nav-link:hover > svg {
+  transform: none !important;
 }
 @media (prefers-reduced-motion: reduce), print {
-  .admin-person-overlay,
-  .admin-person-detail,
-  .admin-backup-detail,
-  .admin-content .admin-records > li > .space-y-3,
-  .admin-cost-files > li,
-  .admin-experience .animate-spin {
+  html :is(
+      .admin-person-overlay,
+      .admin-person-overlay > .admin-person-detail,
+      .admin-person-detail,
+      .admin-backup-detail,
+      .admin-content .admin-records > li > .space-y-3,
+      .admin-cost-files > li,
+      .admin-experience .animate-spin,
+      .admin-nav-link,
+      .admin-nav-link > svg,
+      .admin-content tbody tr,
+      .admin-content .admin-records > li,
+      .admin-workspace .admin-upload-zone,
+      .admin-upload-zone,
+      .admin-login *
+    ) {
     animation: none !important;
     transition: none !important;
   }
-  .admin-nav-link,
-  .admin-nav-link > svg,
-  .admin-content tbody tr,
-  .admin-records > li,
-  .admin-upload-zone {
-    transition: none;
-    transform: none;
+  html .admin-nav-link:hover > svg {
+    transform: none !important;
   }
-  .admin-nav,
-  .admin-data-table,
-  .admin-backup-detail {
+  html :is(.admin-nav, .admin-data-table, .admin-backup-detail) {
     scroll-behavior: auto !important;
   }
 }

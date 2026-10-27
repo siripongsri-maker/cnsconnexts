@@ -551,12 +551,18 @@
   padding: 14px;
 }
 .admin-data-table {
-  max-height: 72dvh;
-  overflow: auto;
+  overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   background: var(--card);
   padding: 0 !important;
+}
+/* Bounded box (so the sticky header can stick) only where a nested vertical scroller is comfortable */
+@media (min-width: 768px) {
+  .admin-data-table {
+    max-height: 72dvh;
+    overflow-y: auto;
+  }
 }
 .admin-content table {
   min-width: 700px;
