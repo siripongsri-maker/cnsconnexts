@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
+import { OP_TH, OpChip } from "@/components/admin/op-chip";
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
 import { listAuditLog, type AuditRow } from "@/lib/backup.functions";
 import { downloadCSV, type Row } from "@/lib/export";
@@ -41,25 +42,6 @@ const OPS = [
   { value: "DELETE", label: "ลบ" },
 ];
 
-const OP_TH: Record<string, string> = { INSERT: "เพิ่มใหม่", UPDATE: "แก้ไข", DELETE: "ลบ" };
-/** Operation chips: block colour pair plus a lucide icon; the Thai word always sits in the chip. */
-const OP_TAG: Record<string, { icon: typeof Plus; cls: string }> = {
-  INSERT: { icon: Plus, cls: "bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]" },
-  UPDATE: { icon: Pencil, cls: "bg-[var(--tag-blue-bg)] text-[var(--tag-blue-fg)]" },
-  DELETE: { icon: Trash2, cls: "bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]" },
-};
-function OpChip({ op }: { op: string }) {
-  const tag = OP_TAG[op];
-  const Icon = tag?.icon;
-  return (
-    <span
-      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-body font-bold ${tag?.cls ?? "bg-muted text-foreground"}`}
-    >
-      {Icon ? <Icon className="size-4" aria-hidden="true" /> : null}
-      {OP_TH[op] ?? op}
-    </span>
-  );
-}
 const SRC_TH: Record<string, string> = {
   account: "บัญชีอีเมล",
   guest: "ผู้ใช้ทั่วไป (อุปกรณ์)",
@@ -230,7 +212,7 @@ function AdminAudit() {
                 </td>
                 <td className="p-3">{TABLE_TH[r.table_name] ?? r.table_name}</td>
                 <td className="p-3">
-                  <OpChip op={r.operation} />
+                  <OpChip op={r.operation} className="text-body font-bold" />
                 </td>
                 <td className="p-3">{r.label}</td>
               </tr>

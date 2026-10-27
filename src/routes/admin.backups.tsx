@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { Download, FileJson, Pencil, Plus, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
+import { Download, FileJson, RefreshCw, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import { ADMIN_PASSWORD } from "@/lib/admin-auth";
+import { OP_TH, OpChip } from "@/components/admin/op-chip";
 import { RestoreDialog } from "@/components/restore-dialog";
 import { listBackups, type BackupRow } from "@/lib/backup.functions";
 import { downloadCSV, downloadJSON, type Row } from "@/lib/export";
@@ -38,35 +39,9 @@ const TABLES = [
   { value: "commitments", label: "คำมั่นสัญญา" },
 ];
 
-const OP_TH: Record<string, string> = {
-  INSERT: "เพิ่มใหม่",
-  UPDATE: "แก้ไข",
-  DELETE: "ลบ",
-};
-
-/** Operation chips: block colour pair plus a lucide icon, and the Thai word always sits in the chip. */
-const OP_TAG: Record<string, { icon: typeof Plus; cls: string }> = {
-  INSERT: { icon: Plus, cls: "bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]" },
-  UPDATE: { icon: Pencil, cls: "bg-[var(--tag-blue-bg)] text-[var(--tag-blue-fg)]" },
-  DELETE: { icon: Trash2, cls: "bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]" },
-};
-
 const TABLE_TH: Record<string, string> = Object.fromEntries(
   TABLES.filter((t) => t.value).map((t) => [t.value, t.label]),
 );
-
-function OpChip({ op }: { op: string }) {
-  const tag = OP_TAG[op];
-  const Icon = tag?.icon;
-  return (
-    <span
-      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 ${tag?.cls ?? "bg-muted text-foreground"}`}
-    >
-      {Icon ? <Icon className="size-4" aria-hidden="true" /> : null}
-      {OP_TH[op] ?? op}
-    </span>
-  );
-}
 
 function label(row: BackupRow) {
   const snap = (row.new_data ?? row.old_data ?? {}) as Record<string, unknown>;

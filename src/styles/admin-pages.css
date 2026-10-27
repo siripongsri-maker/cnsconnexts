@@ -851,6 +851,10 @@
   outline: 3px solid var(--primary);
   outline-offset: 2px;
 }
+.admin-restore-dialog input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 1;
+}
 .admin-restore-dialog > button:last-child {
   top: 10px;
   right: 10px;
