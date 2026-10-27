@@ -1,8 +1,8 @@
 /*
  * ธีม "ทุ่งจับคู่" (Meadow Match)
  * โทนสว่างตามธีมสมัชชาสุขภาพแห่งชาติ ครั้งที่ 19 — มีผลเฉพาะเมื่อ <html class="meadow">
- * (ทุกหน้าของผู้เข้าร่วม ยกเว้น /admin /print /journey /brand-preview ดู src/lib/theme.ts)
- * หลังบ้านยังใช้ธีมอวกาศเดิมใน styles.css — ห้ามแก้กฎเดิม ให้ทับเฉพาะใต้ html.meadow
+ * (ทุกหน้าของผู้เข้าร่วม และหลังบ้าน /admin ซึ่งได้ชั้น meadow-work ท้ายไฟล์ ยกเว้น /print /journey /brand-preview ดู src/lib/theme.ts)
+ * ห้ามแก้กฎธีมอวกาศเดิมใน styles.css — ให้ทับเฉพาะใต้ html.meadow
  */
 
 @theme static {
@@ -443,4 +443,73 @@ html.meadow::-webkit-scrollbar-thumb {
 }
 html.meadow::-webkit-scrollbar-track {
   background: #eaf6fd;
+}
+
+/*
+ * ชั้น "meadow-work" — หลังบ้าน (/admin) ใช้ธีมทุ่งเดียวกัน แต่ตัวอักษรและปุ่มกระชับขึ้นให้ข้อมูลหนาแน่นพออ่านได้ในหน้าเดียว
+ * (ธีมผู้เข้าร่วมเล็กสุด 20px ไม่เหมาะกับตารางและฟอร์มจำนวนมาก) — ตัวเล็กสุดบนหลังบ้านคือ 16px
+ * ทุกกฎด้านบนที่ตั้ง 20px / 56px / 64px ภายใต้ html.meadow ถูกทับที่นี่ด้วย html.meadow.meadow-work (specificity สูงกว่า และอยู่ท้ายไฟล์)
+ * หน้าผู้เข้าร่วม (html.meadow เฉยๆ) ไม่ได้รับผลใดๆ จากส่วนนี้
+ */
+html.meadow.meadow-work {
+  /* โทเคนจาก @theme (--text-body/lead/title/display) และที่ยกไว้ (--text-xs/sm/base/lg) */
+  --text-xs: 16px;
+  --text-xs--line-height: 1.5;
+  --text-sm: 16px;
+  --text-sm--line-height: 1.5;
+  --text-base: 17px;
+  --text-base--line-height: 1.5;
+  --text-lg: 19px;
+  --text-lg--line-height: 1.5;
+  --text-body: 17px;
+  --text-body--line-height: 1.5;
+  --text-lead: 19px;
+  --text-lead--line-height: 1.5;
+  --text-title: 24px;
+  --text-title--line-height: 1.5;
+  --text-display: 28px;
+  --text-display--line-height: 1.5;
+}
+
+/* เนื้อความ (ทับ html.meadow body ใน @layer base — กฎนี้อยู่นอก layer จึงชนะ) */
+html.meadow.meadow-work body {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* ข้อความแจ้งเตือน (sonner) 17px */
+html.meadow.meadow-work [data-sonner-toast],
+html.meadow.meadow-work [data-sonner-toast] :is([data-title], [data-description], [data-button]) {
+  font-size: 17px;
+  line-height: 1.55;
+}
+/* ปุ่มในข้อความแจ้งเตือน: 48px ของธีมผู้เข้าร่วมยังผ่านเกณฑ์ปุ่ม ≥ 44px ของหลังบ้าน จึงใช้ค่า 44px ให้ตรงกับปุ่มอื่น */
+html.meadow.meadow-work [data-sonner-toast] :is([data-button], [data-cancel]) {
+  min-height: 44px;
+}
+
+/* ปุ่มการ์ดของธีม (.meadow-btn-*) — ย่อจาก 64px/56px เป็น 48px/44px (ขนาดตัวอักษรตามโทเคนด้านบนอยู่แล้ว) */
+html.meadow.meadow-work .meadow-btn-primary {
+  min-height: 48px;
+}
+html.meadow.meadow-work .meadow-btn-secondary {
+  min-height: 44px;
+}
+
+/* ช่องกรอกข้อมูล: 17px สูงอย่างน้อย 44px (ชุดเลือกเดียวกับกฎ 20px/56px ด้านบน) */
+html.meadow.meadow-work
+  :is(
+    input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="range"],
+      [type="hidden"],
+      [type="file"],
+      [type="color"]
+    ),
+    select,
+    textarea
+  ) {
+  font-size: 17px;
+  min-height: 44px;
 }

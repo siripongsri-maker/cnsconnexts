@@ -3,7 +3,7 @@
  * - โหลดคำชวนตอนเปิด, ฟังกริ่ง `inbox:<ฉัน>` (ไม่มีเนื้อหา) แล้วดึงใหม่, ดึงทุก 20 วินาทีขณะเปิดจอ
  *   และทุกครั้งที่กลับมาเปิดจอ
  * - ปุ่มต่างๆ (ชวน/ตกลง/ไว้ทีหลัง/เจอแล้ว/ยกเลิก) เขียนผ่าน transport แล้วเคาะกริ่งอีกฝ่าย
- * - ไม่ทำงานเครือข่ายใดๆ ในหน้าหลังบ้าน/หน้าพิมพ์ (`themeClassFor` เป็น undefined)
+ * - ไม่ทำงานเครือข่ายใดๆ ในหน้าหลังบ้าน/หน้าพิมพ์ (`isParticipantRoute` เป็น false)
  * - FindMode (Task 7) อ่าน `findSession` จาก context นี้ — ไฟล์นี้ไม่เรนเดอร์มันเอง
  */
 import { useRouterState } from "@tanstack/react-router";
@@ -42,7 +42,7 @@ import {
 } from "./meetup-state";
 import { getMeetupTransport, setMeetsimActor, type MeetupTransport } from "./meetup-transport";
 import { meetsimPairFromSearch } from "./meetup-transport-local";
-import { themeClassFor } from "./theme";
+import { isParticipantRoute } from "./theme";
 import { useStore, type ConnectResult } from "./store";
 import type { Connection, User } from "./types";
 
@@ -105,7 +105,7 @@ function transport(): MeetupTransport {
 export function MeetupProvider({ children }: { children: ReactNode }) {
   const store = useStore();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const enabled = themeClassFor(pathname) !== undefined;
+  const enabled = isParticipantRoute(pathname);
 
   const [state, dispatch] = useReducer(meetupReducer, undefined, () =>
     initialMeetupState(readSeen()),

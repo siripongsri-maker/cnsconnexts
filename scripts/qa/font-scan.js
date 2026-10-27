@@ -1,18 +1,21 @@
 /*
  * font-scan.js — QA สแกนตัวอักษรเล็ก / ข้อความถูกตัด / เลื่อนแนวนอน บนหน้าผู้เข้าร่วม
  *
+ * ขนาดต่ำสุดเริ่มต้น 20px (หน้าผู้เข้าร่วม). หน้าหลังบ้าน (/admin, meadow-work) ใช้ 16px:
+ *   ตั้ง window.__FONT_SCAN_MIN = 16 ก่อนวางไฟล์นี้
+ *
  * วิธีใช้: วางทั้งไฟล์ลงในเครื่องมือ javascript ของเบราว์เซอร์ (หรือ DevTools console) ขณะเปิดหน้าที่ต้องการ
  * แล้วอ่านค่าที่คืนกลับมา. ตั้งขนาดจอ 375×812 และ 1440×900 แล้วสแกนซ้ำ รวมถึงตอนเปิด sheet/ตัวกรอง
  *
  * คืนค่า:
- *   small    — ข้อความที่มองเห็นแต่ขนาดจริง < 20px  ({ text (≤40 ตัวอักษร), px, selector })
+ *   small    — ข้อความที่มองเห็นแต่ขนาดจริง < ขนาดต่ำสุด (20px หรือ window.__FONT_SCAN_MIN)  ({ text (≤40 ตัวอักษร), px, selector })
  *   overflowX — หน้าเลื่อนแนวนอนได้ (scrollWidth > innerWidth)
  *   clipped  — กล่องที่ overflow hidden/clip แต่เนื้อหาล้น และมีข้อความ ({ text, selector })
  *
  * ข้ามข้อความที่ซ่อนจากผู้ใช้ทั่วไป: [aria-hidden="true"], .sr-only (และกล่องกว้าง/สูง ≤ 1px), svg, <title>, องค์ประกอบกว้าง/สูง 0
  */
 (() => {
-  const MIN_PX = 20;
+  const MIN_PX = window.__FONT_SCAN_MIN ?? 20;
 
   const isHidden = (el) => {
     for (let n = el; n && n.nodeType === 1; n = n.parentElement) {

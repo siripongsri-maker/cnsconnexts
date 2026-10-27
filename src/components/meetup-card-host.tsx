@@ -13,7 +13,7 @@ import { inviteReason, notifyAccepted, notifyInvite, selectVisibleCard } from "@
 import { useMeetups } from "@/lib/meetup-context";
 import { unlockAudio } from "@/lib/notify";
 import { useStore } from "@/lib/store";
-import { themeClassFor } from "@/lib/theme";
+import { isParticipantRoute } from "@/lib/theme";
 
 import { Avatar } from "./power-bits";
 
@@ -54,7 +54,7 @@ function useDialogOpen(enabled: boolean): boolean {
 
 export function MeetupCardHost() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const onMeadow = themeClassFor(pathname) === "meadow";
+  const onMeadow = isParticipantRoute(pathname);
 
   const {
     incoming,

@@ -24,7 +24,7 @@ import { tryPing, PING_GAP_MS, type Meetup } from "@/lib/meetup-rules";
 import { getMeetupTransport, type ChannelState } from "@/lib/meetup-transport";
 import { playConnext } from "@/lib/notify";
 import { COLOR_TH, SYMBOL_TH, pairBadge } from "@/lib/pair-badge";
-import { themeClassFor } from "@/lib/theme";
+import { isParticipantRoute } from "@/lib/theme";
 
 import { PairSymbol } from "./pair-symbol";
 import { Avatar } from "./power-bits";
@@ -56,7 +56,7 @@ function focusMainAfter(navigation: Promise<unknown>): void {
 
 export function FindMode() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const onMeadow = themeClassFor(pathname) === "meadow";
+  const onMeadow = isParticipantRoute(pathname);
   const { findSession, meetups } = useMeetups();
   const navigate = useNavigate();
 
