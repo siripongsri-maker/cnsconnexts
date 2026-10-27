@@ -305,6 +305,29 @@ html[data-lowspec] .admin-role-note-chevron {
   color: var(--primary);
   opacity: 1;
 }
+/* Record-type tint on the sidebar icons: the same colour as that record everywhere in admin
+   (RECORD_CHIP in src/components/admin/record-colors.ts). Yellow is deepened toward ink for 3:1 on white. */
+.admin-nav-link:is([href="/admin/people"], [href="/admin/connections"], [href="/admin/commitments"], [href="/admin/ideas"], [href="/admin/submissions"], [href="/admin/map"]) > svg {
+  opacity: 1;
+}
+.admin-nav-link[href="/admin/people"] > svg {
+  color: var(--tag-purple-bg);
+}
+.admin-nav-link[href="/admin/connections"] > svg {
+  color: var(--tag-blue-bg);
+}
+.admin-nav-link[href="/admin/commitments"] > svg {
+  color: var(--tag-green-bg);
+}
+.admin-nav-link[href="/admin/ideas"] > svg {
+  color: color-mix(in oklab, var(--tag-yellow-bg) 55%, var(--tag-yellow-fg));
+}
+.admin-nav-link[href="/admin/submissions"] > svg {
+  color: var(--tag-teal-bg);
+}
+.admin-nav-link[href="/admin/map"] > svg {
+  color: var(--tag-orange-bg);
+}
 .admin-return {
   display: flex;
   min-height: 44px;
@@ -454,16 +477,6 @@ html[data-lowspec] .admin-role-note-chevron {
 .admin-content .admin-records > li:hover {
   border-color: color-mix(in srgb, var(--primary) 45%, transparent);
 }
-.admin-records > li::before {
-  position: absolute;
-  top: -1px;
-  left: 24px;
-  width: 32px;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: var(--primary);
-  content: "";
-}
 .admin-content .admin-records > li :is(.text-body.font-extrabold, .text-body.font-semibold) {
   font-size: 16px;
   font-weight: 500;
@@ -490,30 +503,6 @@ html[data-lowspec] .admin-role-note-chevron {
   padding: 22px;
   text-align: left;
 }
-.admin-content .admin-stat-grid > :is(a, div) {
-  box-shadow: inset 0 4px 0 var(--stat-accent, var(--color-block-purple));
-}
-.admin-stat-grid > :is(a, div):nth-child(6n + 1) {
-  --stat-accent: var(--color-block-purple);
-}
-.admin-stat-grid > :is(a, div):nth-child(6n + 2) {
-  --stat-accent: var(--color-block-blue);
-}
-.admin-stat-grid > :is(a, div):nth-child(6n + 3) {
-  --stat-accent: var(--color-block-yellow);
-}
-.admin-stat-grid > :is(a, div):nth-child(6n + 4) {
-  --stat-accent: var(--color-block-green);
-}
-.admin-stat-grid > :is(a, div):nth-child(6n + 5) {
-  --stat-accent: var(--color-block-teal);
-}
-.admin-stat-grid > :is(a, div):nth-child(6n) {
-  --stat-accent: var(--color-block-orange);
-}
-.admin-stat-grid > :is(a, div):hover {
-  background: var(--sky-soft) !important;
-}
 .admin-stat-grid :is(.text-2xl, .text-4xl) {
   margin-top: 12px;
   background: none;
@@ -521,21 +510,96 @@ html[data-lowspec] .admin-role-note-chevron {
   font: 400 clamp(36px, 3.5vw, 52px)/1.1 var(--font-tech);
   -webkit-text-fill-color: currentColor;
 }
-.admin-stat-grid > a > span {
-  position: absolute;
-  top: 22px;
-  right: 22px;
-  width: 26px;
-  height: 26px;
-  border-radius: 0;
-  background: none;
-}
-.admin-stat-grid > a > p:last-child,
 .admin-stat-grid > div > p:last-child {
   margin-top: 14px;
   color: var(--ink-soft);
   font-size: 16px;
   font-weight: 400;
+}
+/* Overview stat group: one white card, a cell per record type. The chip colour names the record type
+   (RECORD_CHIP in src/components/admin/record-colors.ts); the label always says it in words. */
+.admin-stat-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--border);
+}
+.admin-stat-group > li {
+  min-width: 0;
+  background: var(--card);
+}
+.admin-stat-group > li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+.admin-stat-cell {
+  display: flex;
+  height: 100%;
+  min-height: 44px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  color: var(--foreground);
+  transition: background 160ms ease;
+}
+.admin-stat-cell:hover {
+  background: var(--sky-soft);
+}
+.admin-stat-figure {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-stat-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: var(--radius-md);
+}
+.admin-stat-value {
+  font: 400 32px/1.15 var(--font-tech);
+}
+.admin-stat-label {
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.4;
+}
+@media (min-width: 761px) {
+  .admin-stat-group {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .admin-stat-group > li:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+}
+@media (min-width: 1280px) {
+  .admin-stat-group {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+.admin-growth-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.admin-growth-head h2 {
+  text-wrap: balance;
+}
+.admin-segmented > button {
+  white-space: nowrap;
+}
+.admin-growth-chart {
+  height: 256px;
+}
+.admin-overview-live > p,
+.admin-funnel-count {
+  text-wrap: pretty;
 }
 .admin-funnel-row > span {
   min-width: 0;
@@ -921,54 +985,34 @@ html[data-lowspec] .admin-role-note-chevron {
   padding-top: 16px;
   line-height: 1.9;
 }
-.admin-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  border-top: 1px solid var(--border);
-  padding-block: 24px 35px;
-  color: var(--ink-soft);
-  font-size: 16px;
-}
 @media (min-width: 1200px) {
   .admin-workspace-overview {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    gap: 22px;
+    align-items: start;
+    gap: 20px;
   }
   .admin-workspace-overview > * {
     margin: 0;
   }
-  .admin-workspace-overview > .admin-stat-grid,
-  .admin-workspace-overview > section:first-of-type,
-  .admin-workspace-overview > section:last-of-type {
+  .admin-workspace-overview > :is(.admin-stat-group, .admin-overview-growth) {
     grid-column: 1 / -1;
   }
-  .admin-workspace-overview > .admin-stat-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .admin-workspace-overview > .admin-overview-funnel {
+    grid-column: 1;
+    grid-row: span 2;
   }
-  .admin-workspace-overview .admin-stat-grid > a:first-child {
-    grid-column: span 2;
-    background: var(--sky) !important;
+  .admin-workspace-overview > :is(.admin-overview-live, .admin-overview-docs) {
+    grid-column: 2;
   }
-  :is(
-      .admin-workspace-ideas,
-      .admin-workspace-submissions,
-      .admin-workspace-connections,
-      .admin-workspace-people
-    )
+  :is(.admin-workspace-ideas, .admin-workspace-submissions, .admin-workspace-connections)
     > .admin-records {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
     gap: 18px;
   }
-  :is(
-      .admin-workspace-ideas,
-      .admin-workspace-submissions,
-      .admin-workspace-connections,
-      .admin-workspace-people
-    )
+  :is(.admin-workspace-ideas, .admin-workspace-submissions, .admin-workspace-connections)
     > .admin-records
     > li {
     margin-top: 0;
@@ -1115,10 +1159,6 @@ html[data-lowspec] .admin-role-note-chevron {
   .admin-stat-grid > :is(a, div) {
     min-height: 130px;
     padding: 17px;
-  }
-  .admin-stat-grid > a > span {
-    top: 16px;
-    right: 15px;
   }
   .admin-stat-grid :is(.text-2xl, .text-4xl) {
     font-size: 36px;

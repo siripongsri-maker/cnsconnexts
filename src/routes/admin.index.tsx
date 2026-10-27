@@ -5,6 +5,7 @@ import {
   Handshake,
   Lightbulb,
   MapPin,
+  Radio,
   UserCheck,
   Users,
 } from "lucide-react";
@@ -19,14 +20,12 @@ import {
   YAxis,
 } from "recharts";
 
+import { RECORD_CHIP, type AdminRecord } from "@/components/admin/record-colors";
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
 import { useUsageLogs } from "@/lib/usage-log";
 
 type Bucket = "day" | "week";
-
-/** Funnel bar colours: BLOCK_TAG pairs (see --tag-*-bg in admin-pages.css). Each step also shows its number, Thai label and count. */
-const FUNNEL_BLOCKS = ["purple", "blue", "teal", "green", "yellow", "orange", "purple"] as const;
 
 /** สร้างชุดข้อมูลแนวโน้มผู้ใช้จริงรายวัน/รายสัปดาห์ (สะสมด้วย) */
 function buildTrend(dates: string[], bucket: Bucket) {
@@ -91,38 +90,55 @@ function AdminOverview() {
   const demoIds = new Set(Array.from({ length: 20 }, (_, i) => `u${i + 1}`));
   const realUsers = users.filter((u) => !demoIds.has(u.id));
 
-  const stats = [
-    { label: "สมาชิก", value: users.length, icon: Users, to: "/admin/people" as const },
+  const stats: {
+    label: string;
+    value: number;
+    icon: typeof Users;
+    to:
+      | "/admin/people"
+      | "/admin/connections"
+      | "/admin/commitments"
+      | "/admin/ideas"
+      | "/admin/submissions"
+      | "/admin/map";
+    record: AdminRecord;
+  }[] = [
+    { label: "สมาชิก", value: users.length, icon: Users, to: "/admin/people", record: "member" },
     {
       label: "ผู้ใช้จริง",
       value: realUsers.length,
       icon: UserCheck,
-      to: "/admin/people" as const,
-    },
-    { label: "ไอเดีย", value: ideas.length, icon: Lightbulb, to: "/admin/ideas" as const },
-    {
-      label: "ผลงานส่งเข้า",
-      value: submissions.length,
-      icon: BookOpen,
-      to: "/admin/submissions" as const,
+      to: "/admin/people",
+      record: "member",
     },
     {
       label: "คู่เชื่อม",
       value: connections.length,
       icon: Handshake,
-      to: "/admin/connections" as const,
+      to: "/admin/connections",
+      record: "connection",
     },
     {
       label: "คำมั่นสัญญา",
       value: commitments.length,
       icon: CalendarDays,
-      to: "/admin/commitments" as const,
+      to: "/admin/commitments",
+      record: "commitment",
+    },
+    { label: "ไอเดีย", value: ideas.length, icon: Lightbulb, to: "/admin/ideas", record: "idea" },
+    {
+      label: "ผลงานส่งเข้า",
+      value: submissions.length,
+      icon: BookOpen,
+      to: "/admin/submissions",
+      record: "submission",
     },
     {
       label: "บันทึกรายจังหวัด",
       value: provinceNotes.length,
       icon: MapPin,
-      to: "/admin/map" as const,
+      to: "/admin/map",
+      record: "province",
     },
   ];
 
@@ -183,27 +199,31 @@ function AdminOverview() {
 
   return (
     <div className="admin-workspace admin-workspace-overview space-y-5">
-      <div className="admin-stat-grid grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {stats.map(({ label, value, icon: Icon, to }) => (
-          <Link key={label} to={to} className="card-soft rounded-2xl bg-card p-4">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/12 text-primary">
-              <Icon className="h-4 w-4" />
-            </span>
-            <p className="mt-2 text-2xl font-extrabold text-gradient">{value}</p>
-            <p className="text-body font-bold text-muted-foreground">{label}</p>
-          </Link>
+      <ul className="admin-stat-group" aria-label="ตัวเลขรวม">
+        {stats.map(({ label, value, icon: Icon, to, record }) => (
+          <li key={label}>
+            <Link to={to} className="admin-stat-cell">
+              <span className="admin-stat-figure">
+                <span className={`admin-stat-icon ${RECORD_CHIP[record]}`}>
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
+                <span className="admin-stat-value">{value}</span>
+              </span>
+              <span className="admin-stat-label">{label}</span>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
 
-      <section className="card-soft rounded-2xl bg-card p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
+      <section className="admin-overview-growth card-soft rounded-2xl bg-card p-4">
+        <div className="admin-growth-head">
+          <div className="min-w-0">
             <h2 className="text-title font-extrabold">การเติบโตของสมาชิก</h2>
             <p className="text-body text-muted-foreground">
               {bucket === "day" ? "14 วันล่าสุด" : "8 สัปดาห์ล่าสุด"} · ใหม่และยอดสะสม
             </p>
           </div>
-          <div className="flex rounded-xl bg-muted p-0.5">
+          <div className="admin-segmented flex rounded-xl bg-muted p-0.5">
             {(["day", "week"] as const).map((b) => (
               <button
                 key={b}
@@ -227,13 +247,13 @@ function AdminOverview() {
           <li className="flex items-center gap-2">
             <span
               aria-hidden="true"
-              className="h-0 w-6 border-t-[3px] border-dashed border-[var(--tag-orange-bg)]"
+              className="h-0 w-6 border-t-[3px] border-dashed border-[var(--tag-purple-bg)]"
             />
             ใหม่ (เข้าร่วมในช่วงนั้น)
           </li>
         </ul>
 
-        <div className="mt-3 h-64 w-full">
+        <div className="admin-growth-chart mt-3 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={trend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <defs>
@@ -279,7 +299,7 @@ function AdminOverview() {
               <Area
                 type="monotone"
                 dataKey="ใหม่"
-                stroke="var(--tag-orange-bg)"
+                stroke="var(--tag-purple-bg)"
                 strokeWidth={3}
                 strokeDasharray="6 5"
                 fill="none"
@@ -290,7 +310,7 @@ function AdminOverview() {
         </div>
       </section>
 
-      <section className="card-soft rounded-2xl bg-card p-4">
+      <section className="admin-overview-funnel card-soft rounded-2xl bg-card p-4">
         <h2 className="text-title font-extrabold">จากผู้เข้าชมสู่การลงมือ</h2>
         <p className="text-body text-muted-foreground">เส้นทางการมีส่วนร่วมของผู้ใช้จริง</p>
 
@@ -308,18 +328,20 @@ function AdminOverview() {
                     {i + 1}. {s.th}
                   </span>
                   <span className="admin-funnel-count text-muted-foreground">
-                    <span className="font-extrabold text-foreground">{s.value}</span> · {fromTop}%
-                    ของทั้งหมด
-                    {i > 0 ? ` · ${fromPrev}% จากขั้นก่อน` : ""}
+                    <span className="font-extrabold text-foreground">{s.value}</span> ·{" "}
+                    <span className="whitespace-nowrap">{fromTop}% ของทั้งหมด</span>
+                    {i > 0 ? (
+                      <>
+                        {" "}
+                        · <span className="whitespace-nowrap">{fromPrev}% จากขั้นก่อน</span>
+                      </>
+                    ) : null}
                   </span>
                 </div>
                 <div className="mt-1 h-4 w-full overflow-hidden rounded-lg bg-muted">
                   <div
-                    className="h-full rounded-lg"
-                    style={{
-                      width: `${width}%`,
-                      backgroundColor: `var(--tag-${FUNNEL_BLOCKS[i % FUNNEL_BLOCKS.length]}-bg)`,
-                    }}
+                    className="h-full rounded-lg bg-[var(--tag-purple-bg)]"
+                    style={{ width: `${width}%` }}
                   />
                 </div>
               </div>
@@ -335,10 +357,13 @@ function AdminOverview() {
         </p>
       </section>
 
-      <section className="card-soft rounded-2xl bg-card p-4">
+      <section className="admin-overview-live card-soft rounded-2xl bg-card p-4">
         <h2 className="text-title font-extrabold">กิจกรรมสดล่าสุด</h2>
         {events.length === 0 ? (
-          <p className="mt-2 text-body text-muted-foreground">ยังไม่มีความเคลื่อนไหวสดตอนนี้</p>
+          <p className="mt-1 flex items-center gap-2 text-body text-muted-foreground">
+            <Radio className="size-5 shrink-0" aria-hidden="true" />
+            ยังไม่มีความเคลื่อนไหวสดตอนนี้
+          </p>
         ) : (
           <ul className="mt-2 space-y-1.5">
             {events.map((e) => (
@@ -354,9 +379,8 @@ function AdminOverview() {
         </Link>
       </section>
 
-      <section className="card-soft rounded-2xl bg-card p-4">
+      <section className="admin-overview-docs card-soft rounded-2xl bg-card p-4">
         <h2 className="text-title font-extrabold">เอกสารเส้นทางทุกหน้า</h2>
-        <p className="mt-1 text-body text-muted-foreground">ภาพรวมทุกฟังก์ชันและวิธีใช้งานระบบ</p>
         <Link to="/journey" className="mt-2 inline-block text-body font-extrabold text-primary">
           เปิดเอกสารเส้นทางทุกหน้า →
         </Link>
