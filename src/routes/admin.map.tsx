@@ -52,18 +52,18 @@ function AdminMap() {
       </div>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">จังหวัดที่มีสมาชิกมากที่สุด</h2>
+        <h2 className="text-title font-extrabold">จังหวัดที่มีสมาชิกมากที่สุด</h2>
         <ul className="mt-2 flex flex-wrap gap-1.5">
           {byProvince.map(([p, n]) => (
             <li
               key={p}
-              className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground"
+              className="rounded-full bg-muted px-2.5 py-1 text-body font-bold text-muted-foreground"
             >
               {provinceTh(p)} · {n}
             </li>
           ))}
         </ul>
-        <Link to="/map" className="mt-3 inline-block text-[12px] font-extrabold text-primary">
+        <Link to="/map" className="mt-3 inline-block text-body font-extrabold text-primary">
           เปิดแผนที่หน้าเว็บ →
         </Link>
       </section>
@@ -74,7 +74,7 @@ function AdminMap() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="ค้นหาบันทึกรายจังหวัด"
-          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          className="w-full bg-transparent text-body placeholder:text-muted-foreground"
         />
       </div>
 
@@ -89,11 +89,11 @@ function AdminMap() {
         {notes.map((n) => (
           <li key={n.id} className="card-soft flex items-start gap-3 rounded-2xl bg-card p-4">
             <div className="min-w-0 flex-1">
-              <p className="break-words text-sm font-extrabold">{n.title}</p>
-              <p className="text-xs font-bold text-muted-foreground">
+              <p className="break-words text-body font-extrabold">{n.title}</p>
+              <p className="text-body font-bold text-muted-foreground">
                 {provinceTh(n.province)} · {n.author_name} · {n.issues.map(issueTh).join(", ")}
               </p>
-              <p className="mt-1 text-[12px] text-muted-foreground">{n.detail}</p>
+              <p className="mt-1 text-body text-muted-foreground">{n.detail}</p>
             </div>
             <button
               type="button"
@@ -102,9 +102,9 @@ function AdminMap() {
                 toast.success("ลบบันทึกแล้ว");
               }}
               aria-label="ลบบันทึก"
-              className="tap grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-destructive/40 text-destructive"
+              className="tap grid size-11 shrink-0 place-items-center rounded-xl border border-destructive/40 text-destructive"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="size-5" />
             </button>
           </li>
         ))}

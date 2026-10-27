@@ -1,6 +1,6 @@
 import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { Trash2 } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
@@ -62,10 +62,8 @@ function AdminCommitments() {
           <li key={m.id} className="card-soft space-y-3 rounded-2xl bg-card p-4">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
-                <p className="break-words text-sm font-extrabold">{pairOf(m.connection_id)}</p>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  {m.action_type}
-                </p>
+                <p className="break-words text-body font-extrabold">{pairOf(m.connection_id)}</p>
+                <p className="text-body font-bold text-muted-foreground">{m.action_type}</p>
               </div>
               <button
                 type="button"
@@ -74,9 +72,9 @@ function AdminCommitments() {
                   toast.success("ลบคำมั่นสัญญาแล้ว");
                 }}
                 aria-label="ลบคำมั่นสัญญา"
-                className="tap grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-destructive/40 text-destructive"
+                className="tap grid size-11 shrink-0 place-items-center rounded-xl border border-destructive/40 text-destructive"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-5" />
               </button>
             </div>
 
@@ -84,7 +82,7 @@ function AdminCommitments() {
               rows={2}
               value={m.description}
               onChange={(e) => updateCommitment(m.id, { description: e.target.value })}
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
             />
 
             <div className="flex flex-wrap items-center gap-2">
@@ -92,25 +90,26 @@ function AdminCommitments() {
                 type="date"
                 value={m.follow_up_date ? m.follow_up_date.slice(0, 10) : ""}
                 onChange={(e) => updateCommitment(m.id, { follow_up_date: e.target.value || null })}
-                className="rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                className="rounded-xl border border-border bg-background px-3 py-2 text-body"
               />
-              <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground">
+              <span className="rounded-full bg-muted px-2.5 py-1 text-body font-bold text-muted-foreground">
                 ฉัน: {RSVP_TH[m.rsvp ?? "pending"]} · คู่: {RSVP_TH[m.partner_rsvp ?? "pending"]}
               </span>
             </div>
 
-            <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+            <div className="flex flex-wrap gap-1.5">
               {STATUSES.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => updateCommitment(m.id, { status: s })}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-body font-bold ${
                     m.status === s
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground"
                   }`}
                 >
+                  {m.status === s && <Check className="size-4" aria-hidden="true" />}
                   {STATUS_TH[s]}
                 </button>
               ))}

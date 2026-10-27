@@ -25,6 +25,9 @@ import { useUsageLogs } from "@/lib/usage-log";
 
 type Bucket = "day" | "week";
 
+/** Funnel bar colours: BLOCK_TAG pairs (see --tag-*-bg in admin-pages.css). Each step also shows its number, Thai label and count. */
+const FUNNEL_BLOCKS = ["purple", "blue", "teal", "green", "yellow", "orange", "purple"] as const;
+
 /** สร้างชุดข้อมูลแนวโน้มผู้ใช้จริงรายวัน/รายสัปดาห์ (สะสมด้วย) */
 function buildTrend(dates: string[], bucket: Bucket) {
   const points = bucket === "day" ? 14 : 8;
@@ -187,7 +190,7 @@ function AdminOverview() {
               <Icon className="h-4 w-4" />
             </span>
             <p className="mt-2 text-2xl font-extrabold text-gradient">{value}</p>
-            <p className="text-xs font-bold text-muted-foreground">{label}</p>
+            <p className="text-body font-bold text-muted-foreground">{label}</p>
           </Link>
         ))}
       </div>
@@ -195,8 +198,8 @@ function AdminOverview() {
       <section className="card-soft rounded-2xl bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-[14px] font-extrabold">การเติบโตของสมาชิก</h2>
-            <p className="text-xs text-muted-foreground">
+            <h2 className="text-title font-extrabold">การเติบโตของสมาชิก</h2>
+            <p className="text-body text-muted-foreground">
               {bucket === "day" ? "14 วันล่าสุด" : "8 สัปดาห์ล่าสุด"} · ใหม่และยอดสะสม
             </p>
           </div>
@@ -206,7 +209,7 @@ function AdminOverview() {
                 key={b}
                 type="button"
                 onClick={() => setBucket(b)}
-                className={`tap rounded-lg px-3 py-1.5 text-xs font-bold ${
+                className={`tap rounded-lg px-3 py-1.5 text-body font-bold ${
                   bucket === b ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
                 }`}
               >
@@ -216,45 +219,66 @@ function AdminOverview() {
           </div>
         </div>
 
-        <div className="mt-3 h-52 w-full">
+        <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
+          <li className="flex items-center gap-2">
+            <span aria-hidden="true" className="h-1 w-6 rounded-full bg-[var(--tag-purple-bg)]" />
+            สะสม (ยอดรวมถึงวันนั้น)
+          </li>
+          <li className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-0 w-6 border-t-[3px] border-dashed border-[var(--tag-orange-bg)]"
+            />
+            ใหม่ (เข้าร่วมในช่วงนั้น)
+          </li>
+        </ul>
+
+        <div className="mt-3 h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={trend} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+            <AreaChart data={trend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="realUsersFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--tag-purple-bg)" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="var(--tag-purple-bg)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fontSize: 10 }}
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 16 }}
                 tickLine={false}
                 axisLine={false}
+                minTickGap={16}
+              />
+              <YAxis
+                allowDecimals={false}
+                tick={{ fontSize: 16 }}
+                tickLine={false}
+                axisLine={false}
+                width={44}
               />
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
                   border: "1px solid var(--border)",
                   background: "var(--card)",
-                  fontSize: 12,
+                  fontSize: 16,
                 }}
               />
               <Area
                 type="monotone"
                 dataKey="สะสม"
-                stroke="var(--primary)"
-                strokeWidth={2}
+                stroke="var(--tag-purple-bg)"
+                strokeWidth={3}
                 fill="url(#realUsersFill)"
                 isAnimationActive={false}
               />
               <Area
                 type="monotone"
                 dataKey="ใหม่"
-                stroke="var(--accent-foreground)"
-                strokeWidth={2}
-                strokeDasharray="4 5"
+                stroke="var(--tag-orange-bg)"
+                strokeWidth={3}
+                strokeDasharray="6 5"
                 fill="none"
                 isAnimationActive={false}
               />
@@ -264,8 +288,8 @@ function AdminOverview() {
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">จากผู้เข้าชมสู่การลงมือ</h2>
-        <p className="text-xs text-muted-foreground">เส้นทางการมีส่วนร่วมของผู้ใช้จริง</p>
+        <h2 className="text-title font-extrabold">จากผู้เข้าชมสู่การลงมือ</h2>
+        <p className="text-body text-muted-foreground">เส้นทางการมีส่วนร่วมของผู้ใช้จริง</p>
 
         <div className="mt-3 space-y-2">
           {funnel.map((s, i) => {
@@ -276,9 +300,9 @@ function AdminOverview() {
             const fromPrev = prev > 0 ? Math.round((s.value / prev) * 100) : 0;
             return (
               <div key={s.step}>
-                <div className="admin-funnel-row flex items-baseline justify-between gap-2 text-xs">
+                <div className="admin-funnel-row flex items-baseline justify-between gap-2 text-body">
                   <span className="font-bold">
-                    {i + 1}. {s.th} <span className="text-muted-foreground">· {s.step}</span>
+                    {i + 1}. {s.th}
                   </span>
                   <span className="admin-funnel-count text-muted-foreground">
                     <span className="font-extrabold text-foreground">{s.value}</span> · {fromTop}%
@@ -288,8 +312,11 @@ function AdminOverview() {
                 </div>
                 <div className="mt-1 h-4 w-full overflow-hidden rounded-lg bg-muted">
                   <div
-                    className="h-full rounded-lg bg-primary/80"
-                    style={{ width: `${width}%`, opacity: 1 - i * 0.09 }}
+                    className="h-full rounded-lg"
+                    style={{
+                      width: `${width}%`,
+                      backgroundColor: `var(--tag-${FUNNEL_BLOCKS[i % FUNNEL_BLOCKS.length]}-bg)`,
+                    }}
                   />
                 </div>
               </div>
@@ -297,8 +324,8 @@ function AdminOverview() {
           })}
         </div>
 
-        <p className="mt-3 text-xs text-muted-foreground">
-          คอนเวอร์ชันรวม Welcome → คำมั่นสัญญา:{" "}
+        <p className="mt-3 text-body text-muted-foreground">
+          จากเข้าหน้าแรกจนถึงตั้งคำมั่นสัญญา:{" "}
           <span className="font-extrabold text-primary">
             {funnelTop > 0 ? Math.round(((funnel.at(-1)?.value ?? 0) / funnelTop) * 100) : 0}%
           </span>
@@ -306,32 +333,29 @@ function AdminOverview() {
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">กิจกรรมสดล่าสุด</h2>
+        <h2 className="text-title font-extrabold">กิจกรรมสดล่าสุด</h2>
         {events.length === 0 ? (
-          <p className="mt-2 text-[12px] text-muted-foreground">ยังไม่มีสัญญาณสด</p>
+          <p className="mt-2 text-body text-muted-foreground">ยังไม่มีความเคลื่อนไหวสดตอนนี้</p>
         ) : (
           <ul className="mt-2 space-y-1.5">
             {events.map((e) => (
-              <li key={e.id} className="truncate text-[12px]">
+              <li key={e.id} className="break-words text-body">
                 <span className="font-bold">{e.title}</span>
                 <span className="text-muted-foreground"> · {e.detail}</span>
               </li>
             ))}
           </ul>
         )}
-        <Link
-          to="/admin/live"
-          className="mt-3 inline-block text-[12px] font-extrabold text-primary"
-        >
+        <Link to="/admin/live" className="mt-3 inline-block text-body font-extrabold text-primary">
           เปิดจอฉายกิจกรรมสด →
         </Link>
       </section>
 
       <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">เอกสาร Journey ทุกฟังก์ชัน</h2>
-        <p className="mt-1 text-[12px] text-muted-foreground">ภาพรวมทุกฟังก์ชันและวิธีใช้งานระบบ</p>
-        <Link to="/journey" className="mt-2 inline-block text-[12px] font-extrabold text-primary">
-          เปิดเอกสาร Journey →
+        <h2 className="text-title font-extrabold">เอกสารเส้นทางทุกหน้า</h2>
+        <p className="mt-1 text-body text-muted-foreground">ภาพรวมทุกฟังก์ชันและวิธีใช้งานระบบ</p>
+        <Link to="/journey" className="mt-2 inline-block text-body font-extrabold text-primary">
+          เปิดเอกสารเส้นทางทุกหน้า →
         </Link>
       </section>
     </div>

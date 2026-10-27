@@ -1,7 +1,7 @@
 import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
@@ -42,18 +42,19 @@ function AdminConnections() {
         <span>{connections.length} คู่</span>
       </div>
 
-      <div className="admin-filter-strip no-scrollbar flex gap-1.5 overflow-x-auto">
+      <div className="admin-filter-strip flex flex-wrap gap-1.5">
         {(["all", ...STATUSES] as const).map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setFilter(s)}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-[12px] font-bold ${
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-body font-bold ${
               filter === s
                 ? "border-primary bg-primary/10 text-primary"
                 : "border-border bg-card text-muted-foreground"
             }`}
           >
+            {filter === s && <Check className="size-4" aria-hidden="true" />}
             {s === "all" ? "ทั้งหมด" : STATUS_TH[s]}
           </button>
         ))}
@@ -71,10 +72,10 @@ function AdminConnections() {
           <li key={c.id} className="card-soft rounded-2xl bg-card p-4">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
-                <p className="break-words text-sm font-extrabold">
+                <p className="break-words text-body font-extrabold">
                   {nameOf(c.user_a)} ↔ {nameOf(c.user_b)}
                 </p>
-                <p className="text-xs font-bold text-muted-foreground">
+                <p className="text-body font-bold text-muted-foreground">
                   แมตช์ {c.match_score}% · {c.match_reason}
                 </p>
               </div>
@@ -85,23 +86,24 @@ function AdminConnections() {
                   toast.success("ลบคู่เชื่อมแล้ว");
                 }}
                 aria-label="ลบคู่เชื่อม"
-                className="tap grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-destructive/40 text-destructive"
+                className="tap grid size-11 shrink-0 place-items-center rounded-xl border border-destructive/40 text-destructive"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="size-5" />
               </button>
             </div>
-            <div className="no-scrollbar mt-3 flex gap-1.5 overflow-x-auto">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {STATUSES.map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => setConnectionStatus(c.id, s)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-body font-bold ${
                     c.status === s
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-card text-muted-foreground"
                   }`}
                 >
+                  {c.status === s && <Check className="size-4" aria-hidden="true" />}
                   {STATUS_TH[s]}
                 </button>
               ))}

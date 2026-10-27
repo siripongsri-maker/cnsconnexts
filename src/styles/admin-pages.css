@@ -349,7 +349,7 @@
   padding: 24px clamp(24px, 3vw, 54px) 0;
   scroll-margin-top: 92px;
 }
-/* The route artwork (MissionVisual, blue hex strokes) and the corner tick are not used in the back office. */
+/* The back-office hero is a plain sky card: no route artwork, no corner tick, no index number. */
 .admin-experience .mission-page-hero {
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
@@ -358,10 +358,6 @@
   border-radius: var(--radius-2xl);
   background: var(--sky);
   padding-block: 28px;
-}
-.admin-experience .mission-page-hero > .mission-visual,
-.admin-experience .mission-hero-edge {
-  display: none;
 }
 .admin-experience .mission-page-hero::before {
   display: none;
@@ -377,17 +373,13 @@
   color: var(--primary);
 }
 .admin-experience .mission-page-hero .mission-kicker {
+  font-family: inherit;
   font-size: 16px;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: 0;
 }
-.admin-experience .mission-index {
-  border-right-color: var(--ink-soft);
-  color: var(--ink-soft);
-}
-.admin-experience .mission-visual::after {
-  background: linear-gradient(90deg, transparent, var(--primary), transparent);
-}
-.admin-experience .mission-page-hero h1 {
+/* Admin headings stay within 22-28px; this also caps the participant-wide `.admin-experience h1 { 32px }` in styles.css. */
+.admin-experience .admin-main h1 {
   max-width: 700px;
   font-size: 28px;
   font-weight: 500;
@@ -458,7 +450,7 @@
   background: var(--primary);
   content: "";
 }
-.admin-content .admin-records > li :is(.text-sm.font-extrabold, .text-sm.font-semibold) {
+.admin-content .admin-records > li :is(.text-body.font-extrabold, .text-body.font-semibold) {
   font-size: 16px;
   font-weight: 500;
   line-height: 1.6;
@@ -559,9 +551,9 @@
 .admin-content select {
   max-width: 100%;
 }
-.admin-content button[class*="border"],
+.admin-content button,
 .admin-content a[class*="border"] {
-  min-height: 40px;
+  min-height: 44px;
 }
 .admin-content :is(button, a):not(:disabled):hover {
   filter: brightness(0.94);
@@ -569,11 +561,8 @@
 .admin-content :is(input, textarea, select):focus-visible,
 .admin-login-form input:focus-visible {
   border-color: var(--primary);
-  outline: 1px solid var(--primary);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
-}
-.admin-login-form input:focus-visible {
-  outline-width: 2px;
 }
 .admin-login :is(a, summary, button):focus-visible {
   outline: 3px solid var(--primary);
@@ -679,6 +668,7 @@
 .admin-content .admin-empty p {
   margin-top: 8px;
   color: var(--muted-foreground);
+  font-size: 17px;
 }
 .admin-content .admin-empty .mission-visual {
   max-width: 230px;
@@ -704,10 +694,14 @@
 .admin-person-overlay {
   background: color-mix(in srgb, var(--ink) 50%, transparent);
 }
-.admin-person-detail {
+/* `.site-experience [role="dialog"]` (mission-system.css) paints dialogs dark and square; win it with a third class. */
+.admin-experience .admin-person-detail[role="dialog"] {
   max-width: 560px;
+  border-color: var(--border);
   border-top: 2px solid var(--primary);
+  border-radius: var(--radius-3xl) var(--radius-3xl) 0 0;
   background: var(--card);
+  color: var(--foreground);
 }
 .admin-person-detail > div:first-child {
   background: var(--sky-soft);
@@ -819,9 +813,7 @@
   border-top: 1px solid var(--border);
   padding-block: 24px 35px;
   color: var(--ink-soft);
-  font: 16px var(--font-tech);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-size: 16px;
 }
 @media (min-width: 1200px) {
   .admin-workspace-overview {

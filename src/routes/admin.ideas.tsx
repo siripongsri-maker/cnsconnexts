@@ -1,7 +1,7 @@
 import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { Check, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
@@ -67,11 +67,11 @@ function AdminIdeas() {
                     });
                   }}
                 >
-                  <p className="break-words text-sm font-extrabold">{idea.title}</p>
-                  <p className="mt-1 line-clamp-2 text-[12px] text-muted-foreground">
+                  <p className="break-words text-body font-extrabold">{idea.title}</p>
+                  <p className="mt-1 line-clamp-2 text-body text-muted-foreground">
                     {idea.description}
                   </p>
-                  <p className="mt-1 text-xs font-bold text-muted-foreground">
+                  <p className="mt-1 text-body font-bold text-muted-foreground">
                     โดย {ownerName(idea.owner_id)} · {REGION_LABEL[idea.region]} ·{" "}
                     {idea.issues.map(issueTh).join(", ")}
                   </p>
@@ -81,18 +81,18 @@ function AdminIdeas() {
                   <input
                     value={draft.title}
                     onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                   />
                   <textarea
                     rows={3}
                     value={draft.description}
                     onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                   />
                   <select
                     value={draft.region}
                     onChange={(e) => setDraft({ ...draft, region: e.target.value as Region })}
-                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                   >
                     {REGIONS.map((r) => (
                       <option key={r} value={r}>
@@ -115,12 +115,13 @@ function AdminIdeas() {
                                 : [...draft.issues, i],
                             })
                           }
-                          className={`rounded-full border px-2.5 py-1 text-xs ${
+                          className={`tap inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-body ${
                             on
                               ? "border-primary bg-primary text-primary-foreground"
                               : "border-border text-muted-foreground"
                           }`}
                         >
+                          {on && <Check className="size-4" aria-hidden="true" />}
                           {issueTh(i)}
                         </button>
                       );
@@ -135,7 +136,7 @@ function AdminIdeas() {
                         setDraft(null);
                         toast.success("บันทึกไอเดียแล้ว");
                       }}
-                      className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground"
+                      className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-body font-extrabold text-primary-foreground"
                     >
                       <Save className="h-4 w-4" /> บันทึก
                     </button>
@@ -145,7 +146,7 @@ function AdminIdeas() {
                         setOpenId(null);
                         setDraft(null);
                       }}
-                      className="rounded-xl border border-border px-4 py-2 text-sm"
+                      className="rounded-xl border border-border px-4 py-2 text-body"
                     >
                       ยกเลิก
                     </button>
@@ -157,7 +158,7 @@ function AdminIdeas() {
                         setDraft(null);
                         toast.success("ลบไอเดียแล้ว");
                       }}
-                      className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 px-3 py-2 text-sm text-destructive"
+                      className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 px-3 py-2 text-body text-destructive"
                     >
                       <Trash2 className="h-4 w-4" /> ลบ
                     </button>

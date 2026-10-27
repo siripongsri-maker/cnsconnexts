@@ -11,8 +11,11 @@ import {
   Eye,
   X,
   Sparkles,
+  Check,
   Link2,
   CalendarCheck,
+  CircleAlert,
+  CircleCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
@@ -23,7 +26,7 @@ import { issueTh, powerTh, provinceTh, REGION_LABEL, STATUS_TH, GENERATION_TH } 
 import { rankMatches } from "@/lib/matching";
 import { POWER_EMOJI } from "@/lib/types";
 import { downloadCSV, type Row } from "@/lib/export";
-import type { User, Connection, Commitment } from "@/lib/types";
+import type { User, Connection, Commitment, ConnectionStatus } from "@/lib/types";
 
 export const Route = createFileRoute("/admin/people")({
   head: () => ({
@@ -47,6 +50,14 @@ type Draft = Pick<User, "name" | "organization" | "bio" | "province" | "interest
 
 /** Phase 2: ไม่มีข้อมูลเดโม่แล้ว ผู้ใช้ทุกคนคือผู้ใช้จริง */
 const isDemo = (_id: string) => false;
+
+/** Status chip colours: BLOCK_TAG pairs (--tag-*-bg in admin-pages.css). The Thai status word always sits inside the chip. */
+const STATUS_TAG: Record<ConnectionStatus, string> = {
+  Connected: "bg-[var(--tag-blue-bg)] text-[var(--tag-blue-fg)]",
+  Planning: "bg-[var(--tag-yellow-bg)] text-[var(--tag-yellow-fg)]",
+  "In Progress": "bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]",
+  Completed: "bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]",
+};
 
 type SourceFilter = "all" | "real" | UserSource;
 
@@ -186,12 +197,12 @@ function AdminPeoplePage() {
           </span>
         </div>
         <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-3 py-2">
-          <Search className="size-4 shrink-0 text-muted-foreground" />
+          <Search className="size-5 shrink-0 text-muted-foreground" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="ค้นหาชื่อ องค์กร จังหวัด หรือประเด็น"
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="w-full bg-transparent text-body placeholder:text-muted-foreground"
           />
         </div>
 
@@ -202,7 +213,7 @@ function AdminPeoplePage() {
                 key={s}
                 type="button"
                 onClick={() => setSource(s)}
-                className={`tap flex-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                className={`tap flex-1 rounded-lg px-3 py-1.5 text-body font-semibold ${
                   source === s ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
                 }`}
               >
@@ -212,13 +223,13 @@ function AdminPeoplePage() {
             ))}
           </div>
           <label className="block space-y-1">
-            <span className="text-xs font-medium text-muted-foreground">แหล่งที่มา</span>
+            <span className="text-body font-medium text-muted-foreground">แหล่งที่มา</span>
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Filter className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value as SourceFilter)}
-                className="w-full appearance-none rounded-xl border border-border bg-background py-2 pl-8 pr-3 text-xs outline-none"
+                className="w-full appearance-none rounded-xl border border-border bg-background py-2 pl-10 pr-3 text-body"
               >
                 <option value="all">ทั้งหมด</option>
                 <option value="real">ผู้ใช้จริง</option>
@@ -233,21 +244,21 @@ function AdminPeoplePage() {
           </label>
           <div className="grid grid-cols-2 gap-2">
             <label className="block space-y-1">
-              <span className="text-xs font-medium text-muted-foreground">onboard ตั้งแต่</span>
+              <span className="text-body font-medium text-muted-foreground">เข้าร่วมตั้งแต่</span>
               <input
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-xs font-medium text-muted-foreground">ถึงวันที่</span>
+              <span className="text-body font-medium text-muted-foreground">ถึงวันที่</span>
               <input
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs outline-none"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
               />
             </label>
           </div>
@@ -260,7 +271,7 @@ function AdminPeoplePage() {
                 setTo("");
                 setQ("");
               }}
-              className="text-xs font-semibold text-primary"
+              className="text-body font-semibold text-primary"
             >
               ล้างตัวกรองทั้งหมด
             </button>
@@ -268,7 +279,7 @@ function AdminPeoplePage() {
         </div>
 
         <div className="admin-people-export space-y-2 rounded-2xl border border-border bg-card p-3">
-          <p className="text-xs font-medium text-muted-foreground">
+          <p className="text-body font-medium text-muted-foreground">
             ส่งออกข้อมูล (CSV รองรับภาษาไทย)
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -283,9 +294,9 @@ function AdminPeoplePage() {
                 downloadCSV("connexts-real-users", toRows(real));
                 toast.success(`ส่งออกผู้ใช้จริง ${real.length} คนแล้ว`);
               }}
-              className="tap inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"
+              className="tap inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-body font-semibold text-primary-foreground"
             >
-              <Download className="size-3.5" /> ผู้ใช้จริง ({realCount})
+              <Download className="size-4" /> ผู้ใช้จริง ({realCount})
             </button>
             <button
               type="button"
@@ -297,25 +308,25 @@ function AdminPeoplePage() {
                 downloadCSV("connexts-people-filtered", toRows(filtered));
                 toast.success(`ส่งออก ${filtered.length} รายการแล้ว`);
               }}
-              className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-semibold"
+              className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border px-3 py-2 text-body font-semibold"
             >
-              <Download className="size-3.5" /> ตามตัวกรอง ({filtered.length})
+              <Download className="size-4" /> ตามตัวกรอง ({filtered.length})
             </button>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             รวมข้อมูลโปรไฟล์ ความสนใจ และพลังที่มี / ต้องการ
           </p>
         </div>
 
         <Link
           to="/admin/import"
-          className="flex items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground"
+          className="flex items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-3 text-body text-muted-foreground"
         >
-          <FileUp className="size-4" /> นำเข้ารายชื่อเพิ่มจากไฟล์ CSV
+          <FileUp className="size-5" /> นำเข้ารายชื่อเพิ่มจากไฟล์ CSV
         </Link>
 
         {filtered.length === 0 && (
-          <p className="rounded-2xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+          <p className="rounded-2xl border border-border bg-card p-6 text-center text-body text-muted-foreground">
             ไม่พบสมาชิกที่ตรงกับคำค้น
           </p>
         )}
@@ -334,20 +345,20 @@ function AdminPeoplePage() {
                     <span className="text-2xl leading-none">{u.avatar}</span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
-                        <span className="block break-words text-sm font-semibold">{u.name}</span>
+                        <span className="block break-words text-body font-semibold">{u.name}</span>
                         <SourceBadge source={u.source} />
                       </span>
-                      <span className="block break-words text-xs text-muted-foreground">
+                      <span className="block break-words text-body text-muted-foreground">
                         {u.organization} · {provinceTh(u.province)} · {REGION_LABEL[u.region]}
                       </span>
-                      <span className="mt-1 block line-clamp-2 text-xs text-muted-foreground">
+                      <span className="mt-1 block line-clamp-2 text-body text-muted-foreground">
                         {u.bio}
                       </span>
                       <span className="mt-1 flex flex-wrap gap-1">
                         {u.interests.slice(0, 4).map((i) => (
                           <span
                             key={i}
-                            className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                            className="rounded-full bg-muted px-2 py-0.5 text-body text-muted-foreground"
                           >
                             {issueTh(i)}
                           </span>
@@ -361,14 +372,14 @@ function AdminPeoplePage() {
                     <button
                       type="button"
                       onClick={() => setDetailId(u.id)}
-                      className="tap inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-xs font-semibold"
+                      className="tap inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-body font-semibold"
                     >
-                      <Eye className="size-3.5" /> ดูรายละเอียด
+                      <Eye className="size-4" /> ดูรายละเอียด
                     </button>
                     <button
                       type="button"
                       onClick={() => open(u)}
-                      className="tap inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground"
+                      className="tap inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-body font-semibold text-muted-foreground"
                     >
                       แก้ไขข้อมูล
                     </button>
@@ -380,21 +391,21 @@ function AdminPeoplePage() {
                       <input
                         value={draft.name}
                         onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                       />
                     </Field>
                     <Field label="องค์กร">
                       <input
                         value={draft.organization}
                         onChange={(e) => setDraft({ ...draft, organization: e.target.value })}
-                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                       />
                     </Field>
                     <Field label="จังหวัด">
                       <select
                         value={draft.province}
                         onChange={(e) => setDraft({ ...draft, province: e.target.value })}
-                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                       >
                         {PROVINCES.map((p) => (
                           <option key={p.en} value={p.en}>
@@ -408,7 +419,7 @@ function AdminPeoplePage() {
                         rows={3}
                         value={draft.bio}
                         onChange={(e) => setDraft({ ...draft, bio: e.target.value })}
-                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                       />
                     </Field>
                     <Field label="แท็กความสนใจ">
@@ -420,12 +431,13 @@ function AdminPeoplePage() {
                               key={i}
                               type="button"
                               onClick={() => toggleInterest(i)}
-                              className={`rounded-full border px-2.5 py-1 text-xs ${
+                              className={`tap inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-body ${
                                 on
                                   ? "border-primary bg-primary text-primary-foreground"
                                   : "border-border text-muted-foreground"
                               }`}
                             >
+                              {on && <Check className="size-4" aria-hidden="true" />}
                               {issueTh(i)}
                             </button>
                           );
@@ -436,7 +448,7 @@ function AdminPeoplePage() {
                       <button
                         type="button"
                         onClick={() => save(u)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-body font-semibold text-primary-foreground"
                       >
                         <Save className="size-4" /> บันทึก
                       </button>
@@ -446,7 +458,7 @@ function AdminPeoplePage() {
                           setOpenId(null);
                           setDraft(null);
                         }}
-                        className="rounded-xl border border-border px-4 py-2 text-sm"
+                        className="rounded-xl border border-border px-4 py-2 text-body"
                       >
                         ยกเลิก
                       </button>
@@ -459,7 +471,7 @@ function AdminPeoplePage() {
                           setDraft(null);
                           toast.success("ลบสมาชิกแล้ว");
                         }}
-                        className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 px-3 py-2 text-sm text-destructive"
+                        className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 px-3 py-2 text-body text-destructive"
                       >
                         <Trash2 className="size-4" /> ลบ
                       </button>
@@ -471,8 +483,8 @@ function AdminPeoplePage() {
           })}
         </ul>
 
-        <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-          <Users className="size-3.5" /> แสดง {filtered.length} จาก {users.length} คน
+        <p className="flex items-center justify-center gap-1.5 text-body text-muted-foreground">
+          <Users className="size-4" /> แสดง {filtered.length} จาก {users.length} คน
         </p>
       </div>
 
@@ -496,7 +508,7 @@ function AdminPeoplePage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="text-body font-medium text-muted-foreground">{label}</span>
       {children}
     </label>
   );
@@ -506,20 +518,20 @@ function SourceBadge({ source }: { source?: UserSource | undefined }) {
   const label = source ? SOURCE_LABEL[source] : "เข้าตรง";
   const color =
     source === "qr"
-      ? "bg-lime/20 text-lime-foreground"
+      ? "bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]"
       : source === "link"
-        ? "bg-coral/20 text-coral"
+        ? "bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]"
         : source === "invite"
-          ? "bg-electric/20 text-electric"
+          ? "bg-[var(--tag-blue-bg)] text-[var(--tag-blue-fg)]"
           : source === "auth"
-            ? "bg-primary/15 text-primary"
+            ? "bg-[var(--tag-purple-bg)] text-[var(--tag-purple-fg)]"
             : source === "admin"
-              ? "bg-secondary text-secondary-foreground"
-              : "bg-accent text-accent-foreground";
-  return <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${color}`}>{label}</span>;
+              ? "bg-[var(--tag-teal-bg)] text-[var(--tag-teal-fg)]"
+              : "bg-[var(--tag-yellow-bg)] text-[var(--tag-yellow-fg)]";
+  return <span className={`rounded-full px-2 py-0.5 text-body font-bold ${color}`}>{label}</span>;
 }
 
-/** แผงรายละเอียดผู้ใช้: Power Profile · ความสนใจ · แมตช์ · การเชื่อมต่อ · commitment */
+/** แผงรายละเอียดผู้ใช้: โปรไฟล์พลัง · ความสนใจ · แมตช์ · การเชื่อมต่อ · commitment */
 function UserDetail({
   user,
   users,
@@ -638,16 +650,16 @@ function UserDetail({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="admin-person-detail mt-10 w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-card pb-24 shadow-xl"
+        className="admin-person-detail mt-10 w-full max-w-xl overflow-y-auto rounded-t-3xl border border-border bg-card pb-24 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border bg-card px-5 py-3">
           <span className="text-2xl leading-none">{user.avatar}</span>
           <div className="min-w-0 flex-1">
-            <h2 id={titleId} className="truncate text-sm font-bold">
+            <h2 id={titleId} className="break-words text-title font-bold">
               {user.name}
             </h2>
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="break-words text-body text-muted-foreground">
               {user.organization} · {provinceTh(user.province)}
             </p>
           </div>
@@ -655,51 +667,68 @@ function UserDetail({
             type="button"
             onClick={() => requestClose()}
             aria-label="ปิดรายละเอียดสมาชิก"
-            className="tap rounded-lg p-1.5 text-muted-foreground"
+            className="tap grid size-11 place-items-center rounded-lg text-muted-foreground"
           >
-            <X className="size-4" />
+            <X className="size-5" />
           </button>
         </div>
 
         <div className="space-y-4 px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <SourceBadge source={user.source} />
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-body font-bold">
               {GENERATION_TH[user.generation] ?? user.generation}
             </span>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
+            <span className="rounded-full bg-muted px-2 py-0.5 text-body font-bold">
               {REGION_LABEL[user.region]}
             </span>
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-bold ${
-                st.missing.length ? "bg-coral/20 text-coral" : "bg-lime/20 text-lime-foreground"
+              className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-body font-bold ${
+                st.missing.length
+                  ? "bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]"
+                  : "bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]"
               }`}
             >
+              {st.missing.length ? (
+                <CircleAlert className="size-4" aria-hidden="true" />
+              ) : (
+                <CircleCheck className="size-4" aria-hidden="true" />
+              )}
               โปรไฟล์ {st.label} {st.percent}%
             </span>
           </div>
 
-          <Section icon={<Sparkles className="size-3.5" />} title="Power Profile">
+          <Section icon={<Sparkles className="size-4" />} title="โปรไฟล์พลัง">
             <div className="grid gap-2">
-              <PowerList label="พลังที่มี" items={user.powers_have} tone="bg-lime/15" />
-              <PowerList label="พลังที่ต้องการ" items={user.powers_need} tone="bg-coral/15" />
+              <PowerList
+                label="พลังที่มี"
+                items={user.powers_have}
+                tone="bg-[var(--tag-green-bg)] text-[var(--tag-green-fg)]"
+              />
+              <PowerList
+                label="พลังที่ต้องการ"
+                items={user.powers_need}
+                tone="bg-[var(--tag-orange-bg)] text-[var(--tag-orange-fg)]"
+              />
             </div>
-            {user.bio && <p className="mt-2 text-xs text-muted-foreground">{user.bio}</p>}
-            <p className="mt-2 text-xs text-muted-foreground">
-              onboard {fmtDate(user.created_at)}
+            {user.bio && <p className="mt-2 text-body text-muted-foreground">{user.bio}</p>}
+            <p className="mt-2 text-body text-muted-foreground">
+              เข้าร่วมเมื่อ {fmtDate(user.created_at)}
               {user.updated_at ? ` · อัปเดต ${fmtDate(user.updated_at)}` : ""}
               {user.linked_at ? " · ผูกบัญชีอีเมลแล้ว" : ""}
             </p>
             {st.missing.length > 0 && (
-              <p className="mt-1 text-xs text-coral">ข้อมูลที่ยังขาด: {st.missing.join(" / ")}</p>
+              <p className="mt-1 text-body text-coral-ink">
+                ข้อมูลที่ยังขาด: {st.missing.join(" / ")}
+              </p>
             )}
           </Section>
 
-          <Section icon={<Sparkles className="size-3.5" />} title="ความสนใจ">
+          <Section icon={<Sparkles className="size-4" />} title="ความสนใจ">
             <div className="flex flex-wrap gap-1.5">
               {user.interests.length ? (
                 user.interests.map((i) => (
-                  <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-xs">
+                  <span key={i} className="rounded-full bg-muted px-2.5 py-1 text-body">
                     {issueTh(i)}
                   </span>
                 ))
@@ -710,7 +739,7 @@ function UserDetail({
           </Section>
 
           <Section
-            icon={<Sparkles className="size-3.5" />}
+            icon={<Sparkles className="size-4" />}
             title={`คู่แมตช์แนะนำ (${matches.length})`}
           >
             {matches.length ? (
@@ -719,14 +748,14 @@ function UserDetail({
                   <li key={m.user.id} className="rounded-xl border border-border p-2.5">
                     <div className="flex items-center gap-2">
                       <span className="text-lg leading-none">{m.user.avatar}</span>
-                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                      <span className="min-w-0 flex-1 break-words text-body font-semibold">
                         {m.user.name}
                       </span>
-                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-bold text-primary">
+                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-body font-bold text-primary">
                         {Math.round(m.score)}%
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">{m.reason}</p>
+                    <p className="mt-1 text-body text-muted-foreground">{m.reason}</p>
                   </li>
                 ))}
               </ul>
@@ -736,7 +765,7 @@ function UserDetail({
           </Section>
 
           <Section
-            icon={<Link2 className="size-3.5" />}
+            icon={<Link2 className="size-4" />}
             title={`การเชื่อมต่อ (${myConnections.length})`}
           >
             {myConnections.length ? (
@@ -746,14 +775,16 @@ function UserDetail({
                   return (
                     <li key={c.id} className="rounded-xl border border-border p-2.5">
                       <div className="flex items-center gap-2">
-                        <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                        <span className="min-w-0 flex-1 break-words text-body font-semibold">
                           กับ {nameOf(other)}
                         </span>
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-body font-bold ${STATUS_TAG[c.status]}`}
+                        >
                           {STATUS_TH[c.status]}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-body text-muted-foreground">
                         คะแนน {Math.round(c.match_score)}% · {c.match_reason}
                       </p>
                     </li>
@@ -766,7 +797,7 @@ function UserDetail({
           </Section>
 
           <Section
-            icon={<CalendarCheck className="size-3.5" />}
+            icon={<CalendarCheck className="size-4" />}
             title={`คำมั่นสัญญา (${myCommitments.length})`}
           >
             {myCommitments.length ? (
@@ -774,16 +805,18 @@ function UserDetail({
                 {myCommitments.map((m) => (
                   <li key={m.id} className="rounded-xl border border-border p-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="min-w-0 flex-1 truncate text-xs font-semibold">
+                      <span className="min-w-0 flex-1 break-words text-body font-semibold">
                         {m.action_type}
                       </span>
-                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-body font-bold ${STATUS_TAG[m.status]}`}
+                      >
                         {STATUS_TH[m.status]}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground">{m.description}</p>
+                    <p className="mt-1 text-body text-muted-foreground">{m.description}</p>
                     {m.follow_up_date && (
-                      <p className="mt-0.5 text-xs text-primary">
+                      <p className="mt-0.5 text-body text-primary">
                         นัดหมาย {fmtDate(m.follow_up_date)}
                       </p>
                     )}
@@ -798,7 +831,7 @@ function UserDetail({
           <button
             type="button"
             onClick={() => requestClose(onEdit)}
-            className="tap w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground"
+            className="tap w-full rounded-xl bg-primary py-2.5 text-body font-semibold text-primary-foreground"
           >
             แก้ไขข้อมูลผู้ใช้นี้
           </button>
@@ -819,7 +852,7 @@ function Section({
 }) {
   return (
     <section className="rounded-2xl border border-border p-3">
-      <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold">
+      <h3 className="mb-2 flex items-center gap-1.5 text-lead font-bold">
         {icon}
         {title}
       </h3>
@@ -831,11 +864,11 @@ function Section({
 function PowerList({ label, items, tone }: { label: string; items: string[]; tone: string }) {
   return (
     <div>
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="text-body font-medium text-muted-foreground">{label}</p>
       <div className="mt-1 flex flex-wrap gap-1.5">
         {items.length ? (
           items.map((p) => (
-            <span key={p} className={`rounded-full px-2.5 py-1 text-xs ${tone}`}>
+            <span key={p} className={`rounded-full px-2.5 py-1 text-body ${tone}`}>
               {POWER_EMOJI[p] ?? "✨"} {powerTh(p)}
             </span>
           ))
@@ -848,5 +881,5 @@ function PowerList({ label, items, tone }: { label: string; items: string[]; ton
 }
 
 function Empty({ text }: { text: string }) {
-  return <span className="text-xs text-muted-foreground">{text}</span>;
+  return <span className="text-body text-muted-foreground">{text}</span>;
 }

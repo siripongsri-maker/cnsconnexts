@@ -50,8 +50,8 @@ function AdminSubmissions() {
             <li key={s.id} className="card-soft rounded-2xl bg-card p-4">
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <p className="break-words text-sm font-extrabold">{s.name}</p>
-                  <p className="text-xs font-bold text-muted-foreground">
+                  <p className="break-words text-body font-extrabold">{s.name}</p>
+                  <p className="text-body font-bold text-muted-foreground">
                     {s.course} · {s.batch} · {provinceTh(s.province)} · {REGION_LABEL[s.region]}
                   </p>
                 </div>
@@ -59,13 +59,17 @@ function AdminSubmissions() {
                   type="button"
                   onClick={() => toggleShowcase(s.id)}
                   aria-pressed={s.showcase}
-                  className={`tap inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${
+                  className={`tap inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-body font-bold ${
                     s.showcase
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground"
                   }`}
                 >
-                  <Star className="h-3.5 w-3.5" /> ขึ้นเวที
+                  <Star
+                    className={`size-4 ${s.showcase ? "fill-current" : ""}`}
+                    aria-hidden="true"
+                  />{" "}
+                  ขึ้นเวที
                 </button>
               </div>
 
@@ -83,8 +87,8 @@ function AdminSubmissions() {
                     });
                   }}
                 >
-                  <p className="line-clamp-2 text-[12px] text-muted-foreground">{s.summary}</p>
-                  <p className="mt-1 text-xs font-bold text-primary">แตะเพื่อแก้ไข</p>
+                  <p className="line-clamp-2 text-body text-muted-foreground">{s.summary}</p>
+                  <p className="mt-1 text-body font-bold text-primary">แตะเพื่อแก้ไข</p>
                 </button>
               ) : (
                 <div className="mt-3 space-y-3">
@@ -97,19 +101,19 @@ function AdminSubmissions() {
                     ] as [string, keyof Draft][]
                   ).map(([label, key]) => (
                     <label key={key} className="block space-y-1">
-                      <span className="text-xs font-bold text-muted-foreground">{label}</span>
+                      <span className="text-body font-bold text-muted-foreground">{label}</span>
                       {key === "name" ? (
                         <input
                           value={draft[key]}
                           onChange={(e) => setDraft({ ...draft, [key]: e.target.value })}
-                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                         />
                       ) : (
                         <textarea
                           rows={2}
                           value={draft[key]}
                           onChange={(e) => setDraft({ ...draft, [key]: e.target.value })}
-                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-body"
                         />
                       )}
                     </label>
@@ -123,7 +127,7 @@ function AdminSubmissions() {
                         setDraft(null);
                         toast.success("บันทึกผลงานแล้ว");
                       }}
-                      className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-extrabold text-primary-foreground"
+                      className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-body font-extrabold text-primary-foreground"
                     >
                       <Save className="h-4 w-4" /> บันทึก
                     </button>
@@ -133,7 +137,7 @@ function AdminSubmissions() {
                         setOpenId(null);
                         setDraft(null);
                       }}
-                      className="rounded-xl border border-border px-4 py-2 text-sm"
+                      className="rounded-xl border border-border px-4 py-2 text-body"
                     >
                       ยกเลิก
                     </button>
@@ -145,7 +149,7 @@ function AdminSubmissions() {
                         setDraft(null);
                         toast.success("ลบผลงานแล้ว");
                       }}
-                      className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 px-3 py-2 text-sm text-destructive"
+                      className="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-destructive/40 px-3 py-2 text-body text-destructive"
                     >
                       <Trash2 className="h-4 w-4" /> ลบ
                     </button>
