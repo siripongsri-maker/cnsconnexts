@@ -192,6 +192,64 @@ export type Database = {
           },
         ]
       }
+      meetups: {
+        Row: {
+          connection_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          invitee: string
+          inviter: string
+          responded_at: string | null
+          signal_key: string
+          status: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitee: string
+          inviter: string
+          responded_at?: string | null
+          signal_key?: string
+          status?: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitee?: string
+          inviter?: string
+          responded_at?: string | null
+          signal_key?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetups_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetups_invitee_fkey"
+            columns: ["invitee"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetups_inviter_fkey"
+            columns: ["inviter"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           connection_id: string
