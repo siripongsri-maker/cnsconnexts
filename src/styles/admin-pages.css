@@ -1082,21 +1082,41 @@ summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
 .admin-workspace-backup-policy > section > label {
   padding-block: 8px;
 }
-.admin-log-access {
-  border-left: 2px solid var(--primary) !important;
-  background: var(--sky-soft) !important;
+.admin-content .admin-workspace > .admin-log-access {
+  background: var(--sky-soft);
+  padding-block: 14px;
 }
 .admin-workspace-logs > div:has(> input) {
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  background: var(--sky-soft);
-  padding: 14px;
+  background: var(--card);
+  padding: 12px;
 }
-/* Visitor ids ("v-6z1t…") wrap as one token, filling each line, instead of splitting after "v-". */
+/* Visitor ids stay on one line; the table box scrolls sideways when the columns need more room. */
 .admin-log-visitor {
-  min-width: 9ch;
-  overflow-wrap: anywhere;
-  word-break: break-all;
+  white-space: nowrap;
+}
+/* Label/value pairs inside a card (retention dates, this device's consent): plain text, no box in a box. */
+.admin-log-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.admin-log-facts dt {
+  color: var(--ink-soft);
+}
+.admin-log-facts dd {
+  color: var(--foreground);
+  font-family: var(--font-tech);
+}
+.admin-content .admin-bar-label {
+  fill: var(--foreground);
+  font-family: var(--font-tech);
 }
 /* Chart legends: a swatch plus the Thai name, so no series is told apart by colour alone. */
 .admin-chart-legend {
