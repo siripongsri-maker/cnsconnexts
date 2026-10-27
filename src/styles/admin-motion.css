@@ -1,4 +1,4 @@
-/* Local control-room interactions; viewport reveals are owned by MotionRuntime. */
+/* Back-office interactions: fades and short translates only (<= 8px, <= 200ms); viewport reveals are owned by MotionRuntime. */
 .admin-sidebar,
 .admin-topbar {
   transform: none;
@@ -7,13 +7,13 @@
   overscroll-behavior: contain;
 }
 .admin-nav-link > svg {
-  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 160ms ease-out;
 }
 .admin-person-overlay {
   animation: admin-backdrop-in 180ms ease-out both;
 }
 .admin-person-overlay > .admin-person-detail {
-  animation: admin-dialog-in 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: admin-dialog-in 200ms ease-out both;
 }
 .admin-person-overlay.is-closing {
   animation: admin-backdrop-out 180ms ease-in both;
@@ -24,7 +24,7 @@
 }
 .admin-content .admin-records > li > .space-y-3,
 .admin-backup-detail {
-  animation: admin-detail-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: admin-detail-in 200ms ease-out both;
 }
 .admin-cost-files > li {
   animation: admin-detail-in 180ms ease-out both;
@@ -43,13 +43,13 @@
 .admin-backup-detail {
   overscroll-behavior-x: contain;
   scrollbar-width: thin;
-  scrollbar-color: #37617f #080e15;
+  scrollbar-color: var(--primary) var(--sky-soft);
 }
 .admin-content tbody tr {
   transition: background-color 160ms ease;
 }
 .admin-content tbody tr:focus-within {
-  background: rgb(19 155 255 / 6%);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 @media (hover: hover) and (pointer: fine) {
   .admin-nav-link:hover > svg {
@@ -75,7 +75,7 @@
 @keyframes admin-dialog-in {
   from {
     opacity: 0;
-    transform: translate3d(0, 22px, 0);
+    transform: translate3d(0, 8px, 0);
   }
   to {
     opacity: 1;
@@ -89,7 +89,7 @@
   }
   to {
     opacity: 0;
-    transform: translate3d(0, 14px, 0);
+    transform: translate3d(0, 8px, 0);
   }
 }
 @keyframes admin-detail-in {
@@ -107,10 +107,9 @@ html[data-lowspec] .admin-content .admin-records > li > .space-y-3,
 html[data-lowspec] .admin-cost-files > li,
 html[data-lowspec] .admin-experience .animate-spin {
   animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
+  transition: none !important;
 }
-html[data-lowspec] .admin-nav-link > svg {
+html[data-lowspec] :is(.admin-nav-link, .admin-nav-link > svg, .admin-content tbody tr, .admin-records > li, .admin-upload-zone) {
   transition: none;
   transform: none;
 }
@@ -122,11 +121,13 @@ html[data-lowspec] .admin-nav-link > svg {
   .admin-cost-files > li,
   .admin-experience .animate-spin {
     animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
+    transition: none !important;
   }
+  .admin-nav-link,
   .admin-nav-link > svg,
-  .admin-content tbody tr {
+  .admin-content tbody tr,
+  .admin-records > li,
+  .admin-upload-zone {
     transition: none;
     transform: none;
   }
