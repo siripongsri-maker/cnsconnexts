@@ -349,7 +349,7 @@
   padding: 24px clamp(24px, 3vw, 54px) 0;
   scroll-margin-top: 92px;
 }
-/* The back-office hero is a plain sky card: no route artwork, no corner tick, no index number. */
+/* The back-office hero is a plain sky card: no route artwork, no purple corner bar (::after), no index number. */
 .admin-experience .mission-page-hero {
   grid-template-columns: minmax(0, 1fr);
   min-height: 0;
@@ -359,7 +359,8 @@
   background: var(--sky);
   padding-block: 28px;
 }
-.admin-experience .mission-page-hero::before {
+.admin-experience .mission-page-hero::before,
+.admin-experience .mission-page-hero::after {
   display: none;
 }
 .admin-experience .mission-page-hero h1 {

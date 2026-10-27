@@ -170,7 +170,7 @@ function AdminCosts() {
                 <button
                   type="button"
                   aria-label={`เอา ${f.name} ออก`}
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-border text-muted-foreground"
+                  className="inline-flex size-11 shrink-0 items-center justify-center border border-border text-muted-foreground"
                   onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
                 >
                   <X className="h-4 w-4" />

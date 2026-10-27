@@ -650,7 +650,7 @@ function UserDetail({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="admin-person-detail mt-10 w-full max-w-xl overflow-y-auto rounded-t-3xl border border-border bg-card pb-24 shadow-xl"
+        className="admin-person-detail mt-10 w-full overflow-y-auto rounded-t-3xl border border-border bg-card pb-24 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border bg-card px-5 py-3">
@@ -779,7 +779,7 @@ function UserDetail({
                           กับ {nameOf(other)}
                         </span>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-body font-bold ${STATUS_TAG[c.status]}`}
+                          className={`rounded-full px-2 py-0.5 text-body font-bold ${STATUS_TAG[c.status] ?? "bg-muted text-foreground"}`}
                         >
                           {STATUS_TH[c.status]}
                         </span>
@@ -809,7 +809,7 @@ function UserDetail({
                         {m.action_type}
                       </span>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-body font-bold ${STATUS_TAG[m.status]}`}
+                        className={`rounded-full px-2 py-0.5 text-body font-bold ${STATUS_TAG[m.status] ?? "bg-muted text-foreground"}`}
                       >
                         {STATUS_TH[m.status]}
                       </span>

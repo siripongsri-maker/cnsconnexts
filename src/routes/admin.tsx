@@ -42,7 +42,7 @@ const ADMIN_PAGES = [
   },
   {
     path: "/admin/import",
-    kicker: "ชวนเพื่อนเข้าเครือข่าย",
+    kicker: "นำเข้ารายชื่อ",
     title: "เพิ่มคน เพิ่มพลัง",
     description: "นำเข้ารายชื่อจาก CSV เชื่อมเข้าสู่เครือข่าย",
   },
@@ -84,7 +84,7 @@ const ADMIN_PAGES = [
   },
   {
     path: "/admin/qr",
-    kicker: "ทางเข้าร่วมงาน",
+    kicker: "QR และรหัสห้อง",
     title: "สแกน แล้วเชื่อมกัน",
     description: "รหัสห้อง QR และป้ายสำหรับหน้างาน",
   },

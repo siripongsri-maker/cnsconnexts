@@ -249,6 +249,9 @@ function AdminOverview() {
                 tickLine={false}
                 axisLine={false}
                 minTickGap={16}
+                tickMargin={16}
+                padding={{ left: 12, right: 12 }}
+                height={44}
               />
               <YAxis
                 allowDecimals={false}
