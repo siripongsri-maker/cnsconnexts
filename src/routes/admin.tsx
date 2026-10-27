@@ -5,7 +5,8 @@ import { ArrowUpRight, Home, Lock, LogOut } from "lucide-react";
 import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
 import { Button } from "@/components/ui/button";
-import { MissionHeader, MissionVisual } from "@/components/mission-ui";
+import { MeadowScene } from "@/components/meadow-scene";
+import { MissionHeader } from "@/components/mission-ui";
 import { Wordmark } from "@/components/wordmark";
 
 export const Route = createFileRoute("/admin")({
@@ -207,22 +208,13 @@ function AdminLayout() {
     return (
       <main id="main-content" className="admin-login">
         <section className="admin-login-story" aria-labelledby="admin-login-title">
-          <Link to="/" className="admin-brand">
-            คนส.<span>CONNEXTS / CONTROL</span>
+          <MeadowScene variant="celebrate" className="admin-login-scene" />
+          <Link to="/" aria-label="คนส. Connexts กลับหน้าแรก" className="admin-brand">
+            <Wordmark size="header" withMark />
           </Link>
           <div className="admin-login-copy">
-            <p className="mission-kicker">Network operations / 01</p>
-            <h1 id="admin-login-title">
-              ดูแลเครือข่าย
-              <br />
-              <span>ให้ไปต่อ</span>
-            </h1>
-            <p>ทุกคน ทุกไอเดีย ทุกการเชื่อมต่อ ในที่เดียว</p>
-          </div>
-          <MissionVisual variant="control" className="admin-login-visual" />
-          <div className="admin-login-caption">
-            <span>คนส. Connexts</span>
-            <span>Control room ↗</span>
+            <h1 id="admin-login-title">หลังบ้าน คนส. CoNnextS</h1>
+            <p>ดูแลข้อมูลและผู้เข้าร่วมของงานสมัชชาสุขภาพครั้งที่ 19</p>
           </div>
         </section>
         <section className="admin-login-access" aria-labelledby="admin-access-title">
@@ -237,14 +229,11 @@ function AdminLayout() {
               <span className="admin-access-icon">
                 <Lock className="h-5 w-5" aria-hidden="true" />
               </span>
-              <div>
-                <p className="mission-kicker">Authorized access</p>
-                <h2 id="admin-access-title">เข้าสู่ระบบผู้ดูแล</h2>
-              </div>
+              <h2 id="admin-access-title">เข้าสู่ระบบผู้ดูแล</h2>
             </div>
 
             <label className="block space-y-1">
-              <span className="text-xs font-bold text-muted-foreground">ชื่อผู้ใช้</span>
+              <span className="text-body font-bold text-foreground">ชื่อผู้ใช้</span>
               <input
                 value={user}
                 onChange={(e) => {
@@ -252,12 +241,12 @@ function AdminLayout() {
                   setError(false);
                 }}
                 autoComplete="username"
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                className="text-body w-full rounded-xl border border-border bg-background px-3 py-2 outline-none"
               />
             </label>
 
             <label className="block space-y-1">
-              <span className="text-xs font-bold text-muted-foreground">รหัสผ่าน</span>
+              <span className="text-body font-bold text-foreground">รหัสผ่าน</span>
               <input
                 type="password"
                 value={password}
@@ -266,12 +255,12 @@ function AdminLayout() {
                   setError(false);
                 }}
                 autoComplete="current-password"
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none"
+                className="text-body w-full rounded-xl border border-border bg-background px-3 py-2 outline-none"
               />
             </label>
 
             {error && (
-              <p role="alert" className="text-[12px] font-bold text-destructive">
+              <p role="alert" className="text-body font-bold text-destructive">
                 ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
               </p>
             )}
@@ -279,7 +268,7 @@ function AdminLayout() {
             <Button
               type="submit"
               variant="mission"
-              className="tap w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-extrabold text-primary-foreground"
+              className="tap text-body w-full rounded-xl bg-primary px-4 py-2.5 font-extrabold text-primary-foreground"
             >
               เข้าสู่ระบบ <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
             </Button>
@@ -295,7 +284,10 @@ function AdminLayout() {
               </p>
             </details>
 
-            <Link to="/" className="block text-center text-[12px] font-bold text-muted-foreground">
+            <Link
+              to="/"
+              className="text-body flex min-h-11 items-center justify-center font-bold text-muted-foreground"
+            >
               ← กลับหน้าแรก
             </Link>
           </form>
