@@ -86,7 +86,7 @@ function AdminConnections() {
         {shown.map((c) => {
           const a = nameOf(c.user_a);
           const b = nameOf(c.user_b);
-          const StatusIcon = STATUS_ICON[c.status];
+          const StatusIcon = STATUS_ICON[c.status] ?? Link2;
           return (
             <li key={c.id} className="admin-connection-row">
               <div className="admin-connection-main">
