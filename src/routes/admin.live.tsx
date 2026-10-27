@@ -81,7 +81,7 @@ function AdminLive() {
         ) : (
           <ul className="admin-live-feed-list">
             {feed.slice(0, 5).map((e) => (
-              <li key={e.id} className="animate-rise">
+              <li key={e.id} className="animate-rise" title={`${e.title} — ${e.detail}`}>
                 <p className="admin-live-feed-title">{e.title}</p>
                 <p className="admin-live-feed-detail">{e.detail}</p>
               </li>

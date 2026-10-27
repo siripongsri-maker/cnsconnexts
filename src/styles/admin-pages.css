@@ -130,13 +130,6 @@
   /* --destructive is 3.6:1 on white; darken it so the error reads at 4.5:1 or better */
   color: color-mix(in oklab, var(--destructive) 75%, black);
 }
-.admin-login-form > button {
-  min-height: 48px;
-  justify-content: space-between;
-  padding-inline: 18px;
-  font-size: 17px;
-  font-weight: 500;
-}
 .admin-role-note {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);

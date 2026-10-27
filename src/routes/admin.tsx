@@ -250,7 +250,7 @@ function AdminLayout() {
             <Button
               type="submit"
               variant="mission"
-              className="tap text-body w-full rounded-xl bg-primary px-4 py-2.5 font-extrabold text-primary-foreground"
+              className="tap h-12 w-full justify-between rounded-xl bg-primary px-[18px] text-[17px] font-medium text-primary-foreground"
             >
               เข้าสู่ระบบ <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
             </Button>
