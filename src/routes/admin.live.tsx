@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Fragment, useMemo } from "react";
-import { Handshake, MonitorPlay } from "lucide-react";
+import { CircleCheck, Handshake, MonitorPlay } from "lucide-react";
 
 import { useStore } from "@/lib/store";
 import { buildFeed, RotatingPrompt } from "@/components/live-ticker";
@@ -20,15 +20,6 @@ export const Route = createFileRoute("/admin/live")({
   }),
   component: AdminLive,
 });
-
-/** Feed time on the staff screen: time today, otherwise day + month + time. Display only. */
-function feedTime(iso: string) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const time = d.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-  if (d.toDateString() === new Date().toDateString()) return `${time} น.`;
-  return `${d.toLocaleDateString("th-TH", { day: "numeric", month: "short" })} ${time} น.`;
-}
 
 /** buildFeed (shared with participant pages) joins the two regions with an emoji; here it becomes an icon. */
 function FeedTitle({ title }: { title: string }) {
@@ -74,18 +65,18 @@ function AdminLive() {
     <div className="admin-workspace admin-workspace-live">
       <MeadowScene variant="celebrate" className="admin-live-scene" />
 
+      <div className="admin-live-prompt card-soft rounded-2xl">
+        <RotatingPrompt size="lg" tone="card" />
+      </div>
+
       <Link
         to="/dashboard"
         search={{ present: "1" }}
         className="admin-live-present tap flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 font-extrabold text-primary-foreground"
       >
-        <MonitorPlay className="h-6 w-6" aria-hidden="true" />
+        <MonitorPlay className="h-5 w-5" aria-hidden="true" />
         เปิดจอฉายเต็มจอ
       </Link>
-
-      <div className="admin-live-prompt card-soft rounded-2xl">
-        <RotatingPrompt size="lg" tone="card" />
-      </div>
 
       <div className="admin-live-stats">
         {(
@@ -93,9 +84,9 @@ function AdminLive() {
             ["คน", users.length, "member"],
             ["คู่เชื่อม", connections.length, "connection"],
             ["นัดลงมือทำ", commitments.length, "commitment"],
-            ["ทำสำเร็จ", done, "commitment"],
-          ] as [string, number, AdminRecord][]
-        ).map(([label, value, record]) => (
+            ["ทำสำเร็จ", done, "commitment", true],
+          ] as [string, number, AdminRecord, boolean?][]
+        ).map(([label, value, record, completed]) => (
           <div
             key={label}
             className="admin-live-stat"
@@ -104,7 +95,10 @@ function AdminLive() {
             }
           >
             <p className="admin-live-stat-value font-tech">{value}</p>
-            <p className="admin-live-stat-label">{label}</p>
+            <p className="admin-live-stat-label">
+              {completed && <CircleCheck className="admin-live-stat-check" aria-hidden="true" />}
+              {label}
+            </p>
           </div>
         ))}
       </div>
@@ -112,7 +106,7 @@ function AdminLive() {
       <section className="admin-live-feed">
         <div className="admin-live-feed-head">
           <h2>กำลังเชื่อมกัน</h2>
-          <p>ไม่แสดงชื่อ — บอกแค่ภาคและเรื่องที่สนใจร่วมกัน</p>
+          <p>ไม่แสดงชื่อ</p>
         </div>
         {feed.length === 0 ? (
           <p className="admin-live-empty">รอสัญญาณแรกจากเครือข่าย</p>
@@ -127,10 +121,7 @@ function AdminLive() {
                 <p className="admin-live-feed-title">
                   <FeedTitle title={e.title} />
                 </p>
-                <p className="admin-live-feed-detail">
-                  {e.detail}
-                  {feedTime(e.created_at) ? ` · ${feedTime(e.created_at)}` : ""}
-                </p>
+                <p className="admin-live-feed-detail">{e.detail}</p>
               </li>
             ))}
           </ul>

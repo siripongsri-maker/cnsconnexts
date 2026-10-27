@@ -1671,7 +1671,7 @@ summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: 12px;
   overflow: hidden;
@@ -1692,13 +1692,14 @@ summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
   height: 260px;
   pointer-events: none;
 }
+/* Compact action beside the headline (the headline card sets the row height). */
 .admin-live-present {
   min-height: 48px;
-  min-width: 240px;
-  padding-block: 12px;
+  align-self: center;
+  padding-block: 10px;
   font-size: 18px;
   line-height: 1.3;
-  text-align: center;
+  white-space: nowrap;
 }
 .admin-content .admin-live-prompt {
   display: flex;
@@ -1708,6 +1709,11 @@ summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
 }
 .admin-live-prompt > div {
   width: 100%;
+  align-items: center;
+}
+/* The shared prompt reserves two lines (min-h-[5.5rem]); here the card is as tall as its text. */
+.admin-live-prompt [aria-hidden="true"] {
+  min-height: 0;
 }
 .admin-live-prompt [lang="en"] {
   font-size: 20px;
@@ -1747,6 +1753,14 @@ summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
   font-weight: 400;
   line-height: 1.05;
   overflow-wrap: anywhere;
+}
+.admin-live-stat-check {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.25em;
+  color: var(--tag-green-bg);
+  vertical-align: -0.08em;
 }
 .admin-live-stat-label {
   color: var(--ink-soft);
@@ -1851,14 +1865,9 @@ summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
     height: calc(100dvh - 76px - 16px - 16px); /* topbar, main top padding, bottom gap */
   }
   /* Feed cards by window height, so the meadow (mountains and windmills) always shows under them:
-     1 by default, 2 from 840, 3 from 950 (one column). */
-  .admin-live-feed-list > li:nth-child(n + 2) {
+     2 by default (1280×720 and up), 3 from 950 (one column). */
+  .admin-live-feed-list > li:nth-child(n + 3) {
     display: none;
-  }
-}
-@media (min-width: 1100px) and (min-height: 840px) {
-  .admin-live-feed-list > li:nth-child(2) {
-    display: block;
   }
 }
 @media (min-width: 1100px) and (min-height: 950px) {
