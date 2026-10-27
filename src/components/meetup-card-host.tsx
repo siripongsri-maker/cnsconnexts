@@ -119,21 +119,48 @@ export function MeetupCardHost() {
   const regionRef = useRef<HTMLDivElement>(null);
   const focusInCardRef = useRef(false);
   useEffect(() => {
+    const inside = (node: EventTarget | null) =>
+      node instanceof Node && (regionRef.current?.contains(node) ?? false);
     const track = (e: FocusEvent) => {
-      focusInCardRef.current = regionRef.current?.contains(e.target as Node) ?? false;
+      focusInCardRef.current = inside(e.target);
+    };
+    // ผู้ใช้ย้ายโฟกัสออกจากการ์ดเอง → ลืมว่าเคยอยู่ในการ์ด (การ์ดเปลี่ยนทีหลังจะไม่ดึงโฟกัสกลับมา)
+    // relatedTarget ว่าง: ถ้าปุ่มเดิมยังอยู่ในหน้าแต่โฟกัสไป BODY (แตะพื้นที่ว่าง) ก็ลืมเช่นกัน;
+    // ถ้าปุ่มถูกถอดออก (การ์ดหาย/ถูกแทนที่) ยังจำไว้ให้ย้ายโฟกัสต่อ; สลับแท็บ/แอป โฟกัสยังอยู่ที่ปุ่ม
+    const leave = (e: FocusEvent) => {
+      if (!inside(e.target)) return;
+      if (e.relatedTarget) {
+        if (!inside(e.relatedTarget)) focusInCardRef.current = false;
+        return;
+      }
+      const from = e.target as Node;
+      window.setTimeout(() => {
+        const active = document.activeElement;
+        if (from.isConnected && (!active || active === document.body)) {
+          focusInCardRef.current = false;
+        }
+      }, 0);
     };
     document.addEventListener("focusin", track);
-    return () => document.removeEventListener("focusin", track);
+    document.addEventListener("focusout", leave);
+    return () => {
+      document.removeEventListener("focusin", track);
+      document.removeEventListener("focusout", leave);
+    };
   }, []);
   useEffect(() => {
     if (!focusInCardRef.current) return;
     const active = document.activeElement;
     if (active && active !== document.body) return; // โฟกัสไปอยู่ที่อื่นแล้ว (เช่น โหมดหากันที่เพิ่งเปิด)
     focusInCardRef.current = false;
-    // หมดเวลา → ปุ่ม "ปิด" มาแทนปุ่มตอบ; การ์ดหาย → เนื้อหาหลักของหน้า
-    let target: HTMLElement | null = closeRef.current;
+    // หมดเวลา → ปุ่ม "ปิด" มาแทนปุ่มตอบ; ใบถัดไปในคิวมาแทน → ปุ่มแรกของใบใหม่;
+    // การ์ดหาย → เนื้อหาหลักของหน้า
+    let target: HTMLElement | null =
+      closeRef.current ?? regionRef.current?.querySelector<HTMLElement>("section button") ?? null;
     if (!target) {
-      target = document.querySelector<HTMLElement>("main");
+      target =
+        document.querySelector<HTMLElement>("#main-content") ??
+        document.querySelector<HTMLElement>("main");
       if (!target) return;
       if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
       target.style.outline = "none";
@@ -173,15 +200,15 @@ export function MeetupCardHost() {
   return (
     <div
       ref={regionRef}
-      role="region"
       aria-live="polite"
-      aria-label="คำชวนเจอ"
       className="pointer-events-none fixed inset-x-0 z-[45] flex justify-center px-4"
       style={{ top: "max(12px, env(safe-area-inset-top))" }}
     >
       {card && partner && (
         <section
           key={card.meetup.id}
+          role="region"
+          aria-label="คำชวนเจอ"
           className="meadow-card pointer-events-auto flex w-full max-w-[30rem] flex-col gap-3 p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-4"
         >
           <div className="flex items-center gap-3">
@@ -194,7 +221,13 @@ export function MeetupCardHost() {
                   <PartyPopper className="size-6 shrink-0 text-primary" aria-hidden />
                 )}
                 <span className="min-w-0 break-words">
-                  {card.kind === "invite" ? `${name} อยากเจอคุณตอนนี้` : `${name} พร้อมเจอแล้ว!`}
+                  {card.kind === "invite" ? (
+                    <>
+                      {name} อยากเจอคุณ<span className="whitespace-nowrap">ตอนนี้</span>
+                    </>
+                  ) : (
+                    `${name} พร้อมเจอแล้ว!`
+                  )}
                 </span>
               </p>
             </div>
