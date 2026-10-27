@@ -112,6 +112,7 @@ html[data-lowspec] :is(
     .admin-content .admin-records > li > .space-y-3,
     .admin-cost-files > li,
     .admin-experience .animate-spin,
+    .admin-experience .animate-rise,
     .admin-nav-link,
     .admin-nav-link > svg,
     .admin-content tbody tr,
