@@ -6,7 +6,6 @@ import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
 import { Button } from "@/components/ui/button";
 import { MeadowScene } from "@/components/meadow-scene";
-import { MissionHeader } from "@/components/mission-ui";
 import { Wordmark } from "@/components/wordmark";
 
 export const Route = createFileRoute("/admin")({
@@ -31,122 +30,105 @@ export const Route = createFileRoute("/admin")({
 const ADMIN_PAGES = [
   {
     path: "/admin",
-    kicker: "Mission overview",
+    kicker: "ภาพรวมของเครือข่าย",
     title: "เครือข่าย ในภาพเดียว",
     description: "ทุกความเคลื่อนไหวของ คนส. Connexts",
-    variant: "control",
   },
   {
     path: "/admin/people",
-    kicker: "People directory",
+    kicker: "รายชื่อสมาชิก",
     title: "คน คือพลังของเครือข่าย",
     description: "ค้นหา แก้ไข และติดตามสมาชิก",
-    variant: "profile",
   },
   {
     path: "/admin/import",
-    kicker: "Connect your people",
+    kicker: "ชวนเพื่อนเข้าเครือข่าย",
     title: "เพิ่มคน เพิ่มพลัง",
     description: "นำเข้ารายชื่อจาก CSV เชื่อมเข้าสู่เครือข่าย",
-    variant: "network",
   },
   {
     path: "/admin/ideas",
-    kicker: "Idea exchange",
+    kicker: "แลกเปลี่ยนไอเดีย",
     title: "ไอเดีย ที่พร้อมเติบโต",
     description: "จัดการข้อเสนอและประเด็นจากสมาชิก",
-    variant: "signal",
   },
   {
     path: "/admin/submissions",
-    kicker: "Work archive",
+    kicker: "คลังผลงาน",
     title: "ผลงาน ที่ขยายผลได้",
     description: "ดูแลผลงานและเลือกเรื่องเล่าขึ้นเวที",
-    variant: "archive",
   },
   {
     path: "/admin/map",
-    kicker: "Regional network",
+    kicker: "เครือข่ายรายพื้นที่",
     title: "พลัง ในทุกพื้นที่",
     description: "ดูสมาชิกและบันทึกการทำงานรายจังหวัด",
-    variant: "network",
   },
   {
     path: "/admin/connections",
-    kicker: "Network connections",
+    kicker: "คู่เชื่อมในเครือข่าย",
     title: "ทุกคู่เชื่อม มีโอกาส",
     description: "ติดตามและปรับสถานะการเชื่อมต่อ",
-    variant: "network",
   },
   {
     path: "/admin/commitments",
-    kicker: "Commitment tracker",
+    kicker: "ติดตามคำมั่น",
     title: "จากคำมั่น สู่การลงมือ",
     description: "ดูแลวันนัดและความคืบหน้าร่วมกัน",
-    variant: "action",
   },
   {
     path: "/admin/live",
-    kicker: "Live transmission",
-    title: "สัญญาณสด จากเครือข่าย",
+    kicker: "จอสดของงาน",
+    title: "ความเคลื่อนไหว ที่เกิดขึ้นตอนนี้",
     description: "ติดตามกิจกรรมและเปิดจอฉายสำหรับงาน",
-    variant: "signal",
   },
   {
     path: "/admin/qr",
-    kicker: "Event access",
+    kicker: "ทางเข้าร่วมงาน",
     title: "สแกน แล้วเชื่อมกัน",
     description: "รหัสห้อง QR และป้ายสำหรับหน้างาน",
-    variant: "signal",
   },
   {
     path: "/admin/logs",
-    kicker: "Usage signals",
+    kicker: "การใช้งานของผู้เข้าร่วม",
     title: "เข้าใจ ทุกการใช้งาน",
     description: "บันทึกการเข้าชมและความยินยอม",
-    variant: "control",
   },
   {
     path: "/admin/backups",
-    kicker: "Data recovery",
+    kicker: "สำรองและกู้คืนข้อมูล",
     title: "ข้อมูล ที่กลับมาได้",
     description: "สำรอง ส่งออก และกู้คืนสแนปช็อต",
-    variant: "archive",
   },
   {
     path: "/admin/backup-policy",
-    kicker: "Retention policy",
+    kicker: "นโยบายการเก็บข้อมูลสำรอง",
     title: "ดูแลข้อมูล อย่างต่อเนื่อง",
     description: "กำหนดอายุและจำนวนรายการสำรอง",
-    variant: "control",
   },
   {
     path: "/admin/audit",
-    kicker: "Change history",
+    kicker: "ประวัติการแก้ไข",
     title: "ทุกการเปลี่ยนแปลง มีที่มา",
     description: "ติดตามผู้แก้ไข เวลา และรายการข้อมูล",
-    variant: "archive",
   },
   {
     path: "/admin/export",
-    kicker: "Data export",
+    kicker: "ส่งออกข้อมูล",
     title: "พาข้อมูล ไปต่อ",
     description: "ดาวน์โหลด CSV หรือ JSON ได้ในที่เดียว",
-    variant: "archive",
   },
   {
     path: "/admin/costs",
-    kicker: "Cost intelligence",
+    kicker: "สรุปค่าใช้จ่าย",
     title: "รู้ต้นทุน เพื่อไปต่อ",
     description: "แนบเครดิตและใบแจ้งหนี้ ให้ AI สรุปเป็นเงินบาท",
-    variant: "control",
   },
   {
     path: "/admin/settings",
-    kicker: "System settings",
+    kicker: "ตั้งค่าระบบ",
     title: "จัดระบบ ให้พร้อมเสมอ",
     description: "ดูแลบัญชีและข้อมูลของกิจกรรม",
-    variant: "control",
   },
 ] as const;
 
@@ -366,25 +348,23 @@ function AdminLayout() {
         </header>
 
         <main id="main-content" tabIndex={-1} className="admin-main">
-          <MissionHeader
-            kicker={page.kicker}
-            title={page.title}
-            description={page.description}
-            variant={page.variant}
-            number={String(pageIndex + 1).padStart(2, "0")}
-            compact
-          />
+          <header className="mission-page-hero mission-page-hero--compact">
+            <div className="mission-page-hero-copy">
+              <p className="mission-kicker">
+                <span>{page.kicker}</span>
+              </p>
+              <h1>{page.title}</h1>
+              <p className="mission-page-description">{page.description}</p>
+            </div>
+          </header>
           <div
             className={`admin-content admin-page-${page.path === "/admin" ? "overview" : page.path.split("/").at(-1)}`}
           >
             <Outlet />
           </div>
           <footer className="admin-footer">
-            <span>คนส. CONNEXTS</span>
-            <span>
-              {String(pageIndex + 1).padStart(2, "0")} /{" "}
-              {String(ADMIN_PAGES.length).padStart(2, "0")} — {page.kicker}
-            </span>
+            <span>คนส. CoNnextS · หลังบ้าน</span>
+            <span>{page.kicker}</span>
           </footer>
         </main>
       </div>
