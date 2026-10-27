@@ -23,11 +23,7 @@ export type ChannelState = "connecting" | "open" | "lost";
 export interface MeetupTransport {
   /** คำชวนที่ฉันเป็นผู้ชวนหรือผู้ถูกชวน — โยน error ถ้าเน็ตล่ม (ผู้เรียกเก็บของเดิมไว้) */
   list(meId: string): Promise<Meetup[]>;
-  create(input: {
-    connectionId: string;
-    inviter: string;
-    invitee: string;
-  }): Promise<
+  create(input: { connectionId: string; inviter: string; invitee: string }): Promise<
     | { ok: true; meetup: Meetup; existing: boolean }
     /** `cooldown` = คำชวนของฉันบนคอนเนกชันนี้ถูกปฏิเสธ/ยกเลิกเมื่อไม่ถึง 30 นาที (trigger `meetup_cooldown`) */
     | { ok: false; reason?: "cooldown" }

@@ -144,7 +144,12 @@ describe("canInvite", () => {
     expect(canInvite([meetup({ status: "done" })], "c1", NOW, "alice")).toBe(true);
     // alice เป็นผู้ชวนแถวที่ถูกปฏิเสธ/ยกเลิก → bob ยังชวนได้
     expect(
-      canInvite([meetup({ status: "declined" }), meetup({ status: "cancelled" })], "c1", NOW, "bob"),
+      canInvite(
+        [meetup({ status: "declined" }), meetup({ status: "cancelled" })],
+        "c1",
+        NOW,
+        "bob",
+      ),
     ).toBe(true);
   });
   it("cool-down: my own declined or cancelled invite blocks me until it would have expired", () => {
@@ -157,9 +162,9 @@ describe("canInvite", () => {
   });
   it("ignores active meetups on other connections", () => {
     expect(canInvite([meetup({ connectionId: "c2" })], "c1", NOW, "alice")).toBe(true);
-    expect(canInvite([meetup({ connectionId: "c2", status: "declined" })], "c1", NOW, "alice")).toBe(
-      true,
-    );
+    expect(
+      canInvite([meetup({ connectionId: "c2", status: "declined" })], "c1", NOW, "alice"),
+    ).toBe(true);
   });
 });
 

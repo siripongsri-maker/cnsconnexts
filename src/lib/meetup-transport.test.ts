@@ -107,9 +107,9 @@ describe("classifyDbError", () => {
 
   it("an aborted / timed-out request (postgrest-js: status 0, code '') is network", () => {
     // รูปที่ postgrest-js 2.x คืนเมื่อ fetch ถูก abort (ดู PostgrestBuilder: catch fetchError → code "")
-    expect(
-      classifyDbError({ code: "", message: "AbortError: This operation was aborted" }),
-    ).toBe("network");
+    expect(classifyDbError({ code: "", message: "AbortError: This operation was aborted" })).toBe(
+      "network",
+    );
     expect(
       classifyDbError({
         code: "",
