@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy, Printer, QrCode } from "lucide-react";
 import { toast } from "sonner";
+import { MeadowScene } from "@/components/meadow-scene";
 
 export const Route = createFileRoute("/admin/qr")({
   head: () => ({
@@ -67,24 +68,24 @@ function AdminQr() {
             >
               <Copy className="size-4" aria-hidden="true" /> คัดลอกลิงก์
             </button>
+            <div className="admin-qr-actions flex flex-wrap gap-2">
+              <Link
+                to="/print"
+                className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-body font-extrabold text-primary-foreground"
+              >
+                <Printer className="size-5" aria-hidden="true" /> ไปหน้าไฟล์พิมพ์บอร์ด/ป้าย
+              </Link>
+              <Link
+                to="/qr"
+                className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-body font-bold"
+              >
+                <QrCode className="size-5" aria-hidden="true" /> หน้า QR สำหรับผู้เข้าร่วม
+              </Link>
+            </div>
           </div>
         </div>
+        <MeadowScene variant="empty" className="admin-card-scene h-[140px]" />
       </section>
-
-      <div className="flex flex-wrap gap-2">
-        <Link
-          to="/print"
-          className="tap inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-body font-extrabold text-primary-foreground"
-        >
-          <Printer className="size-5" aria-hidden="true" /> ไปหน้าไฟล์พิมพ์บอร์ด/ป้าย
-        </Link>
-        <Link
-          to="/qr"
-          className="tap inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-body font-bold"
-        >
-          <QrCode className="size-5" aria-hidden="true" /> หน้า QR สำหรับผู้เข้าร่วม
-        </Link>
-      </div>
     </div>
   );
 }

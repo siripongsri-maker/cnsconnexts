@@ -21,6 +21,8 @@ import {
 } from "recharts";
 
 import { RECORD_CHIP, type AdminRecord } from "@/components/admin/record-colors";
+import { MeadowScene } from "@/components/meadow-scene";
+import { stepChangeLabel } from "@/lib/funnel-format";
 import { useStore } from "@/lib/store";
 import { useLiveEvents } from "@/lib/live";
 import { useUsageLogs } from "@/lib/usage-log";
@@ -134,7 +136,7 @@ function AdminOverview() {
       record: "submission",
     },
     {
-      label: "บันทึกรายจังหวัด",
+      label: "บันทึกจังหวัด",
       value: provinceNotes.length,
       icon: MapPin,
       to: "/admin/map",
@@ -220,7 +222,7 @@ function AdminOverview() {
           <div className="min-w-0">
             <h2 className="text-title font-extrabold">การเติบโตของสมาชิก</h2>
             <p className="text-body text-muted-foreground">
-              {bucket === "day" ? "14 วันล่าสุด" : "8 สัปดาห์ล่าสุด"} · ใหม่และยอดสะสม
+              {bucket === "day" ? "14 วันล่าสุด" : "8 สัปดาห์ล่าสุด"}
             </p>
           </div>
           <div className="admin-segmented flex rounded-xl bg-muted p-0.5">
@@ -312,7 +314,6 @@ function AdminOverview() {
 
       <section className="admin-overview-funnel card-soft rounded-2xl bg-card p-4">
         <h2 className="text-title font-extrabold">จากผู้เข้าชมสู่การลงมือ</h2>
-        <p className="text-body text-muted-foreground">เส้นทางการมีส่วนร่วมของผู้ใช้จริง</p>
 
         <div className="mt-3 space-y-2">
           {funnel.map((s, i) => {
@@ -320,7 +321,6 @@ function AdminOverview() {
             const width =
               funnelTop > 0 ? Math.max((s.value / funnelTop) * 100, s.value > 0 ? 6 : 2) : 2;
             const fromTop = funnelTop > 0 ? Math.round((s.value / funnelTop) * 100) : 0;
-            const fromPrev = prev > 0 ? Math.round((s.value / prev) * 100) : 0;
             return (
               <div key={s.step}>
                 <div className="admin-funnel-row flex items-baseline justify-between gap-2 text-body">
@@ -333,7 +333,8 @@ function AdminOverview() {
                     {i > 0 ? (
                       <>
                         {" "}
-                        · <span className="whitespace-nowrap">{fromPrev}% จากขั้นก่อน</span>
+                        ·{" "}
+                        <span className="whitespace-nowrap">{stepChangeLabel(s.value, prev)}</span>
                       </>
                     ) : null}
                   </span>
@@ -357,34 +358,45 @@ function AdminOverview() {
         </p>
       </section>
 
-      <section className="admin-overview-live card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-title font-extrabold">กิจกรรมสดล่าสุด</h2>
-        {events.length === 0 ? (
-          <p className="mt-1 flex items-center gap-2 text-body text-muted-foreground">
-            <Radio className="size-5 shrink-0" aria-hidden="true" />
-            ยังไม่มีความเคลื่อนไหวสดตอนนี้
-          </p>
-        ) : (
-          <ul className="mt-2 space-y-1.5">
-            {events.map((e) => (
-              <li key={e.id} className="break-words text-body">
-                <span className="font-bold">{e.title}</span>
-                <span className="text-muted-foreground"> · {e.detail}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-        <Link to="/admin/live" className="mt-3 inline-block text-body font-extrabold text-primary">
-          เปิดจอฉายกิจกรรมสด →
-        </Link>
-      </section>
+      <div className="admin-overview-side">
+        <section className="admin-overview-live card-soft rounded-2xl bg-card p-4">
+          <h2 className="text-title font-extrabold">กิจกรรมสดล่าสุด</h2>
+          {events.length === 0 ? (
+            <p className="mt-1 flex items-center gap-2 text-body text-muted-foreground">
+              <Radio className="size-5 shrink-0" aria-hidden="true" />
+              ยังไม่มีความเคลื่อนไหวสดตอนนี้
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-1.5">
+              {events.map((e) => (
+                <li key={e.id} className="break-words text-body">
+                  <span className="font-bold">{e.title}</span>
+                  <span className="text-muted-foreground"> · {e.detail}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link
+            to="/admin/live"
+            className="mt-3 inline-block text-body font-extrabold text-primary"
+          >
+            เปิดจอฉายกิจกรรมสด →
+          </Link>
+          {events.length === 0 && (
+            <MeadowScene
+              variant="empty"
+              className="admin-card-scene admin-overview-live-scene h-[120px]"
+            />
+          )}
+        </section>
 
-      <section className="admin-overview-docs card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-title font-extrabold">เอกสารเส้นทางทุกหน้า</h2>
-        <Link to="/journey" className="mt-2 inline-block text-body font-extrabold text-primary">
-          เปิดเอกสารเส้นทางทุกหน้า →
-        </Link>
-      </section>
+        <section className="admin-overview-docs card-soft rounded-2xl bg-card p-4">
+          <h2 className="text-title font-extrabold">เอกสารเส้นทางทุกหน้า</h2>
+          <Link to="/journey" className="mt-2 inline-block text-body font-extrabold text-primary">
+            เปิดเอกสารเส้นทางทุกหน้า →
+          </Link>
+        </section>
+      </div>
     </div>
   );
 }

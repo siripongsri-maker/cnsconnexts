@@ -86,7 +86,6 @@ function AdminCosts() {
     return (
       <MissionEmpty
         className="admin-empty"
-        variant="control"
         title="สำหรับเจ้าของโปรเจกต์"
         description="บัญชีนี้ไม่มีสิทธิ์สรุปค่าใช้จ่าย"
       />

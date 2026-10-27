@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { MeadowScene } from "@/components/meadow-scene";
 
 export type MissionVariant = "network" | "signal" | "profile" | "action" | "archive" | "control";
 
@@ -147,22 +148,21 @@ export function MissionHeader({
   );
 }
 
+/** Empty state for the admin record pages: a small meadow band (decorative) above the title. */
 export function MissionEmpty({
   title,
   description,
   children,
-  variant = "network",
   className = "",
 }: {
   title: ReactNode;
   description?: ReactNode;
   children?: ReactNode;
-  variant?: MissionVariant;
   className?: string;
 }) {
   return (
     <section className={`mission-empty ${className}`}>
-      <MissionVisual variant={variant} />
+      <MeadowScene variant="empty" className="mission-empty-scene h-[120px]" />
       <div className="mission-empty-copy">
         <h2>{title}</h2>
         {description && <p>{description}</p>}

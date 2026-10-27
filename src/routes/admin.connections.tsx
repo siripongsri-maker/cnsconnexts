@@ -1,7 +1,16 @@
 import { MissionEmpty } from "@/components/mission-ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Check, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  CircleCheck,
+  Hammer,
+  Link2,
+  NotebookPen,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
@@ -27,6 +36,14 @@ export const Route = createFileRoute("/admin/connections")({
 });
 
 const STATUSES: ConnectionStatus[] = ["Connected", "Planning", "In Progress", "Completed"];
+
+/** Status is never colour alone: each one has its own icon beside the Thai word. Display only. */
+const STATUS_ICON: Record<ConnectionStatus, LucideIcon> = {
+  Connected: Link2,
+  Planning: NotebookPen,
+  "In Progress": Hammer,
+  Completed: CircleCheck,
+};
 
 function AdminConnections() {
   const { connections, users, me, setConnectionStatus, removeConnection } = useStore();
@@ -65,49 +82,54 @@ function AdminConnections() {
           description="ลองเลือกสถานะอื่น หรือรอการเชื่อมต่อใหม่"
         />
       )}
-      <ul className="admin-records space-y-3">
-        {shown.map((c) => (
-          <li key={c.id} className="card-soft rounded-2xl bg-card p-4">
-            <div className="flex items-start gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="break-words text-body font-extrabold">
-                  {nameOf(c.user_a)} ↔ {nameOf(c.user_b)}
+      <ul className="admin-connection-list">
+        {shown.map((c) => {
+          const a = nameOf(c.user_a);
+          const b = nameOf(c.user_b);
+          const StatusIcon = STATUS_ICON[c.status];
+          return (
+            <li key={c.id} className="admin-connection-row">
+              <div className="admin-connection-main">
+                <p className="admin-connection-names">
+                  {a}
+                  <span aria-hidden="true"> ↔ </span>
+                  <span className="sr-only"> กับ </span>
+                  {b}
                 </p>
-                <p className="text-body font-bold text-muted-foreground">
-                  แมตช์ {c.match_score}% · {c.match_reason}
+                <p className="admin-connection-reason" title={c.match_reason}>
+                  {c.match_reason}
                 </p>
               </div>
+              <p className="admin-connection-score">แมตช์ {c.match_score}%</p>
+              <label className="admin-status-select">
+                <span className="sr-only">สถานะ</span>
+                <StatusIcon className="admin-status-select-icon" aria-hidden="true" />
+                <select
+                  value={c.status}
+                  onChange={(e) => setConnectionStatus(c.id, e.target.value as ConnectionStatus)}
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {STATUS_TH[s]}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="admin-status-select-chevron" aria-hidden="true" />
+              </label>
               <button
                 type="button"
                 onClick={() => {
                   removeConnection(c.id);
                   toast.success("ลบคู่เชื่อมแล้ว");
                 }}
-                aria-label="ลบคู่เชื่อม"
-                className="tap grid size-11 shrink-0 place-items-center rounded-xl border border-destructive/40 text-destructive"
+                aria-label={`ลบคู่เชื่อม ${a} กับ ${b}`}
+                className="admin-icon-button tap grid size-11 shrink-0 place-items-center rounded-xl"
               >
-                <Trash2 className="size-5" />
+                <Trash2 className="size-5" aria-hidden="true" />
               </button>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {STATUSES.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setConnectionStatus(c.id, s)}
-                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-body font-bold ${
-                    c.status === s
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-card text-muted-foreground"
-                  }`}
-                >
-                  {c.status === s && <Check className="size-4" aria-hidden="true" />}
-                  {STATUS_TH[s]}
-                </button>
-              ))}
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
