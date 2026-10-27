@@ -43,6 +43,7 @@ import {
   type DashboardFilters,
   type FilterPreset,
 } from "@/lib/filter-presets";
+import { presentParam } from "@/lib/dashboard-search";
 import { relevanceOf, sortScored, SORT_OPTIONS, type SortKey } from "@/lib/relevance";
 
 const searchSchema = z.object({
@@ -54,7 +55,7 @@ const searchSchema = z.object({
   view: z.enum(["organizer", "me"]).optional().catch(undefined),
   sort: z.string().optional().catch(undefined),
   /** โหมดจอใหญ่สำหรับฉายในงาน */
-  present: z.enum(["1"]).optional().catch(undefined),
+  present: presentParam,
 });
 
 export const Route = createFileRoute("/dashboard")({
