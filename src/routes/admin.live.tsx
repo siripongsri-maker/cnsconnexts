@@ -4,6 +4,7 @@ import { MonitorPlay } from "lucide-react";
 
 import { useStore } from "@/lib/store";
 import { buildFeed, RotatingPrompt } from "@/components/live-ticker";
+import { MeadowScene } from "@/components/meadow-scene";
 
 export const Route = createFileRoute("/admin/live")({
   head: () => ({
@@ -40,47 +41,49 @@ function AdminLive() {
   const done = commitments.filter((c) => c.status === "Completed").length;
 
   return (
-    <div className="admin-workspace admin-workspace-live space-y-4">
+    <div className="admin-workspace admin-workspace-live">
+      <MeadowScene variant="celebrate" className="admin-live-scene" />
+
       <Link
         to="/dashboard"
         search={{ present: "1" }}
-        className="tap flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-[15px] font-extrabold text-primary-foreground"
+        className="admin-live-present tap flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 font-extrabold text-primary-foreground"
       >
-        <MonitorPlay className="h-5 w-5" aria-hidden="true" />
+        <MonitorPlay className="h-6 w-6" aria-hidden="true" />
         เปิดจอฉายเต็มจอ
       </Link>
 
-      <div className="card-soft rounded-2xl p-4">
+      <div className="admin-live-prompt card-soft rounded-2xl">
         <RotatingPrompt size="lg" tone="card" />
       </div>
 
-      <div className="admin-stat-grid grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="admin-live-stats">
         {[
           ["คน", users.length],
           ["คู่เชื่อม", connections.length],
           ["นัดลงมือทำ", commitments.length],
           ["ทำสำเร็จ", done],
         ].map(([label, value]) => (
-          <div key={String(label)} className="card-soft rounded-2xl bg-card p-4 text-center">
-            <p className="font-tech text-4xl font-extrabold text-primary">{value}</p>
-            <p className="text-[13px] font-bold text-muted-foreground">{label}</p>
+          <div key={String(label)} className="admin-live-stat">
+            <p className="admin-live-stat-value font-tech">{value}</p>
+            <p className="admin-live-stat-label">{label}</p>
           </div>
         ))}
       </div>
 
-      <section className="card-soft rounded-2xl bg-card p-4">
-        <h2 className="text-[14px] font-extrabold">กำลังเชื่อมกัน</h2>
-        <p className="mt-1 text-[12px] text-muted-foreground">
-          ไม่แสดงชื่อ — บอกแค่ภาคและเรื่องที่สนใจร่วมกัน
-        </p>
+      <section className="admin-live-feed">
+        <div className="admin-live-feed-head">
+          <h2>กำลังเชื่อมกัน</h2>
+          <p>ไม่แสดงชื่อ — บอกแค่ภาคและเรื่องที่สนใจร่วมกัน</p>
+        </div>
         {feed.length === 0 ? (
-          <p className="mt-2 text-[13px] text-muted-foreground">รอสัญญาณแรกจากเครือข่าย</p>
+          <p className="admin-live-empty">รอสัญญาณแรกจากเครือข่าย</p>
         ) : (
-          <ul className="mt-3 space-y-2">
-            {feed.map((e) => (
-              <li key={e.id} className="animate-rise rounded-xl bg-muted/50 px-3 py-2">
-                <p className="text-[14px] font-extrabold">{e.title}</p>
-                <p className="text-[12px] text-muted-foreground">{e.detail}</p>
+          <ul className="admin-live-feed-list">
+            {feed.slice(0, 5).map((e) => (
+              <li key={e.id} className="animate-rise">
+                <p className="admin-live-feed-title">{e.title}</p>
+                <p className="admin-live-feed-detail">{e.detail}</p>
               </li>
             ))}
           </ul>

@@ -1086,3 +1086,261 @@
     transition: none !important;
   }
 }
+
+/*
+ * /admin/live: staff view of the projector screen, inside the admin shell (sidebar + topbar stay).
+ * One screen, no scroll at >= 1100px wide: the page hero (kept for screen readers) and footer step aside,
+ * and the feed shows fewer cards on shorter windows. Colours: tokens and the --tag-* pairs only.
+ */
+.admin-workspace-live {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--sky);
+  padding: 16px;
+}
+.admin-workspace-live > :not(.admin-live-scene) {
+  position: relative;
+  z-index: 1;
+}
+.admin-workspace-live .admin-live-scene {
+  position: absolute;
+  z-index: 0;
+  inset: auto 0 0;
+  width: 100%;
+  height: 260px;
+  pointer-events: none;
+}
+.admin-live-present {
+  min-height: 48px;
+  min-width: 240px;
+  padding-block: 12px;
+  font-size: 18px;
+  line-height: 1.3;
+  text-align: center;
+}
+.admin-content .admin-live-prompt {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  padding: 12px 20px;
+}
+.admin-live-prompt > div {
+  width: 100%;
+}
+.admin-live-prompt [lang="en"] {
+  font-size: 20px;
+}
+.admin-live-stats {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.admin-live-stat {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+  padding: 18px 16px 10px;
+  text-align: center;
+}
+.admin-live-stat::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 8px;
+  background: var(--stat-strip, var(--tag-purple-bg));
+  content: "";
+}
+.admin-live-stat:nth-child(2) {
+  --stat-strip: var(--tag-blue-bg);
+}
+.admin-live-stat:nth-child(3) {
+  --stat-strip: var(--tag-yellow-bg);
+}
+.admin-live-stat:nth-child(4) {
+  --stat-strip: var(--tag-green-bg);
+}
+.admin-live-stat-value {
+  color: var(--foreground);
+  font-size: clamp(64px, 7vw, 120px);
+  font-weight: 400;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+.admin-live-stat-label {
+  color: var(--ink-soft);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.admin-content .admin-workspace.admin-workspace-live > .admin-live-feed {
+  display: flex;
+  min-height: 0;
+  grid-column: 1 / -1;
+  flex-direction: column;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.admin-live-feed-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+}
+.admin-content .admin-live-feed-head h2 {
+  color: var(--foreground);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.admin-live-feed-head p {
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.4;
+}
+.admin-live-feed-list {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.admin-live-feed-list > li {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+  padding: 10px 20px;
+}
+.admin-live-feed-title,
+.admin-live-feed-detail {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 28px;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+.admin-live-feed-title {
+  color: var(--foreground);
+  font-weight: 700;
+}
+.admin-live-feed-detail {
+  color: var(--ink-soft);
+}
+.admin-live-empty {
+  width: fit-content;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+  padding: 10px 20px;
+  color: var(--ink-soft);
+  font-size: 28px;
+  line-height: 1.3;
+}
+@media (min-width: 1100px) {
+  /* The hero's h1 stays for assistive tech; the footer is decorative. */
+  .admin-experience .admin-main:has(.admin-page-live) {
+    padding-block: 16px 0;
+  }
+  .admin-main:has(.admin-page-live) .mission-page-hero {
+    position: absolute;
+    overflow: hidden;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .admin-main:has(.admin-page-live) .admin-footer {
+    display: none;
+  }
+  .admin-content.admin-page-live {
+    padding-bottom: 0;
+  }
+  .admin-workspace-live {
+    height: calc(100dvh - 76px - 16px - 16px); /* topbar, main top padding, bottom gap */
+  }
+  /* Feed cards by window height (one column, prompt may wrap to two lines): 2 by default, 3 from 840, 4 from 950, 5 from 1060. */
+  .admin-live-feed-list > li:nth-child(n + 3) {
+    display: none;
+  }
+}
+@media (min-width: 1100px) and (min-height: 840px) {
+  .admin-live-feed-list > li:nth-child(3) {
+    display: block;
+  }
+}
+@media (min-width: 1100px) and (min-height: 950px) {
+  .admin-live-feed-list > li:nth-child(4) {
+    display: block;
+  }
+}
+@media (min-width: 1100px) and (min-height: 1060px) {
+  .admin-live-feed-list > li:nth-child(5) {
+    display: block;
+  }
+}
+/* From 1440px wide the prompt always fits on one line, so cards start a little sooner: 3 from 800, 4 from 900, 5 from 1000. */
+@media (min-width: 1440px) and (min-height: 800px) {
+  .admin-live-feed-list > li:nth-child(3) {
+    display: block;
+  }
+}
+@media (min-width: 1440px) and (min-height: 900px) {
+  .admin-live-feed-list > li:nth-child(4) {
+    display: block;
+  }
+}
+@media (min-width: 1440px) and (min-height: 1000px) {
+  .admin-live-feed-list > li:nth-child(5) {
+    display: block;
+  }
+}
+/* Short windows: the English gloss of the prompt (also in the page for screen readers) steps aside. */
+@media (min-width: 1100px) and (max-height: 799px) {
+  .admin-live-prompt [lang="en"] {
+    display: none;
+  }
+}
+/* Short windows: a low strip of meadow, so no windmill is cut off behind the cards. */
+@media (min-width: 1100px) and (max-height: 899px) {
+  .admin-workspace-live .admin-live-scene {
+    height: 110px;
+  }
+}
+/* Wide projector windows: two columns leave room for the meadow scene under the feed. */
+@media (min-width: 1700px) {
+  .admin-live-feed-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-live-feed-list > li:nth-child(-n + 4) {
+    display: block;
+  }
+}
+@media (min-width: 1700px) and (min-height: 900px) {
+  .admin-live-feed-list > li:nth-child(5) {
+    display: block;
+  }
+}
+@media (max-width: 1099px) {
+  .admin-workspace-live {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+  .admin-live-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
