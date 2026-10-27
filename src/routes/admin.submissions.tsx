@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { provinceTh, REGION_LABEL } from "@/lib/i18n";
 import type { Submission } from "@/lib/types";
+import { useAdminTitleNote } from "@/components/admin/page-head";
 
 export const Route = createFileRoute("/admin/submissions")({
   head: () => ({
@@ -29,13 +30,10 @@ function AdminSubmissions() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
 
+  useAdminTitleNote(`(${submissions.length})`);
+
   return (
     <div className="admin-workspace admin-workspace-submissions space-y-4">
-      <div className="admin-section-meta">
-        <span>คลังผลงาน</span>
-        <span>{submissions.length} ชิ้น</span>
-      </div>
-
       {submissions.length === 0 && (
         <MissionEmpty
           className="admin-empty"

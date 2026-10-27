@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { STATUS_TH } from "@/lib/i18n";
 import { RSVP_TH, type ConnectionStatus } from "@/lib/types";
+import { useAdminTitleNote } from "@/components/admin/page-head";
 
 export const Route = createFileRoute("/admin/commitments")({
   head: () => ({
@@ -43,13 +44,10 @@ function AdminCommitments() {
     (a.follow_up_date ?? "9999").localeCompare(b.follow_up_date ?? "9999"),
   );
 
+  useAdminTitleNote(`(${commitments.length})`);
+
   return (
     <div className="admin-workspace admin-workspace-commitments space-y-4">
-      <div className="admin-section-meta">
-        <span>คำมั่นและนัดหมาย</span>
-        <span>{commitments.length} รายการ</span>
-      </div>
-
       {sorted.length === 0 && (
         <MissionEmpty
           className="admin-empty"

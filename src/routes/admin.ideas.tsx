@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { issueTh, REGION_LABEL } from "@/lib/i18n";
 import { ISSUES, REGIONS, type Idea, type Region } from "@/lib/types";
+import { useAdminTitleNote } from "@/components/admin/page-head";
 
 export const Route = createFileRoute("/admin/ideas")({
   head: () => ({
@@ -34,13 +35,10 @@ function AdminIdeas() {
 
   const ownerName = (id: string) => users.find((u) => u.id === id)?.name ?? "ไม่ระบุ";
 
+  useAdminTitleNote(`(${ideas.length})`);
+
   return (
     <div className="admin-workspace admin-workspace-ideas space-y-4">
-      <div className="admin-section-meta">
-        <span>รายการไอเดีย</span>
-        <span>{ideas.length} ไอเดีย</span>
-      </div>
-
       {ideas.length === 0 && (
         <MissionEmpty
           className="admin-empty"

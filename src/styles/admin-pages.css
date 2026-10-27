@@ -751,23 +751,202 @@ html[data-lowspec] .admin-role-note-chevron {
 .admin-content .admin-empty .mission-visual {
   max-width: 230px;
 }
-.admin-workspace-map > div:has(> input),
-.admin-workspace-people > div:has(> input) {
+.admin-workspace-map > div:has(> input) {
   min-height: 58px;
   border-radius: var(--radius-xl);
   background: var(--card);
   padding-inline: 18px;
 }
-.admin-people-filters,
-.admin-people-export {
-  padding: 20px;
+/* People: one toolbar (search, filters, CSV, import) that wraps, then a scannable list of equal rows. */
+.admin-people-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+  padding: 10px 12px;
 }
-.admin-people-filters > div:first-child {
+.admin-people-search {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 340px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
+  background: var(--background);
+  padding-left: 12px;
+}
+.admin-people-source {
+  width: 200px;
+  max-width: 100%;
+}
+.admin-people-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+}
+.admin-people-dates > label > span {
+  white-space: nowrap;
+}
+.admin-people-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+.admin-people-actions > * {
+  white-space: nowrap;
+}
+.admin-people-head,
+.admin-people-summary {
+  --people-cols: 32px minmax(0, 1fr) minmax(0, 1.4fr) 112px 120px;
+}
+.admin-people-head {
+  display: none;
+}
+.admin-people-records {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  background: var(--card);
+}
+.admin-people-records > li + li {
+  border-top: 1px solid var(--border);
+}
+.admin-people-row {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 12px 10px 16px;
+  transition: background 160ms ease;
+}
+.admin-people-row:hover {
   background: var(--sky-soft);
 }
-.admin-people-records > li:has(textarea) {
-  grid-column: 1 / -1;
+.admin-people-summary {
+  display: grid;
+  min-width: 0;
+  grid-template-areas:
+    "avatar name source"
+    "avatar org org"
+    "avatar status status";
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px 12px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.admin-content .admin-people-summary:hover {
+  filter: none;
+}
+.admin-people-avatar {
+  grid-area: avatar;
+  align-self: start;
+  font-size: 24px;
+  line-height: 1.2;
+}
+.admin-people-name {
+  grid-area: name;
+  min-width: 0;
+  color: var(--foreground);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.admin-people-org {
+  grid-area: org;
+  min-width: 0;
+  color: var(--muted-foreground);
+  overflow-wrap: anywhere;
+}
+.admin-people-source-cell {
+  grid-area: source;
+}
+.admin-people-status {
+  display: inline-flex;
+  grid-area: status;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.admin-source-chip {
+  display: inline-block;
+  color: var(--foreground);
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.admin-people-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.admin-people-row-actions > button {
+  white-space: nowrap;
+}
+.admin-people-editing {
+  padding: clamp(18px, 2vw, 28px);
+}
+@media (max-width: 760px) {
+  .admin-people-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-people-row-actions {
+    justify-content: flex-start;
+    padding-left: 44px;
+  }
+}
+/* Wide screens: aligned columns with a header, every row the same height (two lines at most per cell). */
+@media (min-width: 1280px) {
+  .admin-people-head {
+    display: grid;
+    grid-template-columns: var(--people-cols) 216px;
+    gap: 12px;
+    margin-bottom: -1px;
+    border: 1px solid var(--border);
+    border-bottom: 2px solid color-mix(in srgb, var(--primary) 35%, transparent);
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    background: var(--card);
+    padding: 10px 12px 10px 16px;
+    color: var(--foreground);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .admin-people-head > span:first-child {
+    grid-column: 2;
+  }
+  .admin-people-head + .admin-people-records {
+    margin-top: 0;
+    border-top: 0;
+    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+  }
+  .admin-people-row {
+    height: 64px;
+    grid-template-columns: minmax(0, 1fr) 216px;
+    padding-block: 0;
+  }
+  .admin-people-summary {
+    height: 100%;
+    grid-template-areas: "avatar name org source status";
+    grid-template-columns: var(--people-cols);
+    gap: 12px;
+  }
+  .admin-people-avatar {
+    align-self: center;
+  }
+  .admin-people-name,
+  .admin-people-org {
+    display: -webkit-box;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
 }
 .admin-person-overlay {
   background: color-mix(in srgb, var(--ink) 50%, transparent);
@@ -1034,26 +1213,30 @@ html[data-lowspec] .admin-role-note-chevron {
   .admin-workspace-export > .admin-records > li > p {
     min-width: 100%;
   }
-  .admin-people-filters {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: end;
-    gap: 18px;
-  }
-  .admin-people-filters > * {
-    margin: 0;
-  }
-  .admin-people-filters > div:first-child {
-    grid-column: 1 / -1;
-  }
 }
 @media (max-width: 1099px) {
+  .admin-experience {
+    display: block;
+  }
   .admin-sidebar {
-    position: relative;
-    width: 100%;
     border-right: 0;
     border-bottom: 1px solid var(--border);
+  }
+  .admin-sidebar-inner {
+    position: relative;
+    height: auto;
     padding: 12px 24px 0;
+  }
+  /* Right-edge fade: more menu items scroll in sideways. The nav keeps room at its end so the last item clears it. */
+  .admin-sidebar-inner::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 44px;
+    height: 58px;
+    background: linear-gradient(to right, color-mix(in srgb, var(--card) 0%, transparent), var(--card));
+    content: "";
+    pointer-events: none;
   }
   .admin-logo {
     margin: 0;

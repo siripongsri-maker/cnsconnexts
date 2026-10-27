@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
 import { issueTh, provinceTh } from "@/lib/i18n";
+import { useAdminTitleNote } from "@/components/admin/page-head";
 
 export const Route = createFileRoute("/admin/map")({
   head: () => ({
@@ -44,13 +45,10 @@ function AdminMap() {
       .includes(q.trim().toLowerCase()),
   );
 
+  useAdminTitleNote(`(${provinceNotes.length} บันทึก)`);
+
   return (
     <div className="admin-workspace admin-workspace-map space-y-4">
-      <div className="admin-section-meta">
-        <span>บันทึกจากพื้นที่</span>
-        <span>{provinceNotes.length} บันทึก</span>
-      </div>
-
       <section className="card-soft rounded-2xl bg-card p-4">
         <h2 className="text-title font-extrabold">จังหวัดที่มีสมาชิกมากที่สุด</h2>
         <ul className="mt-2 flex flex-wrap gap-1.5">

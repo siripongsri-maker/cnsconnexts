@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useStore } from "@/lib/store";
 import { STATUS_TH } from "@/lib/i18n";
 import type { ConnectionStatus } from "@/lib/types";
+import { useAdminTitleNote } from "@/components/admin/page-head";
 
 export const Route = createFileRoute("/admin/connections")({
   head: () => ({
@@ -35,13 +36,10 @@ function AdminConnections() {
     id === "me" ? (me?.name ?? "ฉัน") : (users.find((u) => u.id === id)?.name ?? "ไม่ระบุ");
   const shown = connections.filter((c) => filter === "all" || c.status === filter);
 
+  useAdminTitleNote(`(${connections.length})`);
+
   return (
     <div className="admin-workspace admin-workspace-connections space-y-4">
-      <div className="admin-section-meta">
-        <span>สถานะคู่เชื่อม</span>
-        <span>{connections.length} คู่</span>
-      </div>
-
       <div className="admin-filter-strip flex flex-wrap gap-1.5">
         {(["all", ...STATUSES] as const).map((s) => (
           <button
