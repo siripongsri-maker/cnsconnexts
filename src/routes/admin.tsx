@@ -1,9 +1,10 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, Home, Lock, LogOut } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ChevronDown, Home, Lock, LogOut } from "lucide-react";
 
 import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
 import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
+import { AdminTitleNoteContext } from "@/components/admin/page-head";
 import { Button } from "@/components/ui/button";
 import { MeadowScene } from "@/components/meadow-scene";
 import { Wordmark } from "@/components/wordmark";
@@ -27,109 +28,25 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
+/** Page titles for the shared head row and the topbar breadcrumb. */
 const ADMIN_PAGES = [
-  {
-    path: "/admin",
-    kicker: "ภาพรวมของเครือข่าย",
-    title: "เครือข่าย ในภาพเดียว",
-    description: "ทุกความเคลื่อนไหวของ คนส. Connexts",
-  },
-  {
-    path: "/admin/people",
-    kicker: "รายชื่อสมาชิก",
-    title: "คน คือพลังของเครือข่าย",
-    description: "ค้นหา แก้ไข และติดตามสมาชิก",
-  },
-  {
-    path: "/admin/import",
-    kicker: "นำเข้ารายชื่อ",
-    title: "เพิ่มคน เพิ่มพลัง",
-    description: "นำเข้ารายชื่อจาก CSV เชื่อมเข้าสู่เครือข่าย",
-  },
-  {
-    path: "/admin/ideas",
-    kicker: "แลกเปลี่ยนไอเดีย",
-    title: "ไอเดีย ที่พร้อมเติบโต",
-    description: "จัดการข้อเสนอและประเด็นจากสมาชิก",
-  },
-  {
-    path: "/admin/submissions",
-    kicker: "คลังผลงาน",
-    title: "ผลงาน ที่ขยายผลได้",
-    description: "ดูแลผลงานและเลือกเรื่องเล่าขึ้นเวที",
-  },
-  {
-    path: "/admin/map",
-    kicker: "เครือข่ายรายพื้นที่",
-    title: "พลัง ในทุกพื้นที่",
-    description: "ดูสมาชิกและบันทึกการทำงานรายจังหวัด",
-  },
-  {
-    path: "/admin/connections",
-    kicker: "คู่เชื่อมในเครือข่าย",
-    title: "ทุกคู่เชื่อม มีโอกาส",
-    description: "ติดตามและปรับสถานะการเชื่อมต่อ",
-  },
-  {
-    path: "/admin/commitments",
-    kicker: "ติดตามคำมั่น",
-    title: "จากคำมั่น สู่การลงมือ",
-    description: "ดูแลวันนัดและความคืบหน้าร่วมกัน",
-  },
-  {
-    path: "/admin/live",
-    kicker: "จอสดของงาน",
-    title: "ความเคลื่อนไหว ที่เกิดขึ้นตอนนี้",
-    description: "ติดตามกิจกรรมและเปิดจอฉายสำหรับงาน",
-  },
-  {
-    path: "/admin/qr",
-    kicker: "QR และรหัสห้อง",
-    title: "สแกน แล้วเชื่อมกัน",
-    description: "รหัสห้อง QR และป้ายสำหรับหน้างาน",
-  },
-  {
-    path: "/admin/logs",
-    kicker: "การใช้งานของผู้เข้าร่วม",
-    title: "เข้าใจ ทุกการใช้งาน",
-    description: "บันทึกการเข้าชมและความยินยอม",
-  },
-  {
-    path: "/admin/backups",
-    kicker: "สำรองและกู้คืนข้อมูล",
-    title: "ข้อมูล ที่กลับมาได้",
-    description: "สำรอง ส่งออก และกู้คืนสแนปช็อต",
-  },
-  {
-    path: "/admin/backup-policy",
-    kicker: "นโยบายการเก็บข้อมูลสำรอง",
-    title: "ดูแลข้อมูล อย่างต่อเนื่อง",
-    description: "กำหนดอายุและจำนวนรายการสำรอง",
-  },
-  {
-    path: "/admin/audit",
-    kicker: "ประวัติการแก้ไข",
-    title: "ทุกการเปลี่ยนแปลง มีที่มา",
-    description: "ติดตามผู้แก้ไข เวลา และรายการข้อมูล",
-  },
-  {
-    path: "/admin/export",
-    kicker: "ส่งออกข้อมูล",
-    title: "พาข้อมูล ไปต่อ",
-    description: "ดาวน์โหลด CSV หรือ JSON ได้ในที่เดียว",
-  },
-  {
-    path: "/admin/costs",
-    kicker: "สรุปค่าใช้จ่าย",
-    title: "รู้ต้นทุน เพื่อไปต่อ",
-    description: "แนบเครดิตและใบแจ้งหนี้ ให้ AI สรุปเป็นเงินบาท",
-  },
-  {
-    path: "/admin/settings",
-    kicker: "ตั้งค่าระบบ",
-    title: "จัดระบบ ให้พร้อมเสมอ",
-    description: "ดูแลบัญชีและข้อมูลของกิจกรรม",
-  },
+  { path: "/admin", title: "ภาพรวมของเครือข่าย" },
+  { path: "/admin/people", title: "รายชื่อสมาชิก" },
+  { path: "/admin/import", title: "นำเข้ารายชื่อ" },
+  { path: "/admin/ideas", title: "แลกเปลี่ยนไอเดีย" },
+  { path: "/admin/submissions", title: "คลังผลงาน" },
+  { path: "/admin/map", title: "เครือข่ายรายพื้นที่" },
+  { path: "/admin/connections", title: "คู่เชื่อมในเครือข่าย" },
+  { path: "/admin/commitments", title: "ติดตามคำมั่น" },
+  { path: "/admin/live", title: "จอสดของงาน" },
+  { path: "/admin/qr", title: "QR และรหัสห้อง" },
+  { path: "/admin/logs", title: "การใช้งานของผู้เข้าร่วม" },
+  { path: "/admin/backups", title: "สำรองและกู้คืนข้อมูล" },
+  { path: "/admin/backup-policy", title: "นโยบายการเก็บข้อมูลสำรอง" },
+  { path: "/admin/audit", title: "ประวัติการแก้ไข" },
+  { path: "/admin/export", title: "ส่งออกข้อมูล" },
+  { path: "/admin/costs", title: "สรุปค่าใช้จ่าย" },
+  { path: "/admin/settings", title: "ตั้งค่าระบบ" },
 ] as const;
 
 function AdminLayout() {
@@ -138,6 +55,7 @@ function AdminLayout() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const navRef = useRef<HTMLElement>(null);
+  const [titleNote, setTitleNote] = useState<string | null>(null);
   const pathname = useRouterState({
     select: (state) => state.location.pathname.replace(/\/$/, ""),
   });
@@ -252,11 +170,14 @@ function AdminLayout() {
               variant="mission"
               className="tap h-12 w-full justify-between rounded-xl bg-primary px-[18px] text-[17px] font-medium text-primary-foreground"
             >
-              เข้าสู่ระบบ <ArrowUpRight className="ml-auto size-4" aria-hidden="true" />
+              เข้าสู่ระบบ <ArrowRight className="ml-auto size-4" aria-hidden="true" />
             </Button>
 
             <details className="admin-role-note">
-              <summary>สิทธิ์ของแต่ละบทบาท</summary>
+              <summary>
+                สิทธิ์ของแต่ละบทบาท
+                <ChevronDown className="admin-role-note-chevron size-5" aria-hidden="true" />
+              </summary>
               <p>
                 <b>ผู้ดูแลสูงสุด</b> ดู ค้นหา ส่งออก และล้าง Log
                 <br />
@@ -284,54 +205,56 @@ function AdminLayout() {
         ข้ามไปเนื้อหา
       </a>
       <aside className="admin-sidebar">
-        <Link to="/" aria-label="คนส. Connexts กลับหน้าแรก" className="admin-logo">
-          <Wordmark size="header" withMark />
-        </Link>
-        <div className="admin-brand-bar" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
+        <div className="admin-sidebar-inner">
+          <Link to="/" aria-label="คนส. Connexts กลับหน้าแรก" className="admin-logo">
+            <Wordmark size="header" withMark />
+          </Link>
+          <div className="admin-brand-bar" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+          <nav ref={navRef} aria-label="เมนูผู้ดูแล" className="admin-nav" data-lenis-prevent>
+            {ADMIN_NAV_GROUPS.map((group, groupIndex) => (
+              <div
+                key={group.label}
+                role="group"
+                aria-labelledby={`admin-nav-group-${groupIndex}`}
+                className="admin-nav-group"
+              >
+                <p id={`admin-nav-group-${groupIndex}`} className="admin-nav-label">
+                  {group.label}
+                </p>
+                {group.items.map(({ to, label, icon: Icon, exact }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    activeOptions={{ exact: Boolean(exact) }}
+                    activeProps={{ className: "is-active" }}
+                    data-admin-active={pathname === to ? "true" : undefined}
+                    className="admin-nav-link tap"
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                    <span>{label}</span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </nav>
+          <Link to="/" className="admin-return">
+            <Home className="size-5" aria-hidden="true" />
+            กลับหน้าบ้าน
+            <ArrowUpRight className="ml-auto size-5" aria-hidden="true" />
+          </Link>
         </div>
-        <nav ref={navRef} aria-label="เมนูผู้ดูแล" className="admin-nav" data-lenis-prevent>
-          {ADMIN_NAV_GROUPS.map((group, groupIndex) => (
-            <div
-              key={group.label}
-              role="group"
-              aria-labelledby={`admin-nav-group-${groupIndex}`}
-              className="admin-nav-group"
-            >
-              <p id={`admin-nav-group-${groupIndex}`} className="admin-nav-label">
-                {group.label}
-              </p>
-              {group.items.map(({ to, label, icon: Icon, exact }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  activeOptions={{ exact: Boolean(exact) }}
-                  activeProps={{ className: "is-active" }}
-                  data-admin-active={pathname === to ? "true" : undefined}
-                  className="admin-nav-link tap"
-                >
-                  <Icon className="size-5" aria-hidden="true" />
-                  <span>{label}</span>
-                </Link>
-              ))}
-            </div>
-          ))}
-        </nav>
-        <Link to="/" className="admin-return">
-          <Home className="size-5" aria-hidden="true" />
-          กลับหน้าบ้าน
-          <ArrowUpRight className="ml-auto size-5" aria-hidden="true" />
-        </Link>
       </aside>
       <div className="admin-stage">
         <header className="admin-topbar">
           <p className="admin-topbar-name">
             <span aria-hidden="true" />
             หลังบ้าน<span className="admin-topbar-separator">/</span>
-            <span>{page.kicker}</span>
+            <span>{page.title}</span>
           </p>
           <div className="admin-session">
             <span className="admin-session-user">{adminUser ?? "-"}</span>
@@ -348,24 +271,19 @@ function AdminLayout() {
         </header>
 
         <main id="main-content" tabIndex={-1} className="admin-main">
-          <header className="mission-page-hero mission-page-hero--compact">
-            <div className="mission-page-hero-copy">
-              <p className="mission-kicker">
-                <span>{page.kicker}</span>
-              </p>
-              <h1>{page.title}</h1>
-              <p className="mission-page-description">{page.description}</p>
-            </div>
+          <header className="admin-page-head">
+            <h1>
+              {page.title}
+              {titleNote ? <span className="admin-page-head-note"> {titleNote}</span> : null}
+            </h1>
           </header>
           <div
             className={`admin-content admin-page-${page.path === "/admin" ? "overview" : page.path.split("/").at(-1)}`}
           >
-            <Outlet />
+            <AdminTitleNoteContext.Provider value={setTitleNote}>
+              <Outlet />
+            </AdminTitleNoteContext.Provider>
           </div>
-          <footer className="admin-footer">
-            <span>คนส. CoNnextS · หลังบ้าน</span>
-            <span>{page.kicker}</span>
-          </footer>
         </main>
       </div>
     </div>
