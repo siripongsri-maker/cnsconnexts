@@ -1,31 +1,12 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import {
-  BookOpen,
-  ArrowUpRight,
-  CalendarDays,
-  Coins,
-  DatabaseBackup,
-  Download,
-  FileUp,
-  Handshake,
-  Home,
-  LayoutDashboard,
-  Lightbulb,
-  History as HistoryIcon,
-  Lock,
-  LogOut,
-  Map,
-  Monitor,
-  QrCode,
-  Settings,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
+import { ArrowUpRight, Home, Lock, LogOut } from "lucide-react";
 
 import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
+import { ADMIN_NAV_GROUPS } from "@/lib/admin-nav";
 import { Button } from "@/components/ui/button";
 import { MissionHeader, MissionVisual } from "@/components/mission-ui";
+import { Wordmark } from "@/components/wordmark";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -41,33 +22,10 @@ export const Route = createFileRoute("/admin")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
-      // หลังบ้านยังเป็นธีมมืด — ทับสีแถบเบราว์เซอร์ของราก (ฟ้าอ่อนสำหรับหน้าผู้เข้าร่วม)
-      { name: "theme-color", content: "#05070b" },
     ],
   }),
   component: AdminLayout,
 });
-
-export const ADMIN_MENU = [
-  { to: "/admin", label: "ภาพรวม", icon: LayoutDashboard, exact: true },
-  { to: "/admin/people", label: "สมาชิก", icon: Users },
-  { to: "/admin/import", label: "นำเข้า CSV", icon: FileUp },
-  { to: "/admin/ideas", label: "ไอเดีย", icon: Lightbulb },
-  { to: "/admin/submissions", label: "ผลงาน", icon: BookOpen },
-  { to: "/admin/map", label: "แผนที่", icon: Map },
-  { to: "/admin/connections", label: "คู่เชื่อม", icon: Handshake },
-  { to: "/admin/commitments", label: "คำมั่น/ปฏิทิน", icon: CalendarDays },
-  { to: "/admin/live", label: "จอสด", icon: Monitor },
-  { to: "/admin/qr", label: "QR/ป้าย", icon: QrCode },
-  { to: "/admin/logs", label: "Log การใช้งาน", icon: ShieldCheck },
-  { to: "/admin/backups", label: "สำรองข้อมูล", icon: DatabaseBackup },
-  { to: "/admin/backup-policy", label: "นโยบายสำรอง", icon: ShieldCheck },
-  { to: "/admin/audit", label: "ประวัติการแก้ไข", icon: HistoryIcon },
-  { to: "/admin/export", label: "ส่งออกข้อมูล", icon: Download },
-  { to: "/admin/costs", label: "สรุปค่าใช้จ่าย", icon: Coins },
-  { to: "/admin/settings", label: "ตั้งค่า", icon: Settings },
-  { to: "/journey", label: "Journey ทุกหน้า", icon: Map },
-] as const;
 
 const ADMIN_PAGES = [
   {
@@ -209,9 +167,18 @@ function AdminLayout() {
   useEffect(() => {
     if (!ready || !authed) return;
     const nav = navRef.current;
-    if (!nav || !window.matchMedia("(max-width: 1099px)").matches) return;
+    if (!nav) return;
     const active = nav.querySelector<HTMLElement>('[data-admin-active="true"]');
-    if (!active || nav.scrollWidth <= nav.clientWidth) return;
+    if (!active) return;
+    if (!window.matchMedia("(max-width: 1099px)").matches) {
+      // Wide screens: the menu is a tall list that scrolls inside the sidebar; keep the open page in view.
+      const listBounds = nav.getBoundingClientRect();
+      const row = active.getBoundingClientRect();
+      if (row.top < listBounds.top) nav.scrollTop += row.top - listBounds.top - 8;
+      else if (row.bottom > listBounds.bottom) nav.scrollTop += row.bottom - listBounds.bottom + 8;
+      return;
+    }
+    if (nav.scrollWidth <= nav.clientWidth) return;
     const bounds = nav.getBoundingClientRect();
     const item = active.getBoundingClientRect();
     let left = nav.scrollLeft;
@@ -343,42 +310,58 @@ function AdminLayout() {
         ข้ามไปเนื้อหา
       </a>
       <aside className="admin-sidebar">
-        <Link to="/" aria-label="คนส. Connexts กลับหน้าแรก" className="admin-brand">
-          คนส.<span>CONNEXTS / CONTROL</span>
+        <Link to="/" aria-label="คนส. Connexts กลับหน้าแรก" className="admin-logo">
+          <Wordmark size="header" withMark />
         </Link>
-        <p className="admin-nav-label">Mission control</p>
+        <div className="admin-brand-bar" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
         <nav
           ref={navRef}
           aria-label="เมนูผู้ดูแล"
           className="admin-nav no-scrollbar"
           data-lenis-prevent
         >
-          {ADMIN_MENU.map(({ to, label, icon: Icon, ...rest }, index) => (
-            <Link
-              key={to}
-              to={to}
-              activeOptions={{ exact: "exact" in rest ? Boolean(rest.exact) : false }}
-              activeProps={{ className: "is-active" }}
-              data-admin-active={pathname === to ? "true" : undefined}
-              className="admin-nav-link tap"
+          {ADMIN_NAV_GROUPS.map((group, groupIndex) => (
+            <div
+              key={group.label}
+              role="group"
+              aria-labelledby={`admin-nav-group-${groupIndex}`}
+              className="admin-nav-group"
             >
-              <Icon className="size-4" aria-hidden="true" />
-              <span>{label}</span>
-              <span className="admin-nav-number">{String(index + 1).padStart(2, "0")}</span>
-            </Link>
+              <p id={`admin-nav-group-${groupIndex}`} className="admin-nav-label">
+                {group.label}
+              </p>
+              {group.items.map(({ to, label, icon: Icon, exact }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  activeOptions={{ exact: Boolean(exact) }}
+                  activeProps={{ className: "is-active" }}
+                  data-admin-active={pathname === to ? "true" : undefined}
+                  className="admin-nav-link tap"
+                >
+                  <Icon className="size-5" aria-hidden="true" />
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
         <Link to="/" className="admin-return">
-          <Home className="size-4" />
+          <Home className="size-5" aria-hidden="true" />
           กลับหน้าบ้าน
-          <ArrowUpRight className="ml-auto size-4" />
+          <ArrowUpRight className="ml-auto size-5" aria-hidden="true" />
         </Link>
       </aside>
       <div className="admin-stage">
         <header className="admin-topbar">
           <p className="admin-topbar-name">
-            <span />
-            Control room<span className="admin-topbar-separator">/</span>
+            <span aria-hidden="true" />
+            หลังบ้าน<span className="admin-topbar-separator">/</span>
             <span>{page.kicker}</span>
           </p>
           <div className="admin-session">
@@ -390,7 +373,7 @@ function AdminLayout() {
               variant="outline"
               className="admin-sign-out tap"
             >
-              <LogOut className="h-3.5 w-3.5" /> ออกจากระบบ
+              <LogOut className="size-4" aria-hidden="true" /> ออกจากระบบ
             </Button>
           </div>
         </header>

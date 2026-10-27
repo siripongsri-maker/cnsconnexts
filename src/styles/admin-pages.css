@@ -27,7 +27,7 @@
   gap: 14px;
   background: var(--sky-soft);
   color: var(--muted-foreground);
-  font-size: 14px;
+  font-size: 17px;
 }
 .admin-loading > span,
 .admin-topbar-name > span:first-child {
@@ -63,12 +63,12 @@
   font: 600 31px/1.1 var(--font-display);
 }
 .admin-brand > span {
-  max-width: 100px;
+  max-width: 190px;
   border-left: 1px solid var(--border);
   padding-left: 14px;
   color: var(--muted-foreground);
-  font: 500 9px/1.7 var(--font-tech);
-  letter-spacing: 0.15em;
+  font: 500 16px/1.5 var(--font-tech);
+  letter-spacing: 0.04em;
 }
 .admin-login-copy {
   position: relative;
@@ -87,7 +87,7 @@
   max-width: 330px;
   margin-top: 22px;
   color: var(--muted-foreground);
-  font-size: 14px;
+  font-size: 17px;
   line-height: 1.9;
 }
 .admin-login-story .admin-login-visual {
@@ -106,7 +106,7 @@
   border-top: 1px solid var(--border);
   padding-top: 18px;
   color: var(--muted-foreground);
-  font: 11px var(--font-tech);
+  font: 16px var(--font-tech);
 }
 .admin-login-access {
   display: grid;
@@ -137,7 +137,7 @@
 }
 .admin-access-heading .mission-kicker {
   margin-bottom: 8px;
-  font-size: 9px;
+  font-size: 16px;
 }
 .admin-access-heading h2 {
   font: 500 clamp(23px, 2vw, 30px)/1.4 var(--font-display);
@@ -146,7 +146,7 @@
 .admin-login-form label > span {
   display: block;
   margin-bottom: 10px;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 400;
 }
 .admin-login-form input {
@@ -158,7 +158,7 @@
   min-height: 52px;
   justify-content: space-between;
   padding-inline: 18px;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 500;
 }
 .admin-role-note {
@@ -166,7 +166,7 @@
   border-bottom: 1px solid var(--border);
   padding-block: 16px;
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: 16px;
 }
 .admin-role-note summary {
   cursor: pointer;
@@ -188,36 +188,70 @@
   z-index: 40;
   inset: 0 auto 0 0;
   display: flex;
-  width: 240px;
+  width: 272px;
   flex-direction: column;
   border-right: 1px solid var(--border);
   background: var(--card);
-  padding: 28px 18px 18px;
+  padding: 20px 14px 14px;
 }
-.admin-sidebar .admin-brand {
-  margin: 0 7px 31px;
+.admin-logo {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 48px;
+  align-items: center;
+  margin: 0 8px;
+  border-radius: var(--radius-lg);
+  color: var(--foreground);
 }
-.admin-nav-label {
-  margin: 0 12px 14px;
-  color: var(--ink-soft);
-  font: 9px var(--font-tech);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+/* Four block colours (decorative): สังคม / อยู่ / ดี / มีพลัง */
+.admin-brand-bar {
+  display: grid;
+  height: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  margin: 12px 8px 18px;
+}
+.admin-brand-bar > span {
+  border-radius: 999px;
+}
+.admin-brand-bar > span:nth-child(1) {
+  background: var(--color-block-purple);
+}
+.admin-brand-bar > span:nth-child(2) {
+  background: var(--color-block-blue);
+}
+.admin-brand-bar > span:nth-child(3) {
+  background: var(--color-block-green);
+}
+.admin-brand-bar > span:nth-child(4) {
+  background: var(--color-block-yellow);
 }
 .admin-nav {
   min-height: 0;
   flex: 1;
   overflow-y: auto;
 }
+.admin-nav-group + .admin-nav-group {
+  margin-top: 14px;
+}
+.admin-nav-label {
+  margin: 0 0 4px 15px;
+  color: var(--ink-soft);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
 .admin-nav-link {
   display: flex;
-  min-height: 42px;
+  min-height: 44px;
   align-items: center;
-  gap: 10px;
-  border-left: 2px solid transparent;
-  padding: 10px 11px;
+  gap: 12px;
+  border-left: 4px solid transparent;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 8px 12px;
   color: var(--ink-soft);
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.5;
   transition:
     color 160ms ease,
@@ -227,11 +261,6 @@
   flex-shrink: 0;
   opacity: 0.8;
 }
-.admin-nav-number {
-  margin-left: auto;
-  color: var(--ink-soft);
-  font: 9px var(--font-tech);
-}
 .admin-nav-link:hover {
   background: var(--sky-soft);
   color: var(--foreground);
@@ -240,23 +269,25 @@
   border-left-color: var(--primary);
   background: var(--sky-soft);
   color: var(--foreground);
-  font-weight: 600;
+  font-weight: 700;
 }
-.admin-nav-link.is-active .admin-nav-number {
+.admin-nav-link.is-active > svg {
   color: var(--primary);
+  opacity: 1;
 }
 .admin-return {
   display: flex;
+  min-height: 44px;
   align-items: center;
-  gap: 10px;
-  margin-top: 18px;
+  gap: 12px;
+  margin-top: 12px;
   border-top: 1px solid var(--border);
-  padding: 20px 10px 4px;
+  padding: 12px 12px 4px 16px;
   color: var(--ink-soft);
-  font-size: 11px;
+  font-size: 16px;
 }
 .admin-stage {
-  margin-left: 240px;
+  margin-left: 272px;
 }
 .admin-topbar {
   position: sticky;
@@ -279,7 +310,7 @@
 }
 .admin-topbar-name {
   color: var(--ink-soft);
-  font: 10px var(--font-tech);
+  font: 16px var(--font-tech);
   letter-spacing: 0.04em;
 }
 .admin-topbar-name > span:last-child,
@@ -290,7 +321,7 @@
   max-width: 100px;
   overflow: hidden;
   color: var(--muted-foreground);
-  font-size: 11px;
+  font-size: 16px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -299,29 +330,35 @@
   background: var(--tag-purple-bg);
   padding: 6px 9px;
   color: var(--tag-purple-fg);
-  font-size: 10px;
+  font-size: 16px;
   white-space: nowrap;
 }
 .admin-sign-out {
-  height: 36px;
+  min-height: 44px;
   gap: 7px;
   border-color: var(--border);
   padding: 8px 10px;
-  font-size: 11px;
+  font-size: 16px;
 }
 .admin-experience .admin-main {
   max-width: 1530px;
   margin-inline: auto;
-  padding: 0 clamp(24px, 3vw, 54px);
+  padding: 24px clamp(24px, 3vw, 54px) 0;
   scroll-margin-top: 92px;
 }
+/* The route artwork (MissionVisual, blue hex strokes) and the corner tick are not used in the back office. */
 .admin-experience .mission-page-hero {
-  min-height: 260px;
-  margin-bottom: 32px;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+  margin-bottom: 24px;
   border: 1px solid var(--border);
   border-radius: var(--radius-2xl);
   background: var(--sky);
-  padding-block: 34px;
+  padding-block: 28px;
+}
+.admin-experience .mission-page-hero > .mission-visual,
+.admin-experience .mission-hero-edge {
+  display: none;
 }
 .admin-experience .mission-page-hero::before {
   display: none;
@@ -331,17 +368,19 @@
 }
 .admin-experience .mission-page-description {
   color: var(--ink-soft);
+  font-size: 17px;
 }
 .admin-experience .mission-kicker,
 .admin-login .mission-kicker {
   color: var(--primary);
 }
+.admin-experience .mission-page-hero .mission-kicker {
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
 .admin-experience .mission-index {
   border-right-color: var(--ink-soft);
   color: var(--ink-soft);
-}
-.admin-experience .mission-hero-edge {
-  border-color: var(--primary);
 }
 .admin-experience .mission-visual::after,
 .admin-login .mission-visual::after {
@@ -349,13 +388,9 @@
 }
 .admin-experience .mission-page-hero h1 {
   max-width: 700px;
-  font-size: clamp(30px, 3.25vw, 52px);
+  font-size: 28px;
   font-weight: 500;
   line-height: 1.35;
-}
-.admin-experience .mission-page-hero .mission-visual {
-  max-width: 300px;
-  opacity: 0.75;
 }
 .admin-content {
   min-width: 0;
@@ -373,7 +408,7 @@
   border-bottom: 1px solid var(--border);
   padding-bottom: 17px;
   color: var(--muted-foreground);
-  font-size: 12px;
+  font-size: 16px;
 }
 .admin-content .admin-section-meta {
   min-height: 54px;
@@ -385,7 +420,7 @@
 .admin-section-meta > span:first-child,
 .admin-section-label {
   color: var(--foreground);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
 }
 .admin-content :is(.card-soft, .admin-workspace > section, .admin-workspace > details) {
@@ -429,7 +464,7 @@
 }
 .admin-content :is(section, details) > h2,
 .admin-content section > div:first-child h2 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 500;
   line-height: 1.5;
 }
@@ -492,7 +527,7 @@
 .admin-stat-grid > div > p:last-child {
   margin-top: 14px;
   color: var(--ink-soft);
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 400;
 }
 .admin-funnel-row > span {
@@ -507,7 +542,6 @@
   max-width: 100%;
   min-height: 44px;
   color: var(--foreground);
-  font-size: 13px;
   line-height: 1.7;
   accent-color: var(--primary);
 }
@@ -539,8 +573,11 @@
 }
 .admin-content :is(button, a, summary):focus-visible,
 .admin-sidebar a:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 4px;
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+.admin-sidebar .admin-nav-link:focus-visible {
+  outline-offset: -3px;
 }
 .admin-filter-strip {
   align-items: center;
@@ -569,7 +606,7 @@
   border-collapse: separate;
   border-spacing: 0;
   background: var(--card);
-  font-size: 12px;
+  font-size: 16px;
 }
 .admin-content th {
   position: sticky;
@@ -580,8 +617,8 @@
   background: var(--card);
   padding: 14px 16px;
   color: var(--foreground);
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   white-space: nowrap;
 }
 .admin-content td {
@@ -634,7 +671,6 @@
 .admin-content .admin-empty p {
   margin-top: 8px;
   color: var(--muted-foreground);
-  font-size: 13px;
 }
 .admin-content .admin-empty .mission-visual {
   max-width: 230px;
@@ -692,7 +728,6 @@
   font-weight: 500;
 }
 .admin-upload-hint {
-  font-size: 12px;
   font-weight: 400;
 }
 .admin-workspace-qr > section:first-child {
@@ -776,8 +811,8 @@
   border-top: 1px solid var(--border);
   padding-block: 24px 35px;
   color: var(--ink-soft);
-  font: 9px var(--font-tech);
-  letter-spacing: 0.09em;
+  font: 16px var(--font-tech);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 @media (min-width: 1200px) {
@@ -859,13 +894,15 @@
     width: 100%;
     border-right: 0;
     border-bottom: 1px solid var(--border);
-    padding: 20px 24px 0;
+    padding: 12px 24px 0;
   }
-  .admin-sidebar .admin-brand {
-    margin: 0 0 20px;
+  .admin-logo {
+    margin: 0;
+  }
+  .admin-brand-bar {
+    margin: 10px 0 8px;
   }
   .admin-nav-label,
-  .admin-nav-number,
   .admin-return {
     display: none;
   }
@@ -875,12 +912,19 @@
     overflow-x: auto;
     padding-bottom: 10px;
   }
+  .admin-nav-group {
+    display: contents;
+  }
+  .admin-nav-group + .admin-nav-group {
+    margin-top: 0;
+  }
   .admin-nav-link {
-    min-height: 44px;
+    min-height: 48px;
     flex-shrink: 0;
     border-left: 0;
-    border-bottom: 2px solid transparent;
-    padding: 12px;
+    border-bottom: 4px solid transparent;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 8px 14px;
   }
   .admin-nav-link.is-active {
     border-bottom-color: var(--primary);
@@ -921,7 +965,7 @@
   .admin-login-copy > p:last-child {
     max-width: 220px;
     margin-top: 16px;
-    font-size: 12px;
+    font-size: 16px;
   }
   .admin-login-story .admin-login-visual {
     right: -60px;
@@ -957,31 +1001,22 @@
   }
   .admin-role-chip {
     padding: 5px 7px;
-    font-size: 9px;
+    font-size: 16px;
   }
   .admin-sign-out {
     gap: 5px;
     padding-inline: 7px;
-    font-size: 10px;
+    font-size: 16px;
   }
   .admin-experience .admin-main {
     padding-inline: 20px;
   }
   .admin-experience .mission-page-hero {
-    min-height: 245px;
-    margin-bottom: 24px;
-    padding-block: 30px;
+    padding-block: 24px;
   }
   .admin-experience .mission-page-hero h1 {
-    max-width: 90%;
-    font-size: 32px;
-  }
-  .admin-experience .mission-page-hero .mission-visual {
-    position: absolute;
-    right: -40px;
-    bottom: 0;
-    max-width: 190px;
-    opacity: 0.35;
+    max-width: 100%;
+    font-size: 28px;
   }
   .admin-content .admin-workspace > section,
   .admin-content .admin-records > li {
@@ -989,7 +1024,7 @@
   }
   .admin-content :is(section, details) > h2,
   .admin-content section > div:first-child h2 {
-    font-size: 18px;
+    font-size: 22px;
   }
   .admin-stat-grid > :is(a, div) {
     min-height: 130px;
