@@ -654,6 +654,10 @@ html[data-lowspec] .admin-role-note-chevron {
 .admin-sidebar .admin-nav-link:focus-visible {
   outline-offset: -3px;
 }
+/* Cells inside clipped (overflow: hidden) groups draw their ring inside, as the nav links do. */
+.admin-content :is(.admin-stat-cell, .admin-people-summary):focus-visible {
+  outline-offset: -3px;
+}
 .admin-filter-strip {
   align-items: center;
   gap: 8px;
@@ -774,9 +778,10 @@ html[data-lowspec] .admin-role-note-chevron {
   flex: 1 1 340px;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--border);
+  /* Same white surface and edge as the meadow inputs beside it (meadow.css input border, ≥ 3:1 on white). */
+  border: 1px solid color-mix(in srgb, var(--ink) 52%, var(--card));
   border-radius: var(--radius-xl);
-  background: var(--background);
+  background: var(--card);
   padding-left: 12px;
 }
 .admin-people-source {
@@ -799,6 +804,68 @@ html[data-lowspec] .admin-role-note-chevron {
 }
 .admin-people-actions > * {
   white-space: nowrap;
+}
+/* Phones: filters and CSV fold behind two native disclosures (NarrowDisclosure), side by side under the search. */
+.admin-disclosure {
+  min-width: 0;
+  flex: 1 1 0;
+}
+.admin-disclosure[open] {
+  flex-basis: 100%;
+}
+.admin-disclosure > summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  padding: 0 12px;
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+/* Disclosure cue for any admin <details> whose summary is a flex row (the native marker is gone). */
+.admin-disclosure-chevron {
+  flex-shrink: 0;
+  transition: transform 180ms ease;
+}
+.admin-disclosure > summary > .admin-disclosure-chevron {
+  margin-left: auto;
+}
+details[open] > summary > .admin-disclosure-chevron {
+  transform: rotate(180deg);
+}
+summary:has(> .admin-disclosure-chevron) {
+  list-style: none;
+}
+summary:has(> .admin-disclosure-chevron)::-webkit-details-marker {
+  display: none;
+}
+.admin-disclosure-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding-top: 10px;
+}
+.admin-disclosure-body .admin-people-actions {
+  margin-left: 0;
+}
+/* Row actions read as quiet links, so the name and organisation carry the row; targets stay 44px tall. */
+.admin-content .admin-row-link {
+  min-height: 44px;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+}
+.admin-content .admin-row-link:hover {
+  filter: none;
+  text-decoration-color: currentColor;
 }
 .admin-people-head,
 .admin-people-summary {
@@ -926,7 +993,7 @@ html[data-lowspec] .admin-role-note-chevron {
     border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
   }
   .admin-people-row {
-    height: 64px;
+    min-height: 64px;
     grid-template-columns: minmax(0, 1fr) 216px;
     padding-block: 0;
   }

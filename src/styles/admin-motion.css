@@ -119,6 +119,10 @@ html[data-lowspec] :is(
     .admin-content .admin-records > li,
     .admin-workspace .admin-upload-zone,
     .admin-upload-zone,
+    .admin-stat-cell,
+    .admin-people-row,
+    .admin-connection-row,
+    .admin-disclosure-chevron,
     .admin-login *
   ) {
   animation: none !important;

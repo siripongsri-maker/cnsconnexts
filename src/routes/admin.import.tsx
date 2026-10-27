@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { FileUp, CheckCircle2, AlertTriangle, Check } from "lucide-react";
+import { FileUp, CheckCircle2, AlertTriangle, Check, ChevronDown } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { useStore } from "@/lib/store";
 import { PROVINCE_BY_TH, PROVINCES } from "@/lib/thailand-geo";
@@ -138,8 +138,9 @@ function ImportPage() {
         </label>
 
         <details className="rounded-2xl border border-border bg-card p-4 text-body">
-          <summary className="flex min-h-11 cursor-pointer items-center font-extrabold">
+          <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-extrabold">
             รูปแบบไฟล์ที่รองรับ
+            <ChevronDown className="admin-disclosure-chevron size-5" aria-hidden="true" />
           </summary>
           <p className="mt-2 text-muted-foreground">
             คอลัมน์: ชื่อ, จังหวัด, องค์กร, หลักสูตร, ประเด็น, สรุปงาน (จังหวัดเป็นภาษาไทยได้เลย)

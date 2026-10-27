@@ -15,10 +15,13 @@ import {
   CalendarCheck,
   CircleAlert,
   CircleCheck,
+  FileSpreadsheet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/app-shell";
 import { useAdminTitleNote } from "@/components/admin/page-head";
+import { NarrowDisclosure } from "@/components/admin/narrow-disclosure";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useStore } from "@/lib/store";
 import { PROVINCES } from "@/lib/thailand-geo";
 import { ISSUES, type Region, type UserSource } from "@/lib/types";
@@ -154,6 +157,8 @@ function AdminPeoplePage() {
       : `(${filtered.length} จาก ${users.length})`,
   );
   const detailUser = useMemo(() => users.find((u) => u.id === detailId) ?? null, [users, detailId]);
+  // Display only: on phones the filters and the CSV buttons fold behind two disclosures.
+  const narrow = useMediaQuery("(max-width: 760px)");
 
   const open = (u: User) => {
     setOpenId(u.id);
@@ -206,61 +211,68 @@ function AdminPeoplePage() {
               className="w-full bg-transparent text-body placeholder:text-muted-foreground"
             />
           </label>
-          <div className="admin-segmented flex rounded-xl bg-muted p-0.5">
-            {(["all", "real"] as const).map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSource(s)}
-                className={`tap rounded-lg px-3 py-1.5 text-body font-semibold ${
-                  source === s ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
-                }`}
+          <NarrowDisclosure
+            narrow={narrow}
+            label="ตัวกรอง"
+            icon={<Filter className="size-4" aria-hidden="true" />}
+            className="admin-people-filters"
+          >
+            <div className="admin-segmented flex rounded-xl bg-muted p-0.5">
+              {(["all", "real"] as const).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSource(s)}
+                  className={`tap rounded-lg px-3 py-1.5 text-body font-semibold ${
+                    source === s ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
+                  }`}
+                >
+                  {SOURCE_LABEL[s]} ({s === "real" ? realCount : users.length})
+                </button>
+              ))}
+            </div>
+            <label className="admin-people-source relative">
+              <span className="sr-only">แหล่งที่มา</span>
+              <Filter
+                className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <select
+                value={source}
+                onChange={(e) => setSource(e.target.value as SourceFilter)}
+                className="w-full appearance-none rounded-xl border border-border bg-card py-2 pl-10 pr-3 text-body"
               >
-                {SOURCE_LABEL[s]} ({s === "real" ? realCount : users.length})
-              </button>
-            ))}
-          </div>
-          <label className="admin-people-source relative">
-            <span className="sr-only">แหล่งที่มา</span>
-            <Filter
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <select
-              value={source}
-              onChange={(e) => setSource(e.target.value as SourceFilter)}
-              className="w-full appearance-none rounded-xl border border-border bg-background py-2 pl-10 pr-3 text-body"
-            >
-              <option value="all">ทุกแหล่งที่มา</option>
-              <option value="real">ผู้ใช้จริง</option>
-              <option value="qr">QR</option>
-              <option value="link">ลิงก์</option>
-              <option value="invite">Invite</option>
-              <option value="direct">เข้าตรง</option>
-              <option value="auth">บัญชี</option>
-              <option value="admin">นำเข้า</option>
-            </select>
-          </label>
-          <div className="admin-people-dates">
-            <label className="flex items-center gap-2">
-              <span className="text-body text-muted-foreground">เข้าร่วมตั้งแต่</span>
-              <input
-                type="date"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                className="rounded-xl border border-border bg-background px-3 py-2 text-body"
-              />
+                <option value="all">ทุกแหล่งที่มา</option>
+                <option value="real">ผู้ใช้จริง</option>
+                <option value="qr">QR</option>
+                <option value="link">ลิงก์</option>
+                <option value="invite">Invite</option>
+                <option value="direct">เข้าตรง</option>
+                <option value="auth">บัญชี</option>
+                <option value="admin">นำเข้า</option>
+              </select>
             </label>
-            <label className="flex items-center gap-2">
-              <span className="text-body text-muted-foreground">ถึง</span>
-              <input
-                type="date"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                className="rounded-xl border border-border bg-background px-3 py-2 text-body"
-              />
-            </label>
-          </div>
+            <div className="admin-people-dates">
+              <label className="flex items-center gap-2">
+                <span className="text-body text-muted-foreground">เข้าร่วมตั้งแต่</span>
+                <input
+                  type="date"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  className="rounded-xl border border-border bg-card px-3 py-2 text-body"
+                />
+              </label>
+              <label className="flex items-center gap-2">
+                <span className="text-body text-muted-foreground">ถึง</span>
+                <input
+                  type="date"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  className="rounded-xl border border-border bg-card px-3 py-2 text-body"
+                />
+              </label>
+            </div>
+          </NarrowDisclosure>
           {(source !== "all" || from || to || q) && (
             <button
               type="button"
@@ -275,43 +287,51 @@ function AdminPeoplePage() {
               ล้างตัวกรองทั้งหมด
             </button>
           )}
-          <div className="admin-people-actions">
-            <button
-              type="button"
-              onClick={() => {
-                const real = users.filter((u) => !isDemo(u.id));
-                if (!real.length) {
-                  toast.error("ยังไม่มีผู้ใช้จริงให้ส่งออก");
-                  return;
-                }
-                downloadCSV("connexts-real-users", toRows(real));
-                toast.success(`ส่งออกผู้ใช้จริง ${real.length} คนแล้ว`);
-              }}
-              className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-body font-semibold text-foreground"
-            >
-              <Download className="size-4" aria-hidden="true" /> CSV ผู้ใช้จริง ({realCount})
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!filtered.length) {
-                  toast.error("ไม่มีรายการตามตัวกรอง");
-                  return;
-                }
-                downloadCSV("connexts-people-filtered", toRows(filtered));
-                toast.success(`ส่งออก ${filtered.length} รายการแล้ว`);
-              }}
-              className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-body font-semibold text-foreground"
-            >
-              <Download className="size-4" aria-hidden="true" /> CSV ตามตัวกรอง ({filtered.length})
-            </button>
-            <Link
-              to="/admin/import"
-              className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-body font-semibold text-foreground"
-            >
-              <FileUp className="size-4" aria-hidden="true" /> นำเข้า CSV
-            </Link>
-          </div>
+          <NarrowDisclosure
+            narrow={narrow}
+            label="ไฟล์ CSV"
+            icon={<FileSpreadsheet className="size-4" aria-hidden="true" />}
+            className="admin-people-csv"
+          >
+            <div className="admin-people-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  const real = users.filter((u) => !isDemo(u.id));
+                  if (!real.length) {
+                    toast.error("ยังไม่มีผู้ใช้จริงให้ส่งออก");
+                    return;
+                  }
+                  downloadCSV("connexts-real-users", toRows(real));
+                  toast.success(`ส่งออกผู้ใช้จริง ${real.length} คนแล้ว`);
+                }}
+                className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-body font-semibold text-foreground"
+              >
+                <Download className="size-4" aria-hidden="true" /> CSV ผู้ใช้จริง ({realCount})
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!filtered.length) {
+                    toast.error("ไม่มีรายการตามตัวกรอง");
+                    return;
+                  }
+                  downloadCSV("connexts-people-filtered", toRows(filtered));
+                  toast.success(`ส่งออก ${filtered.length} รายการแล้ว`);
+                }}
+                className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-body font-semibold text-foreground"
+              >
+                <Download className="size-4" aria-hidden="true" /> CSV ตามตัวกรอง ({filtered.length}
+                )
+              </button>
+              <Link
+                to="/admin/import"
+                className="tap inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-body font-semibold text-foreground"
+              >
+                <FileUp className="size-4" aria-hidden="true" /> นำเข้า CSV
+              </Link>
+            </div>
+          </NarrowDisclosure>
         </div>
 
         {filtered.length === 0 && (
@@ -348,6 +368,7 @@ function AdminPeoplePage() {
                       {u.organization} · {provinceTh(u.province)} · {REGION_LABEL[u.region]}
                     </span>
                     <span className="admin-people-source-cell">
+                      <span className="sr-only">แหล่งที่มา </span>
                       <SourceBadge source={u.source} />
                     </span>
                     <span className="admin-people-status">
@@ -356,6 +377,7 @@ function AdminPeoplePage() {
                       ) : (
                         <CircleCheck className="size-4 shrink-0" aria-hidden="true" />
                       )}
+                      <span className="sr-only">โปรไฟล์ </span>
                       {st.label}
                     </span>
                   </button>
@@ -365,14 +387,16 @@ function AdminPeoplePage() {
                     <button
                       type="button"
                       onClick={() => setDetailId(u.id)}
-                      className="tap inline-flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-body font-semibold"
+                      aria-label={`ดูรายละเอียด ${u.name}`}
+                      className="admin-row-link tap inline-flex items-center gap-1.5 rounded-lg px-2 text-body font-medium"
                     >
                       <Eye className="size-4" aria-hidden="true" /> ดูรายละเอียด
                     </button>
                     <button
                       type="button"
                       onClick={() => open(u)}
-                      className="tap inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-body font-semibold text-muted-foreground"
+                      aria-label={`แก้ไข ${u.name}`}
+                      className="admin-row-link tap inline-flex items-center gap-1.5 rounded-lg px-2 text-body font-medium"
                     >
                       แก้ไข
                     </button>
