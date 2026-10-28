@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ExternalLink, FolderOpen, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, ExternalLink, FolderOpen, MapPin, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/app-shell";
 import { ChoicePill } from "@/components/choice-pill";
 import { IssueBlock } from "@/components/power-bits";
@@ -141,12 +142,12 @@ function ProjectCard({ project: s }: { project: Submission }) {
           />
         </a>
       )}
-      <h3 className="font-heading text-lead font-semibold break-words text-ink">{s.name}</h3>
+      <h3 className="font-heading text-lead font-semibold break-words text-ink"><Link to="/projects_/$id" params={{ id: s.id }} className="hover:underline">{s.name}</Link></h3>
       <p className="mt-1 flex items-center gap-1.5 text-body text-ink-soft">
         <MapPin className="h-5 w-5 shrink-0" aria-hidden="true" />
         {place}
       </p>
-      {s.summary && <p className="mt-3 text-body break-words">{s.summary}</p>}
+      {s.summary && <p className="mt-3 line-clamp-3 text-body break-words">{s.summary}</p>}
       {s.highlight && (
         <p className="mt-3 flex items-start gap-2 text-body break-words">
           <Sparkles className="mt-1 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
@@ -180,6 +181,7 @@ function ProjectCard({ project: s }: { project: Submission }) {
           ))}
         </div>
       )}
+      <Button asChild variant="outline" className="mt-5 min-h-12 w-full text-body"><Link to="/projects_/$id" params={{ id: s.id }}>ดูรายละเอียด<ArrowRight aria-hidden /></Link></Button>
     </article>
   );
 }

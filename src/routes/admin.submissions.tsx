@@ -8,6 +8,8 @@ import { useStore } from "@/lib/store";
 import { provinceTh, REGION_LABEL } from "@/lib/i18n";
 import type { Submission } from "@/lib/types";
 import { useAdminTitleNote } from "@/components/admin/page-head";
+import { ProjectContactFields } from "@/components/project-contact-fields";
+import type { ProjectContacts } from "@/lib/project-contact";
 
 export const Route = createFileRoute("/admin/submissions")({
   head: () => ({
@@ -23,7 +25,7 @@ export const Route = createFileRoute("/admin/submissions")({
   component: AdminSubmissions,
 });
 
-type Draft = Pick<Submission, "name" | "summary" | "highlight" | "wanted">;
+type Draft = Pick<Submission, "name" | "summary" | "highlight" | "wanted"> & ProjectContacts;
 
 function AdminSubmissions() {
   const { submissions, updateSubmission, removeSubmission, toggleShowcase } = useStore();
@@ -82,6 +84,11 @@ function AdminSubmissions() {
                       summary: s.summary,
                       highlight: s.highlight,
                       wanted: s.wanted,
+                      contact_name: s.contact_name ?? "",
+                      contact_organization: s.contact_organization ?? "",
+                      contact_phone: s.contact_phone ?? "",
+                      contact_email: s.contact_email ?? "",
+                      contact_url: s.contact_url ?? "",
                     });
                   }}
                 >
@@ -116,6 +123,7 @@ function AdminSubmissions() {
                       )}
                     </label>
                   ))}
+                  <ProjectContactFields value={draft} onChange={contacts => setDraft({ ...draft, ...contacts })} />
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
