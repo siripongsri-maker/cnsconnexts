@@ -18,7 +18,6 @@ import {
   Link2,
   LogOut,
   MonitorPlay,
-  RotateCcw,
   RotateCw,
   Search,
   Share2,
