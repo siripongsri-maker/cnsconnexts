@@ -111,7 +111,7 @@ describe("buildLiveMapLayout", () => {
     expect(spots.size).toBe(18);
   });
 
-  it("orders a region's ring by person id, not by pair order", () => {
+  it("places a region's people by person id, not by pair order", () => {
     // Pairs sort as ["a","z"] then ["b","m"], so "z" is met before "m".
     const users = [
       person("a", { province: "Chiang Mai", region: "North" }),
@@ -127,8 +127,62 @@ describe("buildLiveMapLayout", () => {
       const node = layout.nodesById.get(id)!;
       return Math.hypot(node.x - cx, node.y - cy);
     };
-    expect(radius("m")).toBeCloseTo(24, 5);
-    expect(radius("z")).toBeCloseTo(33, 5);
+    // The spiral grows outward, so the first person placed sits nearest the centre.
+    expect(radius("m")).toBeLessThan(radius("z"));
+  });
+
+  it("keeps every region-only dot inside the region it names", () => {
+    const anchor = person("chiangmai", { province: "Chiang Mai", region: "North" });
+    for (const region of ["North", "Northeast", "Central", "South", "Bangkok"]) {
+      const crowd = Array.from({ length: 40 }, (_, i) =>
+        person(`r${String(i).padStart(2, "0")}`, { region }),
+      );
+      const layout = buildLiveMapLayout(
+        [anchor, ...crowd],
+        crowd.map((p, i) => pair(`c${i}`, "chiangmai", p.id)),
+      );
+      const spots = new Set<string>();
+      for (const p of crowd) {
+        const node = layout.nodesById.get(p.id)!;
+        expect(node.kind, `${region} ${p.id} kind`).toBe("region");
+        // Bangkok is its own region here, so Central people never land in Bangkok.
+        expect(provinceAt(node)?.region, `${region} ${p.id} lands in`).toBe(region);
+        spots.add(`${node.x},${node.y}`);
+      }
+      expect(spots.size, `${region} distinct dots`).toBe(40);
+    }
+  });
+
+  it("puts Bangkok region-only people inside the Bangkok outline", () => {
+    const crowd = Array.from({ length: 10 }, (_, i) => person(`b${i}`, { region: "Bangkok" }));
+    const layout = buildLiveMapLayout(
+      [A, ...crowd],
+      crowd.map((p, i) => pair(`c${i}`, "a", p.id)),
+    );
+    for (const p of crowd) {
+      const node = layout.nodesById.get(p.id)!;
+      expect(provinceAt(node)?.en).toBe("Bangkok Metropolis");
+      expect(node.group).toBe("central");
+      expect(node.placeLabel).toBe("ไม่ระบุจังหวัด · กรุงเทพฯ");
+    }
+  });
+
+  it("keeps region-only dots at least 8 apart while the region has room", () => {
+    for (const region of ["North", "Northeast", "Central", "South", "Bangkok"]) {
+      const crowd = Array.from({ length: 12 }, (_, i) =>
+        person(`r${String(i).padStart(2, "0")}`, { region }),
+      );
+      const layout = buildLiveMapLayout(
+        [A, ...crowd],
+        crowd.map((p, i) => pair(`c${i}`, "a", p.id)),
+      );
+      const dots = crowd.map((p) => layout.nodesById.get(p.id)!);
+      for (const [i, one] of dots.entries()) {
+        for (const other of dots.slice(i + 1)) {
+          expect(Math.hypot(one.x - other.x, one.y - other.y), region).toBeGreaterThanOrEqual(8);
+        }
+      }
+    }
   });
 
   it("keeps region-only dots the same whatever order the users arrive in", () => {
@@ -167,17 +221,6 @@ describe("buildLiveMapLayout", () => {
       const layout = buildLiveMapLayout([A, p], [pair("c", "a", "p")]);
       expect(layout.nodesById.get("p")?.group).toBe(group);
     }
-  });
-
-  it("rings Bangkok region-only people around the Bangkok province centre", () => {
-    const p = person("p", { region: "Bangkok" });
-    const node = buildLiveMapLayout([A, p], [pair("c", "a", "p")]).nodesById.get("p")!;
-    expect(node.kind).toBe("region");
-    expect(node.group).toBe("central");
-    expect(node.placeLabel).toBe("ไม่ระบุจังหวัด · กรุงเทพฯ");
-    const bangkok = PROVINCES.find((province) => province.en === "Bangkok Metropolis")!;
-    // The first person in a region sits one base radius (24) from the centre.
-    expect(Math.hypot(node.x - bangkok.cx, node.y - bangkok.cy)).toBeCloseTo(24, 5);
   });
 
   it("treats an unresolvable province like a missing one", () => {

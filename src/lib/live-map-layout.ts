@@ -2,6 +2,7 @@ import { REGION_LABEL } from "./i18n";
 import {
   buildPeopleNetwork,
   pairPath,
+  provinceAt,
   type NetworkConnection,
   type NetworkPerson,
   type PeopleNetworkNode,
@@ -33,7 +34,7 @@ export type LiveMapNode = {
   placeLabel: string;
   /** Area to frame for this person: the province outline box, or ±30 around the dot. */
   box: Box;
-  /** `province`: inside the province. `region`: ring around the region. `hub`: sea point. */
+  /** `province`: inside the province. `region`: inside the region. `hub`: sea point. */
   kind: "province" | "region" | "hub";
 };
 
@@ -68,9 +69,14 @@ const GROUP_BY_REGION = {
 } as const satisfies Partial<Record<Region, TourGroupKey>>;
 type GroupedRegion = keyof typeof GROUP_BY_REGION;
 
-const RING_BASE_RADIUS = 24;
-const RING_STEP = 9;
 const GOLDEN_ANGLE = 2.399963;
+// Region-only people are placed along a spiral from the region centre: candidate
+// k sits at radius WALK_START + WALK_STEP * sqrt(k), angle k * GOLDEN_ANGLE.
+const WALK_START = 3;
+const WALK_STEP = 1.5;
+const WALK_CAP = 4000;
+/** Region-only dots keep at least this far apart while the region has room. */
+const MIN_DOT_GAP = 8;
 const POINT_BOX_HALF = 30;
 
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
@@ -142,7 +148,8 @@ export function groupBox(group: TourGroupKey): Box {
   return box ? [...box] : [0, 0, 1000, 1600];
 }
 
-// A region's centre is the mean of its provinces' centres.
+// A region's centre is the mean of its provinces' centres, so it can fall outside
+// an oddly shaped region; the walk below only keeps candidates that are inside.
 const regionCentres = new Map<GroupedRegion, Point>();
 for (const region of Object.keys(GROUP_BY_REGION) as GroupedRegion[]) {
   const members = PROVINCES.filter((province) => province.region === region);
@@ -166,12 +173,61 @@ function provinceNode(node: PeopleNetworkNode): LiveMapNode {
   };
 }
 
+const regionWalks = new Map<GroupedRegion, Point[]>();
+
 /**
- * A person without a usable province: a golden-angle spiral around the centre of
- * their region (`ringIndex` counts the people already placed there), or the
- * shared hub when the region is missing or unknown too.
+ * The spiral candidates around a region's centre that fall inside one of the
+ * region's own provinces, in walk order. Depends only on the region, so it is
+ * computed once and gives the same answer whoever is placed.
  */
-function unplacedNode(user: NetworkPerson, ringIndex: Map<GroupedRegion, number>): LiveMapNode {
+function regionWalk(region: GroupedRegion, centre: Point): Point[] {
+  const cached = regionWalks.get(region);
+  if (cached) return cached;
+  const walk: Point[] = [];
+  for (let k = 0; k < WALK_CAP; k++) {
+    const radius = WALK_START + WALK_STEP * Math.sqrt(k);
+    const angle = k * GOLDEN_ANGLE;
+    const point = {
+      x: centre.x + Math.cos(angle) * radius,
+      y: centre.y + Math.sin(angle) * radius,
+    };
+    if (provinceAt(point)?.region === region) walk.push(point);
+  }
+  regionWalks.set(region, walk);
+  return walk;
+}
+
+/**
+ * The first spiral point inside the region that is at least MIN_DOT_GAP from the
+ * dots already placed. When the region is too crowded for that, the inside point
+ * with the most clearance from them (the earliest one on a tie), so a dot never
+ * leaves the region and the spots only repeat once every candidate is taken.
+ */
+function placeInRegion(region: GroupedRegion, centre: Point, placed: readonly Point[]): Point {
+  const clearance = (point: Point) =>
+    placed.reduce(
+      (least, dot) => Math.min(least, Math.hypot(point.x - dot.x, point.y - dot.y)),
+      Infinity,
+    );
+  let best: Point | undefined;
+  let bestClearance = -1;
+  for (const point of regionWalk(region, centre)) {
+    const gap = clearance(point);
+    if (gap >= MIN_DOT_GAP) return point;
+    if (gap > bestClearance) {
+      best = point;
+      bestClearance = gap;
+    }
+  }
+  return best ?? centre;
+}
+
+/**
+ * A person without a usable province: a spot inside their region (`placed` holds
+ * the dots already put in each region), or the shared hub when the region is
+ * missing or unknown too.
+ */
+function unplacedNode(user: NetworkPerson, placed: Map<GroupedRegion, Point[]>): LiveMapNode {
   const region = groupedRegion(user.region);
   const centre = region ? regionCentres.get(region) : undefined;
   if (!region || !centre) {
@@ -186,18 +242,18 @@ function unplacedNode(user: NetworkPerson, ringIndex: Map<GroupedRegion, number>
       kind: "hub",
     };
   }
-  const i = ringIndex.get(region) ?? 0;
-  ringIndex.set(region, i + 1);
-  const radius = RING_BASE_RADIUS + RING_STEP * Math.sqrt(i);
-  const angle = i * GOLDEN_ANGLE;
-  const point = {
-    x: centre.x + Math.cos(angle) * radius,
-    y: centre.y + Math.sin(angle) * radius,
-  };
+  let dots = placed.get(region);
+  if (!dots) {
+    dots = [];
+    placed.set(region, dots);
+  }
+  const point = placeInRegion(region, centre, dots);
+  dots.push(point);
   return {
     id: user.id,
     name: user.name,
-    ...point,
+    x: point.x,
+    y: point.y,
     group: GROUP_BY_REGION[region],
     placeLabel: `ไม่ระบุจังหวัด · ${REGION_LABEL[region]}`,
     box: pointBox(point),
@@ -207,8 +263,8 @@ function unplacedNode(user: NetworkPerson, ringIndex: Map<GroupedRegion, number>
 
 /**
  * Give every person on a recorded pair a map position, and every pair a path.
- * Province known: inside the province. Region only: a ring around the region.
- * Neither: the hub in the sea. Pairs, dedupe and the demo-profile filter come
+ * Province known: inside the province. Region only: inside that region, spread
+ * out from its centre. Neither: the hub in the sea. Pairs, dedupe and the demo-profile filter come
  * from `buildPeopleNetwork`; people with no pair are left out.
  */
 export function buildLiveMapLayout(
@@ -223,13 +279,13 @@ export function buildLiveMapLayout(
     connected.set(edge.source.id, edge.source);
     connected.set(edge.target.id, edge.target);
   }
-  // Sorting by id first makes each region's ring order independent of input order.
-  const ringIndex = new Map<GroupedRegion, number>();
+  // Sorting by id first makes each region's placement order independent of input order.
+  const placed = new Map<GroupedRegion, Point[]>();
   const nodes = [...connected.values()]
     .sort((a, b) => compare(a.id, b.id))
     .map((user) => {
       const located = provinceNodes.get(user.id);
-      return located ? provinceNode(located) : unplacedNode(user, ringIndex);
+      return located ? provinceNode(located) : unplacedNode(user, placed);
     });
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
 
