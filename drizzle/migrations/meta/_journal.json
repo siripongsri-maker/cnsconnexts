@@ -8,6 +8,13 @@
       "when": 1793061487792,
       "tag": "0000_create_meetups",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793154205885,
+      "tag": "0001_connections_public_read",
+      "breakpoints": true
     }
   ]
 }

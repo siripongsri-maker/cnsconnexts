@@ -1,0 +1,2 @@
+CREATE POLICY "event connections readable" ON public.connections FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "event commitments readable" ON public.commitments FOR SELECT TO anon, authenticated USING (true);
