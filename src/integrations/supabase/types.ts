@@ -402,6 +402,11 @@ export type Database = {
       submissions: {
         Row: {
           batch: string
+          contact_email: string
+          contact_name: string
+          contact_organization: string
+          contact_phone: string
+          contact_url: string
           course: string
           created_at: string
           device_id: string | null
@@ -420,6 +425,11 @@ export type Database = {
         }
         Insert: {
           batch?: string
+          contact_email?: string
+          contact_name?: string
+          contact_organization?: string
+          contact_phone?: string
+          contact_url?: string
           course?: string
           created_at?: string
           device_id?: string | null
@@ -438,6 +448,11 @@ export type Database = {
         }
         Update: {
           batch?: string
+          contact_email?: string
+          contact_name?: string
+          contact_organization?: string
+          contact_phone?: string
+          contact_url?: string
           course?: string
           created_at?: string
           device_id?: string | null

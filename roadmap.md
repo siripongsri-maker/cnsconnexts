@@ -15,6 +15,9 @@
 
 # Projects board: seed data + discoverability
 
+- [ ] Add individual project pages with complete details, documents and optional public contacts.
+- [ ] Allow public contact entry on submission/admin forms and verify detail navigation.
+
 - [x] Applied the 11 คนส. project rows from the exhibition board (runs 1–4); database now holds 12 projects across runs 1–4.
 - [x] Confirmed /projects lists all 12 under runs 1–4 (2/2/3/5) on desktop and phone.
 - [x] Added "โปรเจกต์" (FolderOpen) as the 4th item in the bottom nav — verified it opens /projects directly and shows the active state, labels fit at 390/360px and drop to icons-only below 360px.

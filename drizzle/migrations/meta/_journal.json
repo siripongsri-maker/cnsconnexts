@@ -15,6 +15,13 @@
       "when": 1793154205885,
       "tag": "0001_connections_public_read",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793162584266,
+      "tag": "0002_project_public_contacts",
+      "breakpoints": true
     }
   ]
 }
