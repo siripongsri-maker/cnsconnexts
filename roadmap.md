@@ -2,9 +2,10 @@
 
 # Admin Google access and security history
 
-- [ ] Move superadmin access to the verified Google account srichausiripong@gmail.com and disable legacy superadmin credentials/tokens.
-- [ ] Persist login results, account and timestamps on the server and expose a protected history page.
-- [ ] Test permissions, legacy rejection, history visibility and Google session handling.
+- [x] Reserve superadmin access for the verified Google account srichausiripong@gmail.com and disable legacy superadmin credentials/tokens.
+- [x] Persist login results, account and timestamps on the server and expose a protected history page; verified a rejected login was recorded.
+- [x] Test legacy rejection and session rules (18 tests passed); verified Google button and failed legacy login in browser.
+- [ ] Verify successful Google sign-in and history read-back as srichausiripong@gmail.com — blocked: this account has no auth user or active Google session yet; owner must first sign in with Google.
 
 - [x] Inspect reference and shared page patterns.
 - [x] Rebuild homepage composition and navigation to closely match the reference using Connexts content.

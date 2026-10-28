@@ -48,6 +48,7 @@ function readSession(): StoredSession | null {
       typeof parsed?.token !== "string" ||
       typeof parsed.exp !== "number" ||
       parsed.exp <= Date.now()
+      || (parsed.role === 'superadmin' && (!parsed.user?.includes('@')))
     ) {
       window.localStorage.removeItem(SESSION_KEY);
       return null;
@@ -115,7 +116,6 @@ export function useAdminAuth() {
   }, [auth.mode, auth.user?.id]);
 
   const signInGoogle = useCallback(async (): Promise<string | null> => {
-    sessionStorage.setItem('connext-admin-google-return', '1');
     const result = await lovable.auth.signInWithOAuth('google', {
       redirect_uri: `${window.location.origin}/admin`,
       extraParams: { prompt: 'select_account' },

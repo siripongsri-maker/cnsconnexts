@@ -38,9 +38,8 @@ function AdminSettings() {
           {role ? <> · {ROLE_TH[role]}</> : null}
         </p>
         <p className="text-body text-muted-foreground">
-          รหัสผ่านผู้ดูแลตั้งค่าที่ตัวแปรสภาพแวดล้อมของเซิร์ฟเวอร์ (SUPERADMIN_PASSWORD,
-          ADMIN_PASSWORD, ANALYST_PASSWORD, VIEWER_PASSWORD) และไม่แสดงบนหน้าเว็บ ดูวิธีตั้งค่าใน
-          docs/ADMIN.md
+          Superadmin เข้าสู่ระบบด้วย Google บัญชี srichausiripong@gmail.com เท่านั้น
+          บัญชี superadmin และรหัสผ่านเดิมไม่สามารถเข้าใช้งานได้แล้ว
         </p>
       </section>
 
