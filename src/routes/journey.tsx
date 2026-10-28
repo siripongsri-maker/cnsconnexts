@@ -232,7 +232,7 @@ function JourneyPage() {
             <li>
               · คีย์ที่ใช้ในเครื่อง: <code>connecting-power-v1</code> (ข้อมูลทั้งหมด),{" "}
               <code>connecting-power-session</code> (เซสชันผู้เข้าร่วม),{" "}
-              <code>connext-admin-session</code> (ประตูหลังบ้าน)
+              <code>connext-admin-token</code> (โทเคนหลังบ้าน)
             </li>
             <li>
               · สูตรจับคู่: need↔have 40% · ประเด็นร่วม 30% · ทักษะ 20% · ภูมิภาค 10% (แก้ที่{" "}

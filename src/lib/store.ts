@@ -1,4 +1,14 @@
-import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { db } from "./db";
@@ -6,7 +16,7 @@ import { runProfileWrite } from "./profile-write";
 import { connectionWith, rollbackConnect } from "./connect-rules";
 import { emitLive } from "./live";
 import { adminDeleteRow, adminUpdateRow, type AdminTable } from "./admin.functions";
-import { ADMIN_PASSWORD } from "./admin-auth";
+import { getAdminToken } from "./admin-auth";
 import type {
   AppNotification,
   ChatMessage,
@@ -32,7 +42,6 @@ const PENDING_KEY = "connexts-pending-profile";
 const ME_CACHE_KEY = "connexts-me-cache";
 /** รีเฟรชข้อมูลจาก realtime แบบหน่วงเวลา เพื่อไม่ให้ดึงข้อมูลทั้งชุดถี่เกินไป */
 const REALTIME_DEBOUNCE_MS = 800;
-
 
 type LocalState = {
   savedIdeas: string[];
@@ -79,7 +88,6 @@ export type PendingProfile = {
   payload: Record<string, unknown>;
   mode: "insert" | "update";
 };
-
 
 /** ผลการขอเชื่อมต่อ — ok:false = เขียนฐานข้อมูลไม่สำเร็จและถอนออกแล้ว (แจ้ง toast แล้ว) */
 export type ConnectResult = { ok: true; connection: Connection; existed: boolean } | { ok: false };
@@ -177,16 +185,9 @@ function clearPending() {
   }
 }
 
-
-
-/** รหัสผ่านผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
-function adminPassword(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem("connext-admin-session") === "1" ? ADMIN_PASSWORD : null;
-  } catch {
-    return null;
-  }
+/** โทเคนผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
+function adminToken(): string | null {
+  return getAdminToken();
 }
 
 function getDeviceId() {
@@ -333,7 +334,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             chunk.map((r) => r.id as string),
           );
         if (error) return;
-        const got = new Map(((data as Row[]) ?? []).map((r) => [r.id as string, r.photo as string | null]));
+        const got = new Map(
+          ((data as Row[]) ?? []).map((r) => [r.id as string, r.photo as string | null]),
+        );
         for (const r of chunk) {
           const photo = got.get(r.id);
           if (photo) photos.set(r.id, photo);
@@ -356,12 +359,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     attachDeviceHeader();
     const myId = myIdRef.current;
     const [p, i, c, m, msg, sb, pn] = await Promise.all([
-      db.from("participants").select(PARTICIPANT_PUBLIC_COLS).order("created_at", { ascending: false }),
+      db
+        .from("participants")
+        .select(PARTICIPANT_PUBLIC_COLS)
+        .order("created_at", { ascending: false }),
       db.from("ideas").select("*").order("created_at", { ascending: false }),
       db.from("connections").select("*").order("created_at", { ascending: false }),
       db.from("commitments").select("*").order("created_at", { ascending: false }),
       db.from("messages").select("*").order("created_at", { ascending: true }),
-      db.from("submissions").select(SUBMISSION_PUBLIC_COLS).order("created_at", { ascending: false }),
+      db
+        .from("submissions")
+        .select(SUBMISSION_PUBLIC_COLS)
+        .order("created_at", { ascending: false }),
       db.from("province_notes").select("*").order("created_at", { ascending: false }),
     ]);
 
@@ -474,7 +483,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       const myId = myIdRef.current;
       const withPhoto = (u: User): User => {
-        const key = u.id === "me" ? myId ?? u.id : u.id;
+        const key = u.id === "me" ? (myId ?? u.id) : u.id;
         const photo = u.photo ?? cache.p.get(key);
         return photo === u.photo ? u : { ...u, photo };
       };
@@ -620,7 +629,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [state.savedIdeas, state.likedUsers, state.skippedUsers, state.notifications, hydrated]);
 
-  const dbId = useCallback((id: string) => (id === "me" ? myIdRef.current ?? id : id), []);
+  const dbId = useCallback((id: string) => (id === "me" ? (myIdRef.current ?? id) : id), []);
 
   /* ---------------- actions ---------------- */
 
@@ -724,7 +733,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       emitLive("match", "พบคู่แมตช์ใหม่", `${saved.name} เข้าร่วมและพร้อมจับคู่พลัง`);
       return sync;
-
     },
     [refresh],
   );
@@ -737,7 +745,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const result = await runProfileWrite(pending.mode === "update" ? "update" : "insert", {
       insert: () => db.from("participants").insert(payload as never),
       update: () =>
-        db.from("participants").update(patch as never, { count: "exact" }).eq("id", pending.id),
+        db
+          .from("participants")
+          .update(patch as never, { count: "exact" })
+          .eq("id", pending.id),
     });
     if (!result.ok) throw result.error;
     myIdRef.current = pending.id;
@@ -756,7 +767,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     clearPending();
     setPendingProfile(null);
   }, []);
-
 
   const linkAccount: Store["linkAccount"] = useCallback(
     (email, userId) => {
@@ -1083,7 +1093,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         next = !s.submissions.find((x) => x.id === id)?.showcase;
         return {
           ...s,
-          submissions: s.submissions.map((x) => (x.id === id ? { ...x, showcase: !x.showcase } : x)),
+          submissions: s.submissions.map((x) =>
+            x.id === id ? { ...x, showcase: !x.showcase } : x,
+          ),
         };
       });
       void (async () => {
@@ -1132,11 +1144,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const { id: _ignored, created_at: _c, ...rest } = patch as Partial<User> & { id?: string };
       void (async () => {
         const target = dbId(id);
-        const { error } = await db.from("participants").update(rest as Row).eq("id", target);
-        const pwd = adminPassword();
-        if (pwd) {
+        const { error } = await db
+          .from("participants")
+          .update(rest as Row)
+          .eq("id", target);
+        const adminTok = adminToken();
+        if (adminTok) {
           await adminUpdateRow({
-            data: { password: pwd, table: "participants", id: target, patch: rest as Row },
+            data: { token: adminTok, table: "participants", id: target, patch: rest as Row },
           }).catch(() => undefined);
         } else if (error) {
           console.warn("[store] update participant failed", error.message);
@@ -1150,11 +1165,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const removeRow = useCallback(
     (table: AdminTable, id: string) => {
       void (async () => {
-        const { error } = await db.from(table as never).delete().eq("id", id);
-        const pwd = adminPassword();
+        const { error } = await db
+          .from(table as never)
+          .delete()
+          .eq("id", id);
+        const adminTok = adminToken();
         // ผู้ดูแลหลังบ้านลบข้อมูลของคนอื่นได้ผ่านสิทธิ์ฝั่งเซิร์ฟเวอร์
-        if (pwd) {
-          await adminDeleteRow({ data: { password: pwd, table, id } }).catch((e: unknown) =>
+        if (adminTok) {
+          await adminDeleteRow({ data: { token: adminTok, table, id } }).catch((e: unknown) =>
             console.warn("[store] admin delete failed", e),
           );
         } else if (error) {
@@ -1165,7 +1183,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     [refresh],
   );
-
 
   const removeUser: Store["removeUser"] = useCallback(
     (id) => {
@@ -1206,7 +1223,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateIdea: Store["updateIdea"] = useCallback(
     (id, patch) => {
-      setState((s) => ({ ...s, ideas: s.ideas.map((i) => (i.id === id ? { ...i, ...patch } : i)) }));
+      setState((s) => ({
+        ...s,
+        ideas: s.ideas.map((i) => (i.id === id ? { ...i, ...patch } : i)),
+      }));
       void (async () => {
         const { id: _i, created_at: _c, owner_id, ...rest } = patch as Row;
         const payload: Row = { ...rest };
@@ -1319,7 +1339,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const notify: Store["notify"] = useCallback((n) => {
-    const item: AppNotification = { ...n, id: uuid(), read: false, created_at: new Date().toISOString() };
+    const item: AppNotification = {
+      ...n,
+      id: uuid(),
+      read: false,
+      created_at: new Date().toISOString(),
+    };
     setState((s) => ({ ...s, notifications: [item, ...s.notifications] }));
     return item;
   }, []);
@@ -1333,7 +1358,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const reset = useCallback(() => {
-    setState((s) => ({ ...s, savedIdeas: [], likedUsers: [], skippedUsers: [], notifications: [] }));
+    setState((s) => ({
+      ...s,
+      savedIdeas: [],
+      likedUsers: [],
+      skippedUsers: [],
+      notifications: [],
+    }));
   }, []);
 
   const value = useMemo<Store>(
@@ -1380,7 +1411,49 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       clearNotifications,
       reset,
     }),
-    [state, hydrated, networkAvailable, booted, photosLoaded, myParticipantId, saveProfile, pendingProfile, syncPendingProfile, dismissPendingProfile, connect, addCommitment, setConnectionStatus, updateCommitment, setRsvp, toggleSaveIdea, toggleLikeUser, skipUser, undoSkip, refresh, addProvinceNote, addSubmission, toggleShowcase, linkAccount, importUsers, updateUser, removeUser, addIdea, updateIdea, removeIdea, updateSubmission, removeSubmission, removeProvinceNote, removeCommitment, removeConnection, sendMessage, markRoomRead, notify, markNotificationsRead, clearNotifications, reset],
+    [
+      state,
+      hydrated,
+      networkAvailable,
+      booted,
+      photosLoaded,
+      myParticipantId,
+      saveProfile,
+      pendingProfile,
+      syncPendingProfile,
+      dismissPendingProfile,
+      connect,
+      addCommitment,
+      setConnectionStatus,
+      updateCommitment,
+      setRsvp,
+      toggleSaveIdea,
+      toggleLikeUser,
+      skipUser,
+      undoSkip,
+      refresh,
+      addProvinceNote,
+      addSubmission,
+      toggleShowcase,
+      linkAccount,
+      importUsers,
+      updateUser,
+      removeUser,
+      addIdea,
+      updateIdea,
+      removeIdea,
+      updateSubmission,
+      removeSubmission,
+      removeProvinceNote,
+      removeCommitment,
+      removeConnection,
+      sendMessage,
+      markRoomRead,
+      notify,
+      markNotificationsRead,
+      clearNotifications,
+      reset,
+    ],
   );
 
   return createElement(Ctx.Provider, { value }, children);

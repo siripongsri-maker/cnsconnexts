@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 
+import { requireAdmin } from "./admin-session";
+
 /**
  * การจัดการข้อมูลจากหลังบ้าน (ผู้ดูแล) — ใช้สิทธิ์ฝั่งเซิร์ฟเวอร์เพื่อข้าม RLS
- * ต้องส่งรหัสผ่านผู้ดูแลมาด้วยทุกครั้ง
+ * ต้องส่งโทเคนผู้ดูแล (จาก adminLogin) มาด้วยทุกครั้ง เฉพาะบทบาท superadmin/owner
  */
 
 const ADMIN_TABLES = [
@@ -18,31 +20,26 @@ const ADMIN_TABLES = [
 export type AdminTable = (typeof ADMIN_TABLES)[number];
 
 type AdminInput = {
-  password: string;
+  token: string;
   table: AdminTable;
   id: string;
   patch?: Record<string, unknown> | undefined;
 };
 
 function assertInput(input: AdminInput): AdminInput {
-  if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
   if (!ADMIN_TABLES.includes(input.table)) throw new Error("invalid table");
-  if (typeof input.id !== "string" || !input.id) throw new Error("invalid id");
+  // id ถูกนำไปต่อใน filter .or() จึงต้องเป็น UUID เท่านั้น
+  if (typeof input.id !== "string" || !UUID_RE.test(input.id)) throw new Error("invalid id");
   return input;
 }
 
-function checkPassword(password: string) {
-  const expected = [
-    process.env["ADMIN_PASSWORD"] ?? "cns2026",
-    process.env["SUPERADMIN_PASSWORD"] ?? "CNS-Super#2026",
-  ];
-  if (!expected.includes(password)) throw new Error("unauthorized");
-}
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const adminDeleteRow = createServerFn({ method: "POST" })
   .inputValidator((input: AdminInput) => assertInput(input))
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (data.table === "participants") {
@@ -75,11 +72,11 @@ export const adminDeleteRow = createServerFn({ method: "POST" })
 export const adminUpdateRow = createServerFn({ method: "POST" })
   .inputValidator((input: AdminInput) => assertInput(input))
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token);
     if (!data.patch || typeof data.patch !== "object") throw new Error("missing patch");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .from(data.table)
       .update(data.patch as never)
       .eq("id", data.id);

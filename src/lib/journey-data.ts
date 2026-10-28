@@ -338,11 +338,11 @@ export const ADMIN: JourneyStep[] = [
     title: "ประตูหลังบ้าน + ภาพรวม",
     shot: "admin.png",
     goal: "ผู้ดูแลเข้าจุดเดียวเห็นทุกตัวเลขของงาน",
-    actions: ["ล็อกอินด้วย connexts / cns2026", "ดูสถิติรวม", "เปิดเมนูผู้ดูแลทั้งหมด"],
+    actions: ["ล็อกอินด้วยบัญชีผู้ดูแล", "ดูสถิติรวม", "เปิดเมนูผู้ดูแลทั้งหมด"],
     input: ["ชื่อผู้ใช้/รหัสผ่านผู้ดูแล"],
     output: ["จำนวนสมาชิก ไอเดีย ผลงาน คู่เชื่อม คำมั่นสัญญา บันทึกจังหวัด", "ฟีดกิจกรรมสดล่าสุด"],
     backend:
-      "lib/admin-auth.ts เก็บสถานะที่ localStorage คีย์ connext-admin-session (ประตูกั้นระดับหน้าจอสำหรับเดโม่)",
+      "ตรวจรหัสที่เซิร์ฟเวอร์ (adminLogin) แล้วเก็บโทเคนลงลายเซ็นที่ localStorage คีย์ connext-admin-token",
   },
   {
     id: "admin-people",
@@ -558,7 +558,7 @@ export const SECTIONS: JourneySection[] = [
   {
     id: "admin",
     title: "เส้นทางผู้ดูแล (หลังบ้าน /admin)",
-    subtitle: "ล็อกอิน connexts / cns2026 — ครอบคลุมทุกเมนูที่มีบนเว็บ",
+    subtitle: "ล็อกอินด้วยบัญชีผู้ดูแล — ครอบคลุมทุกเมนูที่มีบนเว็บ",
     steps: ADMIN,
   },
 ];

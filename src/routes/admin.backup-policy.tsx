@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { ADMIN_PASSWORD } from "@/lib/admin-auth";
+import { getAdminToken } from "@/lib/admin-auth";
 import { getBackupPolicy, pruneBackupsNow, saveBackupPolicy } from "@/lib/backup.functions";
 
 export const Route = createFileRoute("/admin/backup-policy")({
@@ -34,7 +34,7 @@ function AdminBackupPolicy() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const p = await getBackupPolicy({ data: { password: ADMIN_PASSWORD } });
+      const p = await getBackupPolicy({ data: { token: getAdminToken() ?? "" } });
       setMaxRows(p.max_rows);
       setMaxAgeDays(p.max_age_days);
       setAutoPrune(p.auto_prune);
@@ -54,7 +54,7 @@ function AdminBackupPolicy() {
     setSaving(true);
     try {
       const res = await saveBackupPolicy({
-        data: { password: ADMIN_PASSWORD, maxRows, maxAgeDays, autoPrune },
+        data: { token: getAdminToken() ?? "", maxRows, maxAgeDays, autoPrune },
       });
       toast.success("บันทึกนโยบายแล้ว", {
         description: res.removed ? `ล้างรายการเกินนโยบาย ${res.removed} รายการ` : undefined,
@@ -70,7 +70,7 @@ function AdminBackupPolicy() {
   const onPrune = async () => {
     if (!confirm("ล้างรายการสำรองที่เกินนโยบายตอนนี้?")) return;
     try {
-      const res = await pruneBackupsNow({ data: { password: ADMIN_PASSWORD } });
+      const res = await pruneBackupsNow({ data: { token: getAdminToken() ?? "" } });
       toast.success(`ล้างแล้ว ${res.removed} รายการ`);
     } catch (e) {
       toast.error("ล้างไม่สำเร็จ", { description: (e as Error).message });

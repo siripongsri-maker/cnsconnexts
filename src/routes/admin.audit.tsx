@@ -4,7 +4,7 @@ import { Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { OP_TH, OpChip } from "@/components/admin/op-chip";
-import { ADMIN_PASSWORD } from "@/lib/admin-auth";
+import { getAdminToken } from "@/lib/admin-auth";
 import { listAuditLog, type AuditRow } from "@/lib/backup.functions";
 import { downloadCSV, type Row } from "@/lib/export";
 
@@ -66,7 +66,7 @@ function AdminAudit() {
     try {
       const res = await listAuditLog({
         data: {
-          password: ADMIN_PASSWORD,
+          token: getAdminToken() ?? "",
           limit: 500,
           ...(table ? { table } : {}),
           ...(operation ? { operation } : {}),

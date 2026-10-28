@@ -1,28 +1,21 @@
 /**
- * ประตูล็อกอินผู้ดูแล + ระบบสิทธิ์ (RBAC) แบบโปรโตไทป์ฝั่งไคลเอนต์
- * หมายเหตุ: ข้อมูลทั้งหมดเก็บในเครื่องผู้ใช้ รหัสนี้จึงเป็นเพียง "ประตูกั้น" สำหรับใช้ในงาน
- * ไม่ใช่ระบบยืนยันตัวตนจริง
+ * ประตูล็อกอินผู้ดูแล + ระบบสิทธิ์ (RBAC)
+ * รหัสผ่านตรวจที่เซิร์ฟเวอร์ (adminLogin) เท่านั้น ไคลเอนต์เก็บแค่โทเคนที่หมดอายุได้
+ * ทุก server function ของหลังบ้านตรวจโทเคนและบทบาทซ้ำเอง — สถานะในเครื่องใช้แค่ซ่อน/แสดงหน้าจอ
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { adminLogin } from "./admin-auth.functions";
+import type { AdminRole } from "./admin-session";
 import { logUsage } from "./usage-log";
 
-export const SUPERADMIN_USER = "superadmin";
-export const SUPERADMIN_PASSWORD = "CNS-Super#2026";
-export const ADMIN_USER = "connexts";
-export const ADMIN_PASSWORD = "cns2026";
+export type { AdminRole };
 
-const KEY = "connext-admin-session";
-const ROLE_KEY = "connext-admin-role";
-
-/** บทบาทผู้ดูแล */
-export type AdminRole = "superadmin" | "owner" | "analyst" | "viewer";
+const SESSION_KEY = "connext-admin-token";
+// คีย์เดิมจากเวอร์ชันที่ตรวจรหัสในเบราว์เซอร์ — ลบทิ้งเมื่อพบ
+const LEGACY_KEYS = ["connext-admin-session", "connext-admin-role"];
 
 /** สิทธิ์ที่ควบคุมการใช้งานหน้า Log */
-export type AdminPermission =
-  | "logs:view"
-  | "logs:search"
-  | "logs:export"
-  | "logs:clear";
+export type AdminPermission = "logs:view" | "logs:search" | "logs:export" | "logs:clear";
 
 export const ROLE_TH: Record<AdminRole, string> = {
   superadmin: "ซูเปอร์แอดมิน",
@@ -38,39 +31,32 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
   viewer: ["logs:view"],
 };
 
-type Account = { user: string; password: string; role: AdminRole };
+type StoredSession = { token: string; user: string; role: AdminRole; exp: number };
 
-const ACCOUNTS: Account[] = [
-  { user: SUPERADMIN_USER, password: SUPERADMIN_PASSWORD, role: "superadmin" },
-  { user: ADMIN_USER, password: ADMIN_PASSWORD, role: "owner" },
-  { user: "analyst", password: "cns2026-analyst", role: "analyst" },
-  { user: "viewer", password: "cns2026-viewer", role: "viewer" },
-];
-
-/** ค้นบัญชีที่ตรงกับชื่อผู้ใช้/รหัสผ่าน */
-export function findAccount(user: string, password: string): Account | undefined {
-  const u = user.trim().toLowerCase();
-  return ACCOUNTS.find((a) => a.user === u && a.password === password);
-}
-
-export function checkAdmin(user: string, password: string) {
-  return Boolean(findAccount(user, password));
-}
-
-function readSession(): { authed: boolean; role: AdminRole | null; user: string | null } {
-  if (typeof window === "undefined") return { authed: false, role: null, user: null };
+function readSession(): StoredSession | null {
+  if (typeof window === "undefined") return null;
   try {
-    const authed = window.localStorage.getItem(KEY) === "1";
-    const raw = window.localStorage.getItem(ROLE_KEY);
-    const parsed = raw ? (JSON.parse(raw) as { role: AdminRole; user: string }) : null;
-    return {
-      authed,
-      role: authed ? (parsed?.role ?? "owner") : null,
-      user: authed ? (parsed?.user ?? ADMIN_USER) : null,
-    };
+    for (const k of LEGACY_KEYS) window.localStorage.removeItem(k);
+    const raw = window.localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredSession;
+    if (
+      typeof parsed?.token !== "string" ||
+      typeof parsed.exp !== "number" ||
+      parsed.exp <= Date.now()
+    ) {
+      window.localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return parsed;
   } catch {
-    return { authed: false, role: null, user: null };
+    return null;
   }
+}
+
+/** โทเคนผู้ดูแลที่ยังไม่หมดอายุ สำหรับส่งให้ server function ของหลังบ้าน */
+export function getAdminToken(): string | null {
+  return readSession()?.token ?? null;
 }
 
 /** สถานะล็อกอินผู้ดูแล พร้อมสิทธิ์ตามบทบาท */
@@ -82,35 +68,42 @@ export function useAdminAuth() {
 
   useEffect(() => {
     const s = readSession();
-    setAuthed(s.authed);
-    setRole(s.role);
-    setUser(s.user);
+    setAuthed(Boolean(s));
+    setRole(s?.role ?? null);
+    setUser(s?.user ?? null);
     setReady(true);
   }, []);
 
-  const signIn = useCallback((u: string, password: string) => {
-    const account = findAccount(u, password);
-    if (!account) return false;
+  /** คืน null เมื่อสำเร็จ หรือข้อความผิดพลาด */
+  const signIn = useCallback(async (u: string, password: string): Promise<string | null> => {
+    let res: Awaited<ReturnType<typeof adminLogin>>;
     try {
-      window.localStorage.setItem(KEY, "1");
-      window.localStorage.setItem(
-        ROLE_KEY,
-        JSON.stringify({ role: account.role, user: account.user }),
-      );
+      res = await adminLogin({ data: { user: u, password } });
+    } catch {
+      return "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ลองใหม่อีกครั้ง";
+    }
+    if (!res.ok) return res.error;
+    const session: StoredSession = {
+      token: res.token,
+      user: res.user,
+      role: res.role,
+      exp: res.exp,
+    };
+    try {
+      window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch {
       /* ignore */
     }
     setAuthed(true);
-    setRole(account.role);
-    setUser(account.user);
-    logUsage("admin", "ผู้ดูแลเข้าสู่ระบบหลังบ้าน", `${account.user} · ${ROLE_TH[account.role]}`);
-    return true;
+    setRole(session.role);
+    setUser(session.user);
+    logUsage("admin", "ผู้ดูแลเข้าสู่ระบบหลังบ้าน", `${session.user} · ${ROLE_TH[session.role]}`);
+    return null;
   }, []);
 
   const signOut = useCallback(() => {
     try {
-      window.localStorage.removeItem(KEY);
-      window.localStorage.removeItem(ROLE_KEY);
+      window.localStorage.removeItem(SESSION_KEY);
     } catch {
       /* ignore */
     }
@@ -120,10 +113,7 @@ export function useAdminAuth() {
     setUser(null);
   }, []);
 
-  const permissions = useMemo(
-    () => (role ? ROLE_PERMISSIONS[role] : []),
-    [role],
-  );
+  const permissions = useMemo(() => (role ? ROLE_PERMISSIONS[role] : []), [role]);
 
   const can = useCallback(
     (permission: AdminPermission) => permissions.includes(permission),
