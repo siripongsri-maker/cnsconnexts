@@ -53,8 +53,8 @@ also too small to read from the back of the hall.
   holding briefly before a new pair takes its slot. Pairs are chosen newest-first
   and rotated so every pair gets a turn over time. Cross-region and in-region
   pairs both count.
-- **Issue filter:** applies to both modes. Only pairs whose shared-interest or
-  policy issue matches the chosen issue are shown. The chosen issue is written
+- **Issue filter:** applies to both modes. Only pairs where either person's
+  `interests` include the chosen issue are shown. The chosen issue is written
   on the chip. If no pair matches, the screen shows the empty-state text instead
   of a blank map.
 
@@ -106,8 +106,9 @@ also too small to read from the back of the hall.
 
 - Speed factors ×1.5 / ×1 / ×0.6.
 - At most 4 concurrent pairs in ทั้งประเทศ mode; each pair holds 3 s after its line draws.
-- The issue filter matches on `policy_issues` of the pair's people (both people
+- The issue filter matches on `interests` of the pair's people (both people
   included; a pair matches if either person has the issue). This is a judgement call.
+- Issue filter uses the person's chosen topics (User.interests), because the user record has no separate policy-issues field.
 - Bubble text size about 2× the current label size.
 - Settings are not persisted; a reload resets to defaults.
 

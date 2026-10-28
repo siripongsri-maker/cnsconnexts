@@ -44,21 +44,19 @@ export function rotatingWindow(ids: readonly string[], size: number, round: numb
   return out;
 }
 
-/**
- * Turn a layout into the ordered steps of the region tour: per region, a region
- * step (up to six in-region pairs) then up to two cross flights that start in
- * it, and finally an overview of every pair.
- *
- * `round` (default 0 = the newest six) rotates each region step's window
- * through ALL its in-region pairs; the one-region view passes its loop count
- * so older pairs in a busy region get their turn.
- */
-export function buildTour(layout: LiveMapLayout, round = 0): TourStep[] {
-  if (layout.edges.length === 0) return [];
+/** A pair whose two people sit in different tour groups (at most one may be a hub). */
+type CrossPair = {
+  edge: LiveMapEdge;
+  sourceId: string;
+  targetId: string;
+  sourceGroup: TourGroupKey | null;
+  targetGroup: TourGroupKey | null;
+};
 
+/** Split a layout's pairs, newest first, into in-region lists and cross pairs. */
+function splitPairs(layout: LiveMapLayout) {
   const intra = new Map<TourGroupKey, LiveMapEdge[]>();
-  const cross: { edge: LiveMapEdge; home: TourGroupKey; fromId: string; toId: string }[] = [];
-
+  const cross: CrossPair[] = [];
   for (const edge of [...layout.edges].sort(newestFirst)) {
     const source = layout.nodesById.get(edge.sourceId);
     const target = layout.nodesById.get(edge.targetId);
@@ -70,23 +68,53 @@ export function buildTour(layout: LiveMapLayout, round = 0): TourStep[] {
       intra.set(source.group!, list);
       continue;
     }
-    const sourceHome = source.group !== null;
     cross.push({
       edge,
-      home: (sourceHome ? source.group : target.group)!,
-      fromId: sourceHome ? source.id : target.id,
-      toId: sourceHome ? target.id : source.id,
+      sourceId: source.id,
+      targetId: target.id,
+      sourceGroup: source.group,
+      targetGroup: target.group,
     });
   }
+  return { intra, cross };
+}
+
+const touches = (pair: CrossPair, group: TourGroupKey) =>
+  pair.sourceGroup === group || pair.targetGroup === group;
+
+/** A cross step for `pair` that starts on `group`'s side and flies to the other end. */
+function flightFrom(pair: CrossPair, group: TourGroupKey): TourStep {
+  const fromSource = pair.sourceGroup === group;
+  return {
+    kind: "cross",
+    group,
+    edgeId: pair.edge.id,
+    fromId: fromSource ? pair.sourceId : pair.targetId,
+    toId: fromSource ? pair.targetId : pair.sourceId,
+  };
+}
+
+/**
+ * Turn a layout into the ordered steps of the region tour: per region, a region
+ * step (up to six in-region pairs) then up to two cross flights that start in
+ * it, and finally an overview of every pair. In the tour each cross pair flies
+ * once, from its home: the source person's group, or the target's when the
+ * source is a hub.
+ *
+ * `round` (default 0 = the newest six) rotates each region step's window
+ * through ALL its in-region pairs; the one-region view passes its loop count
+ * so older pairs in a busy region get their turn.
+ */
+export function buildTour(layout: LiveMapLayout, round = 0): TourStep[] {
+  if (layout.edges.length === 0) return [];
+
+  const { intra, cross } = splitPairs(layout);
+  const homeOf = (pair: CrossPair) => (pair.sourceGroup ?? pair.targetGroup)!;
 
   const steps: TourStep[] = [];
   for (const group of TOUR_ORDER) {
     const inRegion = intra.get(group) ?? [];
-    const touching = cross.filter(({ edge }) => {
-      const s = layout.nodesById.get(edge.sourceId);
-      const t = layout.nodesById.get(edge.targetId);
-      return s?.group === group || t?.group === group;
-    });
+    const touching = cross.filter((pair) => touches(pair, group));
     if (inRegion.length === 0 && touching.length === 0) continue;
 
     steps.push({
@@ -101,16 +129,10 @@ export function buildTour(layout: LiveMapLayout, round = 0): TourStep[] {
       intraCount: inRegion.length,
       crossCount: touching.length,
     });
-    for (const flight of cross
-      .filter((c) => c.home === group)
+    for (const pair of cross
+      .filter((c) => homeOf(c) === group)
       .slice(0, TOUR_LIMITS.crossPerRegion)) {
-      steps.push({
-        kind: "cross",
-        group,
-        edgeId: flight.edge.id,
-        fromId: flight.fromId,
-        toId: flight.toId,
-      });
+      steps.push(flightFrom(pair, group));
     }
   }
 
@@ -122,9 +144,21 @@ export function buildTour(layout: LiveMapLayout, round = 0): TourStep[] {
 }
 
 /**
- * The steps of a one-region view: that region's step and the cross flights
- * whose home is that region, in tour order. Overview steps are dropped.
+ * The steps of a one-region view: that region's step from `steps`, then up to
+ * two cross flights (newest first) for pairs in `layout` that TOUCH the region,
+ * whichever side registered them, each flying out from the region's side.
+ * Overview steps are dropped. `layout` must be the one `steps` was built from.
  */
-export function regionViewSteps(steps: readonly TourStep[], group: TourGroupKey): TourStep[] {
-  return steps.filter((step) => step.kind !== "overview" && step.group === group);
+export function regionViewSteps(
+  steps: readonly TourStep[],
+  group: TourGroupKey,
+  layout: LiveMapLayout,
+): TourStep[] {
+  const region = steps.filter((step) => step.kind === "region" && step.group === group);
+  if (region.length === 0) return [];
+  const flights = splitPairs(layout)
+    .cross.filter((pair) => touches(pair, group))
+    .slice(0, TOUR_LIMITS.crossPerRegion)
+    .map((pair) => flightFrom(pair, group));
+  return [...region, ...flights];
 }

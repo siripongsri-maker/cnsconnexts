@@ -15,7 +15,7 @@
 - Speed factors: slow = ×1.5, normal = ×1, fast = ×0.6. Scaled: camera, line draw, hold of the tour. NOT scaled: welcome camera 2600 ms, welcome hold 5000 ms.
 - Region view: loops pairs inside the region; each loop ends with the cross pairs for that region (cap 2); no overview in between.
 - Country view: map never zooms; at most 4 pairs run at once; each pair draws its line then holds 3 s before its slot is reused; pairs newest-first, rotated so every pair gets a turn.
-- Issue filter applies to both views. A pair matches if either person's `policy_issues` contains the chosen issue. If nothing matches, show the empty-state text, not a blank map.
+- Issue filter applies to both views. A pair matches if either person's `interests` contains the chosen issue. If nothing matches, show the empty-state text, not a blank map.
 - Still mode: no camera moves and no line-draw animation; pairs are drawn at once. With reduced motion or low-spec, "moving" behaves as "still".
 - Bubbles: rounded white bubble at the pair midpoint with both names and both province names, about 2× the current label size on screen. Off = the existing small labels.
 - Settings live in memory only. A reload resets to: speed normal, view country, issue none, moving, bubbles on.
@@ -126,7 +126,7 @@ Implementation notes (the implementer decides the details inside these rules):
 - Speed: every tour `TIMING` value used by the region tour and the cross/overview steps goes through `scaleTiming(value, speed)`. The welcome camera and welcome hold keep their unscaled values.
 - Region view: build the tour from the layout as now, but keep only steps whose group equals `view.group` (region steps and cross steps where that group is the home group). Loop them; no overview step.
 - Country view: no zoom (camera stays on `FULL_VIEWBOX`). On each round, `countrySlotPlan(edges, round)` gives the pair ids; draw them in parallel (each draws its line, holds 3 s, then the slot is free for the next round's pair). Keep the full-country shading (no region dim).
-- Issue filter: applied to the edge list before either view, using `edgeMatchesIssue` and the people's `policy_issues` (build `issuesById` from the unfiltered `allUsers`). If the filtered list is empty, render the empty-state text centred on the map card.
+- Issue filter: applied to the edge list before either view, using `edgeMatchesIssue` and the people's `interests` (build `issuesById` from the unfiltered `allUsers`). If the filtered list is empty, render the empty-state text centred on the map card.
 - Still mode: when `motion === "still"` or reduced motion or lowSpec: camera moves are skipped (set the view directly) and line draws are not animated (full path shown). The chip, cards and welcome layer still work.
 - Bubbles: when `bubbles` is true, each drawn pair gets a rounded white bubble at the midpoint of its path (use the path's `getPointAtLength(getTotalLength()/2)` or the mid of source and target nodes) with both names and both province labels, font about 2× the existing label size on screen. When false, keep the existing small labels.
 - Settings change: the new `control` value is read at the next step boundary (store it in a ref; the runner reads the ref when starting each step). Never clear the map during the change.

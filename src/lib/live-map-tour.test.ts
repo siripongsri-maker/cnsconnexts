@@ -8,7 +8,6 @@ import {
   rotatingWindow,
   TOUR_LIMITS,
   TOUR_ORDER,
-  type TourStep,
 } from "./live-map-tour";
 import type { NetworkConnection, NetworkPerson } from "./people-network";
 
@@ -162,50 +161,84 @@ describe("buildTour", () => {
 });
 
 describe("regionViewSteps", () => {
-  const steps: TourStep[] = [
-    {
-      kind: "region",
-      group: "north",
-      nodeIds: ["n1"],
-      edgeIds: ["a"],
-      intraCount: 1,
-      crossCount: 1,
-    },
-    { kind: "cross", group: "north", edgeId: "x", fromId: "n1", toId: "s1" },
-    {
-      kind: "region",
-      group: "south",
-      nodeIds: ["s1"],
-      edgeIds: ["b"],
-      intraCount: 1,
-      crossCount: 1,
-    },
-    { kind: "cross", group: "south", edgeId: "y", fromId: "s1", toId: "h1" },
-    { kind: "overview", edgeIds: ["a", "b", "x", "y"] },
+  const users = [
+    person("n1", "North"),
+    person("n2", "North"),
+    person("s1", "South"),
+    person("s2", "South"),
+    person("h1", "Nationwide"),
   ];
+  const layout = buildLiveMapLayout(users, [
+    pair("a", "n1", "n2", day(1)),
+    pair("b", "s1", "s2", day(2)),
+    pair("x", "n1", "s1", day(3)),
+    pair("y", "s1", "h1", day(4)),
+  ]);
+  const steps = buildTour(layout);
+  const edgeId = (key: string) =>
+    layout.edges.find((e) => {
+      const ends = [e.sourceId, e.targetId].sort().join("-");
+      return ends === key;
+    })!.id;
+  const regionOf = (group: string) => steps.find((s) => s.kind === "region" && s.group === group)!;
 
-  it("keeps only steps whose group is the chosen one", () => {
-    expect(regionViewSteps(steps, "north")).toEqual([steps[0], steps[1]]);
-    expect(regionViewSteps(steps, "central")).toEqual([]);
+  it("keeps only the chosen region's step and its flights", () => {
+    const north = regionViewSteps(steps, "north", layout);
+    expect(north[0]).toEqual(regionOf("north"));
+    expect(north.slice(1)).toEqual([
+      { kind: "cross", group: "north", edgeId: edgeId("n1-s1"), fromId: "n1", toId: "s1" },
+    ]);
+    expect(regionViewSteps(steps, "central", layout)).toEqual([]);
   });
 
   it("drops overview steps", () => {
-    expect(regionViewSteps(steps, "south").some((s) => s.kind === "overview")).toBe(false);
+    expect(regionViewSteps(steps, "south", layout).some((s) => s.kind === "overview")).toBe(false);
   });
 
-  it("keeps cross steps whose home group is the chosen one", () => {
-    expect(regionViewSteps(steps, "south")).toEqual([steps[2], steps[3]]);
+  // Rule: a region view shows cross pairs that TOUCH the region, flying out from its side.
+  it("shows a north-registered pair in south's view, flying from the south person", () => {
+    const south = regionViewSteps(steps, "south", layout);
+    expect(south[0]).toEqual(regionOf("south"));
+    expect(south.slice(1)).toEqual([
+      { kind: "cross", group: "south", edgeId: edgeId("h1-s1"), fromId: "s1", toId: "h1" },
+      { kind: "cross", group: "south", edgeId: edgeId("n1-s1"), fromId: "s1", toId: "n1" },
+    ]);
+    const region = south[0]!;
+    expect(region.kind === "region" && region.crossCount).toBe(2);
   });
 
-  it("works on a built tour", () => {
-    const layout = buildLiveMapLayout(
-      [person("n1", "North"), person("n2", "North"), person("s1", "South")],
-      [pair("p", "n1", "n2", day(1)), pair("x", "n1", "s1", day(2))],
+  it("caps touching cross flights at 2 per region, newest first", () => {
+    const many = buildLiveMapLayout(
+      [person("n1", "North"), person("n2", "North"), person("n3", "North"), person("s1", "South")],
+      [pair("a", "n1", "s1", day(1)), pair("b", "n2", "s1", day(2)), pair("c", "n3", "s1", day(3))],
     );
-    const north = regionViewSteps(buildTour(layout), "north");
-    expect(north.map((s) => s.kind)).toEqual(["region", "cross"]);
-    // The cross pair's far end (south) is not its home, so south has only its region step.
-    expect(regionViewSteps(buildTour(layout), "south").map((s) => s.kind)).toEqual(["region"]);
+    const tour = buildTour(many);
+    for (const group of ["north", "south"] as const) {
+      const cross = regionViewSteps(tour, group, many).filter((s) => s.kind === "cross");
+      expect(cross).toHaveLength(TOUR_LIMITS.crossPerRegion);
+      expect(cross.every((s) => s.kind === "cross" && s.group === group)).toBe(true);
+    }
+    const south = regionViewSteps(tour, "south", many).filter((s) => s.kind === "cross");
+    expect(south.map((s) => s.kind === "cross" && [s.fromId, s.toId])).toEqual([
+      ["s1", "n3"],
+      ["s1", "n2"],
+    ]);
+  });
+
+  it("never flies a hub-hub pair in any region", () => {
+    const hubs = buildLiveMapLayout(
+      [
+        person("h1", "Nationwide"),
+        person("h2", "Nationwide"),
+        person("n1", "North"),
+        person("n2", "North"),
+      ],
+      [pair("hh", "h1", "h2", day(5)), pair("p", "n1", "n2", day(1))],
+    );
+    const tour = buildTour(hubs);
+    for (const group of TOUR_ORDER) {
+      expect(regionViewSteps(tour, group, hubs).some((s) => s.kind === "cross")).toBe(false);
+    }
   });
 });
 
@@ -242,7 +275,7 @@ describe("region view rotation", () => {
     expect(first.kind === "region" && first.edgeIds).toEqual(intraIds.slice(0, 6));
     const seen = new Set<string>();
     for (let round = 0; round < 2; round++) {
-      const plan = regionViewSteps(buildTour(layout, round), "north");
+      const plan = regionViewSteps(buildTour(layout, round), "north", layout);
       const region = plan[0]!;
       expect(region.kind).toBe("region");
       if (region.kind === "region") {

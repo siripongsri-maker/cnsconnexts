@@ -438,7 +438,7 @@ export function LiveMapCarousel({
     if (empty) return false;
     return applied.view.kind === "country"
       ? layout.edges.length === 0
-      : regionViewSteps(buildTour(layout), applied.view.group).length === 0;
+      : regionViewSteps(buildTour(layout), applied.view.group, layout).length === 0;
   }, [empty, layout, applied.view]);
 
   // ---- New registrants ----------------------------------------------------------
@@ -857,7 +857,7 @@ export function LiveMapCarousel({
           continue;
         }
 
-        const plan = regionViewSteps(buildTour(now, regionRound), settings.view.group);
+        const plan = regionViewSteps(buildTour(now, regionRound), settings.view.group, now);
         if (plan.length === 0) {
           await attempt(playIdle);
           continue;
