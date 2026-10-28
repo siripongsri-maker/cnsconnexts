@@ -14,6 +14,7 @@ const PREVIOUS_ROUTES = [
   "/admin/live",
   "/admin/qr",
   "/admin/logs",
+  "/admin/login-history",
   "/admin/backups",
   "/admin/backup-policy",
   "/admin/audit",
@@ -35,8 +36,8 @@ describe("ADMIN_NAV_GROUPS", () => {
 
   it("keeps all 18 previous routes, each exactly once", () => {
     const flat = ADMIN_NAV_GROUPS.flatMap((g) => g.items.map((i) => i.to));
-    expect(flat).toHaveLength(18);
-    expect(new Set(flat).size).toBe(18);
+    expect(flat).toHaveLength(19);
+    expect(new Set(flat).size).toBe(19);
     expect([...flat].sort()).toEqual([...PREVIOUS_ROUTES].sort());
   });
 
@@ -62,6 +63,7 @@ describe("ADMIN_NAV_GROUPS", () => {
       ],
       ระบบ: [
         "/admin/logs บันทึกการใช้งาน",
+        "/admin/login-history ประวัติเข้าสู่ระบบ",
         "/admin/audit ประวัติการแก้ไข",
         "/admin/costs สรุปค่าใช้จ่าย",
         "/admin/settings ตั้งค่า",
