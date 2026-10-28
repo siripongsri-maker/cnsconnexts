@@ -58,6 +58,28 @@ const DRYRUN_CONNECTION_ID = "dryrun";
 const PREVIEW_CONNECTION_ID = "celebrate-preview";
 
 /**
+ * ปุ่มออกจากระบบบนส่วนหัวหน้าแรก — เหมือนท้ายหน้า "ฉัน" แต่ไม่ต้องเลื่อนลาง
+ * เห็นเฉพาะคนที่เข้าสู่ระบบแล้ว (ผู้ใช้หรือท่ีเยี่ยมชมแบบลงชื่)
+ */
+function HeaderSignOut() {
+  const { mode, signOut } = useAuth();
+  if (mode !== "user" && mode !== "guest") return null;
+  return (
+    <button
+      type="button"
+      aria-label="ออกจากระบบ"
+      onClick={() => {
+        if (window.confirm("ออกจากระบบตอนนี้ใช่ไหม?")) void signOut();
+      }}
+      className="tap grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink-soft shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
+    >
+      <LogOut className="h-6 w-6" strokeWidth={2.2} aria-hidden />
+      <span className="sr-only">ออกจากระบบ</span>
+    </button>
+  );
+}
+
+/**
  * หน้าแรก = หน้าจับคู่ สแกน QR แล้วเห็นการ์ดคนแรกที่ควรคุยทันที ไม่ต้องกดอะไร
  *
  * ผู้เยี่ยมชม (ไม่มีโปรไฟล์ ไม่มีรหัสในเครื่อง): การ์ดเรียงแบบผู้เยี่ยมชม + แถบชวนทำโปรไฟล์
