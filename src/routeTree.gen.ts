@@ -43,6 +43,7 @@ import { Route as AdminExportRouteImport } from './routes/admin.export'
 import { Route as AdminIdeasRouteImport } from './routes/admin.ideas'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as AdminLiveRouteImport } from './routes/admin.live'
+import { Route as AdminLoginHistoryRouteImport } from './routes/admin.login-history'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminMapRouteImport } from './routes/admin.map'
 import { Route as AdminPeopleRouteImport } from './routes/admin.people'
@@ -226,6 +227,11 @@ const AdminLiveRoute = AdminLiveRouteImport.update({
   path: '/live',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminLoginHistoryRoute = AdminLoginHistoryRouteImport.update({
+  id: '/login-history',
+  path: '/login-history',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLogsRoute = AdminLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
+  '/admin/login-history': typeof AdminLoginHistoryRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
@@ -368,6 +375,7 @@ export interface FileRoutesByTo {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
+  '/admin/login-history': typeof AdminLoginHistoryRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
@@ -417,6 +425,7 @@ export interface FileRoutesById {
   '/admin/ideas': typeof AdminIdeasRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/live': typeof AdminLiveRoute
+  '/admin/login-history': typeof AdminLoginHistoryRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/map': typeof AdminMapRoute
   '/admin/people': typeof AdminPeopleRoute
@@ -467,6 +476,7 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
+    | '/admin/login-history'
     | '/admin/logs'
     | '/admin/map'
     | '/admin/people'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
+    | '/admin/login-history'
     | '/admin/logs'
     | '/admin/map'
     | '/admin/people'
@@ -562,6 +573,7 @@ export interface FileRouteTypes {
     | '/admin/ideas'
     | '/admin/import'
     | '/admin/live'
+    | '/admin/login-history'
     | '/admin/logs'
     | '/admin/map'
     | '/admin/people'
@@ -849,6 +861,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLiveRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/login-history': {
+      id: '/admin/login-history'
+      path: '/login-history'
+      fullPath: '/admin/login-history'
+      preLoaderRoute: typeof AdminLoginHistoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/logs': {
       id: '/admin/logs'
       path: '/logs'
@@ -947,6 +966,7 @@ interface AdminRouteChildren {
   AdminIdeasRoute: typeof AdminIdeasRoute
   AdminImportRoute: typeof AdminImportRoute
   AdminLiveRoute: typeof AdminLiveRoute
+  AdminLoginHistoryRoute: typeof AdminLoginHistoryRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminMapRoute: typeof AdminMapRoute
   AdminPeopleRoute: typeof AdminPeopleRoute
@@ -967,6 +987,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIdeasRoute: AdminIdeasRoute,
   AdminImportRoute: AdminImportRoute,
   AdminLiveRoute: AdminLiveRoute,
+  AdminLoginHistoryRoute: AdminLoginHistoryRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminMapRoute: AdminMapRoute,
   AdminPeopleRoute: AdminPeopleRoute,
