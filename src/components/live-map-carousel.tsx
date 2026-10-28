@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
-import { LiveThailandMap } from "@/components/live-thailand-map";
 import { issueTh } from "@/lib/i18n";
 import {
   buildLiveMapLayout,
@@ -11,7 +10,10 @@ import {
   type TourGroupKey,
 } from "@/lib/live-map-layout";
 import { buildTour, GROUP_LABEL, type TourStep } from "@/lib/live-map-tour";
+import { placeWelcomePins, trackArrivals, type WelcomePin } from "@/lib/live-welcome";
 import { useMotionSettings } from "@/lib/motion";
+import { buildPeopleNetwork, type NetworkPerson } from "@/lib/people-network";
+import { useStore } from "@/lib/store";
 import { PROVINCES } from "@/lib/thailand-geo";
 import type { Connection, Region, User } from "@/lib/types";
 
@@ -76,6 +78,11 @@ const TIMING = {
   overviewGap: 60,
   /** How often an empty map checks for new pairs. */
   idleRecheck: 2000,
+  /** Welcome for new registrants: camera, dot grow-in, one halo, hold. */
+  welcomeCamera: 2600,
+  welcomeDot: 600,
+  welcomeHalo: 1800,
+  welcomeHold: 5000,
 };
 
 /** On-screen sizes in CSS px, divided by the current map scale. */
@@ -88,7 +95,17 @@ const PX = {
   halo: 4,
   labelX: 11,
   line: 5,
+  pin: 10,
+  pinRing: 3,
+  pinHaloReach: 64,
+  pinHaloStroke: 3,
 };
+
+/** Welcome pins: brand purple with a white ring. */
+const PIN_COLOR = "#6a2c91";
+const PIN_RING = "#ffffff";
+/** The welcome card names at most this many people, then "และอีก N คน". */
+const WELCOME_NAMES = 3;
 
 /** At most this many people carry a name/place label at once. */
 const MAX_LABELS = 12;
@@ -153,6 +170,12 @@ const INITIAL_SCENE: Scene = {
 };
 
 type Latest = { layout: LiveMapLayout; tour: TourStep[] };
+
+/** A welcome in progress; `shown` once the camera has arrived and the pins are up. */
+type Welcome = { key: number; pins: WelcomePin[]; shown: boolean; halo: boolean };
+
+const sameView = (a: ViewBox, b: ViewBox) =>
+  a.x === b.x && a.y === b.y && a.w === b.w && a.h === b.h;
 
 /**
  * Cancellable timers for the tour runner. After `cancel()`, pending waits
@@ -253,6 +276,12 @@ function crossTotal(layout: LiveMapLayout) {
  * labels at once); then up to two cross-region pairs, labelling just that pair;
  * then the whole country. Re-plans from the latest data at the start of every
  * loop.
+ *
+ * People who register after the first participants fetch get a welcome: the
+ * current step is cut off, the camera frames their provinces, their pins and a
+ * welcome card show for a while, and then the interrupted step replays from
+ * its beginning. The welcome draws on the same map, so it also runs while the
+ * tour is empty.
  */
 export function LiveMapCarousel({
   users,
@@ -281,10 +310,33 @@ export function LiveMapCarousel({
   }, [motion]);
 
   const [scene, setScene] = useState<Scene>(INITIAL_SCENE);
+  const [welcome, setWelcome] = useState<Welcome | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const vbRef = useRef<ViewBox>(FULL);
 
   const empty = tour.length === 0;
+
+  // ---- New registrants ----------------------------------------------------------
+
+  const { hydrated } = useStore();
+  const usersRef = useRef<User[]>(users);
+  /** Ids already seen this screen session; null until the first fetch is in. */
+  const seenRef = useRef<Set<string> | null>(null);
+  /** People waiting for a welcome. */
+  const queueRef = useRef<NetworkPerson[]>([]);
+  /** The tour step playing now, so an arrival can cut it off. */
+  const stepRef = useRef<Runner | null>(null);
+
+  useEffect(() => {
+    usersRef.current = users;
+    // The first completed fetch is the baseline, even when it is empty.
+    if (!hydrated) return;
+    const { seen, arrivals } = trackArrivals(seenRef.current, users);
+    seenRef.current = seen;
+    if (arrivals.length === 0) return;
+    queueRef.current.push(...arrivals);
+    stepRef.current?.cancel();
+  }, [hydrated, users]);
 
   // ---- Imperative view updates (viewBox + constant on-screen sizing) ----------
 
@@ -309,7 +361,7 @@ export function LiveMapCarousel({
     });
   }).current;
 
-  // After every commit (new nodes/edges, or the svg remounting after an empty spell).
+  // After every commit (new nodes/edges/pins).
   useLayoutEffect(() => {
     applyView();
   });
@@ -320,26 +372,39 @@ export function LiveMapCarousel({
     const observer = new ResizeObserver(() => applyView());
     observer.observe(svg);
     return () => observer.disconnect();
-  }, [applyView, empty]);
+  }, [applyView]);
 
   // ---- Tour runner ------------------------------------------------------------
 
   useEffect(() => {
     if (!motion.ready) return;
-    const runner = createRunner();
+    // Every tour step and every welcome gets its own runner, so a welcome can
+    // cancel just the step that is playing. Unmounting cancels them all.
+    let stopped = false;
+    const live = new Set<Runner>();
+    const spawn = () => {
+      const r = createRunner();
+      if (stopped) r.cancel();
+      live.add(r);
+      return r;
+    };
+    const release = (r: Runner) => {
+      live.delete(r);
+      if (stepRef.current === r) stepRef.current = null;
+    };
     let seq = 0;
 
     const reduced = () => motionRef.current.reducedMotion || motionRef.current.lowSpec;
 
-    const commit = (update: (prev: Scene) => Scene) => {
-      if (runner.cancelled) return;
+    const commit = (r: Runner, update: (prev: Scene) => Scene) => {
+      if (r.cancelled) return;
       flushSync(() => setScene(update));
     };
 
-    const fly = async (to: ViewBox, ms: number) => {
+    const fly = async (r: Runner, to: ViewBox, ms: number) => {
       const from = { ...vbRef.current };
       const duration = reduced() ? 0 : ms;
-      await tween(runner, duration, (elapsed) => {
+      await tween(r, duration, (elapsed) => {
         const k = duration > 0 ? easeInOutCubic(Math.min(1, elapsed / duration)) : 1;
         vbRef.current = {
           x: from.x + (to.x - from.x) * k,
@@ -353,14 +418,14 @@ export function LiveMapCarousel({
     };
 
     /** Draw the given (already rendered, hidden) edges, each `gap` ms after the last. */
-    const draw = async (key: number, ids: string[], ms: number, gap = 0) => {
+    const draw = async (r: Runner, key: number, ids: string[], ms: number, gap = 0) => {
       const svg = svgRef.current;
       if (!svg || ids.length === 0) return;
       const paths = ids
         .map((id) => svg.querySelector<SVGPathElement>(`[data-edge="${key}:${CSS.escape(id)}"]`))
         .filter((p): p is SVGPathElement => p !== null);
       const duration = reduced() ? 0 : ms;
-      await tween(runner, duration, (elapsed) => {
+      await tween(r, duration, (elapsed) => {
         let done = true;
         paths.forEach((path, i) => {
           const k = duration > 0 ? Math.min(1, Math.max(0, (elapsed - i * gap) / duration)) : 1;
@@ -372,8 +437,8 @@ export function LiveMapCarousel({
     };
 
     /** Add a pair to the scene; with `label`, show names for the pairs drawn so far. */
-    const addEdge = (id: string, label = false) =>
-      commit((prev) => {
+    const addEdge = (r: Runner, id: string, label = false) =>
+      commit(r, (prev) => {
         if (prev.edges === "all" || prev.edges.some((e) => e.id === id)) return prev;
         const edges = [...prev.edges, { id, animate: !reduced() }];
         const labelled = label
@@ -408,7 +473,7 @@ export function LiveMapCarousel({
       return { group, key: ++seq, members, partners: [...partners], meta };
     };
 
-    const playRegion = async (step: Extract<TourStep, { kind: "region" }>) => {
+    const playRegion = async (r: Runner, step: Extract<TourStep, { kind: "region" }>) => {
       const { layout: now } = latestRef.current;
       const ctx = regionContext(
         step.group,
@@ -418,7 +483,7 @@ export function LiveMapCarousel({
       const edgeIds = step.edgeIds.filter((id) => now.edges.some((e) => e.id === id));
       if (ctx.members.length === 0 && edgeIds.length === 0) return;
       region = ctx;
-      commit(() => ({
+      commit(r, () => ({
         key: ctx.key,
         shade: [ctx.group],
         visible: new Set([...ctx.members, ...ctx.partners]),
@@ -428,17 +493,17 @@ export function LiveMapCarousel({
         chip: { title: GROUP_LABEL[ctx.group], meta: ctx.meta },
         card: null,
       }));
-      await fly(fit(groupBox(ctx.group), 0.14), TIMING.camera);
+      await fly(r, fit(groupBox(ctx.group), 0.14), TIMING.camera);
       for (const id of edgeIds) {
-        if (runner.cancelled) return;
+        if (r.cancelled) return;
         if (!latestRef.current.layout.edges.some((e) => e.id === id)) continue;
-        addEdge(id, true);
-        await draw(ctx.key, [id], TIMING.draw);
+        addEdge(r, id, true);
+        await draw(r, ctx.key, [id], TIMING.draw);
       }
-      await runner.sleep(TIMING.regionHold);
+      await r.sleep(TIMING.regionHold);
     };
 
-    const playCross = async (step: Extract<TourStep, { kind: "cross" }>) => {
+    const playCross = async (r: Runner, step: Extract<TourStep, { kind: "cross" }>) => {
       const { layout: now } = latestRef.current;
       const from = now.nodesById.get(step.fromId);
       const to = now.nodesById.get(step.toId);
@@ -455,7 +520,7 @@ export function LiveMapCarousel({
       const fresh = ctx !== region;
       region = ctx;
       const toGroup = to.group;
-      commit((prev) => ({
+      commit(r, (prev) => ({
         key: ctx.key,
         shade: toGroup ? [ctx.group, toGroup] : [ctx.group],
         visible: new Set([...ctx.members, ...ctx.partners, from.id, to.id]),
@@ -467,21 +532,21 @@ export function LiveMapCarousel({
         },
         card: { fromId: from.id, toId: to.id, edgeId: step.edgeId },
       }));
-      await fly(fit(union(from.box, to.box), 0.3), TIMING.crossCamera);
-      if (runner.cancelled) return;
-      addEdge(step.edgeId);
-      await draw(ctx.key, [step.edgeId], TIMING.draw);
-      await runner.sleep(TIMING.crossHold);
+      await fly(r, fit(union(from.box, to.box), 0.3), TIMING.crossCamera);
+      if (r.cancelled) return;
+      addEdge(r, step.edgeId);
+      await draw(r, ctx.key, [step.edgeId], TIMING.draw);
+      await r.sleep(TIMING.crossHold);
     };
 
-    const playOverview = async (step: Extract<TourStep, { kind: "overview" }>) => {
+    const playOverview = async (r: Runner, step: Extract<TourStep, { kind: "overview" }>) => {
       const { layout: now } = latestRef.current;
       const present = new Set(now.edges.map((e) => e.id));
       const edgeIds = step.edgeIds.filter((id) => present.has(id));
       region = null;
       const key = ++seq;
       const animate = !reduced();
-      commit(() => ({
+      commit(r, () => ({
         key,
         shade: null,
         visible: "all",
@@ -493,38 +558,126 @@ export function LiveMapCarousel({
         },
         card: null,
       }));
-      await fly(FULL, TIMING.camera);
-      if (runner.cancelled) return;
-      commit((prev) => ({ ...prev, edges: edgeIds.map((id) => ({ id, animate })) }));
+      await fly(r, FULL, TIMING.camera);
+      if (r.cancelled) return;
+      commit(r, (prev) => ({ ...prev, edges: edgeIds.map((id) => ({ id, animate })) }));
       const gap = Math.min(TIMING.overviewGap, TIMING.overviewSpread / Math.max(1, edgeIds.length));
       // Drawing runs inside the hold, as in the approved mockup.
-      void draw(key, edgeIds, TIMING.draw, gap);
-      await runner.sleep(TIMING.overviewHold);
+      void draw(r, key, edgeIds, TIMING.draw, gap);
+      await r.sleep(TIMING.overviewHold);
+    };
+
+    const playStep = (r: Runner, step: TourStep) =>
+      step.kind === "region"
+        ? playRegion(r, step)
+        : step.kind === "cross"
+          ? playCross(r, step)
+          : playOverview(r, step);
+
+    /** No pairs yet: show the whole country (again, after a welcome) and wait. */
+    const playIdle = async (r: Runner) => {
+      region = null;
+      if (!sameView(vbRef.current, FULL)) await fly(r, FULL, TIMING.camera);
+      await r.sleep(TIMING.idleRecheck);
+    };
+
+    /** Play one tour step; false when a welcome cut it off (or the screen closed). */
+    const attempt = async (play: (r: Runner) => Promise<void>) => {
+      const r = spawn();
+      stepRef.current = r;
+      await play(r);
+      release(r);
+      return !r.cancelled;
+    };
+
+    /** The dot grows in and one halo expands and fades; reduced motion: final frame. */
+    const growPins = async (r: Runner, key: number) => {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const pins = [...svg.querySelectorAll<SVGGElement>(`[data-welcome="${key}"]`)];
+      const duration = reduced() ? 0 : TIMING.welcomeHalo;
+      await tween(r, duration, (elapsed) => {
+        const dot = duration > 0 ? Math.min(1, elapsed / TIMING.welcomeDot) : 1;
+        const halo = duration > 0 ? Math.min(1, elapsed / duration) : 1;
+        pins.forEach((pin) => {
+          pin
+            .querySelector("[data-welcome-dot]")
+            ?.setAttribute("transform", `scale(${easeOutCubic(dot)})`);
+          const ring = pin.querySelector("[data-welcome-halo]");
+          if (!ring) return;
+          ring.setAttribute("r", String(PX.pin + (PX.pinHaloReach - PX.pin) * easeOutCubic(halo)));
+          ring.setAttribute("opacity", String(0.7 * (1 - halo)));
+        });
+        return halo >= 1;
+      });
+    };
+
+    /** Welcome everyone queued right now, on its own runner (arrivals wait for the next). */
+    const playWelcome = async () => {
+      const r = spawn();
+      const pins = placeWelcomePins(queueRef.current.splice(0), usersRef.current);
+      if (pins.length > 0) {
+        const key = ++seq;
+        const show = (next: Welcome | null) => {
+          if (!r.cancelled) flushSync(() => setWelcome(next));
+        };
+        const entry: Welcome = { key, pins, shown: false, halo: !reduced() };
+        show(entry);
+        const box = pins.map((p) => p.box).reduce(union);
+        await fly(r, fit(box, 0.3), TIMING.welcomeCamera);
+        show({ ...entry, shown: true });
+        void growPins(r, key);
+        await r.sleep(TIMING.welcomeHold);
+        show(null);
+      }
+      release(r);
     };
 
     const run = async () => {
       // Start outside the effect so flushSync is allowed.
-      await runner.sleep(0);
-      while (!runner.cancelled) {
-        const plan = latestRef.current.tour;
-        if (plan.length === 0) {
-          region = null;
-          await runner.sleep(TIMING.idleRecheck);
+      const start = spawn();
+      await start.sleep(0);
+      release(start);
+      while (!stopped) {
+        if (queueRef.current.length > 0) {
+          await playWelcome();
           continue;
         }
-        for (const step of plan) {
-          if (runner.cancelled) return;
-          if (step.kind === "region") await playRegion(step);
-          else if (step.kind === "cross") await playCross(step);
-          else await playOverview(step);
+        const plan = latestRef.current.tour;
+        if (plan.length === 0) {
+          await attempt(playIdle);
+          continue;
+        }
+        for (let i = 0; i < plan.length && !stopped;) {
+          const step = plan[i]!;
+          if (queueRef.current.length > 0) await playWelcome();
+          // An interrupted step replays from its beginning.
+          else if (await attempt((r) => playStep(r, step))) i++;
         }
       }
     };
     void run();
-    return () => runner.cancel();
+    return () => {
+      stopped = true;
+      live.forEach((r) => r.cancel());
+    };
   }, [motion.ready, applyView]);
 
-  if (empty) return <LiveThailandMap users={users} connections={connections} />;
+  const emptyNote = useMemo(() => {
+    if (!empty) return null;
+    const { stats } = buildPeopleNetwork(users, connections);
+    return stats.plottedConnections > 0
+      ? `เส้นเชื่อม ${stats.plottedConnections} คู่ · คนบนแผนที่ ${stats.locatedPeople} คน`
+      : stats.locatedPeople > 0
+        ? `คนบนแผนที่ ${stats.locatedPeople} คน — เมื่อแมตช์กันแล้วเส้นเชื่อมจะโผล่เอง`
+        : "ยังไม่มีตำแหน่งจังหวัดให้วางบนแผนที่";
+  }, [empty, users, connections]);
+
+  /** Provinces holding a welcome pin stay lit; the rest dim. */
+  const welcomeProvinces = useMemo(
+    () => new Set(welcome?.pins.filter((p) => !p.hub).map((p) => p.placeLabel)),
+    [welcome],
+  );
 
   const shade = scene.shade;
   const sceneEdges: { id: string; animate: boolean; key: string }[] =
@@ -534,99 +687,204 @@ export function LiveMapCarousel({
   const cardFrom = scene.card ? layout.nodesById.get(scene.card.fromId) : undefined;
   const cardTo = scene.card ? layout.nodesById.get(scene.card.toId) : undefined;
   const cardEdge = scene.card ? edgesById.get(scene.card.edgeId) : undefined;
+  /** While a welcome plays, the tour's own lines and dots step back. */
+  const tourLayer = {
+    opacity: welcome ? 0.15 : 1,
+  };
+  const welcomeShown = welcome?.shown ? welcome : null;
 
   return (
-    <div className="relative h-full min-h-0 overflow-hidden">
-      <svg
-        ref={svgRef}
-        viewBox={FULL_VIEWBOX}
-        preserveAspectRatio="xMidYMid meet"
-        className="block h-full w-full"
-        role="img"
-        aria-label="แผนที่ประเทศไทยแสดงคู่เชื่อมของผู้เข้าร่วม วนดูทีละภาค"
-      >
-        <g aria-hidden="true">
-          {PROVINCES.map((province) => {
-            const group = PROVINCE_GROUP[province.region];
-            const opacity = shade === null ? 0.22 : group && shade.includes(group) ? 0.38 : 0.07;
-            return (
-              <path
-                key={province.en}
-                d={province.d}
-                data-region={province.region}
-                fill={REGION_FILL[province.region]}
-                stroke="var(--color-background)"
-                strokeWidth={1.6}
-                vectorEffect="non-scaling-stroke"
-                className="live-map-province motion-safe:transition-[fill-opacity] motion-safe:duration-600"
-                style={{ fillOpacity: opacity }}
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <svg
+          ref={svgRef}
+          viewBox={FULL_VIEWBOX}
+          preserveAspectRatio="xMidYMid meet"
+          className="block h-full w-full"
+          role="img"
+          aria-label="แผนที่ประเทศไทยแสดงคู่เชื่อมของผู้เข้าร่วม วนดูทีละภาค"
+        >
+          <g aria-hidden="true">
+            {PROVINCES.map((province) => {
+              const group = PROVINCE_GROUP[province.region];
+              const opacity = welcome
+                ? welcomeProvinces.has(province.th)
+                  ? 0.38
+                  : 0.07
+                : shade === null
+                  ? 0.22
+                  : group && shade.includes(group)
+                    ? 0.38
+                    : 0.07;
+              return (
+                <path
+                  key={province.en}
+                  d={province.d}
+                  data-region={province.region}
+                  fill={REGION_FILL[province.region]}
+                  stroke="var(--color-background)"
+                  strokeWidth={1.6}
+                  vectorEffect="non-scaling-stroke"
+                  className="live-map-province motion-safe:transition-[fill-opacity] motion-safe:duration-600"
+                  style={{ fillOpacity: opacity }}
+                />
+              );
+            })}
+          </g>
+          <g
+            id="edges"
+            aria-hidden="true"
+            className="motion-safe:transition-opacity motion-safe:duration-600"
+            style={tourLayer}
+          >
+            {sceneEdges.map((edge, index) => {
+              const data = edgesById.get(edge.id);
+              if (!data) return null;
+              return (
+                <path
+                  key={edge.key}
+                  data-edge={edge.key}
+                  d={data.path}
+                  fill="none"
+                  stroke={colors.edges[index % colors.edges.length]}
+                  strokeWidth={PX.line / DEFAULT_SCALE}
+                  strokeOpacity={0.9}
+                  strokeLinecap="round"
+                  pathLength={1}
+                  style={edge.animate ? { strokeDasharray: "1 2", strokeDashoffset: 1 } : undefined}
+                />
+              );
+            })}
+          </g>
+          <g
+            aria-hidden="true"
+            className="motion-safe:transition-opacity motion-safe:duration-600"
+            style={tourLayer}
+          >
+            {layout.nodes.map((node) => (
+              <MapNode
+                key={node.id}
+                node={node}
+                visible={scene.visible === "all" || scene.visible.has(node.id)}
+                labelled={scene.labelled.has(node.id)}
+                colors={colors}
               />
-            );
-          })}
-        </g>
-        <g id="edges" aria-hidden="true">
-          {sceneEdges.map((edge, index) => {
-            const data = edgesById.get(edge.id);
-            if (!data) return null;
-            return (
-              <path
-                key={edge.key}
-                data-edge={edge.key}
-                d={data.path}
-                fill="none"
-                stroke={colors.edges[index % colors.edges.length]}
-                strokeWidth={PX.line / DEFAULT_SCALE}
-                strokeOpacity={0.9}
-                strokeLinecap="round"
-                pathLength={1}
-                style={edge.animate ? { strokeDasharray: "1 2", strokeDashoffset: 1 } : undefined}
-              />
-            );
-          })}
-        </g>
-        <g aria-hidden="true">
-          {layout.nodes.map((node) => (
-            <MapNode
-              key={node.id}
-              node={node}
-              visible={scene.visible === "all" || scene.visible.has(node.id)}
-              labelled={scene.labelled.has(node.id)}
-              colors={colors}
-            />
-          ))}
-        </g>
-      </svg>
-
-      {scene.chip && (
-        <div className="live-map-chip pointer-events-none absolute top-3 left-3 max-w-[80%] rounded-2xl bg-white/90 px-4 py-2 shadow-sm">
-          <p className="live-map-chip-title font-heading text-[clamp(1rem,1.7vw,1.6rem)] leading-tight font-bold text-ink">
-            {scene.chip.title}
-          </p>
-          {scene.chip.meta && (
-            <p className="text-[clamp(0.8rem,1.1vw,1.1rem)] leading-snug text-ink-soft">
-              {scene.chip.meta}
-            </p>
+            ))}
+          </g>
+          {welcomeShown && (
+            <g aria-hidden="true">
+              {welcomeShown.pins.map((pin) => (
+                <WelcomePinMark
+                  key={`${welcomeShown.key}:${pin.id}`}
+                  welcomeKey={welcomeShown.key}
+                  pin={pin}
+                  halo={welcomeShown.halo}
+                />
+              ))}
+            </g>
           )}
-        </div>
-      )}
+        </svg>
 
-      {cardFrom && cardTo && cardEdge && (
-        <div className="live-map-card pointer-events-none absolute inset-x-3 bottom-3 rounded-2xl border-2 border-primary bg-white/95 px-4 py-3 shadow-sm">
-          <div className="flex items-center gap-3 text-[clamp(0.95rem,1.5vw,1.5rem)] leading-tight">
-            <Who node={cardFrom} />
-            <span aria-hidden="true" className="shrink-0 font-bold text-primary">
-              ⟷
-            </span>
-            <Who node={cardTo} />
+        {scene.chip && !welcome && (
+          <div className="live-map-chip pointer-events-none absolute top-3 left-3 max-w-[80%] rounded-2xl bg-white/90 px-4 py-2 shadow-sm">
+            <p className="live-map-chip-title font-heading text-[clamp(1rem,1.7vw,1.6rem)] leading-tight font-bold text-ink">
+              {scene.chip.title}
+            </p>
+            {scene.chip.meta && (
+              <p className="text-[clamp(0.8rem,1.1vw,1.1rem)] leading-snug text-ink-soft">
+                {scene.chip.meta}
+              </p>
+            )}
           </div>
-          {cardEdge.sharedInterests.length > 0 && (
-            <p className="mt-1 text-[clamp(0.8rem,1.1vw,1.1rem)] leading-snug text-ink-soft">
-              เชื่อมกันเรื่อง: {cardEdge.sharedInterests.map(issueTh).join(" · ")}
-            </p>
-          )}
-        </div>
+        )}
+
+        {!welcome && cardFrom && cardTo && cardEdge && (
+          <div className="live-map-card pointer-events-none absolute inset-x-3 bottom-3 rounded-2xl border-2 border-primary bg-white/95 px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-3 text-[clamp(0.95rem,1.5vw,1.5rem)] leading-tight">
+              <Who node={cardFrom} />
+              <span aria-hidden="true" className="shrink-0 font-bold text-primary">
+                ⟷
+              </span>
+              <Who node={cardTo} />
+            </div>
+            {cardEdge.sharedInterests.length > 0 && (
+              <p className="mt-1 text-[clamp(0.8rem,1.1vw,1.1rem)] leading-snug text-ink-soft">
+                เชื่อมกันเรื่อง: {cardEdge.sharedInterests.map(issueTh).join(" · ")}
+              </p>
+            )}
+          </div>
+        )}
+
+        {welcomeShown && <WelcomeCard pins={welcomeShown.pins} />}
+      </div>
+      {emptyNote && (
+        <p className="shrink-0 pt-2 text-center text-body text-ink-soft">{emptyNote}</p>
       )}
     </div>
+  );
+}
+
+function WelcomeCard({ pins }: { pins: WelcomePin[] }) {
+  const named = pins.slice(0, WELCOME_NAMES);
+  const more = pins.length - named.length;
+  return (
+    <div
+      role="status"
+      className="live-map-card pointer-events-none absolute inset-x-3 bottom-3 rounded-2xl border-2 bg-white/95 px-4 py-3 shadow-sm"
+      style={{ borderColor: PIN_COLOR }}
+    >
+      <p
+        className="font-heading text-[clamp(1.1rem,1.9vw,1.9rem)] leading-tight font-bold"
+        style={{ color: PIN_COLOR }}
+      >
+        ยินดีต้อนรับ
+      </p>
+      <div className="mt-1 flex items-center gap-4 text-[clamp(0.95rem,1.5vw,1.5rem)] leading-tight">
+        {named.map((pin) => (
+          <span key={pin.id} className="flex min-w-0 flex-1 flex-col">
+            <b className="truncate font-bold text-ink">{pin.name}</b>
+            <small className="truncate text-[0.75em] text-ink-soft">{pin.placeLabel}</small>
+          </span>
+        ))}
+        {more > 0 && <span className="shrink-0 text-ink-soft">และอีก {more} คน</span>}
+      </div>
+    </div>
+  );
+}
+
+function WelcomePinMark({
+  welcomeKey,
+  pin,
+  halo,
+}: {
+  welcomeKey: number;
+  pin: WelcomePin;
+  halo: boolean;
+}) {
+  // Children are in on-screen px: the group is counter-scaled by applyView().
+  // growPins() animates the dot's scale and the halo from these start values.
+  return (
+    <g
+      data-node=""
+      data-welcome={welcomeKey}
+      data-x={pin.x}
+      data-y={pin.y}
+      transform={`translate(${pin.x} ${pin.y}) scale(${1 / DEFAULT_SCALE})`}
+    >
+      {halo && (
+        <circle
+          data-welcome-halo=""
+          r={PX.pin}
+          fill="none"
+          stroke={PIN_COLOR}
+          strokeWidth={PX.pinHaloStroke}
+          opacity={0}
+        />
+      )}
+      <g data-welcome-dot="" transform="scale(0)">
+        <circle r={PX.pin} fill={PIN_COLOR} stroke={PIN_RING} strokeWidth={PX.pinRing} />
+      </g>
+    </g>
   );
 }
 
