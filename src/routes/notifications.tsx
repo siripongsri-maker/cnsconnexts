@@ -7,6 +7,7 @@ import { useStore, useUserMap } from "@/lib/store";
 import { Avatar } from "@/components/power-bits";
 import { MeadowScene } from "@/components/meadow-scene";
 import { isSoundOn, playConnext, setSoundOn, unlockAudio } from "@/lib/notify";
+import { watchNotificationClock } from "@/lib/notification-clock";
 
 export const Route = createFileRoute("/notifications")({
   component: NotificationsPage,
@@ -28,8 +29,8 @@ export const Route = createFileRoute("/notifications")({
   }),
 });
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
+function timeAgo(iso: string, now: number) {
+  const diff = now - new Date(iso).getTime();
   const m = Math.round(diff / 60000);
   if (m < 1) return "เมื่อสักครู่";
   if (m < 60) return `${m} นาทีที่แล้ว`;
@@ -42,6 +43,9 @@ function NotificationsPage() {
   const { notifications, markNotificationsRead, clearNotifications } = useStore();
   const users = useUserMap();
   const [sound, setSound] = useState(true);
+  const [now, setNow] = useState(0);
+
+  useEffect(() => watchNotificationClock(setNow), []);
 
   useEffect(() => {
     setSound(isSoundOn());
@@ -108,7 +112,9 @@ function NotificationsPage() {
                           {n.title}
                         </p>
                         <p className="text-body text-ink [overflow-wrap:anywhere]">{n.body}</p>
-                        <p className="mt-1 text-body text-ink-soft">{timeAgo(n.created_at)}</p>
+                        <time dateTime={n.created_at} className="mt-1 block text-body text-ink-soft">
+                          {now ? timeAgo(n.created_at, now) : ""}
+                        </time>
                       </div>
                     </div>
                   );
