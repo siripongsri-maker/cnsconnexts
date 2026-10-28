@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, Bell } from "lucide-react";
+import { ArrowUpRight, Bell, LogOut } from "lucide-react";
 
 import { BottomNav } from "@/components/bottom-nav";
 import { DiscoverDeck } from "@/components/discover-deck";
@@ -17,6 +17,7 @@ import { hasLocalParticipantId, homeVisitor } from "@/lib/guest";
 import { buildDeck, dayKey, scoreMatch, type DeckEntry } from "@/lib/matching";
 import { EMPTY_QUICK_DRAFT, type QuickDraft, type QuickStep } from "@/lib/quick-profile";
 import { useConnectAndInvite } from "@/lib/meetup-context";
+import { useAuth } from "@/lib/auth";
 import { inviteSentNote } from "@/lib/meetup-cards";
 import { useStore } from "@/lib/store";
 import type { Connection, User } from "@/lib/types";
