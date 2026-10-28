@@ -171,6 +171,11 @@ export type Submission = {
   summary: string;
   highlight: string;
   wanted: string;
+  contact_name?: string;
+  contact_organization?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  contact_url?: string;
   photo?: string | undefined;
   /** ยินดีขึ้นเวทีนำเสนอสั้น ๆ */
   stage_ready: boolean;
