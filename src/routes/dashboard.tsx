@@ -426,18 +426,29 @@ function Dashboard() {
     navigate({ search: (s) => ({ ...s, present: undefined }) });
   };
 
-  // --- หมุนจอใหญ่ 90°: จอแนวตั้ง (สูงกว่ากว้าง) หมุนเองอัตโนมัติ กดปุ่มบังคับเปิด/ปิดได้ ---
-  const [portrait, setPortrait] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(orientation: portrait)");
-    const update = () => setPortrait(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-  const [rotateOverride, setRotateOverride] = useState<boolean | null>(null);
-  const [rotateDir, setRotateDir] = useState<1 | -1>(1);
-  const rotated = rotateOverride ?? portrait;
+  // --- หมุนจอใหญ่: ทีวีที่ติดตั้งแนวตั้งมักยังรายงาน viewport แนวนอน (OS ไม่ได้หมุน)
+  // เลยตรวจเองไม่ได้ ต้องกดปุ่มหมุนเอง — วน 0°→90°→180°→270° แล้วจำค่าไว้ในเครื่อง ---
+  const [rotation, setRotation] = useState<0 | 90 | 180 | 270>(() => {
+    try {
+      const saved = Number(window.localStorage.getItem("dashboard-rotation"));
+      if (saved === 90 || saved === 180 || saved === 270) return saved;
+      if (window.matchMedia("(orientation: portrait)").matches) return 90;
+    } catch {
+      /* ignore */
+    }
+    return 0;
+  });
+  const cycleRotation = () =>
+    setRotation((r) => {
+      const next = ((r + 90) % 360) as 0 | 90 | 180 | 270;
+      try {
+        window.localStorage.setItem("dashboard-rotation", String(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  const rotated = rotation !== 0;
 
   if (present) {
     const needRank = rank("powers_need");
