@@ -97,3 +97,11 @@ export function buildTour(layout: LiveMapLayout): TourStep[] {
   });
   return steps;
 }
+
+/**
+ * The steps of a one-region view: that region's step and the cross flights
+ * whose home is that region, in tour order. Overview steps are dropped.
+ */
+export function regionViewSteps(steps: readonly TourStep[], group: TourGroupKey): TourStep[] {
+  return steps.filter((step) => step.kind !== "overview" && step.group === group);
+}

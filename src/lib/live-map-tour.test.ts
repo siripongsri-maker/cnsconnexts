@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import { buildLiveMapLayout } from "./live-map-layout";
-import { buildTour, GROUP_LABEL, TOUR_LIMITS, TOUR_ORDER } from "./live-map-tour";
+import {
+  buildTour,
+  GROUP_LABEL,
+  regionViewSteps,
+  TOUR_LIMITS,
+  TOUR_ORDER,
+  type TourStep,
+} from "./live-map-tour";
 import type { NetworkConnection, NetworkPerson } from "./people-network";
 
 function person(id: string, region: string): NetworkPerson {
@@ -150,5 +157,53 @@ describe("buildTour", () => {
     expect(overview.kind === "overview" && [...overview.edgeIds].sort()).toEqual(
       layout.edges.map((e) => e.id).sort(),
     );
+  });
+});
+
+describe("regionViewSteps", () => {
+  const steps: TourStep[] = [
+    {
+      kind: "region",
+      group: "north",
+      nodeIds: ["n1"],
+      edgeIds: ["a"],
+      intraCount: 1,
+      crossCount: 1,
+    },
+    { kind: "cross", group: "north", edgeId: "x", fromId: "n1", toId: "s1" },
+    {
+      kind: "region",
+      group: "south",
+      nodeIds: ["s1"],
+      edgeIds: ["b"],
+      intraCount: 1,
+      crossCount: 1,
+    },
+    { kind: "cross", group: "south", edgeId: "y", fromId: "s1", toId: "h1" },
+    { kind: "overview", edgeIds: ["a", "b", "x", "y"] },
+  ];
+
+  it("keeps only steps whose group is the chosen one", () => {
+    expect(regionViewSteps(steps, "north")).toEqual([steps[0], steps[1]]);
+    expect(regionViewSteps(steps, "central")).toEqual([]);
+  });
+
+  it("drops overview steps", () => {
+    expect(regionViewSteps(steps, "south").some((s) => s.kind === "overview")).toBe(false);
+  });
+
+  it("keeps cross steps whose home group is the chosen one", () => {
+    expect(regionViewSteps(steps, "south")).toEqual([steps[2], steps[3]]);
+  });
+
+  it("works on a built tour", () => {
+    const layout = buildLiveMapLayout(
+      [person("n1", "North"), person("n2", "North"), person("s1", "South")],
+      [pair("p", "n1", "n2", day(1)), pair("x", "n1", "s1", day(2))],
+    );
+    const north = regionViewSteps(buildTour(layout), "north");
+    expect(north.map((s) => s.kind)).toEqual(["region", "cross"]);
+    // The cross pair's far end (south) is not its home, so south has only its region step.
+    expect(regionViewSteps(buildTour(layout), "south").map((s) => s.kind)).toEqual(["region"]);
   });
 });

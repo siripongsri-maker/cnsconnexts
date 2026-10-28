@@ -2,14 +2,23 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
 import { issueTh } from "@/lib/i18n";
+import { subscribeControl } from "@/lib/live-control-channel";
+import {
+  DEFAULT_CONTROL_STATE,
+  edgeMatchesIssue,
+  scaleTiming,
+  type LiveControlState,
+} from "@/lib/live-controls";
+import { countrySlotPlan } from "@/lib/live-country-slots";
 import {
   buildLiveMapLayout,
   groupBox,
+  type LiveMapEdge,
   type LiveMapLayout,
   type LiveMapNode,
   type TourGroupKey,
 } from "@/lib/live-map-layout";
-import { buildTour, GROUP_LABEL, type TourStep } from "@/lib/live-map-tour";
+import { buildTour, GROUP_LABEL, regionViewSteps, type TourStep } from "@/lib/live-map-tour";
 import {
   afterTourStep,
   placeWelcomePins,
@@ -70,7 +79,11 @@ const PROVINCE_GROUP: Partial<Record<Region, TourGroupKey>> = {
   South: "south",
 };
 
-/** Timings (ms). Camera and line drawing drop to 0 with reduced motion / low spec. */
+/**
+ * Timings (ms). Camera and line drawing drop to 0 with reduced motion / low spec
+ * or still mode. Tour timings are scaled by the operator's speed at the call
+ * site (`scaleTiming`); the welcome timings never are.
+ */
 const TIMING = {
   camera: 2600,
   draw: 2400,
@@ -81,6 +94,8 @@ const TIMING = {
   /** Overview lines start one after another, spread over at most this long. */
   overviewSpread: 4000,
   overviewGap: 60,
+  /** Country view: each pair holds this long after its line draws. */
+  countryHold: 3000,
   /** How often an empty map checks for new pairs. */
   idleRecheck: 2000,
   /** Welcome for new registrants: camera, dot grow-in, one halo, hold. */
@@ -104,7 +119,16 @@ const PX = {
   pinRing: 3,
   pinHaloReach: 64,
   pinHaloStroke: 3,
+  /** Pair bubbles: about 2× the name/place labels, readable from the back of the hall. */
+  bubbleName: 34,
+  bubblePlace: 25,
+  /** The bubble is centred in a box this big (on-screen px); text past it is cut. */
+  bubbleBoxW: 760,
+  bubbleBoxH: 220,
 };
+
+/** At most this many pair bubbles show at once (newest kept). */
+const MAX_BUBBLES = 6;
 
 /** Welcome pins: brand purple with a white ring. */
 const PIN_COLOR = "#6a2c91";
@@ -162,6 +186,8 @@ type Scene = {
   edges: SceneEdge[] | "all";
   chip: { title: string; meta: string } | null;
   card: { fromId: string; toId: string; edgeId: string } | null;
+  /** Pairs carrying a name bubble (bubbles on), in the order they drew. */
+  bubbles: string[];
 };
 
 const INITIAL_SCENE: Scene = {
@@ -172,9 +198,48 @@ const INITIAL_SCENE: Scene = {
   edges: "all",
   chip: null,
   card: null,
+  bubbles: [],
 };
 
-type Latest = { layout: LiveMapLayout; tour: TourStep[] };
+type Latest = { layout: LiveMapLayout; issuesById: ReadonlyMap<string, readonly string[]> };
+
+/** Only the pairs matching `issue` (and the people on them); same object when no filter. */
+function filterLayout(
+  layout: LiveMapLayout,
+  issuesById: ReadonlyMap<string, readonly string[]>,
+  issue: string | null,
+): LiveMapLayout {
+  if (issue === null) return layout;
+  const edges = layout.edges.filter((e) => edgeMatchesIssue(e, issuesById, issue));
+  const keep = new Set(edges.flatMap((e) => [e.sourceId, e.targetId]));
+  const nodes = layout.nodes.filter((n) => keep.has(n.id));
+  return { nodes, nodesById: new Map(nodes.map((n) => [n.id, n])), edges };
+}
+
+/** Point halfway along a pair's quadratic (or loop's cubic) path; node midpoint otherwise. */
+function pathMidpoint(edge: LiveMapEdge, layout: LiveMapLayout): { x: number; y: number } | null {
+  const n = (edge.path.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+  if (n.length === 6) {
+    return {
+      x: 0.25 * n[0]! + 0.5 * n[2]! + 0.25 * n[4]!,
+      y: 0.25 * n[1]! + 0.5 * n[3]! + 0.25 * n[5]!,
+    };
+  }
+  if (n.length === 8) {
+    return {
+      x: 0.125 * n[0]! + 0.375 * n[2]! + 0.375 * n[4]! + 0.125 * n[6]!,
+      y: 0.125 * n[1]! + 0.375 * n[3]! + 0.375 * n[5]! + 0.125 * n[7]!,
+    };
+  }
+  const a = layout.nodesById.get(edge.sourceId);
+  const b = layout.nodesById.get(edge.targetId);
+  return a && b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } : null;
+}
+
+const sameFilter = (a: LiveControlState, b: LiveControlState) =>
+  a.issue === b.issue &&
+  a.view.kind === b.view.kind &&
+  (a.view.kind === "country" || (b.view.kind === "region" && a.view.group === b.view.group));
 
 /** A welcome in progress; `shown` once the camera has arrived and the pins are up. */
 type Welcome = { key: number; pins: WelcomePin[]; shown: boolean; halo: boolean };
@@ -275,24 +340,35 @@ function crossTotal(layout: LiveMapLayout) {
 }
 
 /**
- * The big-screen map as a calm tour: region by region, the camera eases in, the
- * region's people appear as dots, and its pairs draw one at a time, each pair's
- * two people gaining their name and place as it draws (at most MAX_LABELS
- * labels at once); then up to two cross-region pairs, labelling just that pair;
- * then the whole country. Re-plans from the latest data at the start of every
- * loop.
+ * The big-screen map, steered by the operator's control state (`control`, or
+ * the `kns-live-control` channel when no prop is given):
+ *
+ * - Country view (default): the camera stays on the whole country; each round
+ *   draws up to four pairs together (`countrySlotPlan`), each holding after its
+ *   line draws, then the next round's pairs take the slots.
+ * - Region view: the region tour for one region, looped: the camera eases in,
+ *   the region's people appear as dots, its pairs draw one at a time, then up to
+ *   two cross-region pairs that start in it. No overview.
+ *
+ * The issue filter applies to the pairs before either view. Speed scales the
+ * tour timings; still mode (and reduced motion / low spec) sets the camera
+ * directly and shows lines in full. With bubbles on, each drawn pair carries a
+ * large name bubble at its midpoint; otherwise its two people get the small
+ * name/place labels (at most MAX_LABELS at once). New settings are picked up at
+ * the next step boundary; the map is never cleared mid-step.
  *
  * People who register after the first participants fetch get a welcome: the
  * current step is cut off, the camera frames their provinces, their pins and a
  * welcome card show for a while, and then the interrupted step replays from
  * its beginning (once; a second interruption moves on to the next step). The welcome draws on the same map, so it also runs while the
- * tour is empty.
+ * tour is empty. Welcome timings are never scaled by speed.
  */
 export function LiveMapCarousel({
   users,
   allUsers = users,
   connections,
   look = "meadow",
+  control,
 }: {
   /** What the tour draws (may be filtered). */
   users: User[];
@@ -301,16 +377,48 @@ export function LiveMapCarousel({
   connections: Connection[];
   /** "morning" when rendered inside the big screen's `.live-morning` wrapper. */
   look?: LiveMapLook;
+  /** Operator settings; when left out, the screen listens on the control channel. */
+  control?: LiveControlState;
 }) {
   const colors = LOOKS[look];
-  const layout = useMemo(() => buildLiveMapLayout(users, connections), [users, connections]);
-  const tour = useMemo(() => buildTour(layout), [layout]);
+  const fullLayout = useMemo(() => buildLiveMapLayout(users, connections), [users, connections]);
+  /**
+   * Policy issues per person, from the unfiltered list, for the issue filter.
+   * A participant's policy issues ("ประเด็นที่ใส่ใจ", from `ISSUES`) are `User.interests`.
+   */
+  const issuesById = useMemo(
+    () => new Map<string, readonly string[]>(allUsers.map((u) => [u.id, u.interests])),
+    [allUsers],
+  );
+
+  // ---- Operator control -------------------------------------------------------
+
+  const controlled = control !== undefined;
+  const [heard, setHeard] = useState<LiveControlState>(DEFAULT_CONTROL_STATE);
+  useEffect(() => {
+    if (controlled) return;
+    return subscribeControl(setHeard);
+  }, [controlled]);
+  const wanted = control ?? heard;
+  /** The latest settings; the runner adopts them at its next step boundary. */
+  const controlRef = useRef(wanted);
+  useEffect(() => {
+    controlRef.current = wanted;
+  }, [wanted]);
+  /** The settings the runner is playing with now. */
+  const [applied, setApplied] = useState<LiveControlState>(wanted);
+  const appliedRef = useRef(applied);
+
+  const layout = useMemo(
+    () => filterLayout(fullLayout, issuesById, applied.issue),
+    [fullLayout, issuesById, applied.issue],
+  );
   const edgesById = useMemo(() => new Map(layout.edges.map((e) => [e.id, e])), [layout]);
 
-  const latestRef = useRef<Latest>({ layout, tour });
+  const latestRef = useRef<Latest>({ layout: fullLayout, issuesById });
   useEffect(() => {
-    latestRef.current = { layout, tour };
-  }, [layout, tour]);
+    latestRef.current = { layout: fullLayout, issuesById };
+  }, [fullLayout, issuesById]);
 
   const motion = useMotionSettings();
   const motionRef = useRef(motion);
@@ -323,7 +431,15 @@ export function LiveMapCarousel({
   const svgRef = useRef<SVGSVGElement>(null);
   const vbRef = useRef<ViewBox>(FULL);
 
-  const empty = tour.length === 0;
+  /** No pairs at all (before any issue/view choice). */
+  const empty = fullLayout.edges.length === 0;
+  /** Pairs exist, but none in the chosen view and issue. */
+  const viewEmpty = useMemo(() => {
+    if (empty) return false;
+    return applied.view.kind === "country"
+      ? layout.edges.length === 0
+      : regionViewSteps(buildTour(layout), applied.view.group).length === 0;
+  }, [empty, layout, applied.view]);
 
   // ---- New registrants ----------------------------------------------------------
 
@@ -404,15 +520,45 @@ export function LiveMapCarousel({
     let seq = 0;
 
     const reduced = () => motionRef.current.reducedMotion || motionRef.current.lowSpec;
+    /** Tour steps: no camera moves or line-draw animation. */
+    const still = () => reduced() || appliedRef.current.motion === "still";
+    /** A tour timing at the operator's speed (welcome timings are never scaled). */
+    const tourMs = (ms: number) => scaleTiming(ms, appliedRef.current.speed);
+    const bubblesOn = () => appliedRef.current.bubbles;
+
+    /** The latest layout, narrowed to the adopted issue (cached per input). */
+    let cache: { src: LiveMapLayout; issue: string | null; out: LiveMapLayout } | null = null;
+    const current = () => {
+      const { layout: src, issuesById: issues } = latestRef.current;
+      const issue = appliedRef.current.issue;
+      if (!cache || cache.src !== src || cache.issue !== issue) {
+        cache = { src, issue, out: filterLayout(src, issues, issue) };
+      }
+      return cache.out;
+    };
+
+    /** Take up the latest operator settings (only ever at a step boundary). */
+    const adopt = () => {
+      const next = controlRef.current;
+      if (next === appliedRef.current) return;
+      appliedRef.current = next;
+      flushSync(() => setApplied(next));
+    };
+
+    const chipMeta = (meta: string) => {
+      const issue = appliedRef.current.issue;
+      if (issue === null) return meta;
+      return meta ? `ประเด็น ${issueTh(issue)} · ${meta}` : `ประเด็น ${issueTh(issue)}`;
+    };
 
     const commit = (r: Runner, update: (prev: Scene) => Scene) => {
       if (r.cancelled) return;
       flushSync(() => setScene(update));
     };
 
-    const fly = async (r: Runner, to: ViewBox, ms: number) => {
+    const fly = async (r: Runner, to: ViewBox, ms: number, instant: boolean) => {
       const from = { ...vbRef.current };
-      const duration = reduced() ? 0 : ms;
+      const duration = instant ? 0 : ms;
       await tween(r, duration, (elapsed) => {
         const k = duration > 0 ? easeInOutCubic(Math.min(1, elapsed / duration)) : 1;
         vbRef.current = {
@@ -433,7 +579,7 @@ export function LiveMapCarousel({
       const paths = ids
         .map((id) => svg.querySelector<SVGPathElement>(`[data-edge="${key}:${CSS.escape(id)}"]`))
         .filter((p): p is SVGPathElement => p !== null);
-      const duration = reduced() ? 0 : ms;
+      const duration = still() ? 0 : ms;
       await tween(r, duration, (elapsed) => {
         let done = true;
         paths.forEach((path, i) => {
@@ -445,19 +591,32 @@ export function LiveMapCarousel({
       });
     };
 
-    /** Add a pair to the scene; with `label`, show names for the pairs drawn so far. */
+    /**
+     * Add a pair to the scene; with `label` (and bubbles off), show names for the
+     * pairs drawn so far.
+     */
     const addEdge = (r: Runner, id: string, label = false) =>
       commit(r, (prev) => {
         if (prev.edges === "all" || prev.edges.some((e) => e.id === id)) return prev;
-        const edges = [...prev.edges, { id, animate: !reduced() }];
-        const labelled = label
-          ? pairLabels(
-              latestRef.current.layout,
-              edges.map((e) => e.id),
-            )
-          : prev.labelled;
+        const edges = [...prev.edges, { id, animate: !still() }];
+        const labelled =
+          label && !bubblesOn()
+            ? pairLabels(
+                current(),
+                edges.map((e) => e.id),
+              )
+            : prev.labelled;
         return { ...prev, edges, labelled };
       });
+
+    /** Once their lines are drawn, give these pairs a bubble (bubbles on). */
+    const addBubbles = (r: Runner, ids: string[]) => {
+      if (!bubblesOn() || ids.length === 0) return;
+      commit(r, (prev) => ({
+        ...prev,
+        bubbles: [...prev.bubbles.filter((id) => !ids.includes(id)), ...ids].slice(-MAX_BUBBLES),
+      }));
+    };
 
     type RegionContext = {
       group: TourGroupKey;
@@ -469,7 +628,7 @@ export function LiveMapCarousel({
     let region: RegionContext | null = null;
 
     const regionContext = (group: TourGroupKey, nodeIds: string[], meta: string): RegionContext => {
-      const { layout: now } = latestRef.current;
+      const now = current();
       const members = nodeIds.filter((id) => now.nodesById.has(id));
       const partners = new Set<string>();
       for (const edge of now.edges) {
@@ -483,7 +642,7 @@ export function LiveMapCarousel({
     };
 
     const playRegion = async (r: Runner, step: Extract<TourStep, { kind: "region" }>) => {
-      const { layout: now } = latestRef.current;
+      const now = current();
       const ctx = regionContext(
         step.group,
         step.nodeIds,
@@ -499,21 +658,23 @@ export function LiveMapCarousel({
         // Names appear only as each pair draws, so a busy region stays readable.
         labelled: new Set(),
         edges: [],
-        chip: { title: GROUP_LABEL[ctx.group], meta: ctx.meta },
+        chip: { title: GROUP_LABEL[ctx.group], meta: chipMeta(ctx.meta) },
         card: null,
+        bubbles: [],
       }));
-      await fly(r, fit(groupBox(ctx.group), 0.14), TIMING.camera);
+      await fly(r, fit(groupBox(ctx.group), 0.14), tourMs(TIMING.camera), still());
       for (const id of edgeIds) {
         if (r.cancelled) return;
-        if (!latestRef.current.layout.edges.some((e) => e.id === id)) continue;
+        if (!current().edges.some((e) => e.id === id)) continue;
         addEdge(r, id, true);
-        await draw(r, ctx.key, [id], TIMING.draw);
+        await draw(r, ctx.key, [id], tourMs(TIMING.draw));
+        addBubbles(r, [id]);
       }
-      await r.sleep(TIMING.regionHold);
+      await r.sleep(tourMs(TIMING.regionHold));
     };
 
     const playCross = async (r: Runner, step: Extract<TourStep, { kind: "cross" }>) => {
-      const { layout: now } = latestRef.current;
+      const now = current();
       const from = now.nodesById.get(step.fromId);
       const to = now.nodesById.get(step.toId);
       if (!from || !to || !now.edges.some((e) => e.id === step.edgeId)) return;
@@ -533,47 +694,58 @@ export function LiveMapCarousel({
         key: ctx.key,
         shade: toGroup ? [ctx.group, toGroup] : [ctx.group],
         visible: new Set([...ctx.members, ...ctx.partners, from.id, to.id]),
-        labelled: new Set([from.id, to.id]),
+        labelled: bubblesOn() ? new Set() : new Set([from.id, to.id]),
         edges: fresh || prev.edges === "all" ? [] : prev.edges,
         chip: {
           title: `${GROUP_LABEL[ctx.group]} → ${toGroup ? GROUP_LABEL[toGroup] : "ทั่วประเทศ"}`,
-          meta: ctx.meta,
+          meta: chipMeta(ctx.meta),
         },
         card: { fromId: from.id, toId: to.id, edgeId: step.edgeId },
+        // Just this pair is named, as with the small labels.
+        bubbles: [],
       }));
-      await fly(r, fit(union(from.box, to.box), 0.3), TIMING.crossCamera);
+      await fly(r, fit(union(from.box, to.box), 0.3), tourMs(TIMING.crossCamera), still());
       if (r.cancelled) return;
       addEdge(r, step.edgeId);
-      await draw(r, ctx.key, [step.edgeId], TIMING.draw);
-      await r.sleep(TIMING.crossHold);
+      await draw(r, ctx.key, [step.edgeId], tourMs(TIMING.draw));
+      addBubbles(r, [step.edgeId]);
+      await r.sleep(tourMs(TIMING.crossHold));
     };
 
-    const playOverview = async (r: Runner, step: Extract<TourStep, { kind: "overview" }>) => {
-      const { layout: now } = latestRef.current;
-      const present = new Set(now.edges.map((e) => e.id));
-      const edgeIds = step.edgeIds.filter((id) => present.has(id));
+    /** Country view: this round's pairs (up to four) draw together over the whole map. */
+    const playCountry = async (r: Runner, round: number) => {
+      const now = current();
+      const ids = countrySlotPlan(now.edges, round);
+      if (ids.length === 0) return;
       region = null;
       const key = ++seq;
-      const animate = !reduced();
+      const animate = !still();
+      const visible = new Set<string>();
+      for (const id of ids) {
+        const edge = now.edges.find((e) => e.id === id);
+        if (edge) visible.add(edge.sourceId).add(edge.targetId);
+      }
+      // One commit: the previous round's lines give way to this round's in place.
       commit(r, () => ({
         key,
         shade: null,
-        visible: "all",
-        labelled: new Set(),
-        edges: [],
+        visible,
+        labelled: bubblesOn() ? new Set() : pairLabels(now, ids),
+        edges: ids.map((id) => ({ id, animate })),
         chip: {
           title: "ทั่วประเทศ",
-          meta: `เส้นบนแผนที่ ${edgeIds.length} คู่ · ข้ามภาค ${crossTotal(now)} คู่`,
+          meta: chipMeta(`เส้นบนแผนที่ ${now.edges.length} คู่ · ข้ามภาค ${crossTotal(now)} คู่`),
         },
         card: null,
+        bubbles: [],
       }));
-      await fly(r, FULL, TIMING.camera);
-      if (r.cancelled) return;
-      commit(r, (prev) => ({ ...prev, edges: edgeIds.map((id) => ({ id, animate })) }));
-      const gap = Math.min(TIMING.overviewGap, TIMING.overviewSpread / Math.max(1, edgeIds.length));
-      // Drawing runs inside the hold, as in the approved mockup.
-      void draw(r, key, edgeIds, TIMING.draw, gap);
-      await r.sleep(TIMING.overviewHold);
+      if (!sameView(vbRef.current, FULL)) {
+        await fly(r, FULL, tourMs(TIMING.camera), still());
+        if (r.cancelled) return;
+      }
+      await draw(r, key, ids, tourMs(TIMING.draw));
+      addBubbles(r, ids);
+      await r.sleep(tourMs(TIMING.countryHold));
     };
 
     const playStep = (r: Runner, step: TourStep) =>
@@ -581,12 +753,21 @@ export function LiveMapCarousel({
         ? playRegion(r, step)
         : step.kind === "cross"
           ? playCross(r, step)
-          : playOverview(r, step);
+          : Promise.resolve();
 
-    /** No pairs yet: show the whole country (again, after a welcome) and wait. */
+    /** Nothing to show: the whole country (again, after a welcome), no lines, and wait. */
     const playIdle = async (r: Runner) => {
       region = null;
-      if (!sameView(vbRef.current, FULL)) await fly(r, FULL, TIMING.camera);
+      commit(r, (prev) =>
+        prev.chip ||
+        prev.card ||
+        prev.shade ||
+        prev.bubbles.length > 0 ||
+        (prev.edges !== "all" && prev.edges.length > 0)
+          ? { ...INITIAL_SCENE, key: ++seq, edges: [] }
+          : prev,
+      );
+      if (!sameView(vbRef.current, FULL)) await fly(r, FULL, tourMs(TIMING.camera), still());
       await r.sleep(TIMING.idleRecheck);
     };
 
@@ -633,7 +814,7 @@ export function LiveMapCarousel({
         const entry: Welcome = { key, pins, shown: false, halo: !reduced() };
         show(entry);
         const box = pins.map((p) => p.box).reduce(union);
-        await fly(r, fit(box, 0.3), TIMING.welcomeCamera);
+        await fly(r, fit(box, 0.3), TIMING.welcomeCamera, reduced());
         show({ ...entry, shown: true });
         void growPins(r, key);
         await r.sleep(TIMING.welcomeHold);
@@ -647,12 +828,34 @@ export function LiveMapCarousel({
       const start = spawn();
       await start.sleep(0);
       release(start);
+      let round = 0;
+      let countryReplays = 0;
       while (!stopped) {
         if (queueRef.current.length > 0) {
           await playWelcome();
           continue;
         }
-        const plan = latestRef.current.tour;
+        adopt();
+        const settings = appliedRef.current;
+        const now = current();
+
+        if (settings.view.kind === "country") {
+          if (now.edges.length === 0) {
+            await attempt(playIdle);
+            continue;
+          }
+          const thisRound = round;
+          // An interrupted round replays from its beginning, at most once.
+          const next = afterTourStep(
+            await attempt((r) => playCountry(r, thisRound)),
+            countryReplays,
+          );
+          countryReplays = next.replays;
+          if (next.advance) round++;
+          continue;
+        }
+
+        const plan = regionViewSteps(buildTour(now), settings.view.group);
         if (plan.length === 0) {
           await attempt(playIdle);
           continue;
@@ -663,6 +866,10 @@ export function LiveMapCarousel({
             await playWelcome();
             continue;
           }
+          // A new view or issue re-plans; speed, motion and bubbles apply in place.
+          const before = appliedRef.current;
+          adopt();
+          if (!sameFilter(before, appliedRef.current)) break;
           // An interrupted step replays from its beginning, at most once.
           const next = afterTourStep(await attempt((r) => playStep(r, step)), replays);
           replays = next.replays;
@@ -686,6 +893,14 @@ export function LiveMapCarousel({
         ? `คนบนแผนที่ ${stats.locatedPeople} คน — เมื่อแมตช์กันแล้วเส้นเชื่อมจะโผล่เอง`
         : "ยังไม่มีตำแหน่งจังหวัดให้วางบนแผนที่";
   }, [empty, users, connections]);
+
+  /** Centred on the map when the chosen view or issue has no pairs (never a blank map). */
+  const viewNote = useMemo(() => {
+    if (!viewEmpty) return null;
+    const where = applied.view.kind === "region" ? `ใน${GROUP_LABEL[applied.view.group]}` : "";
+    const issue = applied.issue === null ? "" : ` ประเด็น ${issueTh(applied.issue)}`;
+    return `ยังไม่มีคู่เชื่อม${where}${issue}`;
+  }, [viewEmpty, applied.view, applied.issue]);
 
   /** Provinces holding a welcome pin stay lit; the rest dim. */
   const welcomeProvinces = useMemo(
@@ -785,6 +1000,33 @@ export function LiveMapCarousel({
               />
             ))}
           </g>
+          {scene.bubbles.length > 0 && (
+            <g
+              aria-hidden="true"
+              className="motion-safe:transition-opacity motion-safe:duration-600"
+              style={tourLayer}
+            >
+              {scene.bubbles.map((id) => {
+                const edge = edgesById.get(id);
+                const a = edge && layout.nodesById.get(edge.sourceId);
+                const b = edge && layout.nodesById.get(edge.targetId);
+                const mid = edge && pathMidpoint(edge, layout);
+                if (!a || !b || !mid) return null;
+                const index = sceneEdges.findIndex((e) => e.id === id);
+                return (
+                  <PairBubble
+                    key={`${scene.key}:${id}`}
+                    x={mid.x}
+                    y={mid.y}
+                    from={a}
+                    to={b}
+                    accent={colors.edges[Math.max(0, index) % colors.edges.length]!}
+                    colors={colors}
+                  />
+                );
+              })}
+            </g>
+          )}
           {welcomeShown && (
             <g aria-hidden="true">
               {welcomeShown.pins.map((pin) => (
@@ -826,6 +1068,17 @@ export function LiveMapCarousel({
                 เชื่อมกันเรื่อง: {cardEdge.sharedInterests.map(issueTh).join(" · ")}
               </p>
             )}
+          </div>
+        )}
+
+        {viewNote && !welcome && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+            <p
+              role="status"
+              className="live-map-card rounded-2xl bg-white/95 px-5 py-3 text-center font-heading text-[clamp(1.1rem,1.9vw,1.9rem)] leading-tight font-bold text-ink shadow-sm"
+            >
+              {viewNote}
+            </p>
           </div>
         )}
 
@@ -898,6 +1151,108 @@ function WelcomePinMark({
       <g data-welcome-dot="" transform="scale(0)">
         <circle r={PX.pin} fill={PIN_COLOR} stroke={PIN_RING} strokeWidth={PX.pinRing} />
       </g>
+    </g>
+  );
+}
+
+/**
+ * A pair's name bubble at its line's midpoint: both names and both places,
+ * about twice the size of the small labels. Children are in on-screen px: the
+ * group is counter-scaled by applyView().
+ */
+function PairBubble({
+  x,
+  y,
+  from,
+  to,
+  accent,
+  colors,
+}: {
+  x: number;
+  y: number;
+  from: LiveMapNode;
+  to: LiveMapNode;
+  accent: string;
+  colors: LookColors;
+}) {
+  const side = (node: LiveMapNode) => (
+    <span style={{ display: "flex", flexDirection: "column", minWidth: 0, maxWidth: 300 }}>
+      <b
+        style={{
+          fontSize: PX.bubbleName,
+          fontWeight: 700,
+          lineHeight: 1.15,
+          color: colors.name,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {node.name}
+      </b>
+      <small
+        style={{
+          fontSize: PX.bubblePlace,
+          lineHeight: 1.2,
+          color: colors.place,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {node.placeLabel}
+      </small>
+    </span>
+  );
+  return (
+    <g
+      data-node=""
+      data-bubble=""
+      data-x={x}
+      data-y={y}
+      transform={`translate(${x} ${y}) scale(${1 / DEFAULT_SCALE})`}
+    >
+      <foreignObject
+        x={-PX.bubbleBoxW / 2}
+        y={-PX.bubbleBoxH / 2}
+        width={PX.bubbleBoxW}
+        height={PX.bubbleBoxH}
+        style={{ overflow: "visible", pointerEvents: "none" }}
+      >
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            className="live-map-bubble"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              maxWidth: "100%",
+              padding: "10px 20px",
+              borderRadius: 28,
+              background: "#ffffff",
+              border: `3px solid ${accent}`,
+              boxShadow: "0 4px 14px rgba(43, 40, 120, 0.18)",
+            }}
+          >
+            {side(from)}
+            <span
+              aria-hidden="true"
+              style={{ fontSize: PX.bubbleName, fontWeight: 700, color: accent }}
+            >
+              ⟷
+            </span>
+            {side(to)}
+          </div>
+        </div>
+      </foreignObject>
     </g>
   );
 }
