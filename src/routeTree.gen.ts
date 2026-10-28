@@ -51,6 +51,7 @@ import { Route as AdminSubmissionsRouteImport } from './routes/admin.submissions
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as ConnectionIdRouteImport } from './routes/connection.$id'
 import { Route as PeopleIdRouteImport } from './routes/people.$id'
+import { Route as ProjectsIdRouteImport } from './routes/projects_.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -262,6 +263,11 @@ const PeopleIdRoute = PeopleIdRouteImport.update({
   path: '/people/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsIdRoute = ProjectsIdRouteImport.update({
+  id: '/projects_/$id',
+  path: '/projects/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -305,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/projects/$id': typeof ProjectsIdRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -348,6 +355,7 @@ export interface FileRoutesByTo {
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/projects/$id': typeof ProjectsIdRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -393,6 +401,7 @@ export interface FileRoutesById {
   '/chat/$id': typeof ChatIdRoute
   '/connection/$id': typeof ConnectionIdRoute
   '/people/$id': typeof PeopleIdRoute
+  '/projects_/$id': typeof ProjectsIdRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -439,6 +448,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/projects/$id'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -482,6 +492,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/projects/$id'
     | '/admin'
   id:
     | '__root__'
@@ -526,6 +537,7 @@ export interface FileRouteTypes {
     | '/chat/$id'
     | '/connection/$id'
     | '/people/$id'
+    | '/projects_/$id'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -555,6 +567,7 @@ export interface RootRouteChildren {
   ChatIdRoute: typeof ChatIdRoute
   ConnectionIdRoute: typeof ConnectionIdRoute
   PeopleIdRoute: typeof PeopleIdRoute
+  ProjectsIdRoute: typeof ProjectsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -853,6 +866,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PeopleIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects_/$id': {
+      id: '/projects_/$id'
+      path: '/projects/$id'
+      fullPath: '/projects/$id'
+      preLoaderRoute: typeof ProjectsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -924,6 +944,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatIdRoute: ChatIdRoute,
   ConnectionIdRoute: ConnectionIdRoute,
   PeopleIdRoute: PeopleIdRoute,
+  ProjectsIdRoute: ProjectsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
