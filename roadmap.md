@@ -12,3 +12,8 @@
 - [x] Build `LiveThailandMap`: Thailand map on the live screen with real connection lines between matched people (plotted from province geometry).
 - [x] Wire the map into the present-mode panel and verify via Playwright (landscape + rotated portrait).
 
+
+# Projects board: seed data + discoverability
+
+- [ ] Apply the 11 คนส. project rows from the exhibition board (runs 1–4) to the database.
+- [ ] Confirm the projects page shows them and tell the user how to reach it.
