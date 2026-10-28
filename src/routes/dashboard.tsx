@@ -475,6 +475,20 @@ function Dashboard() {
             />
             สด
           </span>
+          <button type="button" onClick={() => setRotateOverride(!rotated)} className="meadow-btn-secondary">
+            {rotated ? (
+              <RotateCcw className="h-6 w-6 shrink-0" aria-hidden="true" />
+            ) : (
+              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
+            )}
+            {rotated ? "จอตรง ๆ" : "หมุนจอ 90°"}
+          </button>
+          {rotated && (
+            <button type="button" onClick={() => setRotateDir((d) => (d === 1 ? -1 : 1))} className="meadow-btn-secondary">
+              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
+              สลับทิศ
+            </button>
+          )}
           <button type="button" onClick={exitPresent} className="meadow-btn-secondary">
             <LogOut className="h-6 w-6 shrink-0" aria-hidden="true" />
             ออกจากจอใหญ่
@@ -495,10 +509,10 @@ function Dashboard() {
         <div className="mt-[2vh] grid grid-cols-1 gap-[2vw] lg:grid-cols-3">
           <section className="meadow-card relative p-5 lg:col-span-2">
             <h2 className="font-heading text-title font-semibold! text-ink">
-              เครือข่ายที่เกิดขึ้น
+              แผนที่เส้นเชื่อมทั่วประเทศ
             </h2>
             <div className="mt-3 h-[58vh] min-h-[320px]">
-              <LiveNetwork users={fUsers} connections={fConnections} className="h-full" />
+              <LiveThailandMap users={fUsers} connections={fConnections} />
             </div>
           </section>
 
