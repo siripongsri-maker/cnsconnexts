@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { ALL_ROLES, requireAdmin, signSession, verifyCredentials, type AdminRole } from "./admin-session";
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { getRequest } from '@tanstack/react-start/server';
 
 async function recordLogin(account: string, method: 'google' | 'password', outcome: 'success' | 'denied', reason = '', userId?: string, sessionKey?: string) {
   const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
@@ -17,7 +18,9 @@ export const adminGoogleLogin = createServerFn({ method: 'POST' })
     | { ok: true; token: string; user: string; role: AdminRole; exp: number }
     | { ok: false; error: string }
   > => {
-    const { data: identity, error } = await context.supabase.auth.getUser();
+    const bearer = getRequest().headers.get('authorization');
+    if (!bearer?.startsWith('Bearer ')) return { ok: false, error: 'กรุณาเข้าสู่ระบบ Google อีกครั้ง' };
+    const { data: identity, error } = await context.supabase.auth.getUser(bearer.slice(7));
     const user = identity.user;
     if (error || !user?.email) return { ok: false, error: 'กรุณาเข้าสู่ระบบ Google อีกครั้ง' };
     const account = user.email.toLowerCase();
