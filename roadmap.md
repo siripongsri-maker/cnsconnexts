@@ -10,4 +10,5 @@
 
 - [x] Add 90° screen rotation to the big-screen (present) mode — auto on portrait screens, manual toggle + direction flip in the header.
 - [x] Build `LiveThailandMap`: Thailand map on the live screen with real connection lines between matched people (plotted from province geometry).
-- [ ] Wire the map into the present-mode panel and verify via Playwright (landscape + rotated portrait).
+- [x] Wire the map into the present-mode panel and verify via Playwright (landscape + rotated portrait).
+
