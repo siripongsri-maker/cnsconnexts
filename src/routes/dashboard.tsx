@@ -488,20 +488,15 @@ function Dashboard() {
             />
             สด
           </span>
-          <button type="button" onClick={() => setRotateOverride(!rotated)} className="meadow-btn-secondary">
-            {rotated ? (
-              <RotateCcw className="h-6 w-6 shrink-0" aria-hidden="true" />
-            ) : (
-              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
-            )}
-            {rotated ? "จอตรง ๆ" : "หมุนจอ 90°"}
+          <button
+            type="button"
+            onClick={cycleRotation}
+            className="meadow-btn-secondary"
+            title="กดวนมุมหมุน 0° → 90° → 180° → 270° ให้ตรงกับทิศที่ติดตั้งจอ"
+          >
+            <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
+            หมุนจอ {rotation}°
           </button>
-          {rotated && (
-            <button type="button" onClick={() => setRotateDir((d) => (d === 1 ? -1 : 1))} className="meadow-btn-secondary">
-              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
-              สลับทิศ
-            </button>
-          )}
           <button type="button" onClick={exitPresent} className="meadow-btn-secondary">
             <LogOut className="h-6 w-6 shrink-0" aria-hidden="true" />
             ออกจากจอใหญ่
