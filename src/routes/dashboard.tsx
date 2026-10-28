@@ -449,9 +449,9 @@ function Dashboard() {
     });
   const rotated = rotation !== 0;
 
-  // --- พอดี 1 จอ: วัดความสูงเนื้อหาจริงแล้วย่อลงให้ไม่ต้องเลื่อน ---
+  // --- พอดี 1 จอ: วัดขนาดเนื้อหาจริงแล้วย่อลงให้ไม่ต้องเลื่อน แล้วจัดกึ่งกลาง ---
   const contentRef = useRef<HTMLDivElement>(null);
-  const [fitScale, setFitScale] = useState(1);
+  const [fit, setFit] = useState({ s: 1, dx: 0, dy: 0 });
   useLayoutEffect(() => {
     if (!present) return;
     const measure = () => {
@@ -465,7 +465,13 @@ function Dashboard() {
       const W = rotated ? window.innerHeight : window.innerWidth;
       const H = rotated ? window.innerWidth : window.innerHeight;
       const s = Math.min(1, W / cw, H / ch);
-      setFitScale((old) => (Math.abs(old - s) > 0.005 ? s : old));
+      const dx = Math.max(0, (W - cw * s) / 2);
+      const dy = Math.max(0, (H - ch * s) / 2);
+      setFit((old) =>
+        Math.abs(old.s - s) > 0.005 || Math.abs(old.dx - dx) > 1 || Math.abs(old.dy - dy) > 1
+          ? { s, dx, dy }
+          : old,
+      );
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -505,8 +511,11 @@ function Dashboard() {
         <div
           ref={contentRef}
           style={
-            fitScale < 1
-              ? { transform: `scale(${fitScale})`, transformOrigin: "top left" }
+            fit.s < 1
+              ? {
+                  transform: `translate(${fit.dx}px, ${fit.dy}px) scale(${fit.s})`,
+                  transformOrigin: "top left",
+                }
               : undefined
           }
         >
