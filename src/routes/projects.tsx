@@ -142,7 +142,7 @@ function ProjectCard({ project: s }: { project: Submission }) {
           />
         </a>
       )}
-      <h3 className="font-heading text-lead font-semibold break-words text-ink"><Link to="/projects_/$id" params={{ id: s.id }} className="hover:underline">{s.name}</Link></h3>
+      <h3 className="font-heading text-lead font-semibold break-words text-ink"><Link to="/projects/$id" params={{ id: s.id }} className="hover:underline">{s.name}</Link></h3>
       <p className="mt-1 flex items-center gap-1.5 text-body text-ink-soft">
         <MapPin className="h-5 w-5 shrink-0" aria-hidden="true" />
         {place}
@@ -181,7 +181,7 @@ function ProjectCard({ project: s }: { project: Submission }) {
           ))}
         </div>
       )}
-      <Button asChild variant="outline" className="mt-5 min-h-12 w-full text-body"><Link to="/projects_/$id" params={{ id: s.id }}>ดูรายละเอียด<ArrowRight aria-hidden /></Link></Button>
+      <Button asChild variant="outline" className="mt-5 min-h-12 w-full text-body"><Link to="/projects/$id" params={{ id: s.id }}>ดูรายละเอียด<ArrowRight aria-hidden /></Link></Button>
     </article>
   );
 }
