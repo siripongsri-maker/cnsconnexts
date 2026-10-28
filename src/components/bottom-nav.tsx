@@ -5,7 +5,7 @@ import { Sparkles, HeartHandshake, Compass, FolderOpen, CircleUserRound } from "
 /**
  * เมนูล่าง 5 อย่าง — match คือเส้นทางที่นับว่าอยู่ในหมวดนี้
  * (คำเมนูใช้ 16px แทน text-body ของธีม ทังน้ีเพื่่อ 5 คอลัมณยัังไม่ลนกัันในจอ 360px
- *  และจะยAngular hidden (sr-only) เมื่่อจอกว่าน้อยกว่า 360px)
+ *  และจะซ่อนคำเมนู (sr-only) เมื่่อจอกว่าน้อยกว่า 360px)
  */
 export const NAV_ITEMS = [
   { to: "/", label: "จับคู่", icon: Sparkles, match: ["/", "/matches", "/people"] },
