@@ -13,6 +13,16 @@ const REGION_FILL: Record<Region, string> = {
   Nationwide: "var(--color-block-teal)",
 };
 
+/** สีเส้นเชื่อมหลากสี วนตามลำดับเส้น */
+const EDGE_COLORS = [
+  "var(--color-primary)",
+  "var(--color-block-blue)",
+  "var(--color-block-orange)",
+  "var(--color-block-green)",
+  "var(--color-block-purple)",
+  "var(--color-block-teal)",
+];
+
 type LiveThailandMapProps = {
   users: User[];
   connections: Connection[];
@@ -58,11 +68,11 @@ export function LiveThailandMap({ users, connections }: LiveThailandMapProps) {
               key={edge.id}
               d={edge.path ?? undefined}
               fill="none"
-              stroke="var(--color-primary)"
-              strokeWidth={5}
-              strokeOpacity={0.45}
+              stroke={EDGE_COLORS[index % EDGE_COLORS.length]}
+              strokeWidth={3.5}
+              strokeOpacity={0.55}
               strokeLinecap="round"
-              className="animate-dash"
+              className="animate-dash animate-pulse"
               style={{ animationDelay: `${index * 0.35}s` }}
             />
           ))}
