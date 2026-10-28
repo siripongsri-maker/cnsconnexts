@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { buildFeed, LiveTicker, RotatingPrompt } from "@/components/live-ticker";
@@ -448,6 +448,34 @@ function Dashboard() {
       return next;
     });
   const rotated = rotation !== 0;
+
+  // --- พอดี 1 จอ: วัดความสูงเนื้อหาจริงแล้วย่อลงให้ไม่ต้องเลื่อน ---
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState(1);
+  useLayoutEffect(() => {
+    if (!present) return;
+    const measure = () => {
+      const el = contentRef.current;
+      if (!el) return;
+      const prev = el.style.transform;
+      el.style.transform = "none";
+      const cw = el.scrollWidth;
+      const ch = el.scrollHeight;
+      el.style.transform = prev;
+      const W = rotated ? window.innerHeight : window.innerWidth;
+      const H = rotated ? window.innerWidth : window.innerHeight;
+      const s = Math.min(1, W / cw, H / ch);
+      setFitScale((old) => (Math.abs(old - s) > 0.005 ? s : old));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (contentRef.current) ro.observe(contentRef.current);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [present, rotated]);
 
   if (present) {
     const needRank = rank("powers_need");
