@@ -10,6 +10,8 @@ import { useStore } from "@/lib/store";
 import { COURSES, type Course } from "@/lib/types";
 import { provinceTh, regionLabel } from "@/lib/i18n";
 import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
+import { ProjectContactFields } from "@/components/project-contact-fields";
+import type { ProjectContacts } from "@/lib/project-contact";
 
 export const Route = createFileRoute("/submit")({
   head: () => ({
@@ -79,6 +81,7 @@ function SubmitPage() {
   const [summary, setSummary] = useState("");
   const [highlight, setHighlight] = useState("");
   const [wanted, setWanted] = useState("");
+  const [contacts, setContacts] = useState<ProjectContacts>({});
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [stageReady, setStageReady] = useState(false);
   const [done, setDone] = useState(false);
@@ -112,6 +115,7 @@ function SubmitPage() {
       wanted: wanted.trim() || me.powers_need.join(", "),
       photo: photo ?? me.photo,
       stage_ready: stageReady,
+      ...contacts,
     });
     setDone(true);
   };
@@ -294,6 +298,10 @@ function SubmitPage() {
               />
             </label>
           )}
+        </Field>
+
+        <Field label="ผู้รับผิดชอบและช่องทางติดต่อ">
+          <ProjectContactFields value={contacts} onChange={setContacts} />
         </Field>
 
         <button

@@ -221,7 +221,7 @@ const PARTICIPANT_PUBLIC_COLS =
   "id,name,avatar,province,region,organization,generation,bio,interests,powers_have,powers_need,source,linked_at,created_at,updated_at";
 
 const SUBMISSION_PUBLIC_COLS =
-  "id,name,course,batch,region,province,policy_issues,summary,highlight,wanted,stage_ready,showcase,created_at,updated_at";
+  "id,name,course,batch,region,province,policy_issues,summary,highlight,wanted,stage_ready,showcase,created_at,updated_at,contact_name,contact_organization,contact_phone,contact_email,contact_url";
 
 /** ขนาดชุด id ต่อคำขอเมื่อดึงรูปเฉพาะรายการที่เปลี่ยน */
 const PHOTO_CHUNK = 100;
@@ -442,6 +442,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         summary: r.summary ?? "",
         highlight: r.highlight ?? "",
         wanted: r.wanted ?? "",
+        contact_name: r.contact_name ?? "",
+        contact_organization: r.contact_organization ?? "",
+        contact_phone: r.contact_phone ?? "",
+        contact_email: r.contact_email ?? "",
+        contact_url: r.contact_url ?? "",
         photo: r.photo ?? photos.s.get(r.id) ?? undefined,
         stage_ready: !!r.stage_ready,
         showcase: !!r.showcase,
@@ -1074,6 +1079,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           summary: item.summary,
           highlight: item.highlight,
           wanted: item.wanted,
+          contact_name: item.contact_name ?? "",
+          contact_organization: item.contact_organization ?? "",
+          contact_phone: item.contact_phone ?? "",
+          contact_email: item.contact_email ?? "",
+          contact_url: item.contact_url ?? "",
           photo: item.photo ?? null,
           stage_ready: item.stage_ready,
           showcase: false,

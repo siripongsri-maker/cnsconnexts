@@ -1,0 +1,4 @@
+ALTER TABLE public.submissions ADD COLUMN contact_name text NOT NULL DEFAULT '', ADD COLUMN contact_organization text NOT NULL DEFAULT '', ADD COLUMN contact_phone text NOT NULL DEFAULT '', ADD COLUMN contact_email text NOT NULL DEFAULT '', ADD COLUMN contact_url text NOT NULL DEFAULT '';
+COMMENT ON COLUMN public.submissions.contact_name IS 'Optional project contact intentionally supplied for public display.';
+COMMENT ON COLUMN public.submissions.contact_phone IS 'Optional phone intentionally supplied for public display; never copied from account data.';
+COMMENT ON COLUMN public.submissions.contact_email IS 'Optional email intentionally supplied for public display; never copied from account data.';
