@@ -830,6 +830,8 @@ export function LiveMapCarousel({
       release(start);
       let round = 0;
       let countryReplays = 0;
+      // Region view: each full loop advances the in-region window (all pairs get a turn).
+      let regionRound = 0;
       while (!stopped) {
         if (queueRef.current.length > 0) {
           await playWelcome();
@@ -855,12 +857,13 @@ export function LiveMapCarousel({
           continue;
         }
 
-        const plan = regionViewSteps(buildTour(now), settings.view.group);
+        const plan = regionViewSteps(buildTour(now, regionRound), settings.view.group);
         if (plan.length === 0) {
           await attempt(playIdle);
           continue;
         }
-        for (let i = 0, replays = 0; i < plan.length && !stopped;) {
+        let i = 0;
+        for (let replays = 0; i < plan.length && !stopped;) {
           const step = plan[i]!;
           if (queueRef.current.length > 0) {
             await playWelcome();
@@ -875,6 +878,7 @@ export function LiveMapCarousel({
           replays = next.replays;
           if (next.advance) i++;
         }
+        if (i >= plan.length) regionRound++;
       }
     };
     void run();

@@ -5,6 +5,7 @@ import {
   buildTour,
   GROUP_LABEL,
   regionViewSteps,
+  rotatingWindow,
   TOUR_LIMITS,
   TOUR_ORDER,
   type TourStep,
@@ -205,5 +206,51 @@ describe("regionViewSteps", () => {
     expect(north.map((s) => s.kind)).toEqual(["region", "cross"]);
     // The cross pair's far end (south) is not its home, so south has only its region step.
     expect(regionViewSteps(buildTour(layout), "south").map((s) => s.kind)).toEqual(["region"]);
+  });
+});
+
+describe("region view rotation", () => {
+  it("rotatingWindow covers every id over successive rounds", () => {
+    const ids = Array.from({ length: 10 }, (_, i) => `e${i}`);
+    expect(rotatingWindow(ids, 6, 0)).toEqual(ids.slice(0, 6));
+    expect(rotatingWindow(ids, 6, 1)).toEqual(["e6", "e7", "e8", "e9", "e0", "e1"]);
+    expect(rotatingWindow([], 6, 3)).toEqual([]);
+    expect(rotatingWindow(["a", "b"], 6, 5)).toHaveLength(2);
+  });
+
+  it("loops all 10 in-region pairs of a region, cross cap stays 2", () => {
+    const users = [
+      ...Array.from({ length: 11 }, (_, i) => person(`n${i}`, "North")),
+      person("s1", "South"),
+    ];
+    const pairs = Array.from({ length: 10 }, (_, i) =>
+      pair(`p${i}`, `n${i}`, `n${i + 1}`, day(i + 1)),
+    );
+    pairs.push(
+      pair("x1", "n0", "s1", day(20)),
+      pair("x2", "n1", "s1", day(21)),
+      pair("x3", "n2", "s1", day(22)),
+    );
+    const layout = buildLiveMapLayout(users, pairs);
+    // Default path is unchanged: newest six.
+    const first = buildTour(layout)[0]!;
+    const intraIds = layout.edges
+      .filter((e) => e.sourceId !== "s1" && e.targetId !== "s1")
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      .map((e) => e.id);
+    expect(intraIds).toHaveLength(10);
+    expect(first.kind === "region" && first.edgeIds).toEqual(intraIds.slice(0, 6));
+    const seen = new Set<string>();
+    for (let round = 0; round < 2; round++) {
+      const plan = regionViewSteps(buildTour(layout, round), "north");
+      const region = plan[0]!;
+      expect(region.kind).toBe("region");
+      if (region.kind === "region") {
+        expect(region.edgeIds.length).toBeLessThanOrEqual(TOUR_LIMITS.intraPerRegion);
+        region.edgeIds.forEach((id) => seen.add(id));
+      }
+      expect(plan.filter((s) => s.kind === "cross")).toHaveLength(TOUR_LIMITS.crossPerRegion);
+    }
+    expect([...seen].sort()).toEqual([...intraIds].sort());
   });
 });

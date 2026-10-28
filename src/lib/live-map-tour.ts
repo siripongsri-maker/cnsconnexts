@@ -30,11 +30,30 @@ const newestFirst = (a: LiveMapEdge, b: LiveMapEdge) =>
   compare(b.createdAt, a.createdAt) || compare(a.id, b.id);
 
 /**
- * Turn a layout into the ordered steps of the region tour: per region, a region
- * step (its newest in-region pairs) then up to two cross flights that start in
- * it, and finally an overview of every pair.
+ * Up to `size` ids for the given 0-based round, rotating through all of `ids`
+ * (same modular idea as `countrySlotPlan`): round 0 is the first `size`, each
+ * later round starts `size` further on, wrapping, so every id gets a turn.
  */
-export function buildTour(layout: LiveMapLayout): TourStep[] {
+export function rotatingWindow(ids: readonly string[], size: number, round: number): string[] {
+  const n = ids.length;
+  if (n === 0) return [];
+  const count = Math.min(size, n);
+  const start = (((round * size) % n) + n) % n;
+  const out: string[] = [];
+  for (let i = 0; i < count; i++) out.push(ids[(start + i) % n]!);
+  return out;
+}
+
+/**
+ * Turn a layout into the ordered steps of the region tour: per region, a region
+ * step (up to six in-region pairs) then up to two cross flights that start in
+ * it, and finally an overview of every pair.
+ *
+ * `round` (default 0 = the newest six) rotates each region step's window
+ * through ALL its in-region pairs; the one-region view passes its loop count
+ * so older pairs in a busy region get their turn.
+ */
+export function buildTour(layout: LiveMapLayout, round = 0): TourStep[] {
   if (layout.edges.length === 0) return [];
 
   const intra = new Map<TourGroupKey, LiveMapEdge[]>();
@@ -74,7 +93,11 @@ export function buildTour(layout: LiveMapLayout): TourStep[] {
       kind: "region",
       group,
       nodeIds: layout.nodes.filter((n) => n.group === group).map((n) => n.id),
-      edgeIds: inRegion.slice(0, TOUR_LIMITS.intraPerRegion).map((e) => e.id),
+      edgeIds: rotatingWindow(
+        inRegion.map((e) => e.id),
+        TOUR_LIMITS.intraPerRegion,
+        round,
+      ),
       intraCount: inRegion.length,
       crossCount: touching.length,
     });
