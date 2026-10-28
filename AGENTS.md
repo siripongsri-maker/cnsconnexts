@@ -17,3 +17,5 @@
 - Individual project pages use an unnested `/projects_/$id` route with a public server read and Query loader; contacts are opt-in project fields, never inferred from account data, to support direct sharing without exposing private identities.
 - Notification relative timestamps use a browser clock with periodic, focus and visibility refreshes; clean up listeners on unmount so idle pages do not retain timers.
 - The homepage generates a fresh browser-only random seed on each mount and passes it to `buildDeck`; keep the seed stable during interaction to avoid jumping cards, while preserving the participant top-30 match cut and match details.
+- Google admin grants are claimed only from verified Google identities into protected user_roles; signed admin sessions must revalidate the bearer and role on every privileged request. Legacy password superadmin sessions are rejected to prevent bypassing the account transfer.
+- Admin login results are persisted server-side in admin_login_history before granting access; only owner/superadmin can read history and clients cannot modify or delete audit rows.

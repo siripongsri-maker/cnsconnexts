@@ -1,5 +1,12 @@
 # Whole-site EnduroSat visual renewal
 
+# Admin Google access and security history
+
+- [x] Reserve superadmin access for the verified Google account srichausiripong@gmail.com and disable legacy superadmin credentials/tokens.
+- [x] Persist login results, account and timestamps on the server and expose a protected history page; verified a rejected login was recorded.
+- [x] Test legacy rejection and session rules (18 tests passed); verified Google button and failed legacy login in browser.
+- [ ] Verify successful Google sign-in and history read-back as srichausiripong@gmail.com — blocked: this account has no auth user or active Google session yet; owner must first sign in with Google.
+
 - [x] Inspect reference and shared page patterns.
 - [x] Rebuild homepage composition and navigation to closely match the reference using Connexts content.
 - [x] Apply the same editorial visual system across public pages and admin, without changing data or flows.

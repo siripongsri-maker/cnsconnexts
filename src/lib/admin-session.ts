@@ -7,7 +7,7 @@
 
 export type AdminRole = "superadmin" | "owner" | "analyst" | "viewer";
 
-export type AdminSession = { user: string; role: AdminRole; exp: number };
+export type AdminSession = { user: string; role: AdminRole; exp: number; userId?: string; method?: 'google' };
 
 /** บทบาทที่แก้ไข/ลบ/กู้คืนข้อมูลได้ */
 export const WRITE_ROLES: readonly AdminRole[] = ["superadmin", "owner"];
@@ -19,7 +19,6 @@ type Env = Record<string, string | undefined>;
 
 /** บัญชีผู้ดูแล — ชื่อผู้ใช้คงที่ รหัสผ่านมาจาก env */
 const ACCOUNT_ENV: { user: string; role: AdminRole; env: string }[] = [
-  { user: "superadmin", role: "superadmin", env: "SUPERADMIN_PASSWORD" },
   { user: "connexts", role: "owner", env: "ADMIN_PASSWORD" },
   { user: "analyst", role: "analyst", env: "ANALYST_PASSWORD" },
   { user: "viewer", role: "viewer", env: "VIEWER_PASSWORD" },
@@ -66,7 +65,7 @@ async function safeEqual(a: string, b: string): Promise<boolean> {
   const va = new Uint8Array(ha);
   const vb = new Uint8Array(hb);
   let diff = 0;
-  for (let i = 0; i < va.length; i++) diff |= va[i]! ^ vb[i]!;
+  for (let i = 0; i < va.length; i++) diff |= (va[i] ?? 0) ^ (vb[i] ?? 0);
   return diff === 0;
 }
 
@@ -88,7 +87,7 @@ export async function verifyCredentials(
 }
 
 export async function signSession(
-  session: { user: string; role: AdminRole },
+  session: Omit<AdminSession, 'exp'>,
   env: Env,
   now = Date.now(),
 ): Promise<{ token: string; exp: number }> {
@@ -119,6 +118,8 @@ export async function verifySession(
     if (!ok) return null;
     const parsed = JSON.parse(new TextDecoder().decode(fromB64url(body))) as AdminSession;
     if (!ALL_ROLES.includes(parsed.role) || typeof parsed.user !== "string") return null;
+    // Old password superadmin sessions cease to work immediately after the transfer.
+    if (parsed.role === 'superadmin' && (parsed.method !== 'google' || !parsed.userId)) return null;
     if (typeof parsed.exp !== "number" || parsed.exp <= now) return null;
     return parsed;
   } catch {
@@ -134,6 +135,12 @@ export async function requireAdmin(
 ): Promise<AdminSession> {
   const session = await verifySession(token, env);
   if (!session) throw new Error("unauthorized");
+  if (session.method === 'google') {
+    if (!session.userId) throw new Error('unauthorized');
+    const { validateGoogleAdmin } = await import('./admin-google.server');
+    const currentRole = await validateGoogleAdmin(session.userId);
+    if (!currentRole || currentRole !== session.role) throw new Error('unauthorized');
+  }
   if (!roles.includes(session.role)) throw new Error("forbidden");
   return session;
 }

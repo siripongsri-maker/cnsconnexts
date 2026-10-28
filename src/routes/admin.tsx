@@ -41,6 +41,7 @@ const ADMIN_PAGES = [
   { path: "/admin/live", title: "จอสดของงาน" },
   { path: "/admin/qr", title: "QR และรหัสห้อง" },
   { path: "/admin/logs", title: "การใช้งานของผู้เข้าร่วม" },
+  { path: "/admin/login-history", title: "ประวัติการเข้าสู่ระบบ" },
   { path: "/admin/backups", title: "สำรองและกู้คืนข้อมูล" },
   { path: "/admin/backup-policy", title: "นโยบายการเก็บข้อมูลสำรอง" },
   { path: "/admin/audit", title: "ประวัติการแก้ไข" },
@@ -50,7 +51,7 @@ const ADMIN_PAGES = [
 ] as const;
 
 function AdminLayout() {
-  const { ready, authed, role, user: adminUser, signIn, signOut } = useAdminAuth();
+  const { ready, authed, role, user: adminUser, signIn, signOut, signInGoogle, googleError } = useAdminAuth();
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ function AdminLayout() {
     0,
     ADMIN_PAGES.findIndex((page) => page.path === pathname),
   );
-  const page = ADMIN_PAGES[pageIndex]!;
+  const page = ADMIN_PAGES[pageIndex] ?? ADMIN_PAGES[0];
 
   useEffect(() => {
     if (!ready || !authed) return;
@@ -165,9 +166,9 @@ function AdminLayout() {
               />
             </label>
 
-            {error && (
+            {(error || googleError) && (
               <p role="alert" className="text-body font-bold text-destructive">
-                {error}
+                {error || googleError}
               </p>
             )}
 
@@ -180,6 +181,13 @@ function AdminLayout() {
               {signingIn ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"}{" "}
               <ArrowRight className="ml-auto size-4" aria-hidden="true" />
             </Button>
+
+            <Button type="button" variant="outline" className="h-12 w-full" disabled={signingIn} onClick={async () => {
+              setSigningIn(true); setError(null);
+              try { setError(await signInGoogle()); } catch { setError('เข้าสู่ระบบ Google ไม่สำเร็จ กรุณาลองใหม่'); }
+              finally { setSigningIn(false); }
+            }}>เข้าสู่ระบบด้วย Google</Button>
+            <p className="text-body text-muted-foreground">Superadmin: srichausiripong@gmail.com · เข้าด้วย Google เท่านั้น</p>
 
             <details className="admin-role-note">
               <summary>

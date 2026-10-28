@@ -29,6 +29,13 @@
       "when": 1793162686321,
       "tag": "0003_grant_public_project_contacts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793201875099,
+      "tag": "0004_admin_google_roles_login_history",
+      "breakpoints": true
     }
   ]
 }

@@ -17,11 +17,10 @@ const env = {
 };
 
 describe("verifyCredentials", () => {
+  it('disables legacy superadmin password after transfer to Google', async () => {
+    expect(await verifyCredentials('superadmin', 'super-pass', env)).toBeNull();
+  });
   it("accepts the right password for each configured account", async () => {
-    expect(await verifyCredentials("superadmin", "super-pass", env)).toEqual({
-      user: "superadmin",
-      role: "superadmin",
-    });
     expect(await verifyCredentials(" Connexts ", "owner-pass", env)).toEqual({
       user: "connexts",
       role: "owner",
@@ -45,6 +44,15 @@ describe("verifyCredentials", () => {
 });
 
 describe("signSession / verifySession", () => {
+  it('rejects legacy superadmin sessions', async () => {
+    const { token } = await signSession({ user: 'superadmin', role: 'superadmin' }, env);
+    expect(await verifySession(token, env)).toBeNull();
+  });
+  it('round-trips the Google superadmin identity', async () => {
+    const session = { user: 'srichausiripong@gmail.com', role: 'superadmin' as const, userId: 'verified-user', method: 'google' as const };
+    const { token } = await signSession(session, env);
+    expect(await verifySession(token, env)).toMatchObject(session);
+  });
   it("round-trips a signed session", async () => {
     const { token, exp } = await signSession({ user: "connexts", role: "owner" }, env, 1_000);
     expect(exp).toBe(1_000 + SESSION_TTL_MS);

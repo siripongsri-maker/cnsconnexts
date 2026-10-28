@@ -62,6 +62,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: "ระบบ",
     items: [
       { to: "/admin/logs", label: "บันทึกการใช้งาน", icon: ShieldCheck },
+      { to: "/admin/login-history", label: "ประวัติเข้าสู่ระบบ", icon: HistoryIcon },
       { to: "/admin/audit", label: "ประวัติการแก้ไข", icon: HistoryIcon },
       { to: "/admin/costs", label: "สรุปค่าใช้จ่าย", icon: Coins },
       { to: "/admin/settings", label: "ตั้งค่า", icon: Settings },

@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_google_grants: {
+        Row: {
+          email: string
+          role: string
+        }
+        Insert: {
+          email: string
+          role: string
+        }
+        Update: {
+          email?: string
+          role?: string
+        }
+        Relationships: []
+      }
+      admin_login_history: {
+        Row: {
+          account: string
+          created_at: string
+          id: string
+          method: string
+          outcome: string
+          reason: string
+          session_key: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account: string
+          created_at?: string
+          id?: string
+          method: string
+          outcome: string
+          reason?: string
+          session_key?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account?: string
+          created_at?: string
+          id?: string
+          method?: string
+          outcome?: string
+          reason?: string
+          session_key?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       commitments: {
         Row: {
           action_type: string
@@ -471,12 +519,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_google_admin_role: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
