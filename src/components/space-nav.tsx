@@ -14,6 +14,7 @@ const LINKS = [
   { to: "/commitments", label: "ทำอะไรต่อ" },
   { to: "/dashboard", label: "สดในงาน" },
   { to: "/submit", label: "ส่งผลงาน" },
+  { to: "/projects", label: "โปรเจกต์ คนส." },
   { to: "/ebook", label: "รวมผลงาน" },
   { to: "/guide", label: "คู่มือ" },
   { to: "/update", label: "โปรไฟล์" },
