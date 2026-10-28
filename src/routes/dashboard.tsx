@@ -18,6 +18,8 @@ import {
   Link2,
   LogOut,
   MonitorPlay,
+  RotateCcw,
+  RotateCw,
   Search,
   Share2,
   SlidersHorizontal,
@@ -30,6 +32,7 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { ChoicePill } from "@/components/choice-pill";
 import { LiveNetwork } from "@/components/network-background";
+import { LiveThailandMap } from "@/components/live-thailand-map";
 import { Avatar, PowerIcon } from "@/components/power-bits";
 import { BLOCK_TAG } from "@/lib/issue-colors";
 import { useStore, useUserMap } from "@/lib/store";
@@ -423,11 +426,42 @@ function Dashboard() {
     navigate({ search: (s) => ({ ...s, present: undefined }) });
   };
 
+  // --- หมุนจอใหญ่ 90°: จอแนวตั้ง (สูงกว่ากว้าง) หมุนเองอัตโนมัติ กดปุ่มบังคับเปิด/ปิดได้ ---
+  const [portrait, setPortrait] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(orientation: portrait)");
+    const update = () => setPortrait(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  const [rotateOverride, setRotateOverride] = useState<boolean | null>(null);
+  const [rotateDir, setRotateDir] = useState<1 | -1>(1);
+  const rotated = rotateOverride ?? portrait;
+
   if (present) {
     const needRank = rank("powers_need");
     const haveRank = rank("powers_have");
     return (
-      <main className="relative min-h-dvh overflow-hidden bg-paper px-[4vw] py-[3vh] text-ink">
+      <main
+        className={`relative overflow-hidden bg-paper px-[4vw] py-[3vh] text-ink${rotated ? "" : " min-h-dvh"}`}
+        style={
+          rotated
+            ? {
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vh",
+                height: "100vw",
+                transformOrigin: "top left",
+                transform:
+                  rotateDir === 1
+                    ? "translateX(100vw) rotate(90deg)"
+                    : "translateY(100vh) rotate(-90deg)",
+              }
+            : undefined
+        }
+      >
         <header className="flex flex-wrap items-center gap-4">
           <div className="w-full min-w-0 sm:w-auto sm:flex-1">
             <h1 className="font-heading text-[clamp(1.75rem,3.5vw,3.25rem)] leading-tight font-bold text-ink">
@@ -441,6 +475,20 @@ function Dashboard() {
             />
             สด
           </span>
+          <button type="button" onClick={() => setRotateOverride(!rotated)} className="meadow-btn-secondary">
+            {rotated ? (
+              <RotateCcw className="h-6 w-6 shrink-0" aria-hidden="true" />
+            ) : (
+              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
+            )}
+            {rotated ? "จอตรง ๆ" : "หมุนจอ 90°"}
+          </button>
+          {rotated && (
+            <button type="button" onClick={() => setRotateDir((d) => (d === 1 ? -1 : 1))} className="meadow-btn-secondary">
+              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
+              สลับทิศ
+            </button>
+          )}
           <button type="button" onClick={exitPresent} className="meadow-btn-secondary">
             <LogOut className="h-6 w-6 shrink-0" aria-hidden="true" />
             ออกจากจอใหญ่
@@ -461,10 +509,10 @@ function Dashboard() {
         <div className="mt-[2vh] grid grid-cols-1 gap-[2vw] lg:grid-cols-3">
           <section className="meadow-card relative p-5 lg:col-span-2">
             <h2 className="font-heading text-title font-semibold! text-ink">
-              เครือข่ายที่เกิดขึ้น
+              แผนที่เส้นเชื่อมทั่วประเทศ
             </h2>
             <div className="mt-3 h-[58vh] min-h-[320px]">
-              <LiveNetwork users={fUsers} connections={fConnections} className="h-full" />
+              <LiveThailandMap users={fUsers} connections={fConnections} />
             </div>
           </section>
 
