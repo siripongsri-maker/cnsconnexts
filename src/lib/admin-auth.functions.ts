@@ -5,7 +5,8 @@ import { signSession, verifyCredentials, type AdminRole } from "./admin-session"
 /** ล็อกอินผู้ดูแล — ตรวจรหัสฝั่งเซิร์ฟเวอร์ แล้วออกโทเคนที่หมดอายุได้ */
 export const adminLogin = createServerFn({ method: "POST" })
   .inputValidator((input: { user: string; password: string }) => {
-    if (typeof input?.user !== "string" || typeof input?.password !== "string") throw new Error("invalid input");
+    if (typeof input?.user !== "string" || typeof input?.password !== "string")
+      throw new Error("invalid input");
     if (input.user.length > 64 || input.password.length > 256) throw new Error("invalid input");
     return input;
   })
@@ -13,7 +14,8 @@ export const adminLogin = createServerFn({ method: "POST" })
     async ({
       data,
     }): Promise<
-      { ok: true; token: string; user: string; role: AdminRole; exp: number } | { ok: false; error: string }
+      | { ok: true; token: string; user: string; role: AdminRole; exp: number }
+      | { ok: false; error: string }
     > => {
       const account = await verifyCredentials(data.user, data.password, process.env);
       if (!account) return { ok: false, error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" };

@@ -68,7 +68,10 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
         icon: <XCircle className="h-4 w-4" />,
         duration: 12000,
         description: `${title} — สาเหตุ: ${reason}`,
-        action: { label: "คัดลอกข้อผิดพลาด", onClick: () => void navigator.clipboard?.writeText(reason) },
+        action: {
+          label: "คัดลอกข้อผิดพลาด",
+          onClick: () => void navigator.clipboard?.writeText(reason),
+        },
       });
     } finally {
       setSaving(false);
@@ -187,9 +190,7 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
           <Button variant="outline" onClick={onClose}>
             ยกเลิก
           </Button>
-          {preview && step === 1 && (
-            <Button onClick={() => setStep(2)}>ถัดไป</Button>
-          )}
+          {preview && step === 1 && <Button onClick={() => setStep(2)}>ถัดไป</Button>}
           {preview && step === 2 && (
             <Button
               variant={overwrite ? "destructive" : "default"}

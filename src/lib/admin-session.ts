@@ -48,10 +48,13 @@ function sessionSecret(env: Env): string {
 }
 
 function hmacKey(secret: string) {
-  return crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, [
-    "sign",
-    "verify",
-  ]);
+  return crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign", "verify"],
+  );
 }
 
 /** เทียบรหัสผ่านแบบเวลาคงที่ (เทียบ hash เพื่อไม่ให้ความยาวรั่ว) */
@@ -96,14 +99,23 @@ export async function signSession(
   return { token: `${body}.${b64url(sig)}`, exp };
 }
 
-export async function verifySession(token: unknown, env: Env, now = Date.now()): Promise<AdminSession | null> {
+export async function verifySession(
+  token: unknown,
+  env: Env,
+  now = Date.now(),
+): Promise<AdminSession | null> {
   if (typeof token !== "string") return null;
   const [body, sig, extra] = token.split(".");
   if (!body || !sig || extra !== undefined) return null;
   try {
     const key = await hmacKey(sessionSecret(env));
     const sigBytes = fromB64url(sig);
-    const ok = await crypto.subtle.verify("HMAC", key, sigBytes as BufferSource, encoder.encode(body));
+    const ok = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      sigBytes as BufferSource,
+      encoder.encode(body),
+    );
     if (!ok) return null;
     const parsed = JSON.parse(new TextDecoder().decode(fromB64url(body))) as AdminSession;
     if (!ALL_ROLES.includes(parsed.role) || typeof parsed.user !== "string") return null;

@@ -22,8 +22,14 @@ describe("verifyCredentials", () => {
       user: "superadmin",
       role: "superadmin",
     });
-    expect(await verifyCredentials(" Connexts ", "owner-pass", env)).toEqual({ user: "connexts", role: "owner" });
-    expect(await verifyCredentials("analyst", "analyst-pass", env)).toEqual({ user: "analyst", role: "analyst" });
+    expect(await verifyCredentials(" Connexts ", "owner-pass", env)).toEqual({
+      user: "connexts",
+      role: "owner",
+    });
+    expect(await verifyCredentials("analyst", "analyst-pass", env)).toEqual({
+      user: "analyst",
+      role: "analyst",
+    });
   });
 
   it("rejects wrong passwords and another account's password", async () => {
@@ -42,7 +48,11 @@ describe("signSession / verifySession", () => {
   it("round-trips a signed session", async () => {
     const { token, exp } = await signSession({ user: "connexts", role: "owner" }, env, 1_000);
     expect(exp).toBe(1_000 + SESSION_TTL_MS);
-    expect(await verifySession(token, env, 2_000)).toEqual({ user: "connexts", role: "owner", exp });
+    expect(await verifySession(token, env, 2_000)).toEqual({
+      user: "connexts",
+      role: "owner",
+      exp,
+    });
   });
 
   it("rejects expired tokens", async () => {
@@ -53,7 +63,9 @@ describe("signSession / verifySession", () => {
   it("rejects tampered payloads and signatures", async () => {
     const { token } = await signSession({ user: "viewer", role: "viewer" }, env);
     const [body, sig] = token.split(".");
-    const forged = btoa(JSON.stringify({ user: "viewer", role: "superadmin", exp: Date.now() + 60_000 }))
+    const forged = btoa(
+      JSON.stringify({ user: "viewer", role: "superadmin", exp: Date.now() + 60_000 }),
+    )
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=+$/, "");
@@ -70,7 +82,9 @@ describe("signSession / verifySession", () => {
   });
 
   it("refuses to sign without a long enough secret", async () => {
-    await expect(signSession({ user: "connexts", role: "owner" }, {})).rejects.toThrow("ADMIN_SESSION_SECRET");
+    await expect(signSession({ user: "connexts", role: "owner" }, {})).rejects.toThrow(
+      "ADMIN_SESSION_SECRET",
+    );
     await expect(
       signSession({ user: "connexts", role: "owner" }, { ADMIN_SESSION_SECRET: "short" }),
     ).rejects.toThrow("ADMIN_SESSION_SECRET");
@@ -81,9 +95,13 @@ describe("requireAdmin", () => {
   it("allows write roles by default and blocks read-only roles", async () => {
     const owner = await signSession({ user: "connexts", role: "owner" }, env);
     const viewer = await signSession({ user: "viewer", role: "viewer" }, env);
-    await expect(requireAdmin(owner.token, undefined, env)).resolves.toMatchObject({ role: "owner" });
+    await expect(requireAdmin(owner.token, undefined, env)).resolves.toMatchObject({
+      role: "owner",
+    });
     await expect(requireAdmin(viewer.token, undefined, env)).rejects.toThrow("forbidden");
-    await expect(requireAdmin(viewer.token, ALL_ROLES, env)).resolves.toMatchObject({ role: "viewer" });
+    await expect(requireAdmin(viewer.token, ALL_ROLES, env)).resolves.toMatchObject({
+      role: "viewer",
+    });
   });
 
   it("rejects missing or invalid tokens", async () => {

@@ -16,7 +16,6 @@ export type BackupRow = {
   created_at: string;
 };
 
-
 export const listBackups = createServerFn({ method: "POST" })
   .inputValidator((input: { token: string; table?: string; limit?: number }) => {
     if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
@@ -61,7 +60,12 @@ export const getBackupPolicy = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as unknown as {
       from: (t: string) => {
-        select: (c: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown; error: { message: string } | null }> } };
+        select: (c: string) => {
+          eq: (
+            k: string,
+            v: string,
+          ) => { maybeSingle: () => Promise<{ data: unknown; error: { message: string } | null }> };
+        };
       };
     };
     const { data: row, error } = await db
@@ -74,12 +78,14 @@ export const getBackupPolicy = createServerFn({ method: "POST" })
   });
 
 export const saveBackupPolicy = createServerFn({ method: "POST" })
-  .inputValidator((input: { token: string; maxRows: number; maxAgeDays: number; autoPrune: boolean }) => {
-    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
-    const maxRows = Math.max(0, Math.min(Math.floor(Number(input.maxRows) || 0), 100000));
-    const maxAgeDays = Math.max(0, Math.min(Math.floor(Number(input.maxAgeDays) || 0), 3650));
-    return { token: input.token, maxRows, maxAgeDays, autoPrune: Boolean(input.autoPrune) };
-  })
+  .inputValidator(
+    (input: { token: string; maxRows: number; maxAgeDays: number; autoPrune: boolean }) => {
+      if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
+      const maxRows = Math.max(0, Math.min(Math.floor(Number(input.maxRows) || 0), 100000));
+      const maxAgeDays = Math.max(0, Math.min(Math.floor(Number(input.maxAgeDays) || 0), 3650));
+      return { token: input.token, maxRows, maxAgeDays, autoPrune: Boolean(input.autoPrune) };
+    },
+  )
   .handler(async ({ data }) => {
     await requireAdmin(data.token, WRITE_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -238,17 +244,27 @@ export type AuditRow = {
 
 /** ประวัติการเปลี่ยนแปลงข้อมูล: ใครทำอะไร ตอนไหน (จากระบบสำรองอัตโนมัติ) */
 export const listAuditLog = createServerFn({ method: "POST" })
-  .inputValidator((input: { token: string; table?: string; actor?: string; operation?: string; limit?: number }) => {
-    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
-    return input;
-  })
+  .inputValidator(
+    (input: {
+      token: string;
+      table?: string;
+      actor?: string;
+      operation?: string;
+      limit?: number;
+    }) => {
+      if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
+      return input;
+    },
+  )
   .handler(async ({ data }) => {
     await requireAdmin(data.token, ALL_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let query = supabaseAdmin
       .from("data_backups")
-      .select("id, table_name, operation, row_id, old_data, new_data, created_at, actor, actor_source")
+      .select(
+        "id, table_name, operation, row_id, old_data, new_data, created_at, actor, actor_source",
+      )
       .order("created_at", { ascending: false })
       .limit(Math.min(data.limit ?? 200, 1000));
 
@@ -259,11 +275,15 @@ export const listAuditLog = createServerFn({ method: "POST" })
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
 
-    const list = (rows ?? []) as unknown as (BackupRow & { actor: string | null; actor_source: string | null })[];
+    const list = (rows ?? []) as unknown as (BackupRow & {
+      actor: string | null;
+      actor_source: string | null;
+    })[];
 
     const out: AuditRow[] = list.map((r) => {
       const snap = (r.new_data ?? r.old_data ?? {}) as Record<string, Json>;
-      const name = (snap["name"] as string) || (snap["title"] as string) || r.row_id?.slice(0, 8) || "-";
+      const name =
+        (snap["name"] as string) || (snap["title"] as string) || r.row_id?.slice(0, 8) || "-";
       return {
         id: r.id,
         table_name: r.table_name,
@@ -276,7 +296,9 @@ export const listAuditLog = createServerFn({ method: "POST" })
       };
     });
 
-    const actors = Array.from(new Set(out.map((r) => r.actor).filter((a): a is string => !!a))).sort();
+    const actors = Array.from(
+      new Set(out.map((r) => r.actor).filter((a): a is string => !!a)),
+    ).sort();
     const last = out[0]?.created_at ?? null;
 
     return { rows: out, actors, total: out.length, lastBackupAt: last };

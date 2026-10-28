@@ -76,7 +76,7 @@ export const adminUpdateRow = createServerFn({ method: "POST" })
     if (!data.patch || typeof data.patch !== "object") throw new Error("missing patch");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .from(data.table)
       .update(data.patch as never)
       .eq("id", data.id);

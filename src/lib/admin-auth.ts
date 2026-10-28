@@ -15,11 +15,7 @@ const SESSION_KEY = "connext-admin-token";
 const LEGACY_KEYS = ["connext-admin-session", "connext-admin-role"];
 
 /** สิทธิ์ที่ควบคุมการใช้งานหน้า Log */
-export type AdminPermission =
-  | "logs:view"
-  | "logs:search"
-  | "logs:export"
-  | "logs:clear";
+export type AdminPermission = "logs:view" | "logs:search" | "logs:export" | "logs:clear";
 
 export const ROLE_TH: Record<AdminRole, string> = {
   superadmin: "ซูเปอร์แอดมิน",
@@ -44,7 +40,11 @@ function readSession(): StoredSession | null {
     const raw = window.localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredSession;
-    if (typeof parsed?.token !== "string" || typeof parsed.exp !== "number" || parsed.exp <= Date.now()) {
+    if (
+      typeof parsed?.token !== "string" ||
+      typeof parsed.exp !== "number" ||
+      parsed.exp <= Date.now()
+    ) {
       window.localStorage.removeItem(SESSION_KEY);
       return null;
     }
@@ -83,7 +83,12 @@ export function useAdminAuth() {
       return "เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ลองใหม่อีกครั้ง";
     }
     if (!res.ok) return res.error;
-    const session: StoredSession = { token: res.token, user: res.user, role: res.role, exp: res.exp };
+    const session: StoredSession = {
+      token: res.token,
+      user: res.user,
+      role: res.role,
+      exp: res.exp,
+    };
     try {
       window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch {
@@ -108,10 +113,7 @@ export function useAdminAuth() {
     setUser(null);
   }, []);
 
-  const permissions = useMemo(
-    () => (role ? ROLE_PERMISSIONS[role] : []),
-    [role],
-  );
+  const permissions = useMemo(() => (role ? ROLE_PERMISSIONS[role] : []), [role]);
 
   const can = useCallback(
     (permission: AdminPermission) => permissions.includes(permission),

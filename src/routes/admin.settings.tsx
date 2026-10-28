@@ -33,12 +33,14 @@ function AdminSettings() {
           <KeyRound className="size-5 text-primary" aria-hidden="true" /> บัญชีผู้ดูแล
         </h2>
         <p className="text-body text-muted-foreground">
-          เข้าสู่ระบบอยู่ในชื่อ <span className="font-extrabold text-foreground">{user ?? "—"}</span>
+          เข้าสู่ระบบอยู่ในชื่อ{" "}
+          <span className="font-extrabold text-foreground">{user ?? "—"}</span>
           {role ? <> · {ROLE_TH[role]}</> : null}
         </p>
         <p className="text-body text-muted-foreground">
-          รหัสผ่านผู้ดูแลตั้งค่าที่ตัวแปรสภาพแวดล้อมของเซิร์ฟเวอร์ (SUPERADMIN_PASSWORD, ADMIN_PASSWORD,
-          ANALYST_PASSWORD, VIEWER_PASSWORD) และไม่แสดงบนหน้าเว็บ ดูวิธีตั้งค่าใน docs/ADMIN.md
+          รหัสผ่านผู้ดูแลตั้งค่าที่ตัวแปรสภาพแวดล้อมของเซิร์ฟเวอร์ (SUPERADMIN_PASSWORD,
+          ADMIN_PASSWORD, ANALYST_PASSWORD, VIEWER_PASSWORD) และไม่แสดงบนหน้าเว็บ ดูวิธีตั้งค่าใน
+          docs/ADMIN.md
         </p>
       </section>
 

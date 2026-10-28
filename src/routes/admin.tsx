@@ -177,7 +177,8 @@ function AdminLayout() {
               variant="mission"
               className="tap h-12 w-full justify-between rounded-xl bg-primary px-[18px] text-[17px] font-medium text-primary-foreground"
             >
-              {signingIn ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"} <ArrowRight className="ml-auto size-4" aria-hidden="true" />
+              {signingIn ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"}{" "}
+              <ArrowRight className="ml-auto size-4" aria-hidden="true" />
             </Button>
 
             <details className="admin-role-note">
