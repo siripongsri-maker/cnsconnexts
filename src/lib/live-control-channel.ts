@@ -1,3 +1,4 @@
+import { ISSUES } from "./types";
 import type { TourGroupKey } from "./live-map-layout";
 import {
   DEFAULT_CONTROL_STATE,
@@ -50,7 +51,7 @@ export function decodeControl(raw: unknown): LiveControlState | null {
   if (view === null) return null;
 
   const issue = d.issue === undefined ? DEFAULT_CONTROL_STATE.issue : d.issue;
-  if (issue !== null && typeof issue !== "string") return null;
+  if (issue !== null && !ISSUES.includes(issue as (typeof ISSUES)[number])) return null;
 
   const motion = d.motion === undefined ? DEFAULT_CONTROL_STATE.motion : d.motion;
   if (motion !== "moving" && motion !== "still") return null;
@@ -58,7 +59,7 @@ export function decodeControl(raw: unknown): LiveControlState | null {
   const bubbles = d.bubbles === undefined ? DEFAULT_CONTROL_STATE.bubbles : d.bubbles;
   if (typeof bubbles !== "boolean") return null;
 
-  return { speed: speed as Speed, view, issue, motion, bubbles };
+  return { speed: speed as Speed, view, issue: issue as string | null, motion, bubbles };
 }
 
 function openChannel(): BroadcastChannel | null {

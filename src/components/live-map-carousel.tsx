@@ -348,7 +348,8 @@ function crossTotal(layout: LiveMapLayout) {
  *   line draws, then the next round's pairs take the slots.
  * - Region view: the region tour for one region, looped: the camera eases in,
  *   the region's people appear as dots, its pairs draw one at a time, then up to
- *   two cross-region pairs that start in it. No overview.
+ *   two cross-region pairs that touch the region, flown from the region's side
+ *   outward (newest first). No overview.
  *
  * The issue filter applies to the pairs before either view. Speed scales the
  * tour timings; still mode (and reduced motion / low spec) sets the camera

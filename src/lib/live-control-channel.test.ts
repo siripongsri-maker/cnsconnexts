@@ -6,6 +6,7 @@ import {
   publishControl,
   subscribeControl,
 } from "./live-control-channel";
+import { ISSUES } from "./types";
 import { DEFAULT_CONTROL_STATE, type LiveControlState } from "./live-controls";
 
 afterEach(() => {
@@ -17,11 +18,17 @@ describe("control codec", () => {
     const s: LiveControlState = {
       speed: "fast",
       view: { kind: "region", group: "south" },
-      issue: "water",
+      issue: "Youth",
       motion: "still",
       bubbles: false,
     };
     expect(decodeControl(encodeControl(s))).toEqual(s);
+  });
+
+  it("validates issue against ISSUES", () => {
+    expect(decodeControl('{"issue":"not-a-real-issue"}')).toBeNull();
+    expect(decodeControl(JSON.stringify({ issue: ISSUES[0] }))?.issue).toBe(ISSUES[0]);
+    expect(decodeControl('{"issue":null}')?.issue).toBeNull();
   });
 
   it("rejects non-string and bad JSON", () => {
