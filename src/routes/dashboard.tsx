@@ -462,13 +462,15 @@ function Dashboard() {
                 position: "fixed",
                 top: 0,
                 left: 0,
-                width: "100vh",
-                height: "100vw",
+                width: rotation === 180 ? "100vw" : "100vh",
+                height: rotation === 180 ? "100vh" : "100vw",
                 transformOrigin: "top left",
                 transform:
-                  rotateDir === 1
+                  rotation === 90
                     ? "translateX(100vw) rotate(90deg)"
-                    : "translateY(100vh) rotate(-90deg)",
+                    : rotation === 180
+                      ? "rotate(180deg)"
+                      : "translateY(100vh) rotate(-90deg)",
               }
             : undefined
         }
