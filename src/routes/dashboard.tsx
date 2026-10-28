@@ -31,7 +31,7 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { ChoicePill } from "@/components/choice-pill";
 import { LiveNetwork } from "@/components/network-background";
-import { LiveThailandMap } from "@/components/live-thailand-map";
+import { LiveMapCarousel } from "@/components/live-map-carousel";
 import { Avatar, PowerIcon } from "@/components/power-bits";
 import { BLOCK_TAG } from "@/lib/issue-colors";
 import { useStore, useUserMap } from "@/lib/store";
@@ -564,7 +564,7 @@ function Dashboard() {
               แผนที่เส้นเชื่อมทั่วประเทศ
             </h2>
             <div className="mt-3 h-[48vh] min-h-[300px]">
-              <LiveThailandMap users={fUsers} connections={fConnections} />
+              <LiveMapCarousel users={fUsers} connections={fConnections} />
             </div>
             <div className="mt-[2vh] flex items-center justify-center gap-[2vw] rounded-3xl bg-primary/5 px-[2vw] py-[2vh]">
               <div className="shrink-0 rounded-3xl bg-white p-4 shadow-sm">
