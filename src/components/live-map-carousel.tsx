@@ -10,7 +10,12 @@ import {
   type TourGroupKey,
 } from "@/lib/live-map-layout";
 import { buildTour, GROUP_LABEL, type TourStep } from "@/lib/live-map-tour";
-import { placeWelcomePins, trackArrivals, type WelcomePin } from "@/lib/live-welcome";
+import {
+  afterTourStep,
+  placeWelcomePins,
+  trackArrivals,
+  type WelcomePin,
+} from "@/lib/live-welcome";
 import { useMotionSettings } from "@/lib/motion";
 import { buildPeopleNetwork, type NetworkPerson } from "@/lib/people-network";
 import { useStore } from "@/lib/store";
@@ -280,15 +285,19 @@ function crossTotal(layout: LiveMapLayout) {
  * People who register after the first participants fetch get a welcome: the
  * current step is cut off, the camera frames their provinces, their pins and a
  * welcome card show for a while, and then the interrupted step replays from
- * its beginning. The welcome draws on the same map, so it also runs while the
+ * its beginning (once; a second interruption moves on to the next step). The welcome draws on the same map, so it also runs while the
  * tour is empty.
  */
 export function LiveMapCarousel({
   users,
+  allUsers = users,
   connections,
   look = "meadow",
 }: {
+  /** What the tour draws (may be filtered). */
   users: User[];
+  /** Everyone, unfiltered: decides who is new and where their welcome pins go. */
+  allUsers?: User[];
   connections: Connection[];
   /** "morning" when rendered inside the big screen's `.live-morning` wrapper. */
   look?: LiveMapLook;
@@ -319,7 +328,7 @@ export function LiveMapCarousel({
   // ---- New registrants ----------------------------------------------------------
 
   const { hydrated } = useStore();
-  const usersRef = useRef<User[]>(users);
+  const usersRef = useRef<User[]>(allUsers);
   /** Ids already seen this screen session; null until the first fetch is in. */
   const seenRef = useRef<Set<string> | null>(null);
   /** People waiting for a welcome. */
@@ -328,15 +337,15 @@ export function LiveMapCarousel({
   const stepRef = useRef<Runner | null>(null);
 
   useEffect(() => {
-    usersRef.current = users;
+    usersRef.current = allUsers;
     // The first completed fetch is the baseline, even when it is empty.
     if (!hydrated) return;
-    const { seen, arrivals } = trackArrivals(seenRef.current, users);
+    const { seen, arrivals } = trackArrivals(seenRef.current, allUsers);
     seenRef.current = seen;
     if (arrivals.length === 0) return;
     queueRef.current.push(...arrivals);
     stepRef.current?.cancel();
-  }, [hydrated, users]);
+  }, [hydrated, allUsers]);
 
   // ---- Imperative view updates (viewBox + constant on-screen sizing) ----------
 
@@ -648,11 +657,16 @@ export function LiveMapCarousel({
           await attempt(playIdle);
           continue;
         }
-        for (let i = 0; i < plan.length && !stopped;) {
+        for (let i = 0, replays = 0; i < plan.length && !stopped;) {
           const step = plan[i]!;
-          if (queueRef.current.length > 0) await playWelcome();
-          // An interrupted step replays from its beginning.
-          else if (await attempt((r) => playStep(r, step))) i++;
+          if (queueRef.current.length > 0) {
+            await playWelcome();
+            continue;
+          }
+          // An interrupted step replays from its beginning, at most once.
+          const next = afterTourStep(await attempt((r) => playStep(r, step)), replays);
+          replays = next.replays;
+          if (next.advance) i++;
         }
       }
     };

@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { HUB_POINT } from "./live-map-layout";
 import { provinceAt, type NetworkPerson } from "./people-network";
-import { WELCOME_BATCH_CAP, placeWelcomePins, trackArrivals } from "./live-welcome";
+import {
+  MAX_STEP_REPLAYS,
+  WELCOME_BATCH_CAP,
+  afterTourStep,
+  placeWelcomePins,
+  trackArrivals,
+} from "./live-welcome";
 
 const person = (id: string, over: Partial<NetworkPerson> = {}): NetworkPerson => ({
   id,
@@ -109,5 +115,30 @@ describe("placeWelcomePins", () => {
     const [pin] = placeWelcomePins([a], [a]);
     expect(pin!.hub).toBe(false);
     expect(provinceAt(pin!)?.en).toBe("Bangkok Metropolis");
+  });
+});
+
+describe("afterTourStep", () => {
+  it("advances and resets after a completed step", () => {
+    expect(afterTourStep(true, 0)).toEqual({ advance: true, replays: 0 });
+    expect(afterTourStep(true, 1)).toEqual({ advance: true, replays: 0 });
+  });
+
+  it("replays an interrupted step once, then moves on", () => {
+    expect(MAX_STEP_REPLAYS).toBe(1);
+    const first = afterTourStep(false, 0);
+    expect(first).toEqual({ advance: false, replays: 1 });
+    expect(afterTourStep(false, first.replays)).toEqual({ advance: true, replays: 0 });
+  });
+
+  it("never stalls on one step under constant interruptions", () => {
+    let i = 0;
+    let replays = 0;
+    for (let n = 0; n < 6; n++) {
+      const next = afterTourStep(false, replays);
+      replays = next.replays;
+      if (next.advance) i++;
+    }
+    expect(i).toBe(3);
   });
 });

@@ -567,7 +567,7 @@ function Dashboard() {
               แผนที่เส้นเชื่อมทั่วประเทศ
             </h2>
             <div className="mt-3 h-[48vh] min-h-[300px]">
-              <LiveMapCarousel users={fUsers} connections={fConnections} look="morning" />
+              <LiveMapCarousel users={fUsers} allUsers={users} connections={fConnections} look="morning" />
             </div>
             <div className="mt-[2vh] flex items-center justify-center gap-[2vw] rounded-3xl bg-primary/5 px-[2vw] py-[2vh]">
               <div className="live-morning-qr shrink-0 rounded-3xl bg-white p-4 shadow-sm">

@@ -96,3 +96,19 @@ export function placeWelcomePins(
     };
   });
 }
+
+/** How many times a tour step cut off by a welcome replays before the tour moves on. */
+export const MAX_STEP_REPLAYS = 1;
+
+/**
+ * After a tour step ends (completed, or cut off by a welcome): whether the tour
+ * moves to the next step, and the replays the current step has used. Capping
+ * replays keeps a busy stretch of arrivals from restarting one step forever.
+ */
+export function afterTourStep(
+  completed: boolean,
+  replays: number,
+): { advance: boolean; replays: number } {
+  if (completed || replays >= MAX_STEP_REPLAYS) return { advance: true, replays: 0 };
+  return { advance: false, replays: replays + 1 };
+}
