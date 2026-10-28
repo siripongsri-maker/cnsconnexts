@@ -15,8 +15,8 @@
 
 # Projects board: seed data + discoverability
 
-- [ ] Add individual project pages with complete details, documents and optional public contacts.
-- [ ] Allow public contact entry on submission/admin forms and verify detail navigation.
+- [x] Add individual project pages with complete details, documents and optional public contacts.
+- [x] Allow public contact entry on submission/admin forms and verify detail navigation with an existing project, direct reload, documents, image and missing-project state.
 
 - [x] Applied the 11 คนส. project rows from the exhibition board (runs 1–4); database now holds 12 projects across runs 1–4.
 - [x] Confirmed /projects lists all 12 under runs 1–4 (2/2/3/5) on desktop and phone.
