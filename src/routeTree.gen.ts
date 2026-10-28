@@ -25,6 +25,7 @@ import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PrintRouteImport } from './routes/print'
+import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as QrRouteImport } from './routes/qr'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as StartRouteImport } from './routes/start'
@@ -129,6 +130,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const PrintRoute = PrintRouteImport.update({
   id: '/print',
   path: '/print',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QrRoute = QrRouteImport.update({
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/print': typeof PrintRoute
+  '/projects': typeof ProjectsRoute
   '/qr': typeof QrRoute
   '/scan': typeof ScanRoute
   '/start': typeof StartRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/print': typeof PrintRoute
+  '/projects': typeof ProjectsRoute
   '/qr': typeof QrRoute
   '/scan': typeof ScanRoute
   '/start': typeof StartRoute
@@ -360,6 +368,7 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/print': typeof PrintRoute
+  '/projects': typeof ProjectsRoute
   '/qr': typeof QrRoute
   '/scan': typeof ScanRoute
   '/start': typeof StartRoute
@@ -405,6 +414,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/print'
+    | '/projects'
     | '/qr'
     | '/scan'
     | '/start'
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/print'
+    | '/projects'
     | '/qr'
     | '/scan'
     | '/start'
@@ -490,6 +501,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/print'
+    | '/projects'
     | '/qr'
     | '/scan'
     | '/start'
@@ -534,6 +546,7 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PrintRoute: typeof PrintRoute
+  ProjectsRoute: typeof ProjectsRoute
   QrRoute: typeof QrRoute
   ScanRoute: typeof ScanRoute
   StartRoute: typeof StartRoute
@@ -656,6 +669,13 @@ declare module '@tanstack/react-router' {
       path: '/print'
       fullPath: '/print'
       preLoaderRoute: typeof PrintRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/qr': {
@@ -895,6 +915,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PrintRoute: PrintRoute,
+  ProjectsRoute: ProjectsRoute,
   QrRoute: QrRoute,
   ScanRoute: ScanRoute,
   StartRoute: StartRoute,
