@@ -19,6 +19,7 @@ import { Route as EbookRouteImport } from './routes/ebook'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as JourneyRouteImport } from './routes/journey'
+import { Route as LiveControlRouteImport } from './routes/live-control'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MatchesRouteImport } from './routes/matches'
@@ -101,6 +102,11 @@ const JoinRoute = JoinRouteImport.update({
 const JourneyRoute = JourneyRouteImport.update({
   id: '/journey',
   path: '/journey',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveControlRoute = LiveControlRouteImport.update({
+  id: '/live-control',
+  path: '/live-control',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -280,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/guide': typeof GuideRoute
   '/join': typeof JoinRoute
   '/journey': typeof JourneyRoute
+  '/live-control': typeof LiveControlRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByTo {
   '/guide': typeof GuideRoute
   '/join': typeof JoinRoute
   '/journey': typeof JourneyRoute
+  '/live-control': typeof LiveControlRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
@@ -370,6 +378,7 @@ export interface FileRoutesById {
   '/guide': typeof GuideRoute
   '/join': typeof JoinRoute
   '/journey': typeof JourneyRoute
+  '/live-control': typeof LiveControlRoute
   '/map': typeof MapRoute
   '/marketplace': typeof MarketplaceRoute
   '/matches': typeof MatchesRoute
@@ -417,6 +426,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/join'
     | '/journey'
+    | '/live-control'
     | '/map'
     | '/marketplace'
     | '/matches'
@@ -461,6 +471,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/join'
     | '/journey'
+    | '/live-control'
     | '/map'
     | '/marketplace'
     | '/matches'
@@ -506,6 +517,7 @@ export interface FileRouteTypes {
     | '/guide'
     | '/join'
     | '/journey'
+    | '/live-control'
     | '/map'
     | '/marketplace'
     | '/matches'
@@ -552,6 +564,7 @@ export interface RootRouteChildren {
   GuideRoute: typeof GuideRoute
   JoinRoute: typeof JoinRoute
   JourneyRoute: typeof JourneyRoute
+  LiveControlRoute: typeof LiveControlRoute
   MapRoute: typeof MapRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MatchesRoute: typeof MatchesRoute
@@ -640,6 +653,13 @@ declare module '@tanstack/react-router' {
       path: '/journey'
       fullPath: '/journey'
       preLoaderRoute: typeof JourneyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live-control': {
+      id: '/live-control'
+      path: '/live-control'
+      fullPath: '/live-control'
+      preLoaderRoute: typeof LiveControlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -929,6 +949,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuideRoute: GuideRoute,
   JoinRoute: JoinRoute,
   JourneyRoute: JourneyRoute,
+  LiveControlRoute: LiveControlRoute,
   MapRoute: MapRoute,
   MarketplaceRoute: MarketplaceRoute,
   MatchesRoute: MatchesRoute,
