@@ -111,7 +111,7 @@ describe("buildLiveMapLayout", () => {
     expect(spots.size).toBe(18);
   });
 
-  it("places a region's people by person id, not by pair order", () => {
+  it("places undated region people by person id, not by pair order", () => {
     // Pairs sort as ["a","z"] then ["b","m"], so "z" is met before "m".
     const users = [
       person("a", { province: "Chiang Mai", region: "North" }),
@@ -129,6 +129,42 @@ describe("buildLiveMapLayout", () => {
     };
     // The spiral grows outward, so the first person placed sits nearest the centre.
     expect(radius("m")).toBeLessThan(radius("z"));
+  });
+
+  it("places region people in join order, so a newcomer never moves the ring", () => {
+    const anchor = person("anchor", { province: "Chiang Mai", region: "North" });
+    const crowd = ["m", "p", "t", "x"].map((id, i) =>
+      person(id, { region: "North", created_at: `2026-10-0${i + 1}T00:00:00Z` }),
+    );
+    const links = crowd.map((p) => pair(`c-${p.id}`, "anchor", p.id));
+    const before = buildLiveMapLayout([anchor, ...crowd], links);
+    // Joins last but sorts first by id.
+    const newcomer = person("b", { region: "North", created_at: "2026-10-20T00:00:00Z" });
+    const after = buildLiveMapLayout(
+      [anchor, ...crowd, newcomer],
+      [...links, pair("c-b", "anchor", "b")],
+    );
+    for (const p of crowd) {
+      const was = before.nodesById.get(p.id)!;
+      const now = after.nodesById.get(p.id)!;
+      expect([now.x, now.y], p.id).toEqual([was.x, was.y]);
+    }
+    expect(after.nodes.map((n) => n.id)).toEqual(["anchor", "b", "m", "p", "t", "x"]);
+  });
+
+  it("draws a visible loop for a pair whose two people share one spot", () => {
+    const one = person("h1", { region: "Nationwide" });
+    const two = person("h2", { region: "Nationwide" });
+    const layout = buildLiveMapLayout([one, two], [pair("hh", "h1", "h2")]);
+    const path = layout.edges[0]!.path;
+    expect(path).toMatch(/[QC]/);
+    const numbers = (path.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+    const points = new Set<string>();
+    for (let i = 0; i + 1 < numbers.length; i += 2) points.add(`${numbers[i]},${numbers[i + 1]}`);
+    expect(points.size).toBeGreaterThan(1);
+    expect(path.startsWith(`M ${HUB_POINT.x}.00 ${HUB_POINT.y}.00`)).toBe(true);
+    const ys = numbers.filter((_, i) => i % 2 === 1);
+    expect(Math.min(...ys)).toBeLessThan(HUB_POINT.y - 20);
   });
 
   it("keeps every region-only dot inside the region it names", () => {

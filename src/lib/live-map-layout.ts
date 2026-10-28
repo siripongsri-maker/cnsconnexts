@@ -261,10 +261,24 @@ function unplacedNode(user: NetworkPerson, placed: Map<GroupedRegion, Point[]>):
   };
 }
 
+/** How far above a shared point the loop for a same-spot pair reaches (viewBox units). */
+const LOOP_HEIGHT = 28;
+
+/**
+ * A small teardrop loop above `point`, for a pair whose two people share one
+ * spot (e.g. both at the hub), so the pair is still visible as a line.
+ */
+function loopPath(point: Point): string {
+  const value = (n: number) => n.toFixed(2);
+  // A cubic with both controls at 4/3 the height peaks at exactly LOOP_HEIGHT.
+  const top = point.y - (LOOP_HEIGHT * 4) / 3;
+  return `M ${value(point.x)} ${value(point.y)} C ${value(point.x - 22)} ${value(top)} ${value(point.x + 22)} ${value(top)} ${value(point.x)} ${value(point.y)}`;
+}
+
 /**
  * Give every person on a recorded pair a map position, and every pair a path.
  * Province known: inside the province. Region only: inside that region, spread
- * out from its centre. Neither: the hub in the sea. Pairs, dedupe and the demo-profile filter come
+ * out from its centre in join order (created_at, then id). Neither: the hub in the sea. Pairs, dedupe and the demo-profile filter come
  * from `buildPeopleNetwork`; people with no pair are left out.
  */
 export function buildLiveMapLayout(
@@ -279,14 +293,16 @@ export function buildLiveMapLayout(
     connected.set(edge.source.id, edge.source);
     connected.set(edge.target.id, edge.target);
   }
-  // Sorting by id first makes each region's placement order independent of input order.
+  // Placing in join order (created_at, then id) makes each region's ring
+  // independent of input order, and a newcomer appends instead of shifting it.
   const placed = new Map<GroupedRegion, Point[]>();
   const nodes = [...connected.values()]
-    .sort((a, b) => compare(a.id, b.id))
+    .sort((a, b) => compare(a.created_at ?? "", b.created_at ?? "") || compare(a.id, b.id))
     .map((user) => {
       const located = provinceNodes.get(user.id);
       return located ? provinceNode(located) : unplacedNode(user, placed);
     });
+  nodes.sort((a, b) => compare(a.id, b.id));
   const nodesById = new Map(nodes.map((node) => [node.id, node]));
 
   const edges = network.edges.flatMap((edge): LiveMapEdge[] => {
@@ -298,7 +314,10 @@ export function buildLiveMapLayout(
         id: edge.id,
         sourceId: source.id,
         targetId: target.id,
-        path: pairPath(source, target, edge.id),
+        path:
+          source.x === target.x && source.y === target.y
+            ? loopPath(source)
+            : pairPath(source, target, edge.id),
         sharedInterests: edge.sharedInterests,
         createdAt: edge.connections[0]?.created_at ?? "",
       },
