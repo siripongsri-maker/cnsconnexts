@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, Bell } from "lucide-react";
+import { ArrowUpRight, Bell, LogOut } from "lucide-react";
 
 import { BottomNav } from "@/components/bottom-nav";
 import { DiscoverDeck } from "@/components/discover-deck";
@@ -17,6 +17,7 @@ import { hasLocalParticipantId, homeVisitor } from "@/lib/guest";
 import { buildDeck, dayKey, scoreMatch, type DeckEntry } from "@/lib/matching";
 import { EMPTY_QUICK_DRAFT, type QuickDraft, type QuickStep } from "@/lib/quick-profile";
 import { useConnectAndInvite } from "@/lib/meetup-context";
+import { useAuth } from "@/lib/auth";
 import { inviteSentNote } from "@/lib/meetup-cards";
 import { useStore } from "@/lib/store";
 import type { Connection, User } from "@/lib/types";
@@ -55,6 +56,28 @@ type Celebration = {
 /** รหัสคอนเนกชันปลอมของโหมดทดสอบ (?dryrun / ?celebrate) — ไม่มีแถวนี้ในฐานข้อมูล */
 const DRYRUN_CONNECTION_ID = "dryrun";
 const PREVIEW_CONNECTION_ID = "celebrate-preview";
+
+/**
+ * ปุ่มออกจากระบบบนส่วนหัวหน้าแรก — เหมือนท้ายหน้า "ฉัน" แต่ไม่ต้องเลื่อนลาง
+ * เห็นเฉพาะคนที่เข้าสู่ระบบแล้ว (ผู้ใช้หรือท่ีเยี่ยมชมแบบลงชื่)
+ */
+function HeaderSignOut() {
+  const { mode, signOut } = useAuth();
+  if (mode !== "user" && mode !== "guest") return null;
+  return (
+    <button
+      type="button"
+      aria-label="ออกจากระบบ"
+      onClick={() => {
+        if (window.confirm("ออกจากระบบตอนนี้ใช่ไหม?")) void signOut();
+      }}
+      className="tap grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink-soft shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
+    >
+      <LogOut className="h-6 w-6" strokeWidth={2.2} aria-hidden />
+      <span className="sr-only">ออกจากระบบ</span>
+    </button>
+  );
+}
 
 /**
  * หน้าแรก = หน้าจับคู่ สแกน QR แล้วเห็นการ์ดคนแรกที่ควรคุยทันที ไม่ต้องกดอะไร
@@ -232,21 +255,24 @@ function Home() {
           >
             <Wordmark size="header" withMark />
           </Link>
-          <Link
-            to="/notifications"
-            aria-label={unread > 0 ? `การแจ้งเตือน ${unread} รายการใหม่` : "การแจ้งเตือน"}
-            className="tap relative grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
-          >
-            <Bell className="h-7 w-7" strokeWidth={2.2} aria-hidden />
-            {unread > 0 && (
-              <span
-                aria-hidden
-                className="absolute -right-2 -top-2 grid h-7 min-w-7 place-items-center rounded-full bg-primary px-1.5 text-body font-semibold leading-none text-white"
-              >
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <HeaderSignOut />
+            <Link
+              to="/notifications"
+              aria-label={unread > 0 ? `การแจ้งเตือน ${unread} รายการใหม่` : "การแจ้งเตือน"}
+              className="tap relative grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
+            >
+              <Bell className="h-7 w-7" strokeWidth={2.2} aria-hidden />
+              {unread > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute -right-2 -top-2 grid h-7 min-w-7 place-items-center rounded-full bg-primary px-1.5 text-body font-semibold leading-none text-white"
+                >
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
         {/* ฉากเต็มความกว้าง: ทุ่งกับฟ้าวาดเผื่อด้านข้างไว้ จอกว้างจึงเห็นขอบฟ้ายาวต่อเนื่อง ภูเขาอยู่กลาง */}
         <MeadowScene variant="header" className="pointer-events-none" />
