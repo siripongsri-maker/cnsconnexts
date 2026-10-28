@@ -1,6 +1,7 @@
-# Live screen: Night-glow look + "just registered" welcome pin (design)
+# Live screen: Morning-light look + "just registered" welcome pin (design)
 
-Status: draft for Siripong's approval (builder check done), 2026-10-28. Follows
+Status: approved by Siripong, 2026-10-28. The look was switched from A (night glow)
+to B (morning light) after approval; the rest is unchanged. Follows
 `2026-10-28-live-map-carousel-design.md` (already live).
 
 ## Why
@@ -14,29 +15,32 @@ a region only, which is why 52 of 102 participants have no province.
 
 ## What it does
 
-### 1. Night-glow look for the whole big screen (approved via mockup "A · ราตรีเรืองแสง")
+### 1. Morning-light look for the whole big screen (mockup "B · แสงเช้าแบรนด์")
+
+The organiser first chose "A · ราตรีเรืองแสง", then switched to B. B keeps the
+brand's own colours, so the screen still looks like คนส.
 
 - **Scope:** only the present-mode screen. The normal `/dashboard` page and
-  every other page keep the light meadow theme.
-- **Background:** a deep navy radial gradient, in the spirit of the
-  homepage's dark space theme (`#030508`, accent `#139bff`). Over it sit about
-  140 slowly twinkling stars (4 s cycle) and 3 blurred light hazes drifting
-  over about 40 s.
-- **Map:** provinces are filled in neon region colours. North is `#9b6bff`,
-  Northeast `#ffb03b`, Central and Bangkok `#2fa8ff`, South `#3ee6a0`. They keep
-  the existing opacity logic (active, dim and overview). Province borders are a
-  faint light-blue line.
-- **Lines and dots:** connection lines and people dots get a soft glow (an SVG
-  blur glow filter). Lines use bright colours: cyan, pink, yellow, green and
-  violet. Labels are white with a dark halo, and place text is pale blue.
-- **The rest of the screen:** the header, "สด" badge, rotating prompt, the 4
-  number cards, the 4 bar panels and the map card all switch to dark glass
-  surfaces with thin glowing blue edges and light text. The bars keep their
-  tones, brightened to read on dark.
-- **QR code:** stays black on a white tile so phones scan it reliably. A
-  glowing frame surrounds the tile.
-- **Motion stays calm:** the background only drifts and twinkles slowly. The
-  map tour's timings are unchanged.
+  every other page keep the existing meadow theme.
+- **Background:** the warm paper colour `#fffdf8`, with four large soft colour
+  blobs behind everything, blurred 70 px at 45% opacity and drifting slowly
+  (about 30 s each way): purple `#b07ad6`, sky blue `#7cc4f2`, warm yellow
+  `#ffd36b` and fresh green `#9bd47a`. There are no stars.
+- **Map:** provinces are filled in brand colours. North is `#6a2c91`, Northeast
+  `#f47b20`, Central and Bangkok `#1488d8`, South `#5da130`. They keep the existing
+  opacity logic (active, dim and overview). Province borders are the paper colour.
+- **Lines and dots:** no glow filter. Lines cycle through purple `#6a2c91`, blue
+  `#1488d8`, orange `#f47b20`, green `#5da130`, teal `#129e8c` and yellow `#f2b21b`.
+  Labels use the brand ink `#2b2878` with a paper halo, and place text is
+  `#5d5a73`.
+- **The rest of the screen:** cards and panels (the 4 number cards, the 4 bar
+  panels, the map card and the pair or welcome card) become frosted white
+  (`#ffffffcc`, 8 px backdrop blur) over the blobs. The page title and region titles
+  use a purple-to-blue gradient (`#6a2c91` → `#1488d8`). The "สด" badge is brand
+  purple `#6a2c91`. The number cards and bars keep their existing brand tones.
+- **QR code:** stays black on a white tile so phones scan it reliably, with a
+  soft purple-tinted shadow around the tile.
+- **Motion stays calm:** only the blobs drift. The map tour's timings are unchanged.
 
 ### 2. "Just registered" welcome pin
 
@@ -49,7 +53,7 @@ a region only, which is why 52 of 102 participants have no province.
 - **The pin:**
   1. The camera eases (2600 ms) to the person's province, framed like a
      cross-step, with the other provinces dimmed.
-  2. A glowing pin appears at their position: the dot grows in, then one slow
+  2. A pin in brand purple appears at their position: the dot grows in, then one slow
      halo expands and fades once.
   3. A welcome card shows "ยินดีต้อนรับ <ชื่อ>" with the province name.
   4. Hold for 5000 ms.
@@ -90,7 +94,7 @@ a region only, which is why 52 of 102 participants have no province.
 ## Goals / non-goals / anti-goals
 
 - **Goal:** someone who registers on their phone sees their name pinned on the big screen within a few seconds.
-- **Goal:** the screen reads as one coherent glowing scene in a dark hall.
+- **Goal:** the screen reads as one coherent, bright and colourful scene that stays lively in a well-lit hall.
 - **Non-goal:** changing the tour order or timings, or the light theme anywhere outside present mode.
 - **Non-goal:** count-up animations, sounds, confetti or other new effects.
 - **Anti-goal:** fast or flashy motion. There are no bounces, travelling dots or
@@ -107,8 +111,7 @@ a region only, which is why 52 of 102 participants have no province.
   existing store refresh, approach 1 below. Add no new realtime channel, no
   server or database changes, and no new dependencies.
 - The respect for `useMotionSettings()` stays as built. With `lowSpec`, also
-  drop the SVG glow filter and the drifting hazes for performance. Stars may
-  stay static.
+  freeze the drifting blobs and drop the backdrop blur for performance.
 - The look must hold when the screen is rotated (present mode rotates its container).
 - Keep the quick-profile unit tests in `src/lib/quick-profile.test.ts` green,
   updating them for the new province rule.
@@ -133,11 +136,10 @@ route would duplicate the screen.
 
 - **Visual source of truth:** the approved mockup is committed at
   `docs/superpowers/specs/assets/2026-10-28-live-looks-mockup.html`. Open it and
-  pick the "A · ราตรีเรืองแสง" tab. Its CSS rules prefixed `.t-night`, its
-  `THEME.night` line colours, its `#glow` filter (Gaussian blur 6, merged twice
-  over the source) and its `paintBg()` night branch are the reference values.
-  The app version should match them. It does not need to copy the mockup's
-  structure.
+  pick the "B · แสงเช้าแบรนด์" tab. Its CSS rules prefixed `.t-dawn`, its
+  `THEME.dawn` line colours and its `paintBg()` dawn branch (blob colours,
+  positions and sizes) are the reference values. The app version should match them.
+  It does not need to copy the mockup's structure.
 - **Welcome hold** is 5000 ms, with at most 3 names per welcome.
 - **Who gets a welcome:** only self-registrations, meaning a source of `qr`,
   `link`, `invite`, `direct` or `auth`. `demo` and `admin` (seed and bulk import)
@@ -163,6 +165,6 @@ route would duplicate the screen.
 
 ## Left to the builder
 
-How the theme tokens are structured, the exact glow filter parameters, how the
-star field is generated (deterministic on SSR, randomised after mount is fine),
-and where the "seen ids" memory lives. It must be per screen session, not persisted.
+How the theme tokens are structured, and how the blobs are placed (use the
+mockup's fixed positions, so the server and first render stay deterministic).
+Also where the "seen ids" memory lives. It must be per screen session, not persisted.

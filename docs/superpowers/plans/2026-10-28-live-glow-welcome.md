@@ -1,26 +1,29 @@
-# Live Glow + Welcome Pin Implementation Plan
+# Live Morning-Light Look + Welcome Pin Implementation Plan
+
+> Look changed from A (night glow) to B (morning light) on 2026-10-28 after approval; the spec and this plan are updated.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Give the big screen a night-glow look, pin new registrants on their province, and make province required in quick registration.
+**Goal:** Give the big screen a morning-light look, pin new registrants on their province, and make province required in quick registration.
 
-**Architecture:** The quick-profile change is self-contained. The welcome logic is a pure, tested module that detects arrivals and places pins. A scoped theme wrapper applies the night-glow look to the present-mode container only. The carousel gains a welcome layer that interrupts the tour runner and also works when the tour is empty.
+**Architecture:** The quick-profile change is self-contained. The welcome logic is a pure, tested module that detects arrivals and places pins. A scoped theme wrapper applies the morning-light look to the present-mode container only. The carousel gains a welcome layer that interrupts the tour runner and also works when the tour is empty.
 
 **Tech Stack:** React 19, TypeScript, Tailwind/CSS, SVG, Vitest. No new dependencies.
 
-**Spec:** `docs/superpowers/specs/2026-10-28-live-glow-welcome-design.md`. The visual reference is `docs/superpowers/specs/assets/2026-10-28-live-looks-mockup.html`, tab "A · ราตรีเรืองแสง": its `.t-night` CSS, `THEME.night` colours, the `#glow` filter and the `paintBg()` night branch.
+**Spec:** `docs/superpowers/specs/2026-10-28-live-glow-welcome-design.md`. The visual reference is `docs/superpowers/specs/assets/2026-10-28-live-looks-mockup.html`, tab "B · แสงเช้าแบรนด์": its `.t-dawn` CSS, `THEME.dawn` colours and the `paintBg()` dawn branch.
 
 ## Global Constraints
 
 - **Scope:** only the present-mode screen (`/dashboard?present=1`). Every other page keeps the meadow light theme.
-- **Region fills:** North `#9b6bff`, Northeast `#ffb03b`, Central and Bangkok `#2fa8ff`, South `#3ee6a0`.
-- **Line colours:** `["#5fd0ff","#ff7be5","#ffd35c","#3ee6a0","#b18cff"]`.
-- **Background:** about 140 stars twinkling on a 4 s cycle, plus 3 blurred hazes drifting over about 40 s.
-- **QR:** stays black on a white tile, with a glowing frame around it.
+- **Region fills:** North `#6a2c91`, Northeast `#f47b20`, Central and Bangkok `#1488d8`, South `#5da130`. Province borders `#fffdf8`.
+- **Line colours:** `["#6a2c91","#1488d8","#f47b20","#5da130","#129e8c","#f2b21b"]`. No glow filter. Labels `#2b2878` with a paper halo; place text `#5d5a73`.
+- **Background:** paper `#fffdf8` plus 4 blurred blobs (70 px blur, 45% opacity, drifting over about 30 s): purple `#b07ad6`, sky `#7cc4f2`, yellow `#ffd36b`, green `#9bd47a`. Positions and sizes from the mockup's dawn branch. No stars.
+- **Surfaces:** cards and panels `#ffffffcc` with an 8 px backdrop blur. Page and region titles use a `#6a2c91` → `#1488d8` gradient. The "สด" badge is `#6a2c91`.
+- **QR:** stays black on a white tile, with a soft purple-tinted shadow around it.
 - **Welcome:** camera 2600 ms, hold 5000 ms, at most 3 names, then "และอีก N คน". Card text is "ยินดีต้อนรับ <ชื่อ>" plus the province's Thai name, or "ทั่วประเทศ" for the hub.
 - **Welcome triggers:** only sources `qr | link | invite | direct | auth`. A refresh bringing more than 10 new people runs no welcome; mark them seen instead.
 - **Baseline:** the ids present when `useStore().hydrated` first becomes true, even if the list is empty. Kept per screen session and never persisted.
-- **Reduced motion or low-spec:** the camera cuts with no easing and there is no halo. With `lowSpec`, also drop the SVG glow filter and the drifting hazes. Holds stay unchanged.
+- **Reduced motion or low-spec:** the camera cuts with no easing and there is no halo. With `lowSpec`, also freeze the blobs and drop the backdrop blur. Holds stay unchanged.
 - **Calm motion:** no bounces, no travelling dots, no repeated ripples. One slow halo per welcome pin.
 - **Quick form:** province is required unless the region is `Nationwide` (store `""`). Region `Bangkok` sets "Bangkok Metropolis" automatically. Hint text: "ใส่ชื่อ เลือกภาค และจังหวัดก่อนนะ". Nudge text: "จังหวัดของคุณจะขึ้นบนจอใหญ่ในงาน".
 
@@ -86,26 +89,27 @@
 - [ ] **Step 4:** Run the focused test and then the full suite, `tsc` and eslint on the new files. All should pass.
 - [ ] **Step 5: Commit** `feat(live): detect new registrants and place welcome pins`
 
-### Task 3: Night-glow look for the present screen
+### Task 3: Morning-light look for the present screen
 
 **Files:**
-- Create: `src/styles/live-glow.css`. It holds every rule scoped under `.live-glow`: tokens and surfaces for cards, panels, bars, chip, badge and prompt; the QR glow frame; the star and haze keyframes; and the `@media (prefers-reduced-motion: reduce)` stop. Import it the way other `src/styles/*.css` files are imported. Check `src/styles.css`.
-- Create: `src/components/live-glow-backdrop.tsx`, `export function LiveGlowBackdrop(): JSX.Element`. It is an absolutely positioned, `aria-hidden` layer with about 140 stars and 3 hazes. The server render and the first render are deterministic, with no stars; it randomises after mount. With `lowSpec` it renders no hazes, and stars do not animate.
-- Modify: `src/routes/dashboard.tsx`, present branch only (the `<main>` around line 490). Add the `live-glow` class and render `<LiveGlowBackdrop />` as the first child, behind the content.
-- Modify: `src/components/live-map-carousel.tsx`. When it is inside `.live-glow`, region fills and edge colours come from the Global Constraints values. Prefer CSS for fills (`[data-region]` selectors on province paths, adding the attribute if missing) and a palette constant for edges. Add the `#glow` filter (feGaussianBlur stdDeviation 6, merged twice over SourceGraphic) to edges and dots, except when `lowSpec`. Labels are white with a dark halo, and place text is `#9fb7d9`.
+- Create: `src/styles/live-morning.css`. It holds every rule scoped under `.live-morning`: surfaces for cards, panels, bars, chip, badge and prompt; title gradients; the QR shadow; the blob keyframes; and the `@media (prefers-reduced-motion: reduce)` stop. Import it the way other `src/styles/*.css` files are imported. Check `src/styles.css`.
+- Create: `src/components/live-morning-backdrop.tsx`, `export function LiveMorningBackdrop(): JSX.Element`. It is an absolutely positioned, `aria-hidden` layer with the 4 blobs at the mockup's fixed positions and sizes, so the server and first render are identical. With `lowSpec` the blobs do not animate.
+- Modify: `src/routes/dashboard.tsx`, present branch only (the `<main>` around line 490). Add the `live-morning` class and render `<LiveMorningBackdrop />` as the first child, behind the content.
+- Modify: `src/components/live-map-carousel.tsx`. When it is inside `.live-morning`, region fills and edge colours come from the Global Constraints values. Prefer CSS for fills (`[data-region]` selectors on province paths, adding the attribute if missing) and a palette constant for edges. Add no glow filter. Labels use `#2b2878` and place text `#5d5a73`.
 
-**Interfaces:** Produces the `.live-glow` wrapper class and `LiveGlowBackdrop`. Task 4 uses the same carousel file.
+**Interfaces:** Produces the `.live-morning` wrapper class and `LiveMorningBackdrop`. Task 4 uses the same carousel file.
 
-- [ ] **Step 1:** Implement. Values come from the mockup's `.t-night` rules and the Global Constraints.
+- [ ] **Step 1:** Implement. Values come from the mockup's `.t-dawn` rules and the Global Constraints.
 - [ ] **Step 2:** Run `npx tsc --noEmit -p .`, eslint on the touched and created files (dashboard.tsx has about 109 old prettier errors, so add none), `npx vitest run` and `npx vite build`. All should pass.
 - [ ] **Step 3: Browser check** on a dev server you start (`npx vite dev --port 5175 --strictPort`), at `/dashboard?present=1`:
-  - The background is dark with stars.
-  - Cards, bars and the header are dark glass.
+  - The paper background has soft colour blobs drifting behind the content.
+  - Cards, bars and the header are frosted white.
+  - The map uses the brand region colours.
   - The QR is on a white tile.
-  - Lines glow.
-  - Plain `/dashboard` is still light.
+  - Text stays readable over the blobs.
+  - Plain `/dashboard` looks the same as before.
   - Stop the server afterwards.
-- [ ] **Step 4: Commit** `feat(live): night-glow look for the big screen`
+- [ ] **Step 4: Commit** `feat(live): morning-light look for the big screen`
 
 ### Task 4: Welcome layer on the big screen
 
@@ -113,7 +117,7 @@
 - Modify: `src/components/live-map-carousel.tsx`
 
 **Interfaces:**
-- Consumes: `trackArrivals`, `placeWelcomePins`, `WelcomePin` (Task 2); `.live-glow` styling (Task 3); `useStore().hydrated`.
+- Consumes: `trackArrivals`, `placeWelcomePins`, `WelcomePin` (Task 2); `.live-morning` styling (Task 3); `useStore().hydrated`.
 - Produces: no new exports.
 
 - [ ] **Step 1: Implement.**
@@ -122,7 +126,7 @@
   - **`playWelcome`:**
     - Shading goes to dim.
     - The camera eases over 2600 ms to `fit(union of pin boxes, 0.3)`.
-    - Pins render with a glow dot that grows in over 600 ms, plus one halo expanding and fading over 1800 ms.
+    - Pins render in brand purple `#6a2c91` with a white ring; the dot grows in over 600 ms, plus one halo expanding and fading over 1800 ms.
     - The card "ยินดีต้อนรับ <names>" shows up to 3 names plus "และอีก N คน", with each person's `placeLabel`, at the bottom of the map card.
     - Hold 5000 ms, then clear the pins.
   - **Empty tour:** when the tour is empty, render the carousel's own SVG map, with no `LiveThailandMap` fallback, so welcomes can still play. Keep the existing empty-state copy as text.
