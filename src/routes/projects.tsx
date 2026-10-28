@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { FolderOpen, MapPin, Sparkles } from "lucide-react";
+import { ExternalLink, FolderOpen, MapPin, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ChoicePill } from "@/components/choice-pill";
 import { IssueBlock } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import type { Submission } from "@/lib/types";
 import { provinceTh, regionLabel } from "@/lib/i18n";
+import { KNS_PROJECT_SOURCES } from "@/lib/kns-project-sources";
 
 export const Route = createFileRoute("/projects")({
   head: () => ({
@@ -126,14 +127,19 @@ function Projects() {
 
 function ProjectCard({ project: s }: { project: Submission }) {
   const place = s.province ? provinceTh(s.province) : regionLabel(s.region);
+  const source = KNS_PROJECT_SOURCES[s.id];
   return (
     <article className="meadow-card flex flex-col p-5">
       {s.photo && (
-        <img
-          src={s.photo}
-          alt=""
-          className="mb-4 aspect-video w-full rounded-xl border border-[#E6E3F2] object-cover"
-        />
+        // แตะรูปเพื่อเปิดขนาดเต็ม — หลายโปรเจกต์ใช้อินโฟกราฟิกเป็นรูปปก จึงชิดบนให้เห็นหัวเรื่อง
+        <a href={s.photo} target="_blank" rel="noreferrer" className="mb-4 block">
+          <img
+            src={s.photo}
+            alt={`ภาพประกอบโปรเจกต์ ${s.name}`}
+            loading="lazy"
+            className="aspect-video w-full rounded-xl border border-[#E6E3F2] object-cover object-top"
+          />
+        </a>
       )}
       <h3 className="font-heading text-lead font-semibold break-words text-ink">{s.name}</h3>
       <p className="mt-1 flex items-center gap-1.5 text-body text-ink-soft">
@@ -155,6 +161,17 @@ function ProjectCard({ project: s }: { project: Submission }) {
           <b className="text-ink">อยากชวนร่วม: </b>
           {s.wanted}
         </p>
+      )}
+      {source && (
+        <a
+          href={source}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-3 inline-flex items-center gap-1.5 self-start text-body font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          ดูเอกสารและภาพทั้งหมด
+          <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
+        </a>
       )}
       {s.policy_issues.length > 0 && (
         <div className="mt-auto flex flex-wrap gap-2 pt-4">
