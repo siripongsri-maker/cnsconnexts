@@ -16,4 +16,4 @@
 - Focused onboarding, authentication, chat and profile flows keep their dedicated navigation with shared editorial styling; print sheets use scoped light paper tokens so QR codes remain readable independently of the site theme.
 - Individual project pages use an unnested `/projects_/$id` route with a public server read and Query loader; contacts are opt-in project fields, never inferred from account data, to support direct sharing without exposing private identities.
 - Notification relative timestamps use a browser clock with periodic, focus and visibility refreshes; clean up listeners on unmount so idle pages do not retain timers.
-- The home deck order is reshuffled deterministically per Asia/Bangkok day (`buildDeck` with `dayKey`): participants keep the top-30 match-score cut but the day-to-day order rotates, so no single person stays the first card forever.
+- The homepage generates a fresh browser-only random seed on each mount and passes it to `buildDeck`; keep the seed stable during interaction to avoid jumping cards, while preserving the participant top-30 match cut and match details.

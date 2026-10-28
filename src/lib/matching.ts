@@ -99,8 +99,8 @@ const isComplete = (u: User) =>
   u.interests.length > 0 && u.powers_have.length > 0 && u.organization.trim() !== "";
 
 /**
- * สลับลำดับใหม่แบบสุ่มที่คงที่ภายในวันเดียวกัน (Fisher–Yates ใช้ hash แทน Math.random)
- * วันถัดไปลำดับเปลี่ยน แต่รีโหลดภายในวันเดียวกันได้ลำดับเดิมเสมอ
+ * Seeded Fisher–Yates: the homepage supplies a fresh random seed per visit.
+ * Keeping the seed stable avoids reordering cards during interaction.
  */
 function dayShuffle<T>(items: readonly T[], dayKey: string, keyOf: (item: T) => string): T[] {
   const arr = [...items];
@@ -127,17 +127,17 @@ export function rankForGuest(pool: User[], dayKey: string, limit = 30): DeckEntr
 /**
  * สำรับการ์ดของหน้าแรก — ตัดคนที่ไม่มีชื่อออกก่อนจัดอันดับ (ทั้งคนมีโปรไฟล์และผู้เยี่ยมชม)
  * การ์ดและตัวนับ "เหลือ N คน" จึงนับจากรายการเดียวกัน และคนไม่มีชื่อไม่กินที่ 30 อันดับ
- * คนมีโปรไฟล์: จัดอันดับตามคะแนนก่อนเพื่อคัด 30 อันดับที่เข้ากันที่สุด แล้วสุ่มใหม่ทีละวัน
- * เพื่อไม่ให้คนคะแนนสูงสุดขึ้นการ์ดแรกซ้ำเดิมทุกวัน (คะแนน/เหตุผลยังแสดงบนการ์ด)
+ * Participants retain the top 30 matches, then shuffle using the visit's random seed.
+ * Scores and reasons remain unchanged; guests also use the visit seed.
  */
-export function buildDeck(me: User | null, pool: User[], dayKey: string): DeckEntry[] {
+export function buildDeck(me: User | null, pool: User[], shuffleSeed: string): DeckEntry[] {
   const named = pool.filter((u) => u.name.trim() !== "");
   return me
-    ? dayShuffle(rankMatches(me, named, 30), dayKey, (m) => m.user.id).map((m) => ({
+    ? dayShuffle(rankMatches(me, named, 30), shuffleSeed, (m) => m.user.id).map((m) => ({
         user: m.user,
         match: m,
       }))
-    : rankForGuest(named, dayKey);
+    : rankForGuest(named, shuffleSeed);
 }
 
 /** One-line teaser for a card shown to a guest, e.g. "ทำเรื่องเยาวชน · มีไอเดีย". */

@@ -14,7 +14,7 @@ import { Wordmark } from "@/components/wordmark";
 import { unseenEntries } from "@/lib/deck-rules";
 import { isDevPreview } from "@/lib/dev-preview";
 import { hasLocalParticipantId, homeVisitor } from "@/lib/guest";
-import { buildDeck, dayKey, scoreMatch, type DeckEntry } from "@/lib/matching";
+import { buildDeck, scoreMatch, type DeckEntry } from "@/lib/matching";
 import { EMPTY_QUICK_DRAFT, type QuickDraft, type QuickStep } from "@/lib/quick-profile";
 import { useConnectAndInvite } from "@/lib/meetup-context";
 import { useAuth } from "@/lib/auth";
@@ -94,9 +94,11 @@ function Home() {
   // localStorage มีแค่ฝั่งเบราว์เซอร์ — ก่อน mount ยังไม่รู้ว่าเป็นใคร: แสดงการ์ดโครง ไม่มีแถบ
   // (เรนเดอร์ฝั่งเซิร์ฟเวอร์กับรอบแรกฝั่งเบราว์เซอร์ตรงกัน และแถบไม่กะพริบให้คนเดิมเห็น)
   const [mounted, setMounted] = useState(false);
+  const [shuffleSeed, setShuffleSeed] = useState<string | null>(null);
   const [hasLocalId, setHasLocalId] = useState(false);
   const [previewCelebrate, setPreviewCelebrate] = useState(false);
   useEffect(() => {
+    setShuffleSeed(crypto.randomUUID());
     setHasLocalId(hasLocalParticipantId());
     setPreviewCelebrate(isDevPreview("celebrate"));
     setMounted(true);
@@ -126,10 +128,10 @@ function Home() {
   const deckRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
-  const today = dayKey(new Date());
+  // Fresh random order per visit; keep it stable while swiping or updating the store.
   const entries = useMemo(
-    () => buildDeck(me, users, today).filter((e) => !connectedHere.includes(e.user.id)),
-    [me, users, today, connectedHere],
+    () => shuffleSeed ? buildDeck(me, users, shuffleSeed).filter((e) => !connectedHere.includes(e.user.id)) : [],
+    [me, users, shuffleSeed, connectedHere],
   );
   const left = unseenEntries(entries, [...skippedUsers, ...likedUsers]).length;
   const unread = notifications.filter((n) => !n.read).length;
