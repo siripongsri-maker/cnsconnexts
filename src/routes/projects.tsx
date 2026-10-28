@@ -7,7 +7,7 @@ import { ChoicePill } from "@/components/choice-pill";
 import { IssueBlock } from "@/components/power-bits";
 import { useStore } from "@/lib/store";
 import type { Submission } from "@/lib/types";
-import { provinceTh, regionLabel } from "@/lib/i18n";
+import { ISSUE_TH, provinceTh, regionLabel } from "@/lib/i18n";
 import { KNS_PROJECT_SOURCES } from "@/lib/kns-project-sources";
 
 export const Route = createFileRoute("/projects")({
@@ -38,6 +38,8 @@ function batchOrder(batch: string) {
 function Projects() {
   const { submissions } = useStore();
   const [batch, setBatch] = useState<string>(ALL);
+  const [province, setProvince] = useState<string>(ALL);
+  const [issue, setIssue] = useState<string>(ALL);
 
   const projects = useMemo(() => submissions.filter((s) => s.course === "คนส."), [submissions]);
 
@@ -49,6 +51,28 @@ function Projects() {
     [projects],
   );
 
+  const provinces = useMemo(
+    () =>
+      [...new Set(projects.map((s) => s.province).filter(Boolean) as string[])].sort((a, b) =>
+        provinceTh(a).localeCompare(provinceTh(b), "th"),
+      ),
+    [projects],
+  );
+  const issues = useMemo(
+    () =>
+      [...new Set(projects.flatMap((s) => s.policy_issues))].sort((a, b) =>
+        (ISSUE_TH[a] ?? a).localeCompare(ISSUE_TH[b] ?? b, "th"),
+      ),
+    [projects],
+  );
+  const matchesFilter = (s: Submission) =>
+    (province === ALL || s.province === province) &&
+    (issue === ALL || s.policy_issues.includes(issue));
+  const filteredCount = projects.filter(
+    (s) => matchesFilter(s) && (batch === ALL || (s.batch.trim() || "ไม่ระบุรุ่น") === batch),
+  ).length;
+  const filtering = batch !== ALL || province !== ALL || issue !== ALL;
+
   const groups = useMemo(
     () =>
       batches
@@ -56,10 +80,12 @@ function Projects() {
         .map((b) => ({
           key: b,
           items: projects
-            .filter((s) => (s.batch.trim() || "ไม่ระบุรุ่น") === b)
+            .filter((s) => (s.batch.trim() || "ไม่ระบุรุ่น") === b && matchesFilter(s))
             .sort((x, y) => x.name.localeCompare(y.name, "th")),
-        })),
-    [batches, batch, projects],
+        }))
+        .filter((g) => g.items.length > 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [batches, batch, projects, province, issue],
   );
 
   return (
@@ -79,6 +105,48 @@ function Projects() {
               </ChoicePill>
             ))}
           </div>
+        )}
+
+        {projects.length > 0 && (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-body font-semibold text-ink">
+              จังหวัด
+              <select value={province} onChange={(e) => setProvince(e.target.value)} className="mt-1 min-h-12 w-full rounded-xl border border-[#E6E3F2] bg-card px-3 text-body text-ink">
+                <option value={ALL}>ทุกจังหวัด</option>
+                {provinces.map((p) => (
+                  <option key={p} value={p}>{provinceTh(p)}</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-body font-semibold text-ink">
+              ประเด็น
+              <select value={issue} onChange={(e) => setIssue(e.target.value)} className="mt-1 min-h-12 w-full rounded-xl border border-[#E6E3F2] bg-card px-3 text-body text-ink">
+                <option value={ALL}>ทุกประเด็น</option>
+                {issues.map((i) => (
+                  <option key={i} value={i}>{ISSUE_TH[i] ?? i}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
+
+        {filtering && (
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-body text-ink-soft" aria-live="polite">พบ {filteredCount} โปรเจกต์</p>
+            <Button
+              variant="outline"
+              className="min-h-11"
+              onClick={() => { setBatch(ALL); setProvince(ALL); setIssue(ALL); }}
+            >
+              ล้างตัวกรอง
+            </Button>
+          </div>
+        )}
+
+        {projects.length > 0 && filteredCount === 0 && (
+          <p className="meadow-card p-5 text-center text-body text-ink-soft">
+            ไม่พบโปรเจกต์ที่ตรงกับตัวกรอง ลองเปลี่ยนจังหวัดหรือประเด็นดูนะครับ
+          </p>
         )}
 
         {projects.length === 0 && (
