@@ -559,12 +559,22 @@ function Dashboard() {
         </div>
 
         <div className="mt-[2vh] grid grid-cols-1 gap-[2vw] lg:grid-cols-3">
-          <section className="meadow-card relative p-5 lg:col-span-2">
+          <section className="meadow-card relative flex flex-col p-5 lg:col-span-2">
             <h2 className="font-heading text-title font-semibold! text-ink">
               แผนที่เส้นเชื่อมทั่วประเทศ
             </h2>
-            <div className="mt-3 h-[58vh] min-h-[320px]">
+            <div className="mt-3 h-[48vh] min-h-[300px]">
               <LiveThailandMap users={fUsers} connections={fConnections} />
+            </div>
+            <div className="mt-[2vh] flex items-center justify-center gap-[2vw] rounded-3xl bg-primary/5 px-[2vw] py-[2vh]">
+              <div className="shrink-0 rounded-3xl bg-white p-4 shadow-sm">
+                <QRCodeSVG value={joinUrl} size={240} level="M" />
+              </div>
+              <p className="font-heading text-[clamp(1.5rem,2.5vw,2.5rem)] leading-tight font-bold text-ink">
+                สแกนแล้ว
+                <br />
+                มาเชื่อมพลังกัน
+              </p>
             </div>
           </section>
 
@@ -620,14 +630,6 @@ function Dashboard() {
                   />
                 ))}
             </Panel>
-            <div className="meadow-card flex items-center gap-4 p-4">
-              <div className="shrink-0 rounded-2xl bg-white p-3">
-                <QRCodeSVG value={joinUrl} size={160} level="M" />
-              </div>
-              <p className="font-heading text-lead leading-snug font-semibold text-ink">
-                สแกนแล้วมาเชื่อมพลังกัน
-              </p>
-            </div>
           </div>
         </div>
         </div>
