@@ -124,7 +124,17 @@ function provincePosition(province: ProvinceShape, id: string, count: number): P
   return rings[0]?.[0] ?? { x: province.cx, y: province.cy };
 }
 
-function edgePath(source: PeopleNetworkNode, target: PeopleNetworkNode, id: string): string {
+/** The province whose outline contains the point, or null for sea and outside Thailand. */
+export function provinceAt(point: Point): ProvinceShape | null {
+  return (
+    PROVINCES.find((province) =>
+      (provinceRings.get(province.en) ?? []).some((ring) => inRing(point, ring)),
+    ) ?? null
+  );
+}
+
+/** SVG quadratic path between two diagram points; the bend side is stable per pair id. */
+export function pairPath(source: Point, target: Point, id: string): string {
   const dx = target.x - source.x;
   const dy = target.y - source.y;
   const distance = Math.hypot(dx, dy);
@@ -135,6 +145,10 @@ function edgePath(source: PeopleNetworkNode, target: PeopleNetworkNode, id: stri
   const controlY = (source.y + target.y) / 2 + (dx / scale) * bend;
   const value = (n: number) => n.toFixed(2);
   return `M ${value(source.x)} ${value(source.y)} Q ${value(controlX)} ${value(controlY)} ${value(target.x)} ${value(target.y)}`;
+}
+
+function edgePath(source: PeopleNetworkNode, target: PeopleNetworkNode, id: string): string {
+  return pairPath(source, target, id);
 }
 
 /**
