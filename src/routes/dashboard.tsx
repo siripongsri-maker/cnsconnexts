@@ -496,12 +496,20 @@ function Dashboard() {
                   rotation === 90
                     ? "translateX(100vw) rotate(90deg)"
                     : rotation === 180
-                      ? "rotate(180deg)"
+                      ? "translate(100vw, 100vh) rotate(180deg)"
                       : "translateY(100vh) rotate(-90deg)",
               }
             : undefined
         }
       >
+        <div
+          ref={contentRef}
+          style={
+            fitScale < 1
+              ? { transform: `scale(${fitScale})`, transformOrigin: "top left" }
+              : undefined
+          }
+        >
         <header className="flex flex-wrap items-center gap-4">
           <div className="w-full min-w-0 sm:w-auto sm:flex-1">
             <h1 className="font-heading text-[clamp(1.75rem,3.5vw,3.25rem)] leading-tight font-bold text-ink">
