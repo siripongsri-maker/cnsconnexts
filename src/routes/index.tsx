@@ -255,21 +255,24 @@ function Home() {
           >
             <Wordmark size="header" withMark />
           </Link>
-          <Link
-            to="/notifications"
-            aria-label={unread > 0 ? `การแจ้งเตือน ${unread} รายการใหม่` : "การแจ้งเตือน"}
-            className="tap relative grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
-          >
-            <Bell className="h-7 w-7" strokeWidth={2.2} aria-hidden />
-            {unread > 0 && (
-              <span
-                aria-hidden
-                className="absolute -right-2 -top-2 grid h-7 min-w-7 place-items-center rounded-full bg-primary px-1.5 text-body font-semibold leading-none text-white"
-              >
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <HeaderSignOut />
+            <Link
+              to="/notifications"
+              aria-label={unread > 0 ? `การแจ้งเตือน ${unread} รายการใหม่` : "การแจ้งเตือน"}
+              className="tap relative grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-ink shadow-[0_6px_16px_-10px_rgba(43,40,120,0.45)]"
+            >
+              <Bell className="h-7 w-7" strokeWidth={2.2} aria-hidden />
+              {unread > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute -right-2 -top-2 grid h-7 min-w-7 place-items-center rounded-full bg-primary px-1.5 text-body font-semibold leading-none text-white"
+                >
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
         {/* ฉากเต็มความกว้าง: ทุ่งกับฟ้าวาดเผื่อด้านข้างไว้ จอกว้างจึงเห็นขอบฟ้ายาวต่อเนื่อง ภูเขาอยู่กลาง */}
         <MeadowScene variant="header" className="pointer-events-none" />
