@@ -1,0 +1,144 @@
+/*
+ * Morning-light look (mockup "B · แสงเช้าแบรนด์") for the big live screen only:
+ * /dashboard?present=1 puts `.live-morning` on its <main>. Nothing here applies
+ * outside that wrapper.
+ */
+
+.live-morning {
+  isolation: isolate;
+  background-color: #fffdf8;
+}
+
+/* Content sits above the absolutely positioned backdrop. */
+.live-morning .live-morning-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Backdrop: 4 soft colour blobs drifting slowly behind everything ------- */
+
+.live-morning .live-morning-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.live-morning .live-morning-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.45;
+  animation: live-morning-drift 30s ease-in-out infinite alternate;
+}
+
+@keyframes live-morning-drift {
+  to {
+    transform: translate(8%, -6%) scale(1.15);
+  }
+}
+
+/* ---- Surfaces: frosted white over the blobs -------------------------------- */
+
+.live-morning .meadow-card,
+.live-morning .live-morning-header,
+.live-morning .live-map-chip,
+.live-morning .live-map-card {
+  background-color: #ffffffcc;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.live-morning .live-morning-header {
+  border-radius: 24px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid #ffffff;
+  box-shadow: 0 8px 24px -12px rgba(43, 40, 120, 0.25);
+}
+
+.live-morning .live-morning-header .meadow-btn-secondary {
+  background-color: #ffffffcc;
+}
+
+/* "สด" badge and the rotating prompt in brand purple. */
+.live-morning .live-morning-badge,
+.live-morning .live-morning-prompt {
+  background-color: #6a2c91;
+}
+
+.live-morning .live-morning-prompt {
+  box-shadow: 0 12px 32px -16px rgba(106, 44, 145, 0.55);
+}
+
+/* ---- Titles: purple → blue gradient --------------------------------------- */
+
+.live-morning .live-morning-title,
+.live-morning .live-map-chip-title {
+  width: fit-content;
+  background-image: linear-gradient(90deg, #6a2c91, #1488d8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- QR: black on a white tile, soft purple-tinted shadow ------------------ */
+
+.live-morning .live-morning-qr {
+  background-color: #ffffff;
+  box-shadow:
+    0 0 0 1px rgba(106, 44, 145, 0.08),
+    0 14px 40px -10px rgba(106, 44, 145, 0.35);
+}
+
+/* ---- Map: brand region fills, paper borders ------------------------------- */
+
+.live-morning .live-map-province {
+  stroke: #fffdf8;
+}
+.live-morning .live-map-province[data-region="North"] {
+  fill: #6a2c91;
+}
+.live-morning .live-map-province[data-region="Northeast"] {
+  fill: #f47b20;
+}
+.live-morning .live-map-province[data-region="Central"],
+.live-morning .live-map-province[data-region="Bangkok"] {
+  fill: #1488d8;
+}
+.live-morning .live-map-province[data-region="South"] {
+  fill: #5da130;
+}
+
+/* ---- Calm fallback: reduced motion or low-spec freeze blobs, drop blur ---- */
+
+.live-morning .live-morning-backdrop[data-still] .live-morning-blob {
+  animation: none;
+}
+
+.live-morning
+  .live-morning-backdrop[data-still]
+  ~ .live-morning-content
+  :is(.meadow-card, .live-morning-header, .live-map-chip, .live-map-card),
+html[data-lowspec]
+  .live-morning
+  :is(.meadow-card, .live-morning-header, .live-map-chip, .live-map-card) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background-color: #ffffffe6;
+}
+
+html[data-lowspec] .live-morning .live-morning-blob {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-morning .live-morning-blob {
+    animation: none;
+  }
+  .live-morning :is(.meadow-card, .live-morning-header, .live-map-chip, .live-map-card) {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: #ffffffe6;
+  }
+}

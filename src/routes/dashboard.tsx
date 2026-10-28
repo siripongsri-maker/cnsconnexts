@@ -32,6 +32,7 @@ import { AppShell } from "@/components/app-shell";
 import { ChoicePill } from "@/components/choice-pill";
 import { LiveNetwork } from "@/components/network-background";
 import { LiveMapCarousel } from "@/components/live-map-carousel";
+import { LiveMorningBackdrop } from "@/components/live-morning-backdrop";
 import { Avatar, PowerIcon } from "@/components/power-bits";
 import { BLOCK_TAG } from "@/lib/issue-colors";
 import { useStore, useUserMap } from "@/lib/store";
@@ -488,7 +489,7 @@ function Dashboard() {
     const haveRank = rank("powers_have");
     return (
       <main
-        className={`relative overflow-hidden bg-paper px-[4vw] py-[3vh] text-ink${rotated ? "" : " min-h-dvh"}`}
+        className={`live-morning relative overflow-hidden bg-paper px-[4vw] py-[3vh] text-ink${rotated ? "" : " min-h-dvh"}`}
         style={
           rotated
             ? {
@@ -508,8 +509,10 @@ function Dashboard() {
             : undefined
         }
       >
+        <LiveMorningBackdrop />
         <div
           ref={contentRef}
+          className="live-morning-content"
           style={
             fit.s < 1
               ? {
@@ -519,13 +522,13 @@ function Dashboard() {
               : undefined
           }
         >
-        <header className="flex flex-wrap items-center gap-4">
+        <header className="live-morning-header flex flex-wrap items-center gap-4">
           <div className="w-full min-w-0 sm:w-auto sm:flex-1">
-            <h1 className="font-heading text-[clamp(1.75rem,3.5vw,3.25rem)] leading-tight font-bold text-ink">
+            <h1 className="live-morning-title font-heading text-[clamp(1.75rem,3.5vw,3.25rem)] leading-tight font-bold text-ink">
               พลังที่เชื่อมถึงกัน
             </h1>
           </div>
-          <span className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-4 text-body font-semibold text-white">
+          <span className="live-morning-badge inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-4 text-body font-semibold text-white">
             <span
               aria-hidden="true"
               className="h-3 w-3 animate-pulse-node rounded-full bg-block-yellow"
@@ -547,7 +550,7 @@ function Dashboard() {
           </button>
         </header>
 
-        <div className="mt-[2vh] rounded-3xl bg-primary px-[2vw] py-[2vh] text-white">
+        <div className="live-morning-prompt mt-[2vh] rounded-3xl bg-primary px-[2vw] py-[2vh] text-white">
           <RotatingPrompt size="lg" touch />
         </div>
 
@@ -564,10 +567,10 @@ function Dashboard() {
               แผนที่เส้นเชื่อมทั่วประเทศ
             </h2>
             <div className="mt-3 h-[48vh] min-h-[300px]">
-              <LiveMapCarousel users={fUsers} connections={fConnections} />
+              <LiveMapCarousel users={fUsers} connections={fConnections} look="morning" />
             </div>
             <div className="mt-[2vh] flex items-center justify-center gap-[2vw] rounded-3xl bg-primary/5 px-[2vw] py-[2vh]">
-              <div className="shrink-0 rounded-3xl bg-white p-4 shadow-sm">
+              <div className="live-morning-qr shrink-0 rounded-3xl bg-white p-4 shadow-sm">
                 <QRCodeSVG value={joinUrl} size={240} level="M" />
               </div>
               <p className="font-heading text-[clamp(1.5rem,2.5vw,2.5rem)] leading-tight font-bold text-ink">

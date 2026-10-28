@@ -34,6 +34,27 @@ const EDGE_COLORS = [
   "var(--color-block-teal)",
 ];
 
+/**
+ * The morning-light big screen (`.live-morning`): line colours and label inks.
+ * Region fills for this look come from CSS (`src/styles/live-morning.css`,
+ * `[data-region]` on the province paths). No glow filter.
+ */
+const MORNING_EDGE_COLORS = ["#6a2c91", "#1488d8", "#f47b20", "#5da130", "#129e8c", "#f2b21b"];
+
+/** Map visuals per look: "meadow" is the default theme, "morning" the big screen. */
+const LOOKS = {
+  meadow: {
+    edges: EDGE_COLORS,
+    name: "var(--color-ink)",
+    place: "var(--color-ink-soft)",
+    halo: "var(--color-paper)",
+  },
+  morning: { edges: MORNING_EDGE_COLORS, name: "#2b2878", place: "#5d5a73", halo: "#fffdf8" },
+} as const;
+
+export type LiveMapLook = keyof typeof LOOKS;
+type LookColors = (typeof LOOKS)[LiveMapLook];
+
 const PROVINCE_GROUP: Partial<Record<Region, TourGroupKey>> = {
   North: "north",
   Northeast: "northeast",
@@ -236,10 +257,14 @@ function crossTotal(layout: LiveMapLayout) {
 export function LiveMapCarousel({
   users,
   connections,
+  look = "meadow",
 }: {
   users: User[];
   connections: Connection[];
+  /** "morning" when rendered inside the big screen's `.live-morning` wrapper. */
+  look?: LiveMapLook;
 }) {
+  const colors = LOOKS[look];
   const layout = useMemo(() => buildLiveMapLayout(users, connections), [users, connections]);
   const tour = useMemo(() => buildTour(layout), [layout]);
   const edgesById = useMemo(() => new Map(layout.edges.map((e) => [e.id, e])), [layout]);
@@ -528,11 +553,12 @@ export function LiveMapCarousel({
               <path
                 key={province.en}
                 d={province.d}
+                data-region={province.region}
                 fill={REGION_FILL[province.region]}
                 stroke="var(--color-background)"
                 strokeWidth={1.6}
                 vectorEffect="non-scaling-stroke"
-                className="motion-safe:transition-[fill-opacity] motion-safe:duration-600"
+                className="live-map-province motion-safe:transition-[fill-opacity] motion-safe:duration-600"
                 style={{ fillOpacity: opacity }}
               />
             );
@@ -548,7 +574,7 @@ export function LiveMapCarousel({
                 data-edge={edge.key}
                 d={data.path}
                 fill="none"
-                stroke={EDGE_COLORS[index % EDGE_COLORS.length]}
+                stroke={colors.edges[index % colors.edges.length]}
                 strokeWidth={PX.line / DEFAULT_SCALE}
                 strokeOpacity={0.9}
                 strokeLinecap="round"
@@ -565,14 +591,15 @@ export function LiveMapCarousel({
               node={node}
               visible={scene.visible === "all" || scene.visible.has(node.id)}
               labelled={scene.labelled.has(node.id)}
+              colors={colors}
             />
           ))}
         </g>
       </svg>
 
       {scene.chip && (
-        <div className="pointer-events-none absolute top-3 left-3 max-w-[80%] rounded-2xl bg-white/90 px-4 py-2 shadow-sm">
-          <p className="font-heading text-[clamp(1rem,1.7vw,1.6rem)] leading-tight font-bold text-ink">
+        <div className="live-map-chip pointer-events-none absolute top-3 left-3 max-w-[80%] rounded-2xl bg-white/90 px-4 py-2 shadow-sm">
+          <p className="live-map-chip-title font-heading text-[clamp(1rem,1.7vw,1.6rem)] leading-tight font-bold text-ink">
             {scene.chip.title}
           </p>
           {scene.chip.meta && (
@@ -584,7 +611,7 @@ export function LiveMapCarousel({
       )}
 
       {cardFrom && cardTo && cardEdge && (
-        <div className="pointer-events-none absolute inset-x-3 bottom-3 rounded-2xl border-2 border-primary bg-white/95 px-4 py-3 shadow-sm">
+        <div className="live-map-card pointer-events-none absolute inset-x-3 bottom-3 rounded-2xl border-2 border-primary bg-white/95 px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3 text-[clamp(0.95rem,1.5vw,1.5rem)] leading-tight">
             <Who node={cardFrom} />
             <span aria-hidden="true" className="shrink-0 font-bold text-primary">
@@ -616,10 +643,12 @@ function MapNode({
   node,
   visible,
   labelled,
+  colors,
 }: {
   node: LiveMapNode;
   visible: boolean;
   labelled: boolean;
+  colors: LookColors;
 }) {
   // Children are in on-screen px: the group is counter-scaled by applyView().
   const fill =
@@ -631,7 +660,7 @@ function MapNode({
   const stroke = node.kind === "region" ? "var(--color-primary)" : "var(--color-paper)";
   const halo = {
     paintOrder: "stroke",
-    stroke: "var(--color-paper)",
+    stroke: colors.halo,
     strokeWidth: PX.halo,
     strokeLinejoin: "round",
   } as const;
@@ -657,12 +686,12 @@ function MapNode({
             y={-1}
             fontSize={PX.name}
             fontWeight={700}
-            fill="var(--color-ink)"
+            fill={colors.name}
             style={halo}
           >
             {node.name}
           </text>
-          <text x={PX.labelX} y={14} fontSize={PX.place} fill="var(--color-ink-soft)" style={halo}>
+          <text x={PX.labelX} y={14} fontSize={PX.place} fill={colors.place} style={halo}>
             {node.placeLabel}
           </text>
         </>
