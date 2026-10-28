@@ -58,7 +58,19 @@ const TIMING = {
 };
 
 /** On-screen sizes in CSS px, divided by the current map scale. */
-const PX = { dot: 7, dotStroke: 2.5, name: 17, place: 12.5, halo: 4, labelX: 11, line: 5 };
+const PX = {
+  dot: 7,
+  regionDot: 5,
+  dotStroke: 2.5,
+  name: 17,
+  place: 12.5,
+  halo: 4,
+  labelX: 11,
+  line: 5,
+};
+
+/** At most this many people carry a name/place label at once. */
+const MAX_LABELS = 12;
 
 type ViewBox = { x: number; y: number; w: number; h: number };
 type Box = [number, number, number, number];
@@ -187,6 +199,22 @@ async function tween(runner: Runner, ms: number, onFrame: (elapsed: number) => b
   }
 }
 
+/**
+ * Labels for the pairs drawn so far: their endpoints, newest pair first, until
+ * the next pair would go over MAX_LABELS.
+ */
+function pairLabels(layout: LiveMapLayout, edgeIds: readonly string[]): Set<string> {
+  const labels = new Set<string>();
+  for (let i = edgeIds.length - 1; i >= 0; i--) {
+    const edge = layout.edges.find((e) => e.id === edgeIds[i]);
+    if (!edge) continue;
+    const next = new Set([...labels, edge.sourceId, edge.targetId]);
+    if (next.size > MAX_LABELS) break;
+    next.forEach((id) => labels.add(id));
+  }
+  return labels;
+}
+
 function crossTotal(layout: LiveMapLayout) {
   let cross = 0;
   for (const edge of layout.edges) {
@@ -199,9 +227,11 @@ function crossTotal(layout: LiveMapLayout) {
 
 /**
  * The big-screen map as a calm tour: region by region, the camera eases in, the
- * region's people show their name and place, and its pairs draw one at a time;
- * then up to two cross-region pairs; then the whole country. Re-plans from the
- * latest data at the start of every loop.
+ * region's people appear as dots, and its pairs draw one at a time, each pair's
+ * two people gaining their name and place as it draws (at most MAX_LABELS
+ * labels at once); then up to two cross-region pairs, labelling just that pair;
+ * then the whole country. Re-plans from the latest data at the start of every
+ * loop.
  */
 export function LiveMapCarousel({
   users,
@@ -316,12 +346,19 @@ export function LiveMapCarousel({
       });
     };
 
-    const addEdge = (id: string) =>
-      commit((prev) =>
-        prev.edges !== "all" && !prev.edges.some((e) => e.id === id)
-          ? { ...prev, edges: [...prev.edges, { id, animate: !reduced() }] }
-          : prev,
-      );
+    /** Add a pair to the scene; with `label`, show names for the pairs drawn so far. */
+    const addEdge = (id: string, label = false) =>
+      commit((prev) => {
+        if (prev.edges === "all" || prev.edges.some((e) => e.id === id)) return prev;
+        const edges = [...prev.edges, { id, animate: !reduced() }];
+        const labelled = label
+          ? pairLabels(
+              latestRef.current.layout,
+              edges.map((e) => e.id),
+            )
+          : prev.labelled;
+        return { ...prev, edges, labelled };
+      });
 
     type RegionContext = {
       group: TourGroupKey;
@@ -360,7 +397,8 @@ export function LiveMapCarousel({
         key: ctx.key,
         shade: [ctx.group],
         visible: new Set([...ctx.members, ...ctx.partners]),
-        labelled: new Set(ctx.members),
+        // Names appear only as each pair draws, so a busy region stays readable.
+        labelled: new Set(),
         edges: [],
         chip: { title: GROUP_LABEL[ctx.group], meta: ctx.meta },
         card: null,
@@ -369,7 +407,7 @@ export function LiveMapCarousel({
       for (const id of edgeIds) {
         if (runner.cancelled) return;
         if (!latestRef.current.layout.edges.some((e) => e.id === id)) continue;
-        addEdge(id);
+        addEdge(id, true);
         await draw(ctx.key, [id], TIMING.draw);
       }
       await runner.sleep(TIMING.regionHold);
@@ -396,7 +434,7 @@ export function LiveMapCarousel({
         key: ctx.key,
         shade: toGroup ? [ctx.group, toGroup] : [ctx.group],
         visible: new Set([...ctx.members, ...ctx.partners, from.id, to.id]),
-        labelled: new Set([...ctx.members, from.id, to.id]),
+        labelled: new Set([from.id, to.id]),
         edges: fresh || prev.edges === "all" ? [] : prev.edges,
         chip: {
           title: `${GROUP_LABEL[ctx.group]} → ${toGroup ? GROUP_LABEL[toGroup] : "ทั่วประเทศ"}`,
@@ -426,7 +464,7 @@ export function LiveMapCarousel({
         edges: [],
         chip: {
           title: "ทั่วประเทศ",
-          meta: `${edgeIds.length} คู่เชื่อม · ข้ามภาค ${crossTotal(now)} คู่`,
+          meta: `เส้นบนแผนที่ ${edgeIds.length} คู่ · ข้ามภาค ${crossTotal(now)} คู่`,
         },
         card: null,
       }));
@@ -606,7 +644,12 @@ function MapNode({
       className="motion-safe:transition-opacity motion-safe:duration-500"
       style={{ opacity: visible ? 1 : 0.18 }}
     >
-      <circle r={PX.dot} fill={fill} stroke={stroke} strokeWidth={PX.dotStroke} />
+      <circle
+        r={node.kind === "region" ? PX.regionDot : PX.dot}
+        fill={fill}
+        stroke={stroke}
+        strokeWidth={PX.dotStroke}
+      />
       {labelled && (
         <>
           <text
