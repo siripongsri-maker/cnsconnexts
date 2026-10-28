@@ -2,12 +2,31 @@
 
 ## เข้าใช้งาน
 - URL: `/admin`
-- ซูเปอร์แอดมิน (สิทธิ์สูงสุด): ผู้ใช้ `superadmin` · รหัสผ่าน `CNS-Super#2026`
-- ผู้ดูแลสูงสุด: ผู้ใช้ `connexts` · รหัสผ่าน `cns2026`
-- นักวิเคราะห์ข้อมูล: ผู้ใช้ `analyst` · รหัสผ่าน `cns2026-analyst`
-- ผู้ชมอย่างเดียว: ผู้ใช้ `viewer` · รหัสผ่าน `cns2026-viewer`
+- ซูเปอร์แอดมิน (สิทธิ์สูงสุด): ผู้ใช้ `superadmin` · รหัสผ่านจาก env `SUPERADMIN_PASSWORD`
+- ผู้ดูแลสูงสุด: ผู้ใช้ `connexts` · รหัสผ่านจาก env `ADMIN_PASSWORD`
+- นักวิเคราะห์ข้อมูล: ผู้ใช้ `analyst` · รหัสผ่านจาก env `ANALYST_PASSWORD`
+- ผู้ชมอย่างเดียว: ผู้ใช้ `viewer` · รหัสผ่านจาก env `VIEWER_PASSWORD`
 
-การล็อกอินเก็บสถานะไว้ในเบราว์เซอร์ (localStorage) เป็นการป้องกันระดับหน้าจอสำหรับงานเดโม่
+### ตั้งค่าบนเซิร์ฟเวอร์ (จำเป็น)
+ตั้งเป็น secret ของเซิร์ฟเวอร์ (Lovable Cloud / Cloudflare) ห้ามใส่ใน `.env` ที่ commit และห้ามขึ้นต้นด้วย `VITE_`
+
+| ตัวแปร | ใช้ทำอะไร |
+| --- | --- |
+| `ADMIN_SESSION_SECRET` | กุญแจลงลายเซ็นโทเคน ต้องยาวอย่างน้อย 32 ตัวอักษร (สุ่มด้วย `openssl rand -base64 48`) |
+| `SUPERADMIN_PASSWORD` | รหัสบัญชี `superadmin` |
+| `ADMIN_PASSWORD` | รหัสบัญชี `connexts` |
+| `ANALYST_PASSWORD` | รหัสบัญชี `analyst` (ไม่ตั้ง = ปิดบัญชีนี้) |
+| `VIEWER_PASSWORD` | รหัสบัญชี `viewer` (ไม่ตั้ง = ปิดบัญชีนี้) |
+
+ไม่มีรหัสสำรองในโค้ด ถ้าไม่ได้ตั้ง `ADMIN_SESSION_SECRET` หรือรหัสของบัญชีใด จะล็อกอินบัญชีนั้นไม่ได้
+
+### การทำงาน
+- หน้า `/admin` ส่งชื่อผู้ใช้/รหัสผ่านไปที่ server function `adminLogin` (`src/lib/admin-auth.functions.ts`) ตรวจฝั่งเซิร์ฟเวอร์เท่านั้น
+- สำเร็จแล้วได้โทเคนลงลายเซ็น HMAC อายุ 12 ชั่วโมง เก็บใน localStorage คีย์ `connext-admin-token`
+- ทุก server function ของหลังบ้านตรวจโทเคนเอง (`requireAdmin` ใน `src/lib/admin-session.ts`)
+  - อ่านอย่างเดียว (ดูสำรองข้อมูล นโยบาย ประวัติ ตัวอย่างการกู้คืน): ทุกบทบาท
+  - แก้ไข/ลบ/กู้คืน/ตัดสำรอง/สรุปค่าใช้จ่าย: เฉพาะ `superadmin` และ `owner`
+- เปลี่ยน `ADMIN_SESSION_SECRET` เมื่อต้องการบังคับให้ทุกคนออกจากระบบ
 
 ## เมนูทั้งหมด
 | เส้นทาง | หน้าที่ |

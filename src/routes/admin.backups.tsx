@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Download, FileJson, RefreshCw, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
-import { ADMIN_PASSWORD } from "@/lib/admin-auth";
+import { getAdminToken } from "@/lib/admin-auth";
 import { OP_TH, OpChip } from "@/components/admin/op-chip";
 import { RestoreDialog } from "@/components/restore-dialog";
 import { listBackups, type BackupRow } from "@/lib/backup.functions";
@@ -59,7 +59,7 @@ function AdminBackups() {
     setLoading(true);
     try {
       const res = await listBackups({
-        data: { password: ADMIN_PASSWORD, ...(table ? { table } : {}) },
+        data: { token: getAdminToken() ?? "", ...(table ? { table } : {}) },
       });
       setRows(res.rows);
       setTotal(res.total);
@@ -84,7 +84,7 @@ function AdminBackups() {
 
   const fetchAll = async () => {
     const res = await listBackups({
-      data: { password: ADMIN_PASSWORD, limit: 1000, ...(table ? { table } : {}) },
+      data: { token: getAdminToken() ?? "", limit: 1000, ...(table ? { table } : {}) },
     });
     return res.rows;
   };

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { MissionEmpty } from "@/components/mission-ui";
-import { ADMIN_PASSWORD, useAdminAuth } from "@/lib/admin-auth";
+import { getAdminToken, useAdminAuth } from "@/lib/admin-auth";
 import { summarizeCosts, type CostFile, type CostSummary } from "@/lib/cost-summary.functions";
 
 export const Route = createFileRoute("/admin/costs")({
@@ -99,7 +99,7 @@ function AdminCosts() {
       const payload = await Promise.all(files.map(readFile));
       const res = await run({
         data: {
-          password: ADMIN_PASSWORD,
+          token: getAdminToken() ?? "",
           files: payload,
           rate: rate ? Number(rate) : undefined,
           note: note || undefined,

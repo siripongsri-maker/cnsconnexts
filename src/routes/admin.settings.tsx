@@ -3,7 +3,7 @@ import { AlertTriangle, KeyRound, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 import { useStore } from "@/lib/store";
-import { ADMIN_PASSWORD, ADMIN_USER, SUPERADMIN_PASSWORD, SUPERADMIN_USER } from "@/lib/admin-auth";
+import { ROLE_TH, useAdminAuth } from "@/lib/admin-auth";
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => ({
@@ -24,6 +24,7 @@ export const Route = createFileRoute("/admin/settings")({
 
 function AdminSettings() {
   const { reset, users, ideas, connections, commitments } = useStore();
+  const { user, role } = useAdminAuth();
 
   return (
     <div className="admin-workspace admin-workspace-settings space-y-4">
@@ -32,16 +33,12 @@ function AdminSettings() {
           <KeyRound className="size-5 text-primary" aria-hidden="true" /> บัญชีผู้ดูแล
         </h2>
         <p className="text-body text-muted-foreground">
-          ซูเปอร์แอดมิน — ผู้ใช้:{" "}
-          <span className="font-extrabold text-foreground">{SUPERADMIN_USER}</span> · รหัสผ่าน:{" "}
-          <span className="font-extrabold text-foreground">{SUPERADMIN_PASSWORD}</span>
+          เข้าสู่ระบบอยู่ในชื่อ <span className="font-extrabold text-foreground">{user ?? "—"}</span>
+          {role ? <> · {ROLE_TH[role]}</> : null}
         </p>
         <p className="text-body text-muted-foreground">
-          ผู้ดูแลสูงสุด — ผู้ใช้: <span className="font-extrabold text-foreground">{ADMIN_USER}</span> · รหัสผ่าน:{" "}
-          <span className="font-extrabold text-foreground">{ADMIN_PASSWORD}</span>
-        </p>
-        <p className="text-body text-muted-foreground">
-          บัญชีนี้ใช้สำหรับเดโม่และป้องกันเฉพาะหน้าจอ
+          รหัสผ่านผู้ดูแลตั้งค่าที่ตัวแปรสภาพแวดล้อมของเซิร์ฟเวอร์ (SUPERADMIN_PASSWORD, ADMIN_PASSWORD,
+          ANALYST_PASSWORD, VIEWER_PASSWORD) และไม่แสดงบนหน้าเว็บ ดูวิธีตั้งค่าใน docs/ADMIN.md
         </p>
       </section>
 

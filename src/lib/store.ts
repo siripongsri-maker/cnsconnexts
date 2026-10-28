@@ -6,7 +6,7 @@ import { runProfileWrite } from "./profile-write";
 import { connectionWith, rollbackConnect } from "./connect-rules";
 import { emitLive } from "./live";
 import { adminDeleteRow, adminUpdateRow, type AdminTable } from "./admin.functions";
-import { ADMIN_PASSWORD } from "./admin-auth";
+import { getAdminToken } from "./admin-auth";
 import type {
   AppNotification,
   ChatMessage,
@@ -179,14 +179,9 @@ function clearPending() {
 
 
 
-/** รหัสผ่านผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
-function adminPassword(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem("connext-admin-session") === "1" ? ADMIN_PASSWORD : null;
-  } catch {
-    return null;
-  }
+/** โทเคนผู้ดูแล เมื่อกำลังใช้งานหลังบ้านอยู่ (ใช้ข้าม RLS ผ่านฝั่งเซิร์ฟเวอร์) */
+function adminToken(): string | null {
+  return getAdminToken();
 }
 
 function getDeviceId() {
@@ -1133,10 +1128,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       void (async () => {
         const target = dbId(id);
         const { error } = await db.from("participants").update(rest as Row).eq("id", target);
-        const pwd = adminPassword();
-        if (pwd) {
+        const adminTok = adminToken();
+        if (adminTok) {
           await adminUpdateRow({
-            data: { password: pwd, table: "participants", id: target, patch: rest as Row },
+            data: { token: adminTok, table: "participants", id: target, patch: rest as Row },
           }).catch(() => undefined);
         } else if (error) {
           console.warn("[store] update participant failed", error.message);
@@ -1151,10 +1146,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (table: AdminTable, id: string) => {
       void (async () => {
         const { error } = await db.from(table as never).delete().eq("id", id);
-        const pwd = adminPassword();
+        const adminTok = adminToken();
         // ผู้ดูแลหลังบ้านลบข้อมูลของคนอื่นได้ผ่านสิทธิ์ฝั่งเซิร์ฟเวอร์
-        if (pwd) {
-          await adminDeleteRow({ data: { password: pwd, table, id } }).catch((e: unknown) =>
+        if (adminTok) {
+          await adminDeleteRow({ data: { token: adminTok, table, id } }).catch((e: unknown) =>
             console.warn("[store] admin delete failed", e),
           );
         } else if (error) {

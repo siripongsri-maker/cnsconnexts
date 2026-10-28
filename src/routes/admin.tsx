@@ -53,7 +53,8 @@ function AdminLayout() {
   const { ready, authed, role, user: adminUser, signIn, signOut } = useAdminAuth();
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [signingIn, setSigningIn] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const [titleNote, setTitleNote] = useState<string | null>(null);
   const pathname = useRouterState({
@@ -119,9 +120,14 @@ function AdminLayout() {
         </section>
         <section className="admin-login-access" aria-labelledby="admin-access-title">
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              if (!signIn(user, password)) setError(true);
+              if (signingIn) return;
+              setSigningIn(true);
+              const err = await signIn(user, password);
+              setSigningIn(false);
+              if (err) setError(err);
+              else setPassword("");
             }}
             className="admin-login-form space-y-6"
           >
@@ -138,7 +144,7 @@ function AdminLayout() {
                 value={user}
                 onChange={(e) => {
                   setUser(e.target.value);
-                  setError(false);
+                  setError(null);
                 }}
                 autoComplete="username"
                 className="text-body w-full rounded-xl border border-border bg-background px-3 py-2 outline-none"
@@ -152,7 +158,7 @@ function AdminLayout() {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  setError(false);
+                  setError(null);
                 }}
                 autoComplete="current-password"
                 className="text-body w-full rounded-xl border border-border bg-background px-3 py-2 outline-none"
@@ -161,16 +167,17 @@ function AdminLayout() {
 
             {error && (
               <p role="alert" className="text-body font-bold text-destructive">
-                ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
+                {error}
               </p>
             )}
 
             <Button
               type="submit"
+              disabled={signingIn}
               variant="mission"
               className="tap h-12 w-full justify-between rounded-xl bg-primary px-[18px] text-[17px] font-medium text-primary-foreground"
             >
-              เข้าสู่ระบบ <ArrowRight className="ml-auto size-4" aria-hidden="true" />
+              {signingIn ? "กำลังตรวจสอบ…" : "เข้าสู่ระบบ"} <ArrowRight className="ml-auto size-4" aria-hidden="true" />
             </Button>
 
             <details className="admin-role-note">

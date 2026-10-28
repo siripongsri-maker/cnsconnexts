@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ADMIN_PASSWORD } from "@/lib/admin-auth";
+import { getAdminToken } from "@/lib/admin-auth";
 import { previewRestore, restoreBackup, type RestorePreview } from "@/lib/backup.functions";
 
 const CONFIRM_WORD = "กู้คืน";
@@ -40,7 +40,7 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
     setWord("");
     setFailure(null);
     setLoading(true);
-    previewRestore({ data: { password: ADMIN_PASSWORD, backupId } })
+    previewRestore({ data: { token: getAdminToken() ?? "", backupId } })
       .then((r) => setPreview(r as RestorePreview))
       .catch((e: Error) => toast.error("ตรวจสอบผลกระทบไม่สำเร็จ", { description: e.message }))
       .finally(() => setLoading(false));
@@ -51,7 +51,7 @@ export function RestoreDialog({ backupId, title, onClose, onDone }: Props) {
     setSaving(true);
     setFailure(null);
     try {
-      const res = await restoreBackup({ data: { password: ADMIN_PASSWORD, backupId } });
+      const res = await restoreBackup({ data: { token: getAdminToken() ?? "", backupId } });
       toast.success("กู้คืนข้อมูลสำเร็จ", {
         icon: <CheckCircle2 className="h-4 w-4" />,
         duration: 8000,

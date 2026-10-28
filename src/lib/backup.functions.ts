@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 
-/** ระบบสำรองข้อมูลอัตโนมัติ — อ่าน/กู้คืนสแนปช็อตจากตาราง data_backups (ต้องใช้รหัสผู้ดูแล) */
+import { ALL_ROLES, requireAdmin, WRITE_ROLES } from "./admin-session";
+
+/** ระบบสำรองข้อมูลอัตโนมัติ — อ่าน/กู้คืนสแนปช็อตจากตาราง data_backups (ต้องใช้โทเคนผู้ดูแลจาก adminLogin) */
 
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 
@@ -14,18 +16,14 @@ export type BackupRow = {
   created_at: string;
 };
 
-function checkPassword(password: string) {
-  const expected = process.env["ADMIN_PASSWORD"] ?? "cns2026";
-  if (password !== expected) throw new Error("unauthorized");
-}
 
 export const listBackups = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string; table?: string; limit?: number }) => {
-    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  .inputValidator((input: { token: string; table?: string; limit?: number }) => {
+    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
     return input;
   })
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token, ALL_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let query = supabaseAdmin
@@ -54,12 +52,12 @@ export type BackupPolicy = {
 };
 
 export const getBackupPolicy = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string }) => {
-    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  .inputValidator((input: { token: string }) => {
+    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
     return input;
   })
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token, ALL_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as unknown as {
       from: (t: string) => {
@@ -76,14 +74,14 @@ export const getBackupPolicy = createServerFn({ method: "POST" })
   });
 
 export const saveBackupPolicy = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string; maxRows: number; maxAgeDays: number; autoPrune: boolean }) => {
-    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  .inputValidator((input: { token: string; maxRows: number; maxAgeDays: number; autoPrune: boolean }) => {
+    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
     const maxRows = Math.max(0, Math.min(Math.floor(Number(input.maxRows) || 0), 100000));
     const maxAgeDays = Math.max(0, Math.min(Math.floor(Number(input.maxAgeDays) || 0), 3650));
-    return { password: input.password, maxRows, maxAgeDays, autoPrune: Boolean(input.autoPrune) };
+    return { token: input.token, maxRows, maxAgeDays, autoPrune: Boolean(input.autoPrune) };
   })
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token, WRITE_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as unknown as {
       from: (t: string) => {
@@ -113,12 +111,12 @@ export const saveBackupPolicy = createServerFn({ method: "POST" })
   });
 
 export const pruneBackupsNow = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string }) => {
-    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  .inputValidator((input: { token: string }) => {
+    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
     return input;
   })
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token, WRITE_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as unknown as {
       rpc: (fn: string) => Promise<{ data: unknown; error: { message: string } | null }>;
@@ -141,13 +139,13 @@ const fmt = (v: unknown) =>
 
 /** ตรวจผลกระทบก่อนกู้คืน — บอกว่าข้อมูลจะถูกทับหรือเพิ่มใหม่ และฟิลด์ไหนเปลี่ยนบ้าง */
 export const previewRestore = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string; backupId: string }) => {
-    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  .inputValidator((input: { token: string; backupId: string }) => {
+    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
     if (typeof input?.backupId !== "string" || !input.backupId) throw new Error("invalid id");
     return input;
   })
   .handler(async ({ data }): Promise<RestorePreview> => {
-    checkPassword(data.password);
+    await requireAdmin(data.token, ALL_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: row, error } = await supabaseAdmin
@@ -190,13 +188,13 @@ export const previewRestore = createServerFn({ method: "POST" })
   });
 
 export const restoreBackup = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string; backupId: string }) => {
-    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  .inputValidator((input: { token: string; backupId: string }) => {
+    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
     if (typeof input?.backupId !== "string" || !input.backupId) throw new Error("invalid id");
     return input;
   })
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token, WRITE_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: row, error } = await supabaseAdmin
@@ -240,12 +238,12 @@ export type AuditRow = {
 
 /** ประวัติการเปลี่ยนแปลงข้อมูล: ใครทำอะไร ตอนไหน (จากระบบสำรองอัตโนมัติ) */
 export const listAuditLog = createServerFn({ method: "POST" })
-  .inputValidator((input: { password: string; table?: string; actor?: string; operation?: string; limit?: number }) => {
-    if (typeof input?.password !== "string" || !input.password) throw new Error("missing password");
+  .inputValidator((input: { token: string; table?: string; actor?: string; operation?: string; limit?: number }) => {
+    if (typeof input?.token !== "string" || !input.token) throw new Error("unauthorized");
     return input;
   })
   .handler(async ({ data }) => {
-    checkPassword(data.password);
+    await requireAdmin(data.token, ALL_ROLES);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let query = supabaseAdmin

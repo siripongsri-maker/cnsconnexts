@@ -1,10 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 
+import { requireAdmin } from "./admin-session";
+
 /** สรุปค่าใช้จ่ายเป็นเงินบาทจากไฟล์การใช้เครดิตและใบแจ้งหนี้ (เฉพาะเจ้าของโปรเจกต์) */
 
 export type CostFile = { name: string; mime: string; text?: string; dataUrl?: string };
 
-type Input = { password: string; files: CostFile[]; rate?: number | undefined; note?: string | undefined };
+type Input = { token: string; files: CostFile[]; rate?: number | undefined; note?: string | undefined };
 
 export type CostSummary = {
   currency: "THB";
@@ -20,7 +22,7 @@ const MAX_TEXT = 200_000;
 const MAX_DATA_URL = 8_000_000;
 
 function validate(input: Input): Input {
-  if (typeof input?.password !== "string" || !input.password) throw new Error("ต้องเข้าสู่ระบบเจ้าของโปรเจกต์");
+  if (typeof input?.token !== "string" || !input.token) throw new Error("ต้องเข้าสู่ระบบเจ้าของโปรเจกต์");
   if (!Array.isArray(input.files) || input.files.length === 0) throw new Error("กรุณาแนบไฟล์อย่างน้อย 1 ไฟล์");
   if (input.files.length > MAX_FILES) throw new Error(`แนบได้สูงสุด ${MAX_FILES} ไฟล์`);
   for (const f of input.files) {
@@ -65,8 +67,11 @@ const SCHEMA = {
 export const summarizeCosts = createServerFn({ method: "POST" })
   .inputValidator((input: Input) => validate(input))
   .handler(async ({ data }): Promise<{ ok: true; summary: CostSummary } | { ok: false; error: string }> => {
-    const expected = process.env["ADMIN_PASSWORD"] ?? "cns2026";
-    if (data.password !== expected) return { ok: false, error: "ไม่มีสิทธิ์ใช้งาน" };
+    try {
+      await requireAdmin(data.token);
+    } catch {
+      return { ok: false, error: "ไม่มีสิทธิ์ใช้งาน" };
+    }
 
     const { generateResponse, GatewayError } = await import("@lovable.dev/ai-gateway");
 
