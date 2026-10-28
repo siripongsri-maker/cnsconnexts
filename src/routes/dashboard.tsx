@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import { buildFeed, LiveTicker, RotatingPrompt } from "@/components/live-ticker";
@@ -18,7 +18,6 @@ import {
   Link2,
   LogOut,
   MonitorPlay,
-  RotateCcw,
   RotateCw,
   Search,
   Share2,
@@ -426,18 +425,63 @@ function Dashboard() {
     navigate({ search: (s) => ({ ...s, present: undefined }) });
   };
 
-  // --- หมุนจอใหญ่ 90°: จอแนวตั้ง (สูงกว่ากว้าง) หมุนเองอัตโนมัติ กดปุ่มบังคับเปิด/ปิดได้ ---
-  const [portrait, setPortrait] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(orientation: portrait)");
-    const update = () => setPortrait(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
-  const [rotateOverride, setRotateOverride] = useState<boolean | null>(null);
-  const [rotateDir, setRotateDir] = useState<1 | -1>(1);
-  const rotated = rotateOverride ?? portrait;
+  // --- หมุนจอใหญ่: ทีวีที่ติดตั้งแนวตั้งมักยังรายงาน viewport แนวนอน (OS ไม่ได้หมุน)
+  // เลยตรวจเองไม่ได้ ต้องกดปุ่มหมุนเอง — วน 0°→90°→180°→270° แล้วจำค่าไว้ในเครื่อง ---
+  const [rotation, setRotation] = useState<0 | 90 | 180 | 270>(() => {
+    try {
+      const saved = Number(window.localStorage.getItem("dashboard-rotation"));
+      if (saved === 90 || saved === 180 || saved === 270) return saved;
+      if (window.matchMedia("(orientation: portrait)").matches) return 90;
+    } catch {
+      /* ignore */
+    }
+    return 0;
+  });
+  const cycleRotation = () =>
+    setRotation((r) => {
+      const next = ((r + 90) % 360) as 0 | 90 | 180 | 270;
+      try {
+        window.localStorage.setItem("dashboard-rotation", String(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  const rotated = rotation !== 0;
+
+  // --- พอดี 1 จอ: วัดขนาดเนื้อหาจริงแล้วย่อลงให้ไม่ต้องเลื่อน แล้วจัดกึ่งกลาง ---
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState({ s: 1, dx: 0, dy: 0 });
+  useLayoutEffect(() => {
+    if (!present) return;
+    const measure = () => {
+      const el = contentRef.current;
+      if (!el) return;
+      const prev = el.style.transform;
+      el.style.transform = "none";
+      const cw = el.scrollWidth;
+      const ch = el.scrollHeight;
+      el.style.transform = prev;
+      const W = rotated ? window.innerHeight : window.innerWidth;
+      const H = rotated ? window.innerWidth : window.innerHeight;
+      const s = Math.min(1, W / cw, H / ch);
+      const dx = Math.max(0, (W - cw * s) / 2);
+      const dy = Math.max(0, (H - ch * s) / 2);
+      setFit((old) =>
+        Math.abs(old.s - s) > 0.005 || Math.abs(old.dx - dx) > 1 || Math.abs(old.dy - dy) > 1
+          ? { s, dx, dy }
+          : old,
+      );
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (contentRef.current) ro.observe(contentRef.current);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [present, rotated]);
 
   if (present) {
     const needRank = rank("powers_need");
@@ -451,17 +495,30 @@ function Dashboard() {
                 position: "fixed",
                 top: 0,
                 left: 0,
-                width: "100vh",
-                height: "100vw",
+                width: rotation === 180 ? "100vw" : "100vh",
+                height: rotation === 180 ? "100vh" : "100vw",
                 transformOrigin: "top left",
                 transform:
-                  rotateDir === 1
+                  rotation === 90
                     ? "translateX(100vw) rotate(90deg)"
-                    : "translateY(100vh) rotate(-90deg)",
+                    : rotation === 180
+                      ? "translate(100vw, 100vh) rotate(180deg)"
+                      : "translateY(100vh) rotate(-90deg)",
               }
             : undefined
         }
       >
+        <div
+          ref={contentRef}
+          style={
+            fit.s < 1
+              ? {
+                  transform: `translate(${fit.dx}px, ${fit.dy}px) scale(${fit.s})`,
+                  transformOrigin: "top left",
+                }
+              : undefined
+          }
+        >
         <header className="flex flex-wrap items-center gap-4">
           <div className="w-full min-w-0 sm:w-auto sm:flex-1">
             <h1 className="font-heading text-[clamp(1.75rem,3.5vw,3.25rem)] leading-tight font-bold text-ink">
@@ -475,20 +532,15 @@ function Dashboard() {
             />
             สด
           </span>
-          <button type="button" onClick={() => setRotateOverride(!rotated)} className="meadow-btn-secondary">
-            {rotated ? (
-              <RotateCcw className="h-6 w-6 shrink-0" aria-hidden="true" />
-            ) : (
-              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
-            )}
-            {rotated ? "จอตรง ๆ" : "หมุนจอ 90°"}
+          <button
+            type="button"
+            onClick={cycleRotation}
+            className="meadow-btn-secondary"
+            title="กดวนมุมหมุน 0° → 90° → 180° → 270° ให้ตรงกับทิศที่ติดตั้งจอ"
+          >
+            <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
+            หมุนจอ {rotation}°
           </button>
-          {rotated && (
-            <button type="button" onClick={() => setRotateDir((d) => (d === 1 ? -1 : 1))} className="meadow-btn-secondary">
-              <RotateCw className="h-6 w-6 shrink-0" aria-hidden="true" />
-              สลับทิศ
-            </button>
-          )}
           <button type="button" onClick={exitPresent} className="meadow-btn-secondary">
             <LogOut className="h-6 w-6 shrink-0" aria-hidden="true" />
             ออกจากจอใหญ่
@@ -577,6 +629,7 @@ function Dashboard() {
               </p>
             </div>
           </div>
+        </div>
         </div>
       </main>
     );
