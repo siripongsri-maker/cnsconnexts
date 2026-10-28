@@ -1,8 +1,12 @@
 import { useEffect, useRef } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Sparkles, HeartHandshake, Compass, CircleUserRound } from "lucide-react";
+import { Sparkles, HeartHandshake, Compass, FolderOpen, CircleUserRound } from "lucide-react";
 
-/** เมนูล่าง 4 อย่าง — match คือเส้นทางที่นับว่าอยู่ในหมวดนี้ (สเปก "เมนูล่าง 4 อย่าง") */
+/**
+ * เมนูล่าง 5 อย่าง — match คือเส้นทางที่นับว่าอยู่ในหมวดนี้
+ * (คำเมนูใช้ 16px แทน text-body ของธีม ทังน้ีเพื่่อ 5 คอลัมณยัังไม่ลนกัันในจอ 360px
+ *  และจะยAngular hidden (sr-only) เมื่่อจอกว่าน้อยกว่า 360px)
+ */
 export const NAV_ITEMS = [
   { to: "/", label: "จับคู่", icon: Sparkles, match: ["/", "/matches", "/people"] },
   {
@@ -12,6 +16,7 @@ export const NAV_ITEMS = [
     match: ["/commitments", "/connection", "/chat", "/calendar"],
   },
   { to: "/map", label: "สำรวจ", icon: Compass, match: ["/map", "/marketplace"] },
+  { to: "/projects", label: "โปรเจกต์", icon: FolderOpen, match: ["/projects"] },
   {
     to: "/update",
     label: "ฉัน",
@@ -59,7 +64,7 @@ export function BottomNav() {
       aria-label="เมนูหลัก"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg"
     >
-      <ul className="mx-auto grid max-w-xl grid-cols-4">
+      <ul className="mx-auto grid max-w-xl grid-cols-5">
         {NAV_ITEMS.map(({ to, label, icon: Icon, match }) => {
           const active = isNavActive(pathname, match);
           return (
@@ -67,7 +72,7 @@ export function BottomNav() {
               <Link
                 to={to}
                 aria-current={active ? "page" : undefined}
-                className={`tap relative flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-body font-semibold ${
+                className={`tap relative flex min-h-16 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-[16px] leading-tight font-semibold ${
                   active ? "text-primary" : "text-ink-soft"
                 }`}
               >
@@ -82,7 +87,7 @@ export function BottomNav() {
                   strokeWidth={active ? 2.5 : 2}
                   aria-hidden
                 />
-                <span className="whitespace-nowrap max-[359px]:sr-only">{label}</span>
+                <span className="max-w-full truncate max-[359px]:sr-only">{label}</span>
               </Link>
             </li>
           );
