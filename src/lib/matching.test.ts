@@ -87,11 +87,20 @@ describe("buildDeck", () => {
     expect(deck.every((e) => e.match !== null && e.match.user === e.user)).toBe(true);
   });
 
-  it("shuffles the participant deck per day: stable within a day, different across days", () => {
+  it("shuffles participants anew with each visit seed, staying stable during that visit", () => {
     const me = tenComplete[0]!;
     const ids = (k: string) => buildDeck(me, tenComplete, k).map((e) => e.user.id);
-    expect(ids("2026-10-26")).toEqual(ids("2026-10-26"));
-    expect(ids("2026-10-26")).not.toEqual(ids("2026-10-27"));
+    expect(ids("visit-a")).toEqual(ids("visit-a"));
+    expect(ids("visit-a")).not.toEqual(ids("visit-b"));
+    for (const entry of buildDeck(me, tenComplete, "visit-b")) {
+      expect(entry.match).toEqual(scoreMatch(me, entry.user));
+    }
+  });
+
+  it("also reshuffles guests between visits", () => {
+    const ids = (seed: string) => buildDeck(null, tenComplete, seed).map((e) => e.user.id);
+    expect(ids("visit-a")).not.toEqual(ids("visit-b"));
+    expect(ids("visit-a")).toEqual(ids("visit-a"));
   });
 
   it("drops nameless people for a participant so the counter matches the cards", () => {
