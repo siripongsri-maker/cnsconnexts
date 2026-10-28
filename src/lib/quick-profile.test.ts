@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { quickStepValid, toProfileInput, type QuickDraft } from "./quick-profile";
+import { quickStepHint, quickStepValid, toProfileInput, type QuickDraft } from "./quick-profile";
 import type { ParticipantSession } from "./session";
 
 const draft = (over: Partial<QuickDraft> = {}): QuickDraft => ({
   name: "มะลิ",
   region: "North",
+  province: "Nan",
   interests: ["Youth"],
   powers_have: ["Ideas"],
   powers_need: [],
@@ -18,6 +19,17 @@ describe("quickStepValid", () => {
     expect(quickStepValid(1, draft({ name: "   " }))).toBe(false);
     expect(quickStepValid(1, draft({ name: " ก " }))).toBe(true);
     expect(quickStepValid(1, draft({ region: null }))).toBe(false);
+  });
+
+  it("step 1 needs a province unless Nationwide or Bangkok", () => {
+    expect(quickStepValid(1, draft({ province: "" }))).toBe(false);
+    expect(quickStepValid(1, draft({ province: "Nan" }))).toBe(true);
+    expect(quickStepValid(1, draft({ region: "Nationwide", province: "" }))).toBe(true);
+    expect(quickStepValid(1, draft({ region: "Bangkok", province: "" }))).toBe(true);
+  });
+
+  it("step 1 hint mentions the province", () => {
+    expect(quickStepHint(1)).toBe("ใส่ชื่อ เลือกภาค และจังหวัดก่อนนะ");
   });
 
   it("step 2 needs at least one issue", () => {
@@ -54,7 +66,7 @@ describe("toProfileInput", () => {
     expect(out).toEqual({
       name: "มะลิ",
       region: "North",
-      province: "",
+      province: "Nan",
       organization: "อิสระ",
       generation: "Millennial",
       bio: "",
@@ -63,6 +75,18 @@ describe("toProfileInput", () => {
       powers_need: ["Funding / Resources"],
     });
     expect("source" in out).toBe(false);
+  });
+
+  it("writes the province: Bangkok fixed, Nationwide empty, otherwise the draft's", () => {
+    expect(toProfileInput(draft({ region: "Bangkok", province: "" }), null).province).toBe(
+      "Bangkok Metropolis",
+    );
+    expect(toProfileInput(draft({ region: "South", province: "Songkhla" }), null).province).toBe(
+      "Songkhla",
+    );
+    expect(toProfileInput(draft({ region: "Nationwide", province: "Nan" }), null).province).toBe(
+      "",
+    );
   });
 
   it("sets source qr only when the session came from a QR code", () => {

@@ -6,6 +6,8 @@ import type { Region, User } from "./types";
 export type QuickDraft = {
   name: string;
   region: Region | null;
+  /** คีย์อังกฤษของจังหวัด (เช่น "Nan"); "" = ยังไม่เลือก/ทั่วประเทศ */
+  province: string;
   interests: string[];
   powers_have: string[];
   powers_need: string[];
@@ -16,6 +18,7 @@ export type QuickStep = 1 | 2 | 3;
 export const EMPTY_QUICK_DRAFT: QuickDraft = {
   name: "",
   region: null,
+  province: "",
   interests: [],
   powers_have: [],
   powers_need: [],
@@ -23,14 +26,18 @@ export const EMPTY_QUICK_DRAFT: QuickDraft = {
 
 /** ขั้นนี้กรอกพอให้ไปต่อได้หรือยัง (พลังที่อยากได้ไม่บังคับ) */
 export function quickStepValid(step: QuickStep, d: QuickDraft): boolean {
-  if (step === 1) return d.name.trim().length >= 1 && d.region !== null;
+  if (step === 1) {
+    if (d.name.trim().length < 1 || d.region === null) return false;
+    // กรุงเทพฯ ตั้งจังหวัดให้อัตโนมัติ, ทั่วประเทศไม่มีจังหวัด
+    return d.region === "Nationwide" || d.region === "Bangkok" || d.province !== "";
+  }
   if (step === 2) return d.interests.length >= 1;
   return d.powers_have.length >= 1;
 }
 
 /** ข้อความบอกว่าขั้นนี้ยังขาดอะไร (ใช้เป็นข้อความช่วยใต้ปุ่มเมื่อกดไปต่อไม่ได้) */
 export function quickStepHint(step: QuickStep): string {
-  if (step === 1) return "ใส่ชื่อและเลือกภาคก่อนนะ";
+  if (step === 1) return "ใส่ชื่อ เลือกภาค และจังหวัดก่อนนะ";
   if (step === 2) return "เลือกอย่างน้อย 1 เรื่องก่อนนะ";
   return "เลือกพลังที่คุณมีอย่างน้อย 1 อย่างก่อนนะ";
 }
@@ -44,7 +51,8 @@ export function toProfileInput(
   return {
     name: d.name.trim(),
     region: d.region,
-    province: "",
+    province:
+      d.region === "Bangkok" ? "Bangkok Metropolis" : d.region === "Nationwide" ? "" : d.province,
     organization: "อิสระ",
     generation: "Millennial",
     bio: "",

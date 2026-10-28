@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, Check, type LucideIcon } from "lucide-react";
 import { BLOCK_TAG, POWER_ICON, blockFor } from "@/lib/issue-colors";
 import { REGION_LABEL, issueTh } from "@/lib/i18n";
@@ -12,8 +12,9 @@ import {
   type QuickStep,
 } from "@/lib/quick-profile";
 import { isDevPreview } from "@/lib/dev-preview";
+import { PROVINCES_BY_REGION } from "@/lib/thailand-geo";
 import { useStore } from "@/lib/store";
-import { ISSUES, POWERS, REGIONS, type Power, type User } from "@/lib/types";
+import { ISSUES, POWERS, REGIONS, type Power, type Region, type User } from "@/lib/types";
 
 const SAVE_ERROR = "บันทึกยังไม่สำเร็จ ข้อมูลที่กรอกยังอยู่ ลองกดอีกครั้ง";
 
@@ -139,6 +140,17 @@ export function QuickProfileForm({
     headingRef.current?.focus({ preventScroll: false });
   }, [step]);
 
+  const needsProvince =
+    draft.region !== null && draft.region !== "Bangkok" && draft.region !== "Nationwide";
+  const provinces = useMemo(
+    () => (needsProvince && draft.region ? PROVINCES_BY_REGION(draft.region) : []),
+    [needsProvince, draft.region],
+  );
+  const pickRegion = (r: Region) => {
+    if (draft.region === r) return set({ region: null, province: "" });
+    set({ region: r, province: r === "Bangkok" ? "Bangkok Metropolis" : "" });
+  };
+
   const valid = quickStepValid(step, draft);
   const isLast = step === 3;
   const set = (patch: Partial<QuickDraft>) => {
@@ -217,16 +229,36 @@ export function QuickProfileForm({
             <legend className={`${labelCls} mb-2`}>คุณทำงานอยู่ภาคไหน?</legend>
             <div className="grid grid-cols-2 gap-3">
               {REGIONS.map((r) => (
-                <Choice
-                  key={r}
-                  pressed={draft.region === r}
-                  onClick={() => set({ region: draft.region === r ? null : r })}
-                >
+                <Choice key={r} pressed={draft.region === r} onClick={() => pickRegion(r)}>
                   {REGION_LABEL[r]}
                 </Choice>
               ))}
             </div>
           </fieldset>
+          {needsProvince && (
+            <div className="flex flex-col gap-2">
+              <label htmlFor="qp-province" className={labelCls}>
+                จังหวัดที่ทำงานอยู่
+              </label>
+              <select
+                id="qp-province"
+                value={draft.province}
+                aria-describedby="qp-province-note"
+                onChange={(e) => set({ province: e.target.value })}
+                className="h-14 w-full rounded-xl border-2 border-input bg-white px-4 text-body font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                <option value="">เลือกจังหวัด</option>
+                {provinces.map((p) => (
+                  <option key={p.en} value={p.en}>
+                    {p.th}
+                  </option>
+                ))}
+              </select>
+              <p id="qp-province-note" className="text-body text-ink-soft">
+                จังหวัดของคุณจะขึ้นบนจอใหญ่ในงาน
+              </p>
+            </div>
+          )}
         </div>
       )}
 
