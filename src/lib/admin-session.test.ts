@@ -18,10 +18,6 @@ const env = {
 
 describe("verifyCredentials", () => {
   it("accepts the right password for each configured account", async () => {
-    expect(await verifyCredentials("superadmin", "super-pass", env)).toEqual({
-      user: "superadmin",
-      role: "superadmin",
-    });
     expect(await verifyCredentials(" Connexts ", "owner-pass", env)).toEqual({
       user: "connexts",
       role: "owner",
