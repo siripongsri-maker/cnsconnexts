@@ -15,5 +15,5 @@
 
 # Projects board: seed data + discoverability
 
-- [ ] Apply the 11 คนส. project rows from the exhibition board (runs 1–4) to the database.
-- [ ] Confirm the projects page shows them and tell the user how to reach it.
+- [x] Applied the 11 คนส. project rows from the exhibition board (runs 1–4); database now holds 12 projects across runs 1–4.
+- [x] Confirmed /projects lists all 12 under runs 1–4 (2/2/3/5) on desktop and phone; page is not linked from any menu yet.
