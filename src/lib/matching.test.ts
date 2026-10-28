@@ -87,6 +87,13 @@ describe("buildDeck", () => {
     expect(deck.every((e) => e.match !== null && e.match.user === e.user)).toBe(true);
   });
 
+  it("shuffles the participant deck per day: stable within a day, different across days", () => {
+    const me = tenComplete[0]!;
+    const ids = (k: string) => buildDeck(me, tenComplete, k).map((e) => e.user.id);
+    expect(ids("2026-10-26")).toEqual(ids("2026-10-26"));
+    expect(ids("2026-10-26")).not.toEqual(ids("2026-10-27"));
+  });
+
   it("drops nameless people for a participant so the counter matches the cards", () => {
     const me = tenComplete[0]!;
     const pool = [...tenComplete, mk("blank", { name: "" }), mk("spaces", { name: "   " })];
